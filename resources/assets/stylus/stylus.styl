@@ -1,0 +1,711 @@
+///////////////////////////////////////////
+//  GLOBAL CSS
+///////////////////////////////////////////
+
+//define some common variables
+@import './variables.styl'
+
+
+//mixins
+has(name)
+	&__{name}
+		{block}
+variant(name)
+	&--{name}
+		{block}
+		
+
+[v-cloak] 
+	display none	
+	
+
+body, html, .container-fluid
+	height 100%
+	font-family HelveticaNeue,"Helvetica Neue",Helvetica,Arial,sans-serif
+	font-weight 300
+	letter-spacing 0.45px
+	
+p
+	font-size inherit
+	font-weight inherit
+
+
+#app
+	padding-bottom 3em
+	min-height 100%	
+	
+.bootstrap-switch
+	span.bootstrap-switch-handle-on.bootstrap-switch-primary
+		background link_blue
+	span.bootstrap-switch-handle-off.bootstrap-switch-default
+		background rc_background	
+		
+.switch-container
+	margin-bottom 20px
+.switch-label
+	margin 0px 30px 0px 10px	
+	font-weight bold		
+
+hr
+	border-color darken(whitesmoke, 15%)
+
+body
+	background rc_background
+		
+
+
+
+a	
+a:visited		
+a:link
+	text-decoration none
+	color link_blue
+a:hover
+	text-decoration none
+	cursor pointer
+	color link_blue_hover
+	
+
+.nav-tabs
+	margin-top 35px
+	li 
+		position relative
+		&.active
+			a
+				background-color whitesmoke
+				border-radius 12px 12px 0 0 
+				&:hover
+					background-color whitesmoke
+		a
+			margin-left 8px		
+			padding 20px 40px
+			@media screen and (max-width xs_max_width)
+				padding 20px 30px
+				
+
+.Tab
+	position relative	
+	padding 0px 10px 10px 10px
+	font-size 15px
+	margin 15px
+	@media screen and (max-width xs_max_width)
+		margin 15px
+	.material-icons
+		bottom 30px	
+		
+	+has(list)
+		display flex
+		list-style none
+		padding 0
+	
+	+variant(active)
+		color lighten(black, 40%)
+		border-bottom 4px solid lighten(gray, 65%)
+		&:hover
+			color lighten(black, 40%)
+			cursor default
+
+	+variant(inactive)
+		color #1179C9
+		&:hover
+			color #38A9F9
+			cursor pointer
+			
+.Tab__container
+	display flex
+	justify-content center
+	font-weight 200
+	margin-top 50px
+	margin-bottom 2px
+		
+
+.Media
+	display flex
+	margin-bottom 40px
+	
+	+has(thumbnail)
+		border-radius 50%
+		&:hover
+			cursor pointer
+		
+	+has(text)
+		display flex
+		flex-flow column	
+		justify-content flex-start
+		
+	+has(title)
+		margin-left 10px
+		font-size 16px
+		display flex
+		flex-flow row
+
+	+has(number)
+		color #C90019	
+
+	+has(divider)
+		color darken(whitesmoke, 30%)
+		margin 0px 6px
+
+	+has(details)
+		text-align left
+		position relative
+		.material-icons
+			margin 13px 0px 0px 8px	
+			font-size 20px	
+	
+	+has(edit)
+		display flex
+		flex-flow row
+		margin-bottom 55px
+		div
+			flex 1
+		.btn
+			margin 22px 0px 0px 15px
+			max-height 52px						
+			
+			
+		
+.for-blurring	
+	margin-top 53px
+
+.modal-backdrop
+	background none
+
+.modal-content
+	border none
+	border-radius 0
+	top 35px
+	@media screen and (max-width 400px)
+		max-width 350px
+		margin auto
+.modal-dialog
+	margin 10px auto
+	
+.modal-header
+	color white
+	margin-bottom 0.5em
+	background #404040
+	.close
+		color white
+		margin-top 3px
+	
+.modal-body
+	padding 15px
+
+div.modal
+	-animation-duration 0.15s		
+	
+
+.pace
+	pointer-events none
+	-webkit-user-select none
+	-moz-user-select none
+	-ms-user-select none
+	user-select none
+	
+.pace-inactive
+	display none
+	
+.pace .pace-progress
+	background link_blue_hover
+	position fixed
+	z-index 2000
+	top 52px
+	right 100%
+	width 100%
+	height 3px
+	
+
+//for getting a separator like
+//   ------   NEWS FEED   --------
+.divider
+	.divider-text
+		text-align center
+		position absolute
+		top 50%
+		left 50%
+		width 100%
+		max-width 775px
+		transform translate(-50%, -50%)
+		&:before
+			content ""
+			position absolute
+			width 100%
+			height 1px
+			top 50%
+			left 0
+			z-index -1
+			background darken(whitesmoke, 15%)
+		span
+			font-size 17px
+			color darken(whitesmoke, 30%)
+			background rc_background
+			padding 0px 3em 
+		span.--twotone
+			background rc_two_tone	
+			
+.Footer
+	display flex
+	flex-flow row
+	justify-content center
+	align-items center
+	padding-top 4em
+	background darken(white, 8%)
+	p
+		flex 1
+		text-align center	
+		font-size 11px
+
+
+div.picker-to-time
+div.picker-from-time
+div.edit-picker-from-time
+div.edit-picker-to-time
+	margin-top 10px	
+
+.input-group-addon
+	background whitesmoke
+	border none
+	border-left 3px solid white !important
+	span
+		color link_blue	
+
+// for auto-expanding textareas
+textarea
+	box-sizing border-box
+	min-height 31px
+	resize none	
+		
+
+//styles for buttons with outlines
+.btn
+	padding 14px 24px
+	border 0
+	letter-spacing 1px
+	margin-top 8px
+	margin-left 15px
+	&.btn-first
+		margin-left 0
+	&:hover, &:active, &:active:focus, &:focus
+		background-image none
+
+	&.outline.btn-success
+		background none
+		padding 12px 22px
+		border 2px solid #90C07F
+		color #90C07F
+		&:hover, &:active, &:active:focus, &:focus
+			background none
+			border 2px solid #85dd68
+			color #85dd68
+
+	&.outline.btn-primary
+		background none
+		padding 12px 22px
+		border 2px solid link_blue
+		color link_blue
+		&:hover, &:active, &:active:focus, &:focus
+			background none
+			border 2px solid link_blue_hover
+			color link_blue_hover
+
+	&.outline.btn-delete
+		background none
+		padding 12px 22px
+		border 2px solid rc_red
+		color rc_red
+		&:hover, &:active, &:active:focus, &:focus
+			background none
+			border 2px solid #FC001E
+			color #FC001E		
+
+	&.outline.btn-cancel
+		background none
+		padding 12px 22px
+		border 2px solid #BDBBBB
+		color #BDBBBB
+		&:hover, &:active, &:active:focus, &:focus
+			background none
+			border 2px solid #969696
+			color #969696			
+
+.btn-cancel
+	background #BDBBBB
+	color white
+	&:hover, &:active, &:active:focus, &:focus 
+		color white
+		background #969696
+
+.btn-delete
+	background rc_red
+	color white
+	&:hover, &:active, &:active:focus, &:focus 
+		color white
+		background #FC001E
+
+.btn-primary
+	background link_blue
+	text-shadow none
+	box-shadow none
+	&:hover, &:active, &:active:focus, &:focus
+		color white
+		background link_blue_hover
+
+.btn-success
+	background #90C07F
+	text-shadow none
+	box-shadow none
+	&:hover, &:active, &:active:focus, &:focus
+		color white
+		background lighten(#90C07F, 20%)
+	&.isMember:hover
+		cursor default
+		background #90C07F					
+
+.btn-default //for selectpickers
+	background-image none
+	background-color whitesmoke
+	margin-top 0
+
+
+
+
+
+.form-control
+	position relative
+	font-size 18px
+	height 52px
+	padding 15px
+	background whitesmoke
+	border none
+	box-shadow none
+	&.form-error
+		border 1px solid red
+	
+span.form-error
+	color rc_red	
+	
+.--white
+	background white	
+
+//bootstrap select styling
+div.bootstrap-select
+	.btn
+		letter-spacing 0px
+	.dropdown-toggle:focus
+		outline 0 !important
+		-webkit-appearance none !important
+	li
+		a
+			outline 0 !important
+			-webkit-appearance none !important
+			&:focus, &:active
+				background-image none
+	.dropdown-menu
+		li
+			a:focus
+				background-color white
+				background-image none
+				
+
+
+label
+	margin-bottom 2px
+	@media only screen and (max-width xs_max_width)
+		margin-top 10px
+
+button.btn.btn-select
+	background whitesmoke
+	margin 0
+
+.bootstrap-datetimepicker-widget
+	table
+		td.active
+			background-color link_blue
+			&:hover
+				background-color link_blue_hover	
+
+.no-highlight
+	-ms-user-select none
+	-moz-user-select none
+	-webkit-user-select none
+
+
+input[type='checkbox']:focus
+	outline 0	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//SITE-WIDE ANIMATIONS
+
+		
+.modal-blur
+	-webkit-filter blur(3px)
+.modal-unblur
+	-webkit-filter blur(0px)
+	-webkit-transition -webkit-filter 0.2s ease-out
+	
+
+.fade-fast-enter
+	visibility hidden
+	animation fade-enter 0.1s ease-in 
+	animation-delay 0.1s
+.fade-fast-leave
+	visibility visible
+	animation fade-leave 0.1s ease-out
+	
+.fade-md-enter
+	visibility hidden
+	animation fade-enter 0.15s ease-in
+	animation-delay 0.15s
+.fade-md-leave
+	visibility visible
+	animation fade-leave 0.15s ease-out
+	
+.fade-slow-enter
+	visibility hidden
+	animation fade-enter 0.2s ease-in
+	animation-delay 0.2s
+.fade-slow-leave
+	visibility visible
+	animation fade-leave 0.2s ease-out
+	
+//quadratic fade in
+@keyframes fade-enter
+	0%
+		opacity 0
+		visibility visible
+	20%
+		opacity 0.04
+	50%
+		opacity 0.25
+	75%			
+		opacity 0.55
+	90%
+		opacity 0.8
+	100%
+		opacity 1
+		
+//quadratic fade out
+@keyframes fade-leave
+	0%
+		opacity 1
+	20%
+		opacity 0.8
+	50%
+		opacity 0.55
+	75%			
+		opacity 0.25
+	90%
+		opacity 0.04
+	100%
+		opacity 0
+
+.slide-sm-enter
+	@media only screen and (max-width xs_max_width)
+		animation slide-sm-phone-enter 0.2s ease-in
+	animation slide-sm-enter 0.2s ease-in
+.slide-sm-leave
+	@media only screen and (max-width xs_max_width)
+		animation slide-sm-phone-leave 0.2s ease-in
+	animation slide-sm-leave 0.2s ease-out
+
+.slide-md-enter
+	@media only screen and (max-width xs_max_width)
+		animation slide-md-phone-enter 0.2s ease-in
+	animation slide-md-enter 0.2s ease-in
+.slide-md-leave
+	@media only screen and (max-width xs_max_width)
+		animation slide-md-phone-leave 0.2s ease-in
+	animation slide-md-leave 0.2s ease-out
+
+.slide-lg-enter
+	@media only screen and (max-width xs_max_width)
+		animation slide-lg-phone-enter 0.2s ease-in
+	animation slide-lg-enter 0.2s ease-in
+	animation-delay 0.2s
+.slide-lg-leave
+	@media only screen and (max-width xs_max_width)
+		animation slide-lg-phone-leave 0.2s ease-in
+	animation slide-lg-leave 0.2s ease-out
+	
+
+@keyframes slide-sm-enter
+	0%
+		opacity 0.2
+		overflow hidden
+		max-height 0
+	100%
+		opacity 1
+		max-height 75px
+		
+
+@keyframes slide-sm-leave
+	0%
+		opacity 1
+		max-height 75px
+	100%
+		opacity 0
+		max-height 0
+		overflow hidden
+
+@keyframes slide-sm-phone-enter
+	0%
+		opacity 0.2
+		overflow hidden
+		max-height 0
+	100%
+		opacity 1
+		max-height 175px
+		
+
+@keyframes slide-sm-phone-leave
+	0%
+		opacity 1
+		max-height 175px
+	100%
+		opacity 0
+		max-height 0
+		overflow hidden		
+
+@keyframes slide-md-enter
+	0%
+		opacity 0.2
+		overflow hidden
+		max-height 0
+	100%
+		opacity 1
+		max-height 150px
+		
+
+@keyframes slide-md-leave
+	0%
+		opacity 1
+		max-height 150px
+	100%
+		opacity 0
+		max-height 0
+		overflow hidden
+
+@keyframes slide-md-phone-enter
+	0%
+		opacity 0.2
+		overflow hidden
+		max-height 0
+	100%
+		opacity 1
+		max-height 300px
+		
+
+@keyframes slide-md-phone-leave
+	0%
+		opacity 1
+		max-height 300px
+	100%
+		opacity 0
+		max-height 0
+		overflow hidden		
+
+@keyframes slide-lg-enter
+	0%
+		opacity 0.2
+		overflow hidden
+		max-height 0
+	100%
+		opacity 1
+		max-height 700px
+		
+
+@keyframes slide-lg-leave
+	0%
+		opacity 1
+		max-height 700px
+	100%
+		opacity 0
+		max-height 0
+		overflow hidden		
+
+@keyframes slide-lg-phone-enter
+	0%
+		opacity 0.2
+		overflow hidden
+		max-height 0
+	100%
+		opacity 1
+		max-height 600px
+		
+
+@keyframes slide-lg-phone-leave
+	0%
+		opacity 1
+		max-height 600px
+	100%
+		opacity 0
+		max-height 0
+		overflow hidden			
+
+//for spinning the search icon
+.rotated-right
+	transform rotate(90deg)
+
+.glyphicon.right-spinner
+	animation glyphicon-spin-r 0.075s linear
+
+@keyframes glyphicon-spin-r
+	0%
+  	transform rotate(0deg)
+  100%
+		transform rotate(90deg)
+
+.glyphicon.left-spinner
+	animation glyphicon-spin-l 0.075s linear
+
+@keyframes glyphicon-spin-l
+	0%
+  	transform rotate(90deg)
+  100%
+		transform rotate(0deg)
+
+
+.upside-down
+	transform rotate(180deg)
+
+.caret.right-spinner
+	animation caret-spin-r 0.15s  linear
+
+@keyframes caret-spin-r
+	0%
+		transform rotate(0deg)
+	100%
+		transform rotate(180deg)
+
+.caret.left-spinner
+	animation: caret-spin-l .15s  linear
+
+@keyframes caret-spin-l
+	0%
+		transform rotate(180deg)
+	100%
+		transform rotate(0deg)		
+				
+
+
+		
