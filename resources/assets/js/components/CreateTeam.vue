@@ -2,7 +2,7 @@
 <template>
 	<div>
 	
-		
+		<p>This is the create team page</p>
 
 	</div>
 </template>

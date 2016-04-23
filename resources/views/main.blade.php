@@ -24,6 +24,9 @@
     <link rel="stylesheet" href="/css/variables.css">
     <link rel='stylesheet' href='/css/sweetalert.css'>
     <link rel='stylesheet' href='/css/bootstrap-switch.css'>
+    <link rel="stylesheet" href="/bower_components/bootstrap-calendar/css/calendar.css">
+    <link rel='stylesheet' href='/css/animate.css-master/animate.css'></link>
+    <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
     
     
     <!-- js -->
@@ -35,21 +38,10 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/js/bootstrap-select.min.js"></script> 
     <script src='/js/nav.js'></script>
     <script src='/js/pace.js'></script>
-    <script src="/js/jquery.bootstrap-autohidingnavbar.js"></script>
-
-
-
-    {{-- team page stuff --}}
-    <link rel="stylesheet" href="/bower_components/bootstrap-calendar/css/calendar.css">
-    <script src="/bower_components/underscore/underscore-min.js"></script>
-    <script src="/bower_components/bootstrap-calendar/js/calendar.js"></script>
-    <link rel='stylesheet' href='/css/animate.css-master/animate.css'></link>
     <script src="/bower_components/moment/moment.js"></script>
     <script src="/bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
-    <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
-
-
-
+    <script src="/bower_components/underscore/underscore-min.js"></script>
+    <script src="/bower_components/bootstrap-calendar/js/calendar.js"></script>
 
     <!-- favicon -->
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
