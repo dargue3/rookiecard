@@ -1,7 +1,7 @@
 
 <template>
 
-	<div id="forBlurring">
+	<div>
 	
     <nav class="navbar navbar-default navbar-fixed-top no-highlight" role="navigation">
       <div class="container">
@@ -86,11 +86,6 @@
 		<rc-alert :type="alertType" :show.sync="alert" transition="fade-fast" v-show="alert > 0">{{ alertMessage }}</rc-alert>
 	
 		<router-view id="router" transition="fade-slow" class="router"></router-view>
-
-		<!-- include the footer at bottom -->
-		<div class="Footer">
-		    <p>® 2016 Rookiecard LLC</p>
-		</div>
 	
 	</div>
 	

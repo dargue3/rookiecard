@@ -52,6 +52,13 @@
 							<div class="Media__details">
 								<i v-if="admin" @click="edit(player)" id="editIcon" class="material-icons">mode_edit</i>
 								<i v-if="player.admin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+								<span class="positions">
+									<span v-for="position in player.meta.positions">
+										{{ position | uppercase }}  
+										<span v-show="$index !== (player.meta.positions.length - 1) && 
+																	player.meta.positions[$index+1].length"> | </span>
+									</span>
+								</span>
 							</div>
 
 						</div>
@@ -171,7 +178,7 @@ export default  {
 
 
 #adminIcon
-	color darken(whitesmoke, 30%)
+	color rc_lite_gray
 #editIcon
 	color link_blue
 	&:hover

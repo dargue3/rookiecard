@@ -5,16 +5,23 @@
     	<!-- only showing this section if user is a player -->
 	    <div v-show="user.role < 2" class="row EditUser__data">
         <div class="form-group">
-          <div class="col-xs-12 col-sm-6">
+          <div class="col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0">
             <label for="number">Jersey Number</label>
             <input type="text" class="form-control" :class="errors.num ? 'form-error' : ''"
             				v-model="user.meta.num" @keyup="errorCheck('num')">
             <span v-show="errors.num" class="form-error">Choose a number between 00 and 99</span>
           </div>
-          <div class="col-xs-12 col-sm-6">
-            <label for="eventClass">Position</label>
+          <div class="col-xs-6 col-sm-4">
+            <label>Position</label>
             <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
-            					multiple v-model="user.meta.positions">
+            				multiple data-max-options="1" v-model="user.meta.positions[0]">
+              <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
+            </select>
+          </div>
+          <div class="col-xs-6 col-sm-4">
+            <label>Position</label>
+            <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
+            				multiple data-max-options="1" v-model="user.meta.positions[1]">
               <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
             </select>
           </div>
@@ -24,19 +31,19 @@
         <div class="col-xs-12">
           <div class="switch-container">
 						<input type="checkbox" bootstrap-switch="EditUser--admin">
-						<span class="switch-label">Admin</span>
+						<span class="switch-label">Team Admin</span>
 					</div>
 				</div>
 	    </div>
     	<hr>
 	    <div class="row EditUser__buttons">
-		    <div class="col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-1">
+		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
 		    	<a class="btn btn-primary btn-block btn-md" @click="save()">SAVE</a>
 		    </div>
-		    <div class="col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0">
+		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
 		    	<a class="btn btn-delete btn-block btn-md" @click="kick()">KICK</a>
 		    </div>
-		    <div class="col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0">
+		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
 		    	<a class="btn btn-cancel btn-block btn-md outline"@click="cancel()">CANCEL</a>
 		    </div>
 	    </div>
@@ -189,7 +196,9 @@ export default  {
 
 		$(function() {
 
-			$('.selectpicker[EditUser]').selectpicker();
+			$('.selectpicker[EditUser]').selectpicker({
+				noneSelectedText: 'None'
+			});
 
 			$('input[bootstrap-switch="EditUser--admin"]').bootstrapSwitch(this.adminOptions);
 

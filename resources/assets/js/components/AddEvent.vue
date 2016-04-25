@@ -116,9 +116,7 @@
 	      	<input type="submit" class="btn btn-primary btn-block btn-md btn-first" value="SAVE">
 	      </div>
 	      <div class="col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0">
-          <a @click="discardEvent()" class="btn btn-cancel btn-block btn-md outline">
-              CANCEL
-          </a>
+          <a id="addEventCancel" @click="discardEvent()" class="btn btn-cancel btn-block btn-md outline">CANCEL</a>
 	      </div>
 	    </div>
     </form>
@@ -406,7 +404,9 @@ export default  {
 
 @import '/resources/assets/stylus/variables.styl'
 
-
+#addEventCancel
+	@media screen and (max-width 767px)
+		margin-left 0px
 //for the colors of the 'event type' dropdown
 .homeGame
 	color rc_red !important

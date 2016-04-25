@@ -27,7 +27,7 @@ Route::post ('/newPass',     'Auth\PasswordController@postReset');
 
 
 
-
+Route::post  	('/api/v1/team/create/{teamname}', 'TeamController@checkAvailability');
 
 //api routes for ajax requests
 Route::get  	('/api/v1/team/{teamname}/data', 'TeamController@getTeamData');

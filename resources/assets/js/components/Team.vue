@@ -1,244 +1,249 @@
 
 <template>
 	<div>
-	<!-- container for template -->
+		<div class="page-wrapper">
+		<!-- container for template -->
 
-		<!-- no results for team, show message -->
-		<div id="noTeam" v-cloak v-show="!team.id" class="f-el-fill text-center">
-			<h3>This team doesn't exist, you could create it <a v-link="{name: 'team', params: {name: 'create'}}">here</a></h3>
-			<br>
-			<h4>If you think this is an error, try refreshing the page.</h4>
-		</div>
+			<!-- no results for team, show message -->
+			<div id="noTeam" v-cloak v-show="!team.id" class="f-el-fill text-center">
+				<h3>This team doesn't exist, you could create it <a v-link="{name: 'team', params: {name: 'create'}}">here</a></h3>
+				<br>
+				<h4>If you think this is an error, try refreshing the page.</h4>
+			</div>
 
-		<!-- wrapper div around non-modal content for blurring -->
-		<div v-cloak v-show="team.id" class="Team for-blurring">
-		
-
-    	<div class="Team__details">
- 			
+			<!-- wrapper div around non-modal content for blurring -->
+			<div v-cloak v-show="team.id" class="Team for-blurring">
 			
-				<div v-if="team.teamname === 'unhbasketball'">
-					<img class="img-thumbnail" width="500" height="500"
-								src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Lundholm_Gym,_UNH,_Durham_NH.jpg">
-				</div>
 
-				<div v-if="team.teamname === 'unhfootball'">
-					<img class="img-thumbnail" width="500" height="500"
-								src="http://unhmagazine.unh.edu/w09/images/p18b.jpg">
-				</div>
-
-		 
+	    	<div class="Team__details">
+	 			
 				
-				<h1 class="Team__name">{{ team.name }}</h1>
-				
+					<div v-if="team.teamname === 'unhbasketball'">
+						<img class="img-thumbnail" width="500" height="500"
+									src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Lundholm_Gym,_UNH,_Durham_NH.jpg">
+					</div>
 
-				<div class="Team__slogan">
-					<span>Home of UNH Wildcats Football</span>
-				</div>
+					<div v-if="team.teamname === 'unhfootball'">
+						<img class="img-thumbnail" width="500" height="500"
+									src="http://unhmagazine.unh.edu/w09/images/p18b.jpg">
+					</div>
 
-				<div class="Team__location">
-					<span><i id="teamLocationIcon" class="material-icons no-highlight">place</i>COWELL STADIUM, DURHAM, NH</span>
-				</div>
-				
+			 
+					
+					<h1 class="Team__name">{{ team.name }}</h1>
+					
 
-				<div class="Team__fans">
-					<a @click="toggleFan" v-show="isFan === false" class="btn btn-primary outline">
-						JOIN {{ numFans }} OTHER FAN{{numFans > 1 || numFans === 0 ? 'S' : ''}}
-					</a>
-					<a @click="toggleFan" v-show="isFan === true" class="btn btn-primary">
-						YOU AND {{ numFans - 1 }} OTHER{{(numFans - 1) > 1 || numFans === 0 ? 'S' : ''}} ARE FANS
-					</a>
-					<a v-show="isMember === true" class="btn btn-primary isMember">
-						YOUR TEAM HAS {{ numFans }} FAN{{numFans > 1 || numFans === 0 ? 'S' : ''}}
-					</a>
-				</div>
-				
+					<div class="Team__slogan">
+						<span>Home of UNH Wildcats Football</span>
+					</div>
 
-   
-        <ul class="nav nav-tabs Team__tabs no-highlight">
-          <li :class="[tab === 'calendar' ? 'active' : '']">
-            <a @click="tab = 'calendar'">
-        			<i id="teamCalendarIcon" class="material-icons">date_range</i>CALENDAR
-            </a>
-          </li>
-          <li :class="[tab === 'stats' ? 'active' : '']">
-            <a @click="tab = 'stats'">
-        			<i id="teamStatsIcon" class="material-icons">trending_up</i>STATS
-            </a>
-          </li>
-          <li :class="[tab === 'roster' ? 'active' : '']">
-            <a @click="tab = 'roster'">
-          		<i id="teamRosterIcon" class="material-icons">group</i>ROSTER
-            </a>
-          </li>
-          <li v-if="admin" :class="[tab === 'edit' ? 'active' : '']">
-            <a @click="tab = 'edit'">
-        			<i id="teamEditIcon" class="material-icons">mode_edit</i>EDIT
-            </a>
-      	</ul>	
-   
-			</div> <!-- end team well -->
+					<div class="Team__location">
+						<span><i id="teamLocationIcon" class="material-icons no-highlight">place</i>COWELL STADIUM, DURHAM, NH</span>
+					</div>
+					
 
-			<div>
-			  <div class="row">
-		      <div class="col-xs-12 Team__calendar"
-		      			v-show="tab === 'calendar'">
+					<div class="Team__fans">
+						<a @click="toggleFan" v-show="isFan === false" class="btn btn-primary outline">
+							JOIN {{ numFans }} OTHER FAN{{numFans > 1 || numFans === 0 ? 'S' : ''}}
+						</a>
+						<a @click="toggleFan" v-show="isFan === true" class="btn btn-primary">
+							YOU AND {{ numFans - 1 }} OTHER{{(numFans - 1) > 1 || numFans === 0 ? 'S' : ''}} ARE FANS
+						</a>
+						<a v-show="isMember === true" class="btn btn-primary isMember">
+							YOUR TEAM HAS {{ numFans }} FAN{{numFans > 1 || numFans === 0 ? 'S' : ''}}
+						</a>
+					</div>
+					
 
-	        	<rc-calendar :admin="admin" :events="events"></rc-calendar>
+	   
+	        <ul class="nav nav-tabs Team__tabs no-highlight">
+	          <li :class="[tab === 'calendar' ? 'active' : '']">
+	            <a @click="tab = 'calendar'">
+	        			<i id="teamCalendarIcon" class="material-icons">date_range</i>CALENDAR
+	            </a>
+	          </li>
+	          <li :class="[tab === 'stats' ? 'active' : '']">
+	            <a @click="tab = 'stats'">
+	        			<i id="teamStatsIcon" class="material-icons">trending_up</i>STATS
+	            </a>
+	          </li>
+	          <li :class="[tab === 'roster' ? 'active' : '']">
+	            <a @click="tab = 'roster'">
+	          		<i id="teamRosterIcon" class="material-icons">group</i>ROSTER
+	            </a>
+	          </li>
+	          <li v-if="admin" :class="[tab === 'settings' ? 'active' : '']">
+	            <a @click="tab = 'settings'">
+	        			<i id="teamEditIcon" class="material-icons">settings</i>SETTINGS
+	            </a>
+	      	</ul>	
+	   
+				</div> <!-- end team well -->
 
-		      </div>
+				<div>
+				  <div class="row">
+			      <div class="col-xs-12 Team__calendar"
+			      			v-show="tab === 'calendar'">
+
+		        	<rc-calendar :admin="admin" :events="events"></rc-calendar>
+
+			      </div>
+			    </div>
+
+
+
+			    <div class="row">
+			      <div class="col-xs-12 text-center Team__stats" v-show="tab === 'stats'">
+
+			      	<!-- links for switching tabs -->
+							<div class="Tab__container">
+								<ul class="Tab__list">
+						      <li>
+						        <a :class="['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']" 
+						        		@click="statsTab = 'teamRecent'">RECENT
+						        </a>
+						      </li>
+						      <li>
+						        <a :class="['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']"
+						        		@click="statsTab = 'playerSeason'">PLAYER
+						        </a>
+						      </li>
+						      <li>
+						        <a :class="['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']"
+						        		@click="statsTab = 'teamSeason'">SEASON
+						        </a>
+						      </li>
+						    </ul>
+							</div>
+
+		        	<rc-stats :type="statsTab" 
+		        						:stats="stats" :sport="team.sport"
+	        							:players="players" pagination="false" 
+	        							:team-cols="teamStatCols":player-cols="playerStatCols">
+	        		</rc-stats>
+			        	
+			      </div>
+			    </div>
+
+
+
+			    <div class="row">
+			      <div class="col-xs-12 Team__roster"
+			      			v-show="tab === 'roster'">
+
+			        <rc-roster :players="players" :coaches="coaches" 
+			        						:fans="fans" :edit-user.sync="editUser" 
+			        						:admin="admin">
+			        </rc-roster>		
+
+			      </div>
+			    </div>
+
+
+			     <div class="row">
+			      <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit"
+			      			v-show="tab === 'settings'">
+
+		        	<h3>Settings</h3>
+		        	</hr>
+
+			        	
+			      </div>
+			    </div>
 		    </div>
 
+				
+				<div class="row">
+					<div class="col-xs-12 Team__feed">
+						<div class="row">
 
-
-		    <div class="row">
-		      <div class="col-xs-12 text-center Team__stats" v-show="tab === 'stats'">
-
-		      	<!-- links for switching tabs -->
-						<div class="Tab__container">
-							<ul class="Tab__list">
-					      <li>
-					        <a :class="['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']" 
-					        		@click="statsTab = 'teamRecent'">RECENT
-					        </a>
-					      </li>
-					      <li>
-					        <a :class="['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']"
-					        		@click="statsTab = 'playerSeason'">PLAYER
-					        </a>
-					      </li>
-					      <li>
-					        <a :class="['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']"
-					        		@click="statsTab = 'teamSeason'">SEASON
-					        </a>
-					      </li>
-					    </ul>
-						</div>
-
-	        	<rc-stats :type="statsTab" 
-	        						:stats="stats" :sport="team.sport"
-        							:players="players" pagination="false" 
-        							:team-cols="teamStatCols":player-cols="playerStatCols">
-        		</rc-stats>
-		        	
-		      </div>
-		    </div>
-
-
-
-		    <div class="row">
-		      <div class="col-xs-12 Team__roster"
-		      			v-show="tab === 'roster'">
-
-		        <rc-roster :players="players" :coaches="coaches" 
-		        						:fans="fans" :edit-user.sync="editUser" 
-		        						:admin="admin">
-		        </rc-roster>		
-
-		      </div>
-		    </div>
-
-
-		     <div class="row">
-		      <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit"
-		      			v-show="tab === 'edit'">
-
-	        	<h3>edit</h3>
-	        	</hr>
-
-		        	
-		      </div>
-		    </div>
-	    </div>
-
-			
-			<div class="row">
-				<div class="col-xs-12 Team__feed">
-					<div class="row">
-
-						<div class="col-xs-12 Team__feed_divider">
-							<div class="divider">
-								<div class="divider-text">
-									<span class="--twotone">NEWS FEED</span>
+							<div class="col-xs-12 Team__feed_divider">
+								<div class="divider">
+									<div class="divider-text">
+										<span class="--twotone">NEWS FEED</span>
+									</div>
 								</div>
 							</div>
+
 						</div>
 
-					</div>
+						<div class="row">
+							<div class="col-xs-12">
 
-					<div class="row">
-						<div class="col-xs-12">
+								<rc-news-feed type="team" :feed="feed" :users="users"></rc-news-feed>
 
-							<rc-news-feed type="team" :feed="feed" :users="users"></rc-news-feed>
-
+							</div>
 						</div>
 					</div>
 				</div>
+				
+				<!-- include the footer at bottom -->
+				<div class="Footer">
+				    <p>® 2016 Rookiecard LLC</p>
+				</div>
+
 			</div>
-			
-
-		</div>
-	  <!--  end of blurring wrapper --> 
-	  <!-- keep modals below here so the background blurs properly -->
+		  <!--  end of blurring wrapper --> 
+		  <!-- keep modals below here so the background blurs properly -->
 
 
 
-    <!-- inside here is complex logic handling what happens when an event is 
-    			clicked on from calendar or news feed -->
-		<rc-view-event :admin="admin" :events="events" 
-										:stats="stats" :team="team" 
-										:auth="auth" :players="players"
-										:team-cols="teamStatCols" :player-cols="playerStatCols">
-		</rc-view-event>
+	    <!-- inside here is complex logic handling what happens when an event is 
+	    			clicked on from calendar or news feed -->
+			<rc-view-event :admin="admin" :events="events" 
+											:stats="stats" :team="team" 
+											:auth="auth" :players="players"
+											:team-cols="teamStatCols" :player-cols="playerStatCols">
+			</rc-view-event>
 
 
 
-    <!-- modal window for adding events -->
-    <div class="modal" id="addEventModal" role="dialog" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3 class="modal-title">Add an Event</h3>
-          </div>
-          <div class="modal-body">
-            <div class="row">
-                 
-							<rc-add-event></rc-add-event>
+	    <!-- modal window for adding events -->
+	    <div class="modal" id="addEventModal" role="dialog" aria-hidden="true">
+	      <div class="modal-dialog">
+	        <div class="modal-content">
+	          <div class="modal-header">
+	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	            <h3 class="modal-title">Add an Event</h3>
+	          </div>
+	          <div class="modal-body">
+	            <div class="row">
+	                 
+								<rc-add-event></rc-add-event>
 
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
 
 
 
-    <!-- modal for editing a player in the roster -->
-		<div class="modal" id="rosterModal" role="dialog" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3 class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
-          </div>
-          <div class="modal-body">
-          	<div class="row">
-            
-							<rc-edit-user v-if="editUser.id" :user="editUser" :positions="positions"></rc-edit-user>
+	    <!-- modal for editing a player in the roster -->
+			<div class="modal" id="rosterModal" role="dialog" aria-hidden="true">
+	      <div class="modal-dialog">
+	        <div class="modal-content">
+	          <div class="modal-header">
+	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	            <h3 class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
+	          </div>
+	          <div class="modal-body">
+	          	<div class="row">
+	            
+								<rc-edit-user v-if="editUser.id" :user="editUser" :positions="positions"></rc-edit-user>
 
-						</div>
-          </div>
-        </div>
-      </div>
-    </div>
+							</div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
 
 
 
 
- <!-- end container for template -->
-  </div>  
-
+	 <!-- end container for template -->
+	  </div>  
+	</div>
 
 	
 
@@ -307,7 +312,7 @@ export default  {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'calendar',
+			tab: 'roster',
 			statsTab: 'teamRecent',
 			events: [], 
 			stats: [], 
@@ -639,7 +644,7 @@ export default  {
 		background rc_blue
 		&:hover
 			cursor auto
-			background rc_blue
+			background rc_blue	
 			
 .Team__tabs
 	display flex

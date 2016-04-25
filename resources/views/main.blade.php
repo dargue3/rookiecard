@@ -42,6 +42,7 @@
     <script src="/bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
     <script src="/bower_components/underscore/underscore-min.js"></script>
     <script src="/bower_components/bootstrap-calendar/js/calendar.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCf4vUwd6gaSpnY7JugcUz0bQyML893Q3k&libraries=places"></script>
 
     <!-- favicon -->
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">

@@ -197,6 +197,15 @@ class TeamController extends Controller
     }
 
 
+    //check if that teamname is taken yet or not
+    public function checkAvailability($teamname) {
+        if(Team::name($teamname)->first())
+            return ['available' => false];
+        else
+            return ['available' => true];
+    }
+
+
 
 
 }

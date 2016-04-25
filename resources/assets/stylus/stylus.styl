@@ -28,11 +28,6 @@ body, html, .container-fluid
 p
 	font-size inherit
 	font-weight inherit
-
-
-#app
-	padding-bottom 3em
-	min-height 100%	
 	
 .bootstrap-switch
 	span.bootstrap-switch-handle-on.bootstrap-switch-primary
@@ -147,11 +142,17 @@ a:hover
 		margin 0px 6px
 
 	+has(details)
+		display flex
 		text-align left
 		position relative
 		.material-icons
 			margin 13px 0px 0px 8px	
-			font-size 20px	
+			font-size 20px
+		.positions
+			margin 12px 0px 0px 8px		
+			font-size 16px
+			color rc_med_gray
+					
 	
 	+has(edit)
 		display flex
@@ -162,8 +163,7 @@ a:hover
 		.btn
 			margin 22px 0px 0px 15px
 			max-height 52px						
-			
-			
+					
 		
 .for-blurring	
 	margin-top 53px
@@ -175,8 +175,8 @@ a:hover
 	border none
 	border-radius 0
 	top 35px
-	@media screen and (max-width 400px)
-		max-width 350px
+	@media screen and (max-width 767px)
+		max-width 90%
 		margin auto
 .modal-dialog
 	margin 10px auto
@@ -358,9 +358,7 @@ textarea
 	&:hover, &:active, &:active:focus, &:focus
 		color white
 		background lighten(#90C07F, 20%)
-	&.isMember:hover
-		cursor default
-		background #90C07F					
+					
 
 .btn-default //for selectpickers
 	background-image none
@@ -389,9 +387,11 @@ span.form-error
 	background white	
 
 //bootstrap select styling
-div.bootstrap-select
+div.bootstrap-select.form-control
+	margin-top 0
 	.btn
 		letter-spacing 0px
+		padding-left 15px
 	.dropdown-toggle:focus
 		outline 0 !important
 		-webkit-appearance none !important

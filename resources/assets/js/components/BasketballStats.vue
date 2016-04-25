@@ -533,7 +533,7 @@ export default  {
 			}
 
 			if(this.playerSeasonCols.includes('ts_')) {
-				var ts = totals['pts'] / (2 * (totals['fga'] + 0.44 * totals['fta']));
+				var ts = totals['pts'] / (2 * (totals['fga'] + (0.44 * totals['fta'])));
 				crunched['ts_'] = Math.round((ts * 100) * 10) / 10;
 			}
 
@@ -548,7 +548,7 @@ export default  {
 		//calculates a players season efficiency rating
 		efficiency(totals) {
 			var eff =  (totals['pts'] + totals['reb'] + totals['ast'] + totals['stl'] +
-						totals['blk'] - (totals['fgm'] - totals['fga']) - (totals['ftm'] - totals['fta']) - 
+						totals['blk'] - (totals['fga'] - totals['fgm']) - (totals['fta'] - totals['ftm']) - 
 						totals['to']) / totals['gp'];
 
 			return Math.round(eff * 100) / 100;
@@ -633,8 +633,10 @@ export default  {
 				for(var key in stats) {
 					if(stats.hasOwnProperty(key)) {
 
-						if(key.includes('_'))
+						if(key.includes('_')) {
+							totalStats[key] = '-';
 							continue; //leave the percentages (e.g. fg_) for later
+						}
 
 						if(isNaN(stats[key])) {
 							totalStats[key] = stats[key]; //not something that needs averaging
@@ -653,7 +655,7 @@ export default  {
 			}
 
 			this.teamSeasonStats = this.crunchStats(totalStats);
-				
+		
 		},
 
 		//if stats are being viewed for a single event, cut out unnecessary columns
