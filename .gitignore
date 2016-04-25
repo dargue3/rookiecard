@@ -9,3 +9,4 @@ _ide_helper_models.php
 .env
 .DS_Store
 .swp
+pushGitMacro.sh
