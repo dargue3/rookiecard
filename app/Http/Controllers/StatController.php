@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Http\Requests;
+use Gate;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 use App\Stat;
+use App\StatColumn;
 use App\Team;
 
 class StatController extends Controller
@@ -18,7 +19,7 @@ class StatController extends Controller
 
         $this->middleware('auth');
 
-        $this->middleware('admin', ['except' => 'index']);
+        $this->middleware('admin', ['except' => ['index', 'addStatColumns', 'getStatColumns']]);
 
     }
 
@@ -26,20 +27,27 @@ class StatController extends Controller
     //return the stats for this team
     public function index($teamname) {
 
-        $team = Team::where('teamname', $teamname)->firstOrFail();
+        $team = Team::name($teamname)->firstOrFail();
 
         $stats = Stat::where('team_id', $team->id)->get()->toArray();
         
         return $stats;
-        
    
-
     }
 
 
     //stores stats sent from ajax request from team page
-    public function store(Request $request)
-    {
+    public function store(Request $request, $teamname) {
+
+        $team = Team::name($teamname)->firstOrFail();
+
+        if(Auth::user()->cannot('edit-stats', [$team, $request])) {
+            return ['ok' => false, 'error' => 'Unauthorized Request'];
+        }
+        else
+            return ['ok' => true];
+
+
         $playerStats = $request->playerStats;
         $teamStats = $request->teamStats;
         $updated = $request->updated;
@@ -55,9 +63,10 @@ class StatController extends Controller
 
         $playerStats = $stats->createUserStats($team, $playerStats, $event, $meta);
 
-        if(empty($playerStats))
+        if(empty($playerStats)) {
             //no stats were added to the db, don't add team stats either
             return;
+        }
 
         $teamStats = $stats->createTeamStats($team, $teamStats, $event, $meta);
 
@@ -73,33 +82,33 @@ class StatController extends Controller
         return ['stats' => $newStats, 'feed' => $newFeedEntry];
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
+
+    //adds the given json data as stat columns in rc_stat_columns
+    //only used by rc admins when adding new sports to the database
+    public function addStatColumns(Request $request, $sport) {
+        $cols = new StatColumn;
+        $stats = [
+            'user'          => $request->get('user'),
+            'rc'            => $request->get('rc'),
+            'userSelected'  => $request->get('userSelected'),
+            'rcSelected'    => $request->get('rcSelected'),
+        ];
+       
+        $cols->add($sport, $stats);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+
+    //returns the stat columns associated with this sport
+    public function getStatColumns($sport) {
+        $cols = new StatColumn;
+
+        return $cols->getStatColumns($sport);
     }
 
 
     //stats were updated by admin
     //id is ignored, stats passed in with data
-    public function update(Request $request, $teamname, $id)
-    {
+    public function update(Request $request, $teamname, $id) {
         $team = Team::name($teamname)->firstOrFail();
 
         //stat policies
@@ -126,7 +135,7 @@ class StatController extends Controller
      */
     public function destroy($teamname, $id)
     {
-        $team = Team::where('teamname', $teamname)->firstOrFail();
+        $team = Team::name($teamname)->firstOrFail();
 
         Stat::where('team_id', $team->id)->where('event_id', $id)->delete();
     }

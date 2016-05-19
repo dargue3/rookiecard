@@ -5,9 +5,9 @@
 
 		<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->
 		<div class="edit-button">
-			<a class="btn btn-primary" @click="editEvent = true">
+			<a class="btn btn-primary --chevron --lg" @click="editEvent = true">
 				Edit Event Details
-				<i id="edit-chevron" class="material-icons">chevron_right</i>
+				<i class="material-icons btn-chevron --right">chevron_right</i>
 			</a>
 		</div>
 
@@ -29,8 +29,16 @@
 
 		<!-- input new stats here -->
 		<h3>Box Score</h3>
-		<form @submit.prevent="submitStats()">
-			<div class='table-responsive stats-container'>
+		<form @submit.prevent>
+			<div v-if="overflowed.playerStats" class="Stats__overflow">
+				<span class="--left" v-show="overflowed.playerStats.first">
+					<i class="material-icons">chevron_left</i>SCROLL
+				</span>
+				<span class="--right" v-show="overflowed.playerStats.last">
+					SCROLL<i class="material-icons">chevron_right</i>
+				</span>
+			</div>		
+			<div id="editPlayerStatsDiv" class='table-responsive stats-container'>
 				<table class="table stats-table">
 					<thead>
 			    	<tr>
@@ -75,7 +83,15 @@
 
 			<!-- compiled team stats table -->
 			<h3>Team Stats</h3>
-			<div class='table-responsive stats-container'>
+			<div v-if="overflowed.teamStats" class="Stats__overflow">
+				<span class="--left" v-show="overflowed.teamStats.first">
+					<i class="material-icons">chevron_left</i>SCROLL
+				</span>
+				<span class="--right" v-show="overflowed.teamStats.last">
+					SCROLL<i class="material-icons">chevron_right</i>
+				</span>
+			</div>		
+			<div id="editTeamStatsDiv" class='table-responsive stats-container'>
 				<table class="table table-striped stats-table">
 					<thead>
 			    	<tr>
@@ -125,6 +141,8 @@
 
 <script>
 
+import StatsScrollSpy 	from '../mixins/StatsScrollSpy.js'
+
 
 export default  {
 	
@@ -133,10 +151,10 @@ export default  {
 	props: ['stats', 'players', 'event', 'team', 'editEvent',
 					'playerCols', 'teamCols'],
 
+	mixins: [StatsScrollSpy],
+
 
 	data() {
-
-
 		return {
 			newStats: [],
 			teamStats: {},
@@ -148,13 +166,28 @@ export default  {
 		}
 	},
 
+	watch: {
+
+		//if stats change, reinitialize the page
+		stats() {
+			this.compile();
+		},
+
+		//if the viewed event changes, reinitialize the page
+		event() {
+			this.compile();
+		},
+	},
+
 
 	computed: {
 		
 		usesMinutes() {
-			if(this.newStatCols) {
-				if(this.newStatCols.indexOf('min') !== -1) return true;
-				else return false;
+			if(this.newPlayerCols) {
+				if(this.newPlayerCols.indexOf('min') !== -1) 
+					return true;
+				else 
+					return false;
 			}
 			else
 				return true;
@@ -164,7 +197,13 @@ export default  {
 			var index;
 			var newCols = []
 			this.playerCols.forEach(function(col) {
-				newCols.push(col);
+				if(col === 'name') {
+					//add dnp to the list after name
+					newCols.push(col);
+					newCols.push('dnp');
+				}
+				else
+					newCols.push(col);
 			});
 
 
@@ -192,7 +231,7 @@ export default  {
 			if(index !== -1)
 				newCols.splice(index, 1);
 
-			index = newCols.indexOf('ast-to');
+			index = newCols.indexOf('astto');
 			if(index !== -1)
 				newCols.splice(index, 1);
 
@@ -232,28 +271,19 @@ export default  {
 			if(index !== -1)
 				newCols.splice(index, 1);
 
-			return newCols;
-		}
+			index = newCols.indexOf('dnp');
+			if(index !== -1)
+				newCols.splice(index, 1);
 
+			return newCols;
+		},
 		
 
 	},
 
-	watch: {
-
-		//wait for an event to be clicked, initialize
-		stats() {
-			this.initialize();
-		},
-
-		event() {
-			this.initialize();
-		},
-	},
-
 	methods: {
 
-		initialize() {
+		compile() {
 			var players = this.players;
 			var existingStats = this.stats;
 			var newStats = [];
@@ -278,16 +308,17 @@ export default  {
 					continue;
 				}
 
-				if(IDs.indexOf(curr.owner_id) !== -1)
+				if(IDs.indexOf(curr.member_id) !== -1)
 					//this player's stats already parsed (error somewhere down the road)
 					continue;
 
 				var stats = JSON.parse(curr.stats);
 
 				stats['id'] = curr.owner_id;
+				stats['member_id'] = curr.member_id;
 				
 				newStats.push(stats);	
-				IDs.push(curr.owner_id);
+				IDs.push(curr.member_id);
 			}
 
 
@@ -297,16 +328,16 @@ export default  {
 				var curr = players[x];
 				var emptyStats = {};
 
-				if(IDs.indexOf(curr.id) !== -1)
+				if(IDs.indexOf(curr.member_id) !== -1)
 					//this player's stats already parsed, don't create empty row
 					continue;
 
-				var name = curr.firstname[0] + '. ' + curr.lastname;
 				this.newPlayerCols.forEach(function(col) {
 					emptyStats[col] = '';
 				});
 				emptyStats.id = curr.id;
-				emptyStats.name = name;
+				emptyStats.member_id = curr.member_id;
+				emptyStats.name = this.abbreviateName(curr, players);
 				emptyStats.starter = false;
 				emptyStats.dnp = false;
 
@@ -314,8 +345,49 @@ export default  {
 			}
 
 			this.newStats = newStats;
+
+
+			this.initScrollSpy();	
+
 		},
 
+
+		//attach listeners for whether or not to show SCROLL > indicators
+		initScrollSpy() {
+
+			setTimeout(function() {
+				this.attachScrollListener('#editTeamStatsDiv', 'teamStats');
+				this.attachScrollListener('#editPlayerStatsDiv', 'playerStats');
+			}.bind(this), 500);
+
+		},
+
+
+		//create an abbreviated name for 'thisPlayer'
+		//extend if that name exists, e.g. 2 different D. Argue, try Da. Argue, etc
+		abbreviateName(thisPlayer, players) {
+			var offset = 1;
+			var name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
+			var theirName = '';
+			//loop through checking all other players for duplicates
+			for(var x = 0; x < players.length; x++) {
+				if(thisPlayer.member_id === players[x].member_id) 
+					//don't include this user
+					continue;
+
+				theirName = players[x].firstname.substring(0, 1) + '. ' + players[x].lastname;
+				while(theirName === name) {
+					offset++;
+					name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
+					if(offset > 4)
+						break;
+				}
+			}
+			return name;
+		},
+
+
+		//decide whether or not this stat column needs special formatting
 		specialRow(col) {
 			if(col === 'name' || col === 'starter' || col === 'dnp')
 				return true;
@@ -325,19 +397,22 @@ export default  {
 			return false;
 		},
 
+
 		//submit to database
 		submitStats() {
-			var errorFree = this.errorCheck();
 
-			if(errorFree) {
+			//check that the inputs are error free
+			var errors = this.errorCheck();
+
+			if(!errors) {
 
 				//did these stats exist and were then updated?
-				var updated = this.stats.length ? true : false;
+				var statsAreNew = this.stats.length ? false : true;
 
 				//store how many points team had (for status update meta data)
 				this.meta.teamScore = this.teamStats.pts;
 				this.meta.team = this.team.name;
-
+				var self = this;
 				var data = {
 					playerStats: this.newStats,
 					teamStats: this.teamStats,
@@ -346,94 +421,81 @@ export default  {
 					meta: this.meta,
 				};
 
-				if(!updated) {
+				//save as a new event
+				if(statsAreNew) {
 					var url = this.$parent.prefix + '/stats'; 
 					this.$http.post(url, data)
+						.then(function(response) {
+							//send a stats updated event to parent
+							if(response.data.ok) {
+								self.$dispatch('newStats', response.data.stats, response.data.feed);
+								$('#viewEventModal').modal('hide');
+								self.stats = {};
+								self.compile();
+								self.$root.banner("good", 'Stats saved');
+							}
+							else {
+								//they weren't allowed to add stats
+								self.$root.banner('bad', response.data.error);
+							}
+						})
 
-					.then(function(response) {
-						this.ajaxSuccess(response, updated)
-					}.bind(this))
-
-					.catch(this.ajaxError());
+						.catch(function() {
+							self.$root.errorMsg();
+						});
 				}
+
+				//update existing stats
 				else {
-					var url = this.$parent.prefix + '/stats/updateStats'; 
+					var url = this.$parent.prefix + '/stats'; 
 					this.$http.put(url, data)
+						.then(function(response) {
+							if(response.data.ok) {
+								self.$dispatch('updateStats', response.data, this.event);
+								$('#viewEventModal').modal('hide');
+								self.stats = {};
+								self.compile();
+								self.$root.banner("good", 'Stats saved');
+							}
+							else {
+								//they weren't allowed to update stats
+								self.$root.banner('bad', response.data.error);
+							}
+						})
 
-					.then(function(response) {
-						this.ajaxSuccess(response, updated)
-					}.bind(this))
-
-					.catch(this.ajaxError());
+						.catch(function() {
+							self.$root.errorMsg();
+						});
 				}
 			}
 		},
 
 		//throw away inputted data
 		discardStats() {
-			this.initialize();
 			$('#viewEventModal').modal('hide');
+			this.compile();
 		},
 
 
 		deleteStats() {
+			$('#viewEventModal').modal('hide');
+			this.$dispatch('deleteStats', this.event);
+			this.stats = {};
+			this.compile();
+
+			var self = this;
 			var name = this.$route.params.name;
 			var prefix = this.$parent.prefix;
 			var url = prefix + name + '/stats/' + this.event.id; 
-
 			this.$http.delete(url)
 
-			.then(function(response) {
-				$('#viewEventModal').modal('hide');
-				this.$dispatch('deleteStats', this.event);
-				this.$root.banner('good', "Stats have been deleted from this event");
-
-				this.stats = {};
-				this.initialize();
-
-			}.bind(this))
-
-			.catch(function(response) {
-				this.$root.banner('bad', "There was a server issue... try again?")
-			}.bind(this));
+				.then(function(response) {	
+					self.$root.banner('good', "Stats deleted");
+				})
+				.catch(function() {
+					self.$root.errorMsg();
+				});
 		},
-
-
-		//if successful, save new data to state, show success banner
-		ajaxSuccess(response, updated) {
-			
-			$('#viewEventModal').modal('hide');
-
-			if(!updated) {
-
-				var msg = "Your stats have been added to this event";
-				//send a stats updated event to parent
-				this.$dispatch('newStats', response.data.stats, response.data.feed);
-			
-			}
-			else {
-
-				var msg = "Your stats have been updated for this event";
-				
-				//send a new stats event to parent
-				if(response.data.length)
-					this.$dispatch('updateStats', response.data, this.event);
-			}
-
-			this.$root.banner("good", msg);
-
-			this.stats = {};
-
-			this.initialize();
-		},
-
-
-
-		//if unsuccessful, show error message
-		ajaxError(response) {
-			this.$root.banner('bad', "There was a server problem submitting your stats...try again?");
-		},
-
 
 
 		//calculates and saves the total for that field
@@ -522,24 +584,24 @@ export default  {
 			for(var x = 0; x < stats.length; x++) {
 				if(stats[x].fg_ > 100) {
 					this.errorMessage('FG');
-					return false;
+					return true;
 				}
 				if(stats[x].threep_ > 100) {
 					this.errorMessage('3P');
-					return false;
+					return true;
 				}
 				if(stats[x].ft_ > 100) {
 					this.errorMessage('FT');
-					return false;
+					return true;
 				}
 			}
 
 			if(!Number.isInteger(this.meta.oppScore)) {
 				this.$root.popup('bad', 'Error in Stats!', 'Check that the Opponent\'s score is a number.');
-				return false
+				return true
 			}
 
-			return true;
+			return false;
 		},
 
 		//displays a customized error message depending on which stat category was incorrect
@@ -549,13 +611,14 @@ export default  {
 		},
 	},
 
-
 };
 
 </script>
 
 
 <style lang="stylus">
+
+@import '/resources/assets/stylus/variables.styl'
 
 #statsWrapper
 	padding 1.5em
@@ -620,6 +683,7 @@ input.form-control.stats-input
 	tr.form-group:hover
 		td
 			background-color white !important
-			border 1px solid #CACACA !important	
+			border 1px solid #CACACA !important		
+				
 
 </style>

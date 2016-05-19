@@ -77,6 +77,10 @@ a:hover
 			@media screen and (max-width xs_max_width)
 				padding 20px 30px
 				
+span.input-info
+	font-size 13px
+	color rc_med_gray				
+				
 
 .Tab
 	position relative	
@@ -122,6 +126,8 @@ a:hover
 		border-radius 50%
 		&:hover
 			cursor pointer
+		&:hover.--ghost
+			cursor default	
 		
 	+has(text)
 		display flex
@@ -133,6 +139,8 @@ a:hover
 		font-size 16px
 		display flex
 		flex-flow row
+		p
+			margin-bottom 0
 
 	+has(number)
 		color #C90019	
@@ -235,10 +243,10 @@ div.modal
 			top 50%
 			left 0
 			z-index -1
-			background darken(whitesmoke, 15%)
+			background rc_lite_gray
 		span
 			font-size 17px
-			color darken(whitesmoke, 30%)
+			color rc_med_gray
 			background rc_background
 			padding 0px 3em 
 		span.--twotone
@@ -250,7 +258,9 @@ div.modal
 	justify-content center
 	align-items center
 	padding-top 4em
-	background darken(white, 8%)
+	background rc_two_tone
+	&.--light
+		background rc_background
 	p
 		flex 1
 		text-align center	
@@ -288,16 +298,39 @@ textarea
 		margin-left 0
 	&:hover, &:active, &:active:focus, &:focus
 		background-image none
+	&.--chevron
+		position relative
+		&.--sm.--right
+			min-width 100px
+			padding-left 6px			
+		&.--med.--right
+			min-width 125px
+			padding-left 14px
+		&.--lg.--right
+			min-width 175px
+			padding-left 14px
+		&.--sm.--left
+			min-width 100px
+			padding-right 6px			
+		&.--med.--left
+			min-width 125px
+			padding-right 14px
+		&.--lg.--left
+			min-width 175px
+			padding-right 14px	
+			
+				
+			
 
 	&.outline.btn-success
 		background none
 		padding 12px 22px
-		border 2px solid #90C07F
-		color #90C07F
+		border 2px solid rc_bright_green
+		color rc_bright_green
 		&:hover, &:active, &:active:focus, &:focus
 			background none
-			border 2px solid #85dd68
-			color #85dd68
+			border 2px solid rc_bright_green_hover
+			color rc_bright_green_hover
 
 	&.outline.btn-primary
 		background none
@@ -352,18 +385,28 @@ textarea
 		background link_blue_hover
 
 .btn-success
-	background #90C07F
+	background rc_bright_green
 	text-shadow none
 	box-shadow none
 	&:hover, &:active, &:active:focus, &:focus
 		color white
-		background lighten(#90C07F, 20%)
+		background rc_bright_green_hover
 					
 
 .btn-default //for selectpickers
 	background-image none
 	background-color whitesmoke
 	margin-top 0
+	
+.btn-chevron
+	position absolute
+	top 9px
+	font-size 30px	
+	&.--right	
+		right 0px
+	&.--left
+		left 4px	
+	
 
 
 
@@ -379,12 +422,11 @@ textarea
 	box-shadow none
 	&.form-error
 		border 1px solid red
+	&.--white
+		background white
 	
 span.form-error
 	color rc_red	
-	
-.--white
-	background white	
 
 //bootstrap select styling
 div.bootstrap-select.form-control
@@ -410,7 +452,8 @@ div.bootstrap-select.form-control
 
 
 label
-	margin-bottom 2px
+	margin-bottom 5px
+	margin-left 1px
 	@media only screen and (max-width xs_max_width)
 		margin-top 10px
 
@@ -433,14 +476,31 @@ button.btn.btn-select
 
 input[type='checkbox']:focus
 	outline 0	
+
+textarea:focus,
+input[type="text"]:focus,
+	border-color rc_lite_gray
+	outline 0
+	box-shadow inset 0 1px 1px rc_lite_gray, 0 0 8px rc_lite_gray
+
+
+
+
+.arrow-left
+	height 0
+	width 0
+	border-bottom 10px solid transparent		
+	border-top 10px solid transparent
+	border-right 10px solid whitesmoke
 	
-
-
-
-
-
-
-
+.arrow-right
+	height 0
+	width 0
+	border-bottom 10px solid transparent		
+	border-top 10px solid transparent
+	border-left 10px solid whitesmoke
+	&.--white
+		border-left 10px solid white
 
 
 
@@ -469,7 +529,6 @@ input[type='checkbox']:focus
 	animation fade-enter 0.1s ease-in 
 	animation-delay 0.1s
 .fade-fast-leave
-	visibility visible
 	animation fade-leave 0.1s ease-out
 	
 .fade-md-enter
@@ -477,7 +536,6 @@ input[type='checkbox']:focus
 	animation fade-enter 0.15s ease-in
 	animation-delay 0.15s
 .fade-md-leave
-	visibility visible
 	animation fade-leave 0.15s ease-out
 	
 .fade-slow-enter
@@ -485,7 +543,6 @@ input[type='checkbox']:focus
 	animation fade-enter 0.2s ease-in
 	animation-delay 0.2s
 .fade-slow-leave
-	visibility visible
 	animation fade-leave 0.2s ease-out
 	
 //quadratic fade in
@@ -493,14 +550,6 @@ input[type='checkbox']:focus
 	0%
 		opacity 0
 		visibility visible
-	20%
-		opacity 0.04
-	50%
-		opacity 0.25
-	75%			
-		opacity 0.55
-	90%
-		opacity 0.8
 	100%
 		opacity 1
 		
@@ -508,14 +557,6 @@ input[type='checkbox']:focus
 @keyframes fade-leave
 	0%
 		opacity 1
-	20%
-		opacity 0.8
-	50%
-		opacity 0.55
-	75%			
-		opacity 0.25
-	90%
-		opacity 0.04
 	100%
 		opacity 0
 
@@ -661,6 +702,55 @@ input[type='checkbox']:focus
 		opacity 0
 		max-height 0
 		overflow hidden			
+		
+
+
+
+
+//for fan counter, numbers incrementing by sliding up		
+.number-tick-up-enter
+	animation number-tick-up-enter 0.3s ease-in
+.number-tick-up-leave
+	animation number-tick-up-leave 0.3s ease-in
+	
+@keyframes number-tick-up-enter
+	0%
+		top 35px
+	80% //to give it a bounce, go lower than set point at 80%
+		top 2px
+	100%
+		top 8px	
+	
+@keyframes number-tick-up-leave
+	0%
+		top 8px
+	100%
+		top -35px
+
+
+//for fan counter, numbers decrementing by sliding down
+.number-tick-down-enter
+	animation number-tick-down-enter 0.3s ease-in
+.number-tick-down-leave
+	animation number-tick-down-leave 0.3s ease-in
+	
+@keyframes number-tick-down-enter
+	0%
+		top -19px
+	80% //to give it a bounce, go higher than set point at 80%
+		top 14px
+	100%
+		top 8px		
+	
+@keyframes number-tick-down-leave
+	0%
+		top 8px
+	100%
+		top 50px		
+		
+
+
+
 
 //for spinning the search icon
 .rotated-right
@@ -705,7 +795,8 @@ input[type='checkbox']:focus
 		transform rotate(180deg)
 	100%
 		transform rotate(0deg)		
-				
+		
+		
 
 
 		

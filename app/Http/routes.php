@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+
 //auth controller for login, logout, registration, password reset
 Route::get  ('/login',       'Auth\AuthController@getLogin');
 Route::post ('/login',       'Auth\AuthController@postLogin');
@@ -26,30 +27,32 @@ Route::get  ('/newPass',     'Auth\PasswordController@getReset');
 Route::post ('/newPass',     'Auth\PasswordController@postReset');
 
 
+Route::post ('/api/v1/team/create', 								'TeamController@createTeam');
+Route::post ('/api/v1/team/create/{teamname}', 			'TeamController@checkAvailability');
+Route::post ('/api/v1/team/update/{teamname}/pic', 	'TeamController@uploadPic');
 
-Route::post  	('/api/v1/team/create/{teamname}', 'TeamController@checkAvailability');
+
 
 //api routes for ajax requests
-Route::get  	('/api/v1/team/{teamname}/data', 'TeamController@getTeamData');
+Route::resource('/api/v1/team/{teamname}/stats', 			'StatController');
+Route::get  	 ('/api/v1/team/{teamname}/data', 			'TeamController@getTeamData');
+Route::post  	 ('/api/v1/team/{teamname}/feed', 			'TeamController@postNewPost');
+Route::delete  ('/api/v1/team/{teamname}/feed/{id}', 	'TeamController@deletePost');
+Route::post  	 ('/api/v1/team/{teamname}/fan', 				'TeamController@toggleFan');
+Route::put  	 ('/api/v1/team/{teamname}/user', 			'TeamController@updateUser');
+Route::post  	 ('/api/v1/team/{teamname}/user', 			'TeamController@newUser');
+Route::delete  ('/api/v1/team/{teamname}/user', 			'TeamController@deleteUser');
+Route::get  	 ('/api/v1/team/{teamname}/events', 		'TeamController@getEvents');
+Route::post 	 ('/api/v1/team/{teamname}/events', 		'TeamController@newEvent');
+Route::put  	 ('/api/v1/team/{teamname}/events', 		'TeamController@updateEvent');
+Route::delete  ('/api/v1/team/{teamname}/events', 		'TeamController@deleteEvent');
+Route::post  	 ('/api/v1/team/{teamname}/join', 			'TeamController@joinTeam');
 
-Route::resource  	('/api/v1/team/{teamname}/stats', 'StatController');
-
-Route::post  	('/api/v1/team/{teamname}/feed', 'TeamController@postNewPost');
-Route::delete  	('/api/v1/team/{teamname}/feed/{id}', 'TeamController@deletePost');
-
-Route::post  	('/api/v1/team/{teamname}/fan', 'TeamController@toggleFan');
-
-Route::put  	('/api/v1/team/{teamname}/user', 'TeamController@updateUser');
-
-Route::get  	('/api/v1/team/{teamname}/events', 'TeamController@getEvents');
-Route::post 	('/api/v1/team/{teamname}/events', ['middleware' => 'admin', 'uses' => 'TeamController@newEvent']);
-Route::put  	('/api/v1/team/{teamname}/events', ['middleware' => 'admin', 'uses' => 'TeamController@updateEvent']);
-Route::delete ('/api/v1/team/{teamname}/events', ['middleware' => 'admin', 'uses' => 'TeamController@deleteEvent']);
 
 
 
 Route::get  ('/api/v1/user/auth/data', 'UserController@getUserData');
-Route::post  ('/api/v1/user/auth/team/{id}', 'UserController@clearNotifications');
+Route::post ('/api/v1/user/auth/team/{id}', 'UserController@clearNotifications');
 
 
 Route::post('/api/v1/settings', function () {
@@ -62,6 +65,8 @@ Route::post('/api/v1/settings', function () {
         Session::put('locale', Request::get('locale'));
     }
 });
+Route::post  ('/api/v1/settings/stats/{sport}', 'StatController@addStatColumns');
+Route::get  ('/api/v1/stats/{sport}', 'StatController@getStatColumns');
 
 
 

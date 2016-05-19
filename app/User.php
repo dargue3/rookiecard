@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
-use App\Metrics\FormatMetrics;
-use App\PlayerFan;
-use App\TeamAdmin;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Model implements AuthenticatableContract, CanResetPasswordContract
+class User extends Model implements AuthenticatableContract, CanResetPasswordContract, AuthorizableContract
 {
     use SoftDeletes;
-    use Authenticatable, CanResetPassword;
+    use Authenticatable, Authorizable, CanResetPassword;
 
     /**
      * The database table used by the model.
@@ -75,11 +75,15 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
         foreach($memberOf as $team) {
             $role = $team->role;
-            $team = Team::find($team->team_id)->brief();
-            $team['notifications'] = Notification::user($this->id, $team['id'])->count();
-            $team['role'] = $role;
+            $team = Team::find($team->team_id);
+            if($team) {
+                $team = $team->brief();
+                $team['notifications'] = Notification::teamUser($this->id, $team['id'])->count();
+                $team['role'] = $role;
 
-            $teams[] = $team;
+                $teams[] = $team;
+            }
+            
         }
 
         return $teams;
@@ -91,7 +95,12 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
         $team = Team::name($teamname)->firstOrFail();
 
-        return TeamMember::where('user_id', $this->id)->where('team_id', $team->id)->firstOrFail()->admin;
+        $member = TeamMember::member($this->id, $team->id)->first();
+
+        if($member)
+            return $member->admin;
+        else
+            return false;
 
     }
 

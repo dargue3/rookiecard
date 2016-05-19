@@ -18,6 +18,7 @@ class CreateRcUsersTable extends Migration
             $table->string('lastname');
             $table->string('username')->unique();
             $table->string('email')->unique();
+            $table->index('email');
             $table->string('password', 60);
             $table->date('birthday');
             $table->tinyInteger('gender');

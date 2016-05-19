@@ -1,5 +1,6 @@
 public/.htaccess
-public/images/proPic/
+public/images/proPic_users/
+public/images/proPic_teams/
 config/database.php
 node_modules/
 vendor/

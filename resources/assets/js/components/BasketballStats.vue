@@ -28,11 +28,18 @@
     
 
 		<!-- team recent stats -->
-		<h3 v-if="type === 'event' && !noStats" class="Stats__header">Team Stats</h3>
-
+		<h3 v-show="type === 'event' && !noStats" class="Stats__header">Team Stats</h3>	
     <div v-show="type === 'teamRecent' || type === 'event'">
-			<div class='table-responsive'>
-				<table v-if="teamRecentStats" class="table table-striped stats-table">
+    	<div v-if="overflowed.teamRecent" class="Stats__overflow">
+				<span class="--left" v-show="overflowed.teamRecent.first">
+					<i class="material-icons">chevron_left</i>SCROLL
+				</span>
+				<span class="--right" v-show="overflowed.teamRecent.last">
+					SCROLL<i class="material-icons">chevron_right</i>
+				</span>
+			</div>	
+			<div id="teamRecentDiv" class='table-responsive'>
+				<table v-show="teamRecentStats" class="table table-striped stats-table">
 					<thead>
 			    	<tr class="no-highlight">
 			      	<th v-for="key in teamRecentCols" class="stat-columns text-center"
@@ -61,8 +68,16 @@
 
 		<!-- team season stats -->
 		<div v-show="type === 'teamSeason'">
-			<div class='table-responsive'>
-				<table v-if="teamSeasonStats" class="table table-striped stats-table">
+			<div v-if="overflowed.teamSeason" class="Stats__overflow">
+				<span class="--left" v-show="overflowed.teamSeason.first">
+					<i class="material-icons">chevron_left</i>SCROLL
+				</span>
+				<span class="--right" v-show="overflowed.teamSeason.last">
+					SCROLL<i class="material-icons">chevron_right</i>
+				</span>
+			</div>
+			<div id="teamSeasonDiv" class='table-responsive'>
+				<table v-show="teamSeasonStats" class="table table-striped stats-table">
 					<thead>
 			    	<tr class="no-highlight">
 			      	<th v-for="key in teamSeasonCols" class="stat-columns text-center"
@@ -89,12 +104,21 @@
 
 		<!-- player season stats -->
 		<div v-show="type === 'playerSeason'">
-			<div class='table-responsive'>
-				<table v-if="playerSeasonStats" class="table table-striped stats-table">
+			<div v-if="overflowed.playerSeason" class="Stats__overflow">
+				<span class="--left" v-show="overflowed.playerSeason.first">
+					<i class="material-icons">chevron_left</i>SCROLL
+				</span>
+				<span class="--right" v-show="overflowed.playerSeason.last">
+					SCROLL<i class="material-icons">chevron_right</i>
+				</span>
+			</div>	
+			<div id="playerSeasonDiv" class='table-responsive'>
+				<table v-show="playerSeasonStats" class="table table-striped stats-table">
 					<thead>
 			    	<tr class="no-highlight">
 			      	<th v-for="key in playerSeasonCols" class="stat-columns text-center"
-			      			:class="[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '']" 
+			      			:class="[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '', 
+			      								(playerSortKey === 'lastname' && key === 'name') ? 'col-sort' : '']" 
 			      			@click="playerSortBy(key)" data-toggle="tooltip" :title="key | basketballTooltips">
 			      		{{ key | basketballStats }}
 			      		<br><span class="caret" :class="playerSortOrders[key] > 0  ? 'asc' : 'desc'"></span>	      	
@@ -118,32 +142,42 @@
 
 
 		<!-- player recent stats -->
-		<h3 v-if="type === 'event' && !noStats" class="Stats__header">Player Stats</h3>
-
 		<div v-show="type === 'playerRecent' || type === 'event'">
-			<div class='table-responsive'>
-				<table v-if="playerRecentStats" class="table table-striped stats-table">
-					<thead>
-			    	<tr class="no-highlight">
-			      	<th v-for="key in playerRecentCols" class="stat-columns text-center"
-			      			:class="[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '']" 
-			      			@click="playerSortBy(key)" data-toggle="tooltip" :title="key | basketballTooltips">
-			      		{{ key | basketballStats }}
-			      		<br><span class="caret" :class="playerSortOrders[key] > 0  ? 'asc' : 'desc'"></span>	      	
-			      	</th>
-			    	</tr>
-			  	</thead>
-			  	<tbody>
-			    	<tr v-show="statShown($index)" v-for="val in playerRecentStats | orderBy playerSortKey playerSortOrders[playerSortKey]">
-				      <td v-for="key in playerRecentCols" class="stat-entries">
-				      	<span v-show="val[key] == null">-</span>
-				        {{ val[key] }}
-				      </td>
-			    	</tr>
-			  	</tbody>
-				</table>
-				<div v-else class="text-center">
-					<p>No stats here yet...</p>
+			<h3 v-show="type === 'event' && !noStats" class="Stats__header">Player Stats</h3>
+			<div v-if="overflowed.playerRecent" class="Stats__overflow">
+				<span class="--left" v-show="overflowed.playerRecent.first">
+					<i class="material-icons">chevron_left</i>SCROLL
+				</span>
+				<span class="--right" v-show="overflowed.playerRecent.last">
+					SCROLL<i class="material-icons">chevron_right</i>
+				</span>
+			</div>	
+			<div id="playerRecentDiv" >
+				<div class='table-responsive'>
+					<table v-show="playerRecentStats" class="table table-striped stats-table">
+						<thead>
+				    	<tr class="no-highlight">
+				      	<th v-for="key in playerRecentCols" class="stat-columns text-center"
+				      			:class="[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '',
+				      								(playerSortKey === 'lastname' && key === 'name') ? 'col-sort' : '']" 
+				      			@click="playerSortBy(key)" data-toggle="tooltip" :title="key | basketballTooltips">
+				      		{{ key | basketballStats }}
+				      		<br><span class="caret" :class="playerSortOrders[key] > 0  ? 'asc' : 'desc'"></span>	      	
+				      	</th>
+				    	</tr>
+				  	</thead>
+				  	<tbody>
+				    	<tr v-show="statShown($index)" v-for="val in playerRecentStats | orderBy playerSortKey playerSortOrders[playerSortKey]">
+					      <td v-for="key in playerRecentCols" class="stat-entries">
+					      	<span v-show="val[key] == null">-</span>
+					        {{ val[key] }}
+					      </td>
+				    	</tr>
+				  	</tbody>
+					</table>
+					<div v-else class="text-center">
+						<p>No stats here yet...</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -167,11 +201,16 @@
 <script>
 
 
+import StatsScrollSpy 	from '../mixins/StatsScrollSpy.js'
+
+
 export default  {
 
 	name: 'BasketballStats',
 
 	props: ['type', 'rawStats', 'pagination', 'event', 'players', 'teamCols', 'playerCols'],
+
+	mixins: [StatsScrollSpy],
 
 
 	data() {	
@@ -285,7 +324,7 @@ export default  {
 			if(index !== -1)
 				playerCols.splice(index, 1);
 
-			index = playerCols.indexOf('ast-to');
+			index = playerCols.indexOf('astto');
 			if(index !== -1)
 				playerCols.splice(index, 1);
 
@@ -308,6 +347,12 @@ export default  {
 	events: {
 		compileStats() {
 			this.compile();
+		}
+	},
+
+	watch: {
+		type() {
+			this.initScrollSpy();
 		}
 	},
 
@@ -349,6 +394,7 @@ export default  {
 				this.playerCols.forEach(function(key) {
 					playerSortOrders[key] = -1;
 				});
+				playerSortOrders['lastname'] = -1;
 
 				//number of pages
 				pagCount = Math.ceil(this.teamRecentStats.length / this.rowsPerPage);
@@ -365,10 +411,26 @@ export default  {
 				this.playerRecentStats 	= this.markEmpty(0);
 				this.teamRecentStats 		= this.markEmpty(1);
 				this.teamSeasonStats 		= this.markEmpty(1);
-
-				this.noStats = true;
 				
 			}
+
+			this.initScrollSpy();
+		},
+
+
+		//prepare listeners for showing "SCROLL >" indicators
+		initScrollSpy() {
+			if(this.type === 'teamSeason') 
+				this.attachScrollListener('#teamSeasonDiv', 'teamSeason');
+
+			if(this.type === 'teamRecent') 
+				this.attachScrollListener('#teamRecentDiv', 'teamRecent');
+
+			if(this.type === 'playerSeason') 
+				this.attachScrollListener('#playerSeasonDiv', 'playerSeason');
+
+			if(this.type === 'event' || this.type === 'playerRecent') 
+				this.attachScrollListener('#playerRecentDiv', 'playerRecent');
 		},
 
 
@@ -407,6 +469,10 @@ export default  {
 					totalStats[key] = 0;
 				});
 				totalStats.gp = statsArray[x].length
+				var thisPlayer = this.players.filter(function(player) {
+					return player.member_id === statsArray[x][0].member_id;
+				});
+				totalStats.lastname = thisPlayer[0].lastname;
 				
 
 				//loop through each stats object belonging to this user
@@ -428,7 +494,7 @@ export default  {
 
 							if(key === 'starter') {
 								//rename 'starter' to be 'gs'
-								totalStats['gs']++;
+								totalStats.gs++;
 								continue;
 							}
 
@@ -448,10 +514,10 @@ export default  {
 					//if two categories in double digits, they get a double double
 					//a triple double counts as both
 					if(doubleDigits == 2)
-						totalStats['dd2']++;
+						totalStats.dd2++;
 					if(doubleDigits > 2) {
-						totalStats['dd2']++;
-						totalStats['td3']++;
+						totalStats.dd2++;
+						totalStats.td3++;
 					}
 				}
 
@@ -461,7 +527,7 @@ export default  {
 			}
 
 			if(!playerStats.length)
-				playerStats = this.markEmpty(0)
+				playerStats = this.markEmpty(0);
 
 			//finally done
 			this.playerSeasonStats = playerStats;
@@ -477,7 +543,7 @@ export default  {
 					//key exists
 
 					//keys not needing averaging
-					if(key === 'name' || key === 'dd2' || key === 'td3') {
+					if(key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
 						crunched[key] = totals[key];
 						continue;
 					}
@@ -537,9 +603,9 @@ export default  {
 				crunched['ts_'] = Math.round((ts * 100) * 10) / 10;
 			}
 
-			if(this.playerSeasonCols.includes('ast-to')) {
+			if(this.playerSeasonCols.includes('astto')) {
 				var astto = totals['ast'] / totals['to'];
-				crunched['ast-to'] = Math.round(astto * 10) / 10;
+				crunched['astto'] = Math.round(astto * 10) / 10;
 			}
 
 			return crunched;
@@ -706,6 +772,18 @@ export default  {
 		//set the clicked header as the sort key
 		//invert ascending / descending
 		playerSortBy(key) {
+
+			if(key === 'name') {
+				//if sorting by name, really sort by hidden lastname field
+				key = 'lastname'; 
+				if(key === this.playerSortKey)
+					this.playerSortOrders['name']  = this.playerSortOrders['name'] * -1;
+				else
+					this.playerSortKey = 'lastname';
+
+				return;
+			}
+
 			if(key === this.playerSortKey)
 				this.playerSortOrders[key]  = this.playerSortOrders[key] * -1;
 			else

@@ -16,6 +16,10 @@ class UpdateRcTeams extends Migration
             $table->softDeletes();
             $table->integer('season');
             $table->integer('sport');
+            $table->tinyInteger('gender');
+            $table->float('long');
+            $table->float('lat');
+            $table->integer('creator_id')->unsigned();
         });
     }
 
@@ -30,6 +34,9 @@ class UpdateRcTeams extends Migration
             $table->dropSoftDeletes();
             $table->dropColumn('season');
             $table->dropColumn('sport');
+            $table->dropColumn('gender');
+            $table->dropColumn('long');
+            $table->dropColumn('lat');
         });
     }
 }

@@ -1,7 +1,6 @@
 <template>
 	
-	
-		<div :class="alertClasses">
+		<div :class="alertClasses" v-show="show">
 
 				<i class="material-icons alert-icon pull-left" v-show="type === 'good'">done</i>
 				<i class="material-icons alert-icon pull-left" v-show="type === 'bad'">error</i>
@@ -10,8 +9,9 @@
 				<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->
 				<span @click="$root.hideAlert(type)" class="close" v-show="type !== 'good'">&times;</span>
 				<span>
-					<slot></slot>
+					{{ msg }}
 				</span>
+
 		</div>
 
 </template>
@@ -23,29 +23,42 @@ export default  {
 	
 	name: 'Alert',
 
-	props: ['type', 'show'],
+	props: ['show'],
 
-	watch: {
-		//only confusing part about this component.
-		//if two alerts in quick succession, second replaces the first
-		//set timeouts on removing each one, alert is hidden when 
-		//show == 0
-		show(val) {
-			//if any alerts left
-			if(val > 0) {
-				//choose a timeout length
-				if(this.type != 'good')
-					var timeout = 8000;
-				else
-					var timeout = 4000;
+	data() {
+		return {
+			alerts: [],
+			alertCounter: 0,
+			type: 'info',
+			msg: 'You better check yoself',
+		}
+	},
 
-				//display event, then remove one instance (don't allow neg.)
-				setTimeout(function() {
-					if(this.show > 0) 
-						this.show -= 1;
-				}.bind(this), timeout)
+	events: {
+		//event from App to show an alert
+		displayAlert(type, msg) {
 
-			}
+			//add an alert
+			this.alertCounter++;
+			this.msg = msg;
+			this.type = type;
+
+			//choose a timeout length
+			if(this.type !== 'good')
+				var timeout = 8000;
+			else
+				var timeout = 3000;
+
+			var self = this;
+			//set an async timer
+			setTimeout(function() {
+				//when the timer is up, remove this alert
+				self.alertCounter--;
+				if(!self.alertCounter)
+					//if there's no alerts remaining, hide
+					self.show = false;
+			}, timeout);
+			
 		},
 	},
 
@@ -55,16 +68,12 @@ export default  {
 		alertClasses() {
 			return {
 				'alert': true,
-				'alert-dismissable': this.type != 'good',
-				'alert-success': this.type == 'good',
-				'alert-danger': this.type == 'bad',
-				'alert-info': this.type == 'info',
+				'alert-dismissable': this.type !== 'good',
+				'alert-success': this.type === 'good',
+				'alert-danger': this.type === 'bad',
+				'alert-info': this.type === 'info',
 			}
 		},
-
-	},
-
-	methods: {
 
 	},
 

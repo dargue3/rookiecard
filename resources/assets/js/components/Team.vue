@@ -1,7 +1,7 @@
 
 <template>
 	<div>
-		<div class="page-wrapper">
+		<div v-show="requestFinished">
 		<!-- container for template -->
 
 			<!-- no results for team, show message -->
@@ -16,63 +16,82 @@
 			
 
 	    	<div class="Team__details">
-	 			
-				
-					<div v-if="team.teamname === 'unhbasketball'">
-						<img class="img-thumbnail" width="500" height="500"
-									src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Lundholm_Gym,_UNH,_Durham_NH.jpg">
+					
+					<div>
+						<img class="img-thumbnail" width="500" height="400" :src="team.pic">
 					</div>
-
-					<div v-if="team.teamname === 'unhfootball'">
-						<img class="img-thumbnail" width="500" height="500"
-									src="http://unhmagazine.unh.edu/w09/images/p18b.jpg">
-					</div>
-
-			 
+					
 					
 					<h1 class="Team__name">{{ team.name }}</h1>
 					
 
 					<div class="Team__slogan">
-						<span>Home of UNH Wildcats Football</span>
+						<span>&ldquo;{{ team.slogan }}&rdquo;</span>
 					</div>
 
 					<div class="Team__location">
-						<span><i id="teamLocationIcon" class="material-icons no-highlight">place</i>COWELL STADIUM, DURHAM, NH</span>
+						<span>
+							<i id="teamLocationIcon" class="material-icons no-highlight">place</i>
+							{{ team.homefield + ', ' + team.city }}
+						</span>
 					</div>
 					
 
 					<div class="Team__fans">
-						<a @click="toggleFan" v-show="isFan === false" class="btn btn-primary outline">
-							JOIN {{ numFans }} OTHER FAN{{numFans > 1 || numFans === 0 ? 'S' : ''}}
-						</a>
-						<a @click="toggleFan" v-show="isFan === true" class="btn btn-primary">
-							YOU AND {{ numFans - 1 }} OTHER{{(numFans - 1) > 1 || numFans === 0 ? 'S' : ''}} ARE FANS
-						</a>
-						<a v-show="isMember === true" class="btn btn-primary isMember">
-							YOUR TEAM HAS {{ numFans }} FAN{{numFans > 1 || numFans === 0 ? 'S' : ''}}
-						</a>
+
+						<div class="num-fans">
+							<div class="fan-count" :class="numFansClass">
+								<!-- for animating a new fan counter, show numFans +- 1 -->
+								<span v-if="!fansChanged" :transition="numFansTransition">{{ numFans }}</span>
+								<span v-if="fansChanged" :transition="numFansTransition">{{ numFans }}</span>
+							</div>
+							<div class="arrow-right --white"></div>
+						</div>
+
+						<div v-show="!isFan && !isMember" class="fan-icon" @click="toggleFan">
+							<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
+						</div>
+						<div v-show="isFan && !admin" class="fan-icon" @click="toggleFan">
+							<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
+						</div>
+						<div v-show="isMember || (isFan && admin)" class="fan-icon --member">
+							<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
+						</div>
 					</div>
-					
+
+
+					<!-- buttons for joining team, accepting invitation -->
+					<div class="Team__invite">
+						<a v-show="!isMember && !hasBeenInvited && !hasRequestedToJoin" 
+								class="btn btn-primary outline" @click="requestToJoin(true)">REQUEST TO JOIN</a>
+
+						<a v-show="!isMember && !hasBeenInvited && hasRequestedToJoin" 
+								class="btn btn-success outline" @click="requestToJoin(false)">CANCEL REQUEST</a>
+
+						<a v-show="!isMember && hasBeenInvited" class="btn btn-success" @click="respondToInv()">ACCEPT INVITATION</a>
+
+						<a v-show="isMember" class="btn btn-success outline --member">YOU'RE A MEMBER</a>
+					</div>
+
 
 	   
 	        <ul class="nav nav-tabs Team__tabs no-highlight">
-	          <li :class="[tab === 'calendar' ? 'active' : '']">
+	          <li :class="{'active' : tab === 'calendar'}">
 	            <a @click="tab = 'calendar'">
 	        			<i id="teamCalendarIcon" class="material-icons">date_range</i>CALENDAR
 	            </a>
 	          </li>
-	          <li :class="[tab === 'stats' ? 'active' : '']">
+	          <li :class="{'active' : tab === 'stats'}">
 	            <a @click="tab = 'stats'">
 	        			<i id="teamStatsIcon" class="material-icons">trending_up</i>STATS
 	            </a>
 	          </li>
-	          <li :class="[tab === 'roster' ? 'active' : '']">
+	          <li :class="{'active' : tab === 'roster'}">
 	            <a @click="tab = 'roster'">
 	          		<i id="teamRosterIcon" class="material-icons">group</i>ROSTER
 	            </a>
 	          </li>
-	          <li v-if="admin" :class="[tab === 'settings' ? 'active' : '']">
+	          <li v-if="admin" :class="{'active' : tab === 'settings'}">
 	            <a @click="tab = 'settings'">
 	        			<i id="teamEditIcon" class="material-icons">settings</i>SETTINGS
 	            </a>
@@ -179,7 +198,7 @@
 				
 				<!-- include the footer at bottom -->
 				<div class="Footer">
-				    <p>® 2016 Rookiecard LLC</p>
+			    <p>® 2016 Rookiecard LLC</p>
 				</div>
 
 			</div>
@@ -225,12 +244,14 @@
 	        <div class="modal-content">
 	          <div class="modal-header">
 	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
+	            <h3 v-show="(editUser.id || editUser.ghost) && !editUser.new" class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
+	            <h3 v-show="editUser.new && editUser.role === 1" class="modal-title">Add a Player</h3>
+	            <h3 v-show="editUser.new && editUser.role === 3" class="modal-title">Add a Coach</h3>
 	          </div>
 	          <div class="modal-body">
 	          	<div class="row">
 	            
-								<rc-edit-user v-if="editUser.id" :user="editUser" :positions="positions"></rc-edit-user>
+								<rc-edit-user v-if="editUser.id || editUser.new || editUser.ghost" :user="editUser" :positions="positions"></rc-edit-user>
 
 							</div>
 	          </div>
@@ -296,6 +317,7 @@ export default  {
 		return {
 			prefix: prefix + teamname,
 			dataReady: false,
+			requestFinished: false,
 			team: {
 				meta: {},
 			},
@@ -303,6 +325,9 @@ export default  {
 			auth: {},
 			isFan: false,
 			isMember: false,
+			hasBeenInvited: false,
+			hasRequestedToJoin: false,
+			isCreator: false,
 			editUser: {
 				firstname: '',
 				lastname: '',
@@ -312,11 +337,13 @@ export default  {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'roster',
+			tab: 'calendar',
 			statsTab: 'teamRecent',
 			events: [], 
 			stats: [], 
 			feed: [],
+			fansChanged: false,
+			numFansTransition: 'number-tick-up',
 		}
 	},
 
@@ -327,6 +354,9 @@ export default  {
 		this.$http.get(url)
 		.then(function(response) {
 			self.compile(response.data);	
+			setTimeout(function() {
+				self.requestFinished = true;
+			}, 100);
 		})
 		//didn't put a catch here because the 'team does not exist' header pretty much covers it
 	},
@@ -337,24 +367,41 @@ export default  {
 			return this.fans.length;
 		},
 
+		//makes fan counter div wider with larger numFans
+		numFansClass() {
+			if(this.fans.length >= 1000)
+				return '--thousandsOfFans';
+
+			else if(this.fans.length >= 100)
+				return '--hundredsOfFans';
+
+			else if(this.fans.length >= 10)
+				return '--tensOfFans';
+
+			else
+				return '';
+		},
+
 		//create list of players from users
+		//0 = user player, 1 = ghost player
 		players() {
 			return this.users.filter(function(user) {
-				return user.role <= 1;
+				return user.role === 0 || user.role === 1;
 			})
 		},
 
 		//create list of coaches from users
+		//2 = user coach, 3 = ghost coach
 		coaches() {
 			return this.users.filter(function(user) {
-				return user.role === 2;
+				return user.role === 2 || user.role === 3;
 			})
 		},
 
 		//create list of fans from users
 		fans() {
 			return this.users.filter(function(user) {
-				return user.role === 3;
+				return user.role === 4 || (user.role >= 45 && user.role <= 47);
 			})
 		},
 
@@ -434,26 +481,102 @@ export default  {
 		
 
 
-		//EditUser.vue was saved with new user data
+		//new user was created from EditUser
+		newUser(user) {
+			user.meta = JSON.parse(user.meta);
+			var split = user.meta.ghost.name.split(' ');
+			user.firstname = split[0];
+			user.lastname = split[1];
+			user.member_id = user.id;
+			user.ghost = true;
+			delete user.user_id;
+
+			user.pic = '/images/ghost.png';
+
+			this.users.push(user);
+
+		},
+
+		//user was updated from EditUser
 		updateUser(editedUser) {
 	
 			this.users = this.users.filter(function(user) {
-				return user.id !== editedUser.id
+				return user.member_id !== editedUser.member_id
 			});
+
+			if(editedUser.ghost) {
+				//if ghost user, set name data just in case edited
+				var split = editedUser.meta.ghost.name.split(' ');
+				editedUser.firstname = split[0];
+				editedUser.lastname = split[1];
+			}
 
 			this.users.push(editedUser);
 
 		},
 
-		//they have confirmed with a popup to kick the user that is being edited
-		//remove them from the array and send ajax request to server
-		deleteUser(editedUser) {
 
-			this.users = this.users.filter(function(user) {
-				return user.id !== editedUser.id
-			});
-			
-			//gonna have to include some logic here about a ghost user taking over their stats
+		//user was kicked from team from EditUser
+		deleteUser(editedUser) {	
+
+			if(!editedUser.ghost) {
+				//if player was a real user, turn into ghost
+				editedUser.ghost = true;
+				editedUser.admin = false;
+				delete editedUser.gender;
+				editedUser.role = editedUser.role + 1;
+				editedUser.meta.ghost = {
+					id: editedUser.member_id,
+					name: editedUser.firstname + ' ' + editedUser.lastname,
+					email: null
+				};
+				editedUser.pic = '/images/ghost.png';
+
+				var deleteUser = false;
+
+			}
+
+			else {
+				var deleteUser = true;
+			}
+
+			//tell server about new changes
+			var data = {
+				delete: deleteUser,
+				editedUser: editedUser
+			};
+			var self = this;
+			this.$http.delete(this.prefix + '/user', data)
+				.then(function(response) {
+
+					if(!response.data.ok) {
+						self.$root.banner('bad', response.data.error);
+						return;
+					}
+
+					//remove current version of user from users
+					self.users = self.users.filter(function(user) {
+						return user.member_id !== editedUser.member_id
+					});
+
+					if(deleteUser) {
+						//if they're completely gone, remove their stats from current stats
+						self.stats = self.stats.filter(function(stat) {
+							return stat.member_id !== editedUser.member_id;
+						});
+						self.$root.banner('good', "Ghost deleted");
+					}
+					else {
+						//add this edited version
+						editedUser.id = 0;
+						self.users.push(editedUser);
+						self.$root.banner('good', 'User kicked');
+					}
+				})
+				
+				.catch(function() {
+					self.$root.errorMsg();
+				});	
 		},
 
 	},
@@ -471,16 +594,19 @@ export default  {
 			this.formatUsers(data.members);
 			
 			//store meta data about team
-			var meta = JSON.parse(data.team.meta);
-			this.positions = meta.positions;
-			this.teamStatCols = meta.teamCols;
-			this.playerStatCols = meta.playerCols;
+			var meta = JSON.parse(data.team.meta);		
+			this.teamStatCols = meta.stats.teamCols;
+			this.playerStatCols = meta.stats.playerCols;
+			this.team.slogan = meta.slogan;
+			this.team.homefield = meta.homefield;
+			this.team.city = meta.city;
 
 			//now that all team data is ready, set these variables
 			//components are listening, will format the data as needed
 			this.events = data.events;
 			this.stats = data.stats;
 			this.feed = data.feed;
+			this.positions = data.positions;
 
 			//tell App.vue to clear any notifications the logged in user may have
 			this.$dispatch('clearNotifications', this.team.id);
@@ -508,16 +634,55 @@ export default  {
 				else
 					user.admin = false;
 
+				//mark which user is the creator
+				if(this.team.creator_id === user.id)
+					user.creator = true;
+
+				if(user.meta.ghost) {
+					//user is a ghost player, move their data around to be consistent with real players
+					var split = user.meta.ghost.name.split(' ');
+					user.firstname = split[0];
+					user.lastname = split[1];
+					user.id = 0;
+					user.ghost = true;
+					user.pic = '/images/ghost.png';
+				}
+				else
+					user.ghost = false;
+
 				//if logged in user is on list, save some other data about them too
 				if(user.id === this.auth.id) {
 					this.admin = user.admin;
 					this.auth.role = user.role;
-					if(user.role < 3) {
+
+					//note whether or not this user is the creator
+					if(this.team.creator_id == user.id) {
+						this.isCreator = true;
 						this.isMember = true;
-						this.isFan = null;
 					}
-					if(user.role === 3)
+
+					if(user.role <= 3) {
+						this.isMember = true;
+					}
+					//they're a fan if role is 4
+					if(user.role === 4)
 						this.isFan = true;
+
+					//they've been invited to join if a 5 or 6
+					if(user.role === 5 || user.role === 6)
+						this.hasBeenInvited = true;			
+					else if(user.role === 45 || user.role === 46) {
+						this.hasBeenInvited = true;
+						this.isFan = true;
+					}
+
+					//they've requested to join team if role is 7 or 47
+					if(user.role === 7)
+						this.hasRequestedToJoin = true;
+					else if(user.role === 47) {
+						this.hasRequestedToJoin = true;
+						this.isFan = true;
+					}
 				}
 
 				this.users.push(user);
@@ -526,65 +691,149 @@ export default  {
 
 		//user hit fan button
 		toggleFan() {
-			var self = this;
 
-			if(this.isFan) {
-				//they were a fan, now they aren't
-				this.auth.role = null;
-				this.isFan = false;
-				this.users = this.users.filter(function(user) {
-					return user.id !== self.auth.id;
-				});
-				var data = {isNowFan: false};
-			}
-
-			else if(!this.isFan) {
-				//they are now a fan
-				this.isFan = true
-				this.auth.role = 3;
-				this.auth.meta = {};
-				this.auth.admin = false;
-				this.users.push(this.auth);
-				var data = {isNowFan: true};
-			}
-
-			else if(this.isMember) {
+			if(this.isMember) {
 				//member should never have hit this function
-				this.$root.banner('bad', "You are already a member")
+				this.$root.errorMsg();
 				return;
 			}
 
-			else {
-				//this case shouldn't have happened
-				this.$root.banner('bad', "There was an issue with this request, refresh the page and try again");
-				return;
-			}
-
-			
+			var self = this;
 			var url = this.prefix + '/fan';
-			this.$http.post(url, data)
-			.then(function(response) {
-				if(response.data.success && self.isFan) {
-					//tell App.vue to add this team to the nav dropdown
-					self.$dispatch('addMember', self.team);
-					self.$root.banner('good', "You are now a fan of " + self.team.name);
-				}
-				else if(response.data.success && !self.isFan) {
-					//tell App.vue to remove this team from the nav dropdown
-					self.$dispatch('removeMember', self.team.teamname);
-					self.$root.banner('good', "You are no longer a fan of " + self.team.name);	
-				}
-				else
-					self.$root.banner('bad', "There was a server problem, refresh the page and try again.");
-			})
-			.catch(function(response) {
-				self.$root.banner('bad', "There was a server problem, refresh the page and try again.");
-			});
-
+			this.$http.post(url)
+				.then(function(response) {
+					if(response.data.ok) 
+						self.updateFanStatus();
+					else
+						self.$root.errorMsg();
+				})
+				.catch(function() {
+					self.$root.errorMsg();
+				});
 
 		},
 
-	},
+		//successful request, change fan status
+		updateFanStatus() {
+			var self = this;
+
+			if(this.isFan) {
+				//use decrement animation on counter
+				this.numFansTransition = 'number-tick-down'
+			}
+			else {
+				//increment
+				this.numFansTransition = 'number-tick-up'
+			}
+
+			//swap the fan status
+			this.isFan = !this.isFan;
+			this.fansChanged = !this.fansChanged;
+
+			if(this.isFan) {
+				//is now a fan of this team
+				this.auth.role = 4;
+				this.auth.meta = {};
+				this.auth.admin = false;
+				this.admin = false;
+				this.users.push(this.auth);
+
+				//tell App.vue to add this team to the nav dropdown
+				this.$dispatch('addMember', this.team);
+				this.$root.banner('good', "You're now a fan");
+			}
+
+
+			else {
+				//is no longer a fan
+				this.auth.role = null;
+				this.admin = false;
+				this.users = this.users.filter(function(user) {
+					return user.id !== self.auth.id;
+				});
+
+				self.$dispatch('removeMember', self.team.teamname);
+				self.$root.banner('good', "You're no longer a fan");	
+			}
+		},
+
+
+		//the player wants to send a request to join this team
+		requestToJoin(joinOrCancel) {
+			var self = this;
+			var url = this.prefix + '/join';
+			this.$http.post(url)
+				.then(function(response) {
+					if(!response.data.ok) {
+						self.$root.banner('bad', response.data.error);
+						return;
+					}
+
+					self.hasRequestedToJoin = joinOrCancel;
+					self.$root.banner('good', "Request sent to team admin");
+				})
+				.catch(function() {
+					self.$root.errorMsg();
+				});
+		},
+
+		//they were invited, make them a for-real member now
+		respondToInv(outcome) {
+			var self = this;
+
+			//check if their choice is confirmed
+			if(outcome === true || outcome === false) {
+				var url = this.prefix + '/join';
+				data = {accept: outcome};
+				this.$http.post(url, data)
+					.then(function(response) {
+						//check there were no authorization errors
+						if(!response.data.ok) {
+							self.$root.banner('bad', response.data.error);
+							return;
+						}
+						self.hasBeenInvited = false;
+
+						if(outcome) {
+							//add them to the team
+							self.formatUsers(response.data.users);
+							self.$root.banner('good', "You've joined this team");
+						}
+						else
+							self.$root.banner('good', "Invitation denied");
+					})
+					.catch(function() {
+						self.$root.errorMsg();
+					});
+			}
+
+			//otherwise make popup to confirm their decision
+			
+			if(this.auth.role === 5) var role = 'player.';
+			if(this.auth.role === 6) var role = 'coach.';
+			var text = "You've been invited to join this team as a " + role;
+			swal({   
+				title: 'Respond to Invitation',
+				text: text,
+				type: "info",
+				showCancelButton: true,
+				confirmButtonColor: '#1179C9',
+				cancelButtonColor: 'whitesmoke',
+				confirmButtonText: 'JOIN',
+				cancelButtonText: 'NO THANKS',
+				closeOnConfirm: true
+			}, function(confirm) {
+				if(confirm) {
+					self.respondToInv(true);
+				}
+				else {
+					self.respondToInv(false);
+				}
+			});
+		},
+
+
+	}, //end methods
 
 	ready() {
 
@@ -593,6 +842,20 @@ export default  {
 			$('div.modal').on('hide.bs.modal', function() {
 				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 		    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
+			});
+
+			$('#becomeFan').on('mouseover', function() {
+				$(this).attr('src', '/images/becomeFanHover.png');
+			});
+			$('#becomeFan').on('mouseout', function() {
+				$(this).attr('src', '/images/becomeFan.png');
+			});
+
+			$('#isFan').on('mouseover', function() {
+				$(this).attr('src', '/images/isFanHover.png');
+			});
+			$('#isFan').on('mouseout', function() {
+				$(this).attr('src', '/images/isFan.png');
 			});
 
 		});
@@ -630,21 +893,78 @@ export default  {
 .Team__location		
 .Team__slogan
 	flex-basis 100%
-	margin-top 35px
+	margin-top 25px
+	font-size 17px
 	span
 		position relative
 		color rc_dark_gray
 
 .Team__fans
 	flex-basis 100%
-	margin-top 35px
-	a
-		margin-left 0
-	.isMember
-		background rc_blue
+	display flex
+	flex-flow row wrap
+	justify-content center
+	align-items center
+	margin-top 25px
+	.num-fans
+		position relative
+		display flex
+		flex-flow row
+		margin-bottom 5px
+		overflow hidden
+		height 40px
+		width 70px
+		.fan-count
+			display flex
+			flex-flow row
+			justify-content center
+			align-items center
+			background-color white
+			min-width 61px
+			height 40px
+			font-size 17px	
+			border-radius 15%
+			color rc_dark_gray
+			span
+				position absolute
+				top 8px	
+				right 33px
+			&.--tensOfFans
+				span
+					right 30px
+			&.--hundredsOfFans
+				span
+					right 24px
+			&.--thousandsOfFans
+				span
+					right 19px			
+		.arrow-right
+			position absolute
+			top 5px
+			right 4px
+			margin-top 9px
+			height 0
+			width 0
+			border-bottom 6px solid transparent		
+			border-top 6px solid transparent
+			border-left 6px solid white
+	.fan-icon
+		margin-left 2px
 		&:hover
-			cursor auto
-			background rc_blue	
+			cursor pointer
+		&.--member:hover
+			cursor default
+			
+.Team__invite
+	flex-basis 100%		
+	margin-top 25px
+	.btn
+		margin-left 0px
+		&.--member:hover
+			cursor default
+			color rc_bright_green
+			border 2px solid rc_bright_green
+		
 			
 .Team__tabs
 	display flex
@@ -661,6 +981,9 @@ export default  {
 	margin-top 4em
 	&_divider
 		margin 65px 0px 105px 0px		
+		
+.Team__stats
+	padding 0 2em
 
 
 
@@ -699,7 +1022,7 @@ export default  {
 #teamLocationIcon
 	position absolute
 	left -27px
-	top -4px
+	top -3px
 
 
 #noTeam

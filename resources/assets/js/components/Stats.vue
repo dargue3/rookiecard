@@ -63,7 +63,7 @@ export default  {
 .stats-container
 	position relative
 	min-height 100px
-	padding 2em
+	padding 0.5em 2em 2em 0
 	@media screen and (max-width 767px)
 		border 0
 	.Tab__container
@@ -162,5 +162,28 @@ ul.pagination
 	margin-bottom 2em
 	*
 		flex 1			
+		
+.Stats__overflow
+	margin-top 1em
+	margin-bottom 0.5em
+	min-height 20px	
+	span
+		position relative
+		color rc_lite_gray
+		&.--right
+			padding-right 1.5em
+			float right
+			i
+				top -5px
+				right -9px
+		&.--left
+			float left
+			padding-left 1.5em
+			i
+				top -7px
+				left -9px
+		i
+			position absolute
+			font-size 30px	
 
 </style>

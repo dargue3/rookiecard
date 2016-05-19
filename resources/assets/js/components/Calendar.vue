@@ -197,7 +197,7 @@ export default  {
     chevClick(direction) {
       
       var chevron = $('#chev' + direction);
-      calendar.navigate(chevron.data('cal-nav'));
+      this.calendar.navigate(chevron.data('cal-nav'));
 
       //animate
       chevron.addClass(rubberBand).one(animateEnd, function(){

@@ -57,6 +57,14 @@
                 	</a>
                 <li v-if="fanOf.length" id='divider' class="divider"></li>
 
+                <li v-if="invitedTo.length" class="dropdown-header"><small>INVITED TO</small></li>
+                <li v-for="team in invitedTo">
+                	<a v-link="{name: 'team', params: {name: team.teamname}}" class="nav-link">
+                		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
+                		{{ team.name }}
+                	</a>
+                <li v-if="invitedTo.length" id='divider' class="divider"></li>
+
                 <li><a v-link="{name: 'team', params: {name: 'create'}}" class="nav-link">Create a Team</a></li>
 
               </ul>
@@ -64,8 +72,9 @@
             <li id="optionsDropdown" class="dropdown">
               <a href="#" id="navOptions" class="dropdown-toggle" data-toggle="dropdown">Options <span id='optionsCaret' class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
-                <li><a href="#" class="nav-link">Settings</a></li>
-                <li><a href="#" class="nav-link">Submit Feedback</a></li>
+                <li><a class="nav-link">Settings</a></li>
+                <li><a class="nav-link">Help</a></li>
+                <li><a class="nav-link">Submit Feedback</a></li>
                 <li id='divider' class="divider"></li>
                 <li><a href="/logout" class="nav-link">Log out</a></li>
               </ul>
@@ -83,7 +92,7 @@
       </div>
     </nav>
 
-		<rc-alert :type="alertType" :show.sync="alert" transition="fade-fast" v-show="alert > 0">{{ alertMessage }}</rc-alert>
+		<rc-alert :show="showAlert" transition="fade-fast"></rc-alert>
 	
 		<router-view id="router" transition="fade-slow" class="router"></router-view>
 	
@@ -114,7 +123,8 @@ export default  {
 			prefix: '/api/v1/',
 			user: {},
 			teams: [],
-			alert: 0,
+			showAlert: false,
+			alertCounter: 0,
 			alertMessage:  "You better check yoself",
 			alertType: "info",
 		}
@@ -127,8 +137,9 @@ export default  {
 		var url = this.prefix + 'user/auth/data';
 
 		this.$http.get(url)
-		.then(function(response) {
-			self.initialize(response.data);
+		.then(function(response) {	
+			self.user = response.data.auth;
+			self.teams = response.data.teams;
 		})
 	
 		.catch(function() {
@@ -166,7 +177,7 @@ export default  {
 				name: team.name,
 				sport: team.sport,
 				notifications: 0,
-				role: 3,
+				role: 4,
 			}
 
 			this.teams.push(newTeam);
@@ -200,26 +211,27 @@ export default  {
 		//which teams they are a member of
 		memberOf() {
 			return this.teams.filter(function(team) {
-				return team.role === 0 || team.role === 2;
+				return team.role <= 2;
 			});
 		},
 
 		//which teams they are a fan of
 		fanOf() {
 			return this.teams.filter(function(team) {
-				return team.role === 3;
+				return team.role === 4;
 			});
 		},
+
+		//which teams an admin has invited them to join
+		//5 = invited to be a player, 6 = a coach
+		invitedTo() {
+			return this.teams.filter(function(team) {
+				return team.role === 5 || team.role === 6;
+			});
+		}
 	},
 
 	methods: {
-
-		initialize(data) {
-
-			this.user = data.auth;
-			this.teams = data.teams;
-			
-		},
 
 
 		//show popup message (for more attention)
@@ -244,13 +256,20 @@ export default  {
 		//show banner message, triggers Alert.vue
 		banner(type, msg) {
 
-			this.alert = 0;
+			//always hide any existing alerts
+			this.showAlert = false;
+
+			//give some timeout so there's a noticeable gap between old and new alerts
+			var self = this;
 			setTimeout(function() {
-				this.alertMessage = msg;
-				this.alertType = type;
-				this.alert += 1;
-			}.bind(this), 400)
-			
+				self.showAlert = true;
+				self.$broadcast('displayAlert', type, msg);
+			}, 400);
+		},
+
+		//the default msg when erroring during ajax requests
+		errorMsg() {
+			this.banner('bad', 'There was a problem, refresh the page and try again');
 		},
 
 		showModal(id) {
@@ -259,9 +278,32 @@ export default  {
       $('#' + id).modal('show');
 		},
 
+		validateEmail(email) {
+			var expression = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+			if(!email.match(expression))
+				return false;
+			else
+				return true;
+		},
 
 
-	},
+		validateJerseyNum(num) {
+			if(isNaN(num))
+				return false;
+
+			else if(parseInt(num) > 99 || parseInt(num) < 0)
+				return false;
+
+			else if(num.length > 2)
+				return false;
+
+			else
+				return true;
+		},
+
+
+
+	}, //end methods
 
 	ready() {
 		
@@ -368,6 +410,7 @@ ul.nav.navbar-nav.navbar-right
 					background-color lighten(gray, 60%)	
 					color white
 					font-size 12px
+					margin-bottom 2px
 			:hover
 				background lighten(gray, 87%)
 
@@ -391,6 +434,7 @@ ul.nav.navbar-nav.navbar-right
 .badge-danger
 	background-color #D9534F	
 	font-size 12px
+	margin-bottom 2px
 
 	
 #searchBar

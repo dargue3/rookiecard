@@ -6,6 +6,10 @@ module.exports = (function(val) {
 	if(val === 'win')
 		return 'W/L';
 
+	//'astto' becomes 'AST/TO'
+	if(val === 'astto')
+		return 'AST/TO';
+
 	if(val === 'opp')
 		return 'OPPONENT';
 

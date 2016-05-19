@@ -86,7 +86,7 @@ module.exports = (function(val) {
 		case 'ts_':
 			return 'True Shooting Percentage';
 			break;
-		case 'ast-to':
+		case 'astto':
 			return 'Assist to Turnover Ratio';
 			break;
 		case 'eff':

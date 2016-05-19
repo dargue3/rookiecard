@@ -247,7 +247,7 @@ export default  {
     //wait long enough to ensure calendar is fully loaded
     setTimeout(function() {
     		//for clicks on calendar events
-        $('.Calendar__container').on('click', 'a.event-trigger', function(e) {
+        $('.Calendar__container').on('click touchstart', 'a.event-trigger', function(e) {
           this.viewEvent($(e.target).data('event-id'));
         }.bind(this));
         

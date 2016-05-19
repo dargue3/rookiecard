@@ -62,42 +62,38 @@ var router = new VueRouter({
 router.map({
 
 	'/': {
-
 		name: 'home',
-
 		component: {
 			template: "<h1 style='margin-top: 80px'>This is the homepage</h1>"
 		}
 	},
 
+
+
 	'/team/create': {
-
 		name: 'createTeam',
-
 		component:  CreateTeam,
-
 	},
 
 	'/team/:name': {
-
 		name: 'team',
-
 		component:  Team,
-
 	},
 
+
+
 	'/:name': {
-
 		name: 'user',
-
 		component: {
 			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name}}!</h1>"
 		}
 	},
 
 
-	'*': {
 
+
+
+	'*': {
 		component: {
 			template: "<div class='text-center'><h1>Uh oh!</br>Page not found!</h1></div>"
 		}
@@ -106,9 +102,7 @@ router.map({
 
 });
 
-router.beforeEach(function() {
-	window.scrollTo(0, 0);
-});
+
 
 
 router.start(App, '#app');

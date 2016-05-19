@@ -1,3 +1,3 @@
 ## rookiecard
 
-the newest social network for teams, athletes, and fans
+a social network for teams, athletes, and fans

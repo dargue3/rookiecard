@@ -26188,14 +26188,14 @@ exports.default = {
 					$('#addEventModal').modal('hide');
 
 					if (self.repeats) //plural
-						var msg = "Your events have been added to the calendar";else var msg = "Your event has been added to the calendar";
+						var msg = "Events saved";else var msg = "Event saved";
 
 					self.$root.banner('good', msg);
 
 					self.reinitializeData();
 				}).catch(function (response) {
 					//if unsuccessful, show error message
-					self.$root.banner('bad', "There was a problem adding your event... try again?");
+					self.$root.errorMsg();
 				});
 			}
 		},
@@ -26367,25 +26367,40 @@ exports.default = {
 
 	name: 'Alert',
 
-	props: ['type', 'show'],
+	props: ['show'],
 
-	watch: {
-		//only confusing part about this component.
-		//if two alerts in quick succession, second replaces the first
-		//set timeouts on removing each one, alert is hidden when
-		//show == 0
+	data: function data() {
+		return {
+			alerts: [],
+			alertCounter: 0,
+			type: 'info',
+			msg: 'You better check yoself'
+		};
+	},
 
-		show: function show(val) {
-			//if any alerts left
-			if (val > 0) {
-				//choose a timeout length
-				if (this.type != 'good') var timeout = 8000;else var timeout = 4000;
 
-				//display event, then remove one instance (don't allow neg.)
-				setTimeout(function () {
-					if (this.show > 0) this.show -= 1;
-				}.bind(this), timeout);
-			}
+	events: {
+		//event from App to show an alert
+
+		displayAlert: function displayAlert(type, msg) {
+
+			//add an alert
+			this.alertCounter++;
+			this.msg = msg;
+			this.type = type;
+
+			//choose a timeout length
+			if (this.type !== 'good') var timeout = 8000;else var timeout = 3000;
+
+			var self = this;
+			//set an async timer
+			setTimeout(function () {
+				//when the timer is up, remove this alert
+				self.alertCounter--;
+				if (!self.alertCounter)
+					//if there's no alerts remaining, hide
+					self.show = false;
+			}, timeout);
 		}
 	},
 
@@ -26396,19 +26411,17 @@ exports.default = {
 		alertClasses: function alertClasses() {
 			return {
 				'alert': true,
-				'alert-dismissable': this.type != 'good',
-				'alert-success': this.type == 'good',
-				'alert-danger': this.type == 'bad',
-				'alert-info': this.type == 'info'
+				'alert-dismissable': this.type !== 'good',
+				'alert-success': this.type === 'good',
+				'alert-danger': this.type === 'bad',
+				'alert-info': this.type === 'info'
 			};
 		}
-	},
-
-	methods: {}
+	}
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t\n\t\t<div :class=\"alertClasses\">\n\n\t\t\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'good'\">done</i>\n\t\t\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'bad'\">error</i>\n\t\t\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'info'\">info_outline</i>\n\n\t\t\t\t<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->\n\t\t\t\t<span @click=\"$root.hideAlert(type)\" class=\"close\" v-show=\"type !== 'good'\">×</span>\n\t\t\t\t<span>\n\t\t\t\t\t<slot></slot>\n\t\t\t\t</span>\n\t\t</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t\t<div :class=\"alertClasses\" v-show=\"show\">\n\n\t\t\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'good'\">done</i>\n\t\t\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'bad'\">error</i>\n\t\t\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'info'\">info_outline</i>\n\n\t\t\t\t<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->\n\t\t\t\t<span @click=\"$root.hideAlert(type)\" class=\"close\" v-show=\"type !== 'good'\">×</span>\n\t\t\t\t<span>\n\t\t\t\t\t{{ msg }}\n\t\t\t\t</span>\n\n\t\t</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -26429,7 +26442,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],172:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/App.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n}\n#hamburger:focus {\n  background: #b00015;\n}\n#hamburger span {\n  background: #fff;\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 52px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 51px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n}\n#searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder /* Firefox 19+ */  {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n@media only screen and (max-width: 767px) and (min-width: 10px) {\n  .divider {\n    background: #d9d9d9 !important;\n  }\n  #searchIcon {\n    top: 32px;\n    left: -38px;\n  }\n  #searchBar {\n    margin-top: 25px;\n    border: #b00015;\n  }\n  #navSearchDiv {\n    left: 5px !important;\n  }\n}\n@media only screen and (max-width: 991px) and (min-width: 768px) {\n  #searchBar {\n    width: 220px;\n  }\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n#profileAboutIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 40px;\n  bottom: 32px;\n}\n#profileMetricsIcon {\n  position: absolute;\n  left: 43px;\n  bottom: 32px;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n}\n#hamburger:focus {\n  background: #b00015;\n}\n#hamburger span {\n  background: #fff;\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 52px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 51px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n#searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder /* Firefox 19+ */  {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n@media only screen and (max-width: 767px) and (min-width: 10px) {\n  .divider {\n    background: #d9d9d9 !important;\n  }\n  #searchIcon {\n    top: 32px;\n    left: -38px;\n  }\n  #searchBar {\n    margin-top: 25px;\n    border: #b00015;\n  }\n  #navSearchDiv {\n    left: 5px !important;\n  }\n}\n@media only screen and (max-width: 991px) and (min-width: 768px) {\n  #searchBar {\n    width: 220px;\n  }\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n#profileAboutIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 40px;\n  bottom: 32px;\n}\n#profileMetricsIcon {\n  position: absolute;\n  left: 43px;\n  bottom: 32px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26458,7 +26471,8 @@ exports.default = {
 			prefix: '/api/v1/',
 			user: {},
 			teams: [],
-			alert: 0,
+			showAlert: false,
+			alertCounter: 0,
 			alertMessage: "You better check yoself",
 			alertType: "info"
 		};
@@ -26470,7 +26484,8 @@ exports.default = {
 		var url = this.prefix + 'user/auth/data';
 
 		this.$http.get(url).then(function (response) {
-			self.initialize(response.data);
+			self.user = response.data.auth;
+			self.teams = response.data.teams;
 		}).catch(function () {
 			self.banner('bad', "Problem fetching auth data");
 		});
@@ -26509,7 +26524,7 @@ exports.default = {
 				name: team.name,
 				sport: team.sport,
 				notifications: 0,
-				role: 3
+				role: 4
 			};
 
 			this.teams.push(newTeam);
@@ -26543,7 +26558,7 @@ exports.default = {
 		//which teams they are a member of
 		memberOf: function memberOf() {
 			return this.teams.filter(function (team) {
-				return team.role === 0 || team.role === 2;
+				return team.role <= 2;
 			});
 		},
 
@@ -26551,21 +26566,25 @@ exports.default = {
 		//which teams they are a fan of
 		fanOf: function fanOf() {
 			return this.teams.filter(function (team) {
-				return team.role === 3;
+				return team.role === 4;
+			});
+		},
+
+
+		//which teams an admin has invited them to join
+		//5 = invited to be a player, 6 = a coach
+		invitedTo: function invitedTo() {
+			return this.teams.filter(function (team) {
+				return team.role === 5 || team.role === 6;
 			});
 		}
 	},
 
 	methods: {
-		initialize: function initialize(data) {
-
-			this.user = data.auth;
-			this.teams = data.teams;
-		},
-
 
 		//show popup message (for more attention)
 		//uses sweetalert.js
+
 		popup: function popup(type, title, msg) {
 
 			switch (type) {
@@ -26586,19 +26605,35 @@ exports.default = {
 		//show banner message, triggers Alert.vue
 		banner: function banner(type, msg) {
 
-			this.alert = 0;
+			//always hide any existing alerts
+			this.showAlert = false;
+
+			//give some timeout so there's a noticeable gap between old and new alerts
+			var self = this;
 			setTimeout(function () {
-				this.alertMessage = msg;
-				this.alertType = type;
-				this.alert += 1;
-			}.bind(this), 400);
+				self.showAlert = true;
+				self.$broadcast('displayAlert', type, msg);
+			}, 400);
+		},
+
+
+		//the default msg when erroring during ajax requests
+		errorMsg: function errorMsg() {
+			this.banner('bad', 'There was a problem, refresh the page and try again');
 		},
 		showModal: function showModal(id) {
 			$('.for-blurring').removeClass('modal-unblur').addClass('modal-blur');
 			$('nav.navbar').removeClass('modal-unblur').addClass('modal-blur');
 			$('#' + id).modal('show');
+		},
+		validateEmail: function validateEmail(email) {
+			var expression = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+			if (!email.match(expression)) return false;else return true;
+		},
+		validateJerseyNum: function validateJerseyNum(num) {
+			if (isNaN(num)) return false;else if (parseInt(num) > 99 || parseInt(num) < 0) return false;else if (num.length > 2) return false;else return true;
 		}
-	},
+	}, //end methods
 
 	ready: function ready() {
 
@@ -26624,14 +26659,14 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<div>\n\t\n    <nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n      <div class=\"container\">\n\n         <!-- logo and hamburger  -->\n        <div class=\"navbar-header\">\n            <button id=\"hamburger\" type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#navbar-left\">\n                <span class=\"sr-only\">Toggle navigation</span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n            </button>\n            <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n\n            \n        <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n          <!-- search bar -->\n          <ul class=\"nav navbar-nav\">\n            <div id=\"navSearchDiv\">\n              <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n              <form method=\"GET\" action=\"/search\" accept-charset=\"UTF-8\">\n          \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form\" placeholder=\"Search players and teams...\" tabindex=\"1\" required=\"\" role=\"search\" name=\"q\" type=\"search\">\n          \t\t</form>\n            </div>\n          </ul>\n\n          <!-- nav links -->\n          <ul class=\"nav navbar-nav navbar-right\">\n            <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n            <li id=\"teamDropdown\" class=\"dropdown\">\n              <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n                <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span id=\"teamCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n            \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n                <li v-for=\"team in memberOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li>\n                <li v-if=\"memberOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n                <li v-for=\"team in fanOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"fanOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n              </ul>\n            </li>\n            <li id=\"optionsDropdown\" class=\"dropdown\">\n              <a href=\"#\" id=\"navOptions\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span id=\"optionsCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu\" role=\"menu\">\n                <li><a href=\"#\" class=\"nav-link\">Settings</a></li>\n                <li><a href=\"#\" class=\"nav-link\">Submit Feedback</a></li>\n                <li id=\"divider\" class=\"divider\"></li>\n                <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n              </ul>\n            </li>\n          </ul>\n        </div>\n      </div>\n    </nav>\n\n    <nav style=\"display: none\" class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n      <div class=\"container\">\n        <div class=\"navbar-header\">\n          <a href=\"/\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n      </div>\n    </nav>\n\n\t\t<rc-alert :type=\"alertType\" :show.sync=\"alert\" transition=\"fade-fast\" v-show=\"alert > 0\">{{ alertMessage }}</rc-alert>\n\t\n\t\t<router-view id=\"router\" transition=\"fade-slow\" class=\"router\"></router-view>\n\t\n\t</div>\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<div>\n\t\n    <nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n      <div class=\"container\">\n\n         <!-- logo and hamburger  -->\n        <div class=\"navbar-header\">\n            <button id=\"hamburger\" type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#navbar-left\">\n                <span class=\"sr-only\">Toggle navigation</span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n            </button>\n            <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n\n            \n        <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n          <!-- search bar -->\n          <ul class=\"nav navbar-nav\">\n            <div id=\"navSearchDiv\">\n              <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n              <form method=\"GET\" action=\"/search\" accept-charset=\"UTF-8\">\n          \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form\" placeholder=\"Search players and teams...\" tabindex=\"1\" required=\"\" role=\"search\" name=\"q\" type=\"search\">\n          \t\t</form>\n            </div>\n          </ul>\n\n          <!-- nav links -->\n          <ul class=\"nav navbar-nav navbar-right\">\n            <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n            <li id=\"teamDropdown\" class=\"dropdown\">\n              <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n                <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span id=\"teamCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n            \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n                <li v-for=\"team in memberOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li>\n                <li v-if=\"memberOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n                <li v-for=\"team in fanOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"fanOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n                <li v-for=\"team in invitedTo\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"invitedTo.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n              </ul>\n            </li>\n            <li id=\"optionsDropdown\" class=\"dropdown\">\n              <a href=\"#\" id=\"navOptions\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span id=\"optionsCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu\" role=\"menu\">\n                <li><a class=\"nav-link\">Settings</a></li>\n                <li><a class=\"nav-link\">Help</a></li>\n                <li><a class=\"nav-link\">Submit Feedback</a></li>\n                <li id=\"divider\" class=\"divider\"></li>\n                <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n              </ul>\n            </li>\n          </ul>\n        </div>\n      </div>\n    </nav>\n\n    <nav style=\"display: none\" class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n      <div class=\"container\">\n        <div class=\"navbar-header\">\n          <a href=\"/\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n      </div>\n    </nav>\n\n\t\t<rc-alert :show=\"showAlert\" transition=\"fade-fast\"></rc-alert>\n\t\n\t\t<router-view id=\"router\" transition=\"fade-slow\" class=\"router\"></router-view>\n\t\n\t</div>\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/App.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n}\n#hamburger:focus {\n  background: #b00015;\n}\n#hamburger span {\n  background: #fff;\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 52px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 51px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n}\n#searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder /* Firefox 19+ */  {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n@media only screen and (max-width: 767px) and (min-width: 10px) {\n  .divider {\n    background: #d9d9d9 !important;\n  }\n  #searchIcon {\n    top: 32px;\n    left: -38px;\n  }\n  #searchBar {\n    margin-top: 25px;\n    border: #b00015;\n  }\n  #navSearchDiv {\n    left: 5px !important;\n  }\n}\n@media only screen and (max-width: 991px) and (min-width: 768px) {\n  #searchBar {\n    width: 220px;\n  }\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n#profileAboutIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 40px;\n  bottom: 32px;\n}\n#profileMetricsIcon {\n  position: absolute;\n  left: 43px;\n  bottom: 32px;\n}\n"] = false
+    require("vueify-insert-css").cache[".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n}\n#hamburger:focus {\n  background: #b00015;\n}\n#hamburger span {\n  background: #fff;\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 52px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 51px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n#searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder /* Firefox 19+ */  {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n@media only screen and (max-width: 767px) and (min-width: 10px) {\n  .divider {\n    background: #d9d9d9 !important;\n  }\n  #searchIcon {\n    top: 32px;\n    left: -38px;\n  }\n  #searchBar {\n    margin-top: 25px;\n    border: #b00015;\n  }\n  #navSearchDiv {\n    left: 5px !important;\n  }\n}\n@media only screen and (max-width: 991px) and (min-width: 768px) {\n  #searchBar {\n    width: 220px;\n  }\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n#profileAboutIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 40px;\n  bottom: 32px;\n}\n#profileMetricsIcon {\n  position: absolute;\n  left: 43px;\n  bottom: 32px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -26651,11 +26686,20 @@ var __vueify_style__ = require("vueify-insert-css").insert(".Stats__title {\n  d
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _StatsScrollSpy = require('../mixins/StatsScrollSpy.js');
+
+var _StatsScrollSpy2 = _interopRequireDefault(_StatsScrollSpy);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 exports.default = {
 
 	name: 'BasketballStats',
 
 	props: ['type', 'rawStats', 'pagination', 'event', 'players', 'teamCols', 'playerCols'],
+
+	mixins: [_StatsScrollSpy2.default],
 
 	data: function data() {
 
@@ -26761,7 +26805,7 @@ exports.default = {
 			index = playerCols.indexOf('efg_');
 			if (index !== -1) playerCols.splice(index, 1);
 
-			index = playerCols.indexOf('ast-to');
+			index = playerCols.indexOf('astto');
 			if (index !== -1) playerCols.splice(index, 1);
 
 			index = playerCols.indexOf('ts_');
@@ -26780,6 +26824,12 @@ exports.default = {
 	events: {
 		compileStats: function compileStats() {
 			this.compile();
+		}
+	},
+
+	watch: {
+		type: function type() {
+			this.initScrollSpy();
 		}
 	},
 
@@ -26819,6 +26869,7 @@ exports.default = {
 				this.playerCols.forEach(function (key) {
 					playerSortOrders[key] = -1;
 				});
+				playerSortOrders['lastname'] = -1;
 
 				//number of pages
 				pagCount = Math.ceil(this.teamRecentStats.length / this.rowsPerPage);
@@ -26832,9 +26883,21 @@ exports.default = {
 				this.playerRecentStats = this.markEmpty(0);
 				this.teamRecentStats = this.markEmpty(1);
 				this.teamSeasonStats = this.markEmpty(1);
-
-				this.noStats = true;
 			}
+
+			this.initScrollSpy();
+		},
+
+
+		//prepare listeners for showing "SCROLL >" indicators
+		initScrollSpy: function initScrollSpy() {
+			if (this.type === 'teamSeason') this.attachScrollListener('#teamSeasonDiv', 'teamSeason');
+
+			if (this.type === 'teamRecent') this.attachScrollListener('#teamRecentDiv', 'teamRecent');
+
+			if (this.type === 'playerSeason') this.attachScrollListener('#playerSeasonDiv', 'playerSeason');
+
+			if (this.type === 'event' || this.type === 'playerRecent') this.attachScrollListener('#playerRecentDiv', 'playerRecent');
 		},
 
 
@@ -26872,6 +26935,10 @@ exports.default = {
 					totalStats[key] = 0;
 				});
 				totalStats.gp = statsArray[x].length;
+				var thisPlayer = this.players.filter(function (player) {
+					return player.member_id === statsArray[x][0].member_id;
+				});
+				totalStats.lastname = thisPlayer[0].lastname;
 
 				//loop through each stats object belonging to this user
 				for (var y = 0; y < statsArray[x].length; y++) {
@@ -26891,7 +26958,7 @@ exports.default = {
 
 							if (key === 'starter') {
 								//rename 'starter' to be 'gs'
-								totalStats['gs']++;
+								totalStats.gs++;
 								continue;
 							}
 
@@ -26910,10 +26977,10 @@ exports.default = {
 
 					//if two categories in double digits, they get a double double
 					//a triple double counts as both
-					if (doubleDigits == 2) totalStats['dd2']++;
+					if (doubleDigits == 2) totalStats.dd2++;
 					if (doubleDigits > 2) {
-						totalStats['dd2']++;
-						totalStats['td3']++;
+						totalStats.dd2++;
+						totalStats.td3++;
 					}
 				}
 
@@ -26935,7 +27002,7 @@ exports.default = {
 					//key exists
 
 					//keys not needing averaging
-					if (key === 'name' || key === 'dd2' || key === 'td3') {
+					if (key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
 						crunched[key] = totals[key];
 						continue;
 					}
@@ -26988,9 +27055,9 @@ exports.default = {
 				crunched['ts_'] = Math.round(ts * 100 * 10) / 10;
 			}
 
-			if (this.playerSeasonCols.includes('ast-to')) {
+			if (this.playerSeasonCols.includes('astto')) {
 				var astto = totals['ast'] / totals['to'];
-				crunched['ast-to'] = Math.round(astto * 10) / 10;
+				crunched['astto'] = Math.round(astto * 10) / 10;
 			}
 
 			return crunched;
@@ -27135,6 +27202,15 @@ exports.default = {
 		//set the clicked header as the sort key
 		//invert ascending / descending
 		playerSortBy: function playerSortBy(key) {
+
+			if (key === 'name') {
+				//if sorting by name, really sort by hidden lastname field
+				key = 'lastname';
+				if (key === this.playerSortKey) this.playerSortOrders['name'] = this.playerSortOrders['name'] * -1;else this.playerSortKey = 'lastname';
+
+				return;
+			}
+
 			if (key === this.playerSortKey) this.playerSortOrders[key] = this.playerSortOrders[key] * -1;else this.playerSortKey = key;
 		},
 		teamSortBy: function teamSortBy(key) {
@@ -27173,7 +27249,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div class=\"stats-container\">\n\n\t\t<!-- tell the user there aren't any stats here -->\n\t\t<div v-if=\"noStats\" class=\"Stats__title\">\n\t\t\t<div class=\"text-center\">\n\t\t\t\t<h3>There aren't any stats here yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<!-- if this is an event, show the outcome and opponent -->\n\t\t<div v-if=\"type === 'event'\" class=\"Stats__title\">\n\t\t\t<div class=\"text-center\">\n\t\t\t\t<h1>\n\t\t\t\t\t<span v-if=\"meta.teamScore > meta.oppScore\" class=\"win\">Win</span>\n\t\t\t\t\t<span v-if=\"meta.teamScore < meta.oppScore\" class=\"loss\">Loss</span>\n\t\t\t\t\t<span v-if=\"meta.teamScore === meta.oppScore\" class=\"win\">Tie</span>\n\t\t\t\t\t<span class=\"versus\">{{ meta.home }} </span>{{ meta.opp }}\n\t\t\t\t</h1>\n\t\t\t\t<h1>{{ meta.teamScore }} - {{ meta.oppScore }}</h1>\n\t\t\t</div>\n\t\t</div>\n\n\t\n\n    \n\n\t\t<!-- team recent stats -->\n\t\t<h3 v-if=\"type === 'event' &amp;&amp; !noStats\" class=\"Stats__header\">Team Stats</h3>\n\n    <div v-show=\"type === 'teamRecent' || type === 'event'\">\n\t\t\t<div class=\"table-responsive\">\n\t\t\t\t<table v-if=\"teamRecentStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in teamRecentCols\" class=\"stat-columns text-center\" :class=\"[teamSortKey === key ? 'col-sort' : '', key === 'opp' ? 'opp' : '']\" @click=\"teamSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"teamSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in teamRecentStats | orderBy teamSortKey teamSortOrders[teamSortKey]\">\n\t\t\t\t      <td v-for=\"key in teamRecentCols\" class=\"stat-entries\" :class=\"[key === 'win' ? winLossClass(val[key]) : '']\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- team season stats -->\n\t\t<div v-show=\"type === 'teamSeason'\">\n\t\t\t<div class=\"table-responsive\">\n\t\t\t\t<table v-if=\"teamSeasonStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in teamSeasonCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr>\n\t\t\t\t      <td v-for=\"key in teamSeasonCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"teamSeasonStats[key] === null\">-</span>\n\t\t\t\t        {{ teamSeasonStats[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- player season stats -->\n\t\t<div v-show=\"type === 'playerSeason'\">\n\t\t\t<div class=\"table-responsive\">\n\t\t\t\t<table v-if=\"playerSeasonStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in playerSeasonCols\" class=\"stat-columns text-center\" :class=\"[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '']\" @click=\"playerSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"playerSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in playerSeasonStats | orderBy playerSortKey playerSortOrders[playerSortKey]\">\n\t\t\t\t      <td v-for=\"key in playerSeasonCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- player recent stats -->\n\t\t<h3 v-if=\"type === 'event' &amp;&amp; !noStats\" class=\"Stats__header\">Player Stats</h3>\n\n\t\t<div v-show=\"type === 'playerRecent' || type === 'event'\">\n\t\t\t<div class=\"table-responsive\">\n\t\t\t\t<table v-if=\"playerRecentStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in playerRecentCols\" class=\"stat-columns text-center\" :class=\"[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '']\" @click=\"playerSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"playerSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in playerRecentStats | orderBy playerSortKey playerSortOrders[playerSortKey]\">\n\t\t\t\t      <td v-for=\"key in playerRecentCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div v-show=\"ifPagination\" class=\"pagination text-center\">\n\t\t\t<ul class=\"pagination\">\n\t\t\t\t<li :class=\"{active: n === pagActive}\" v-for=\"n in pagCount\">\n\t\t\t\t\t<a @click=\"switchPag(n)\">{{ n + 1 }}</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>\n\n\n\t</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div class=\"stats-container\">\n\n\t\t<!-- tell the user there aren't any stats here -->\n\t\t<div v-if=\"noStats\" class=\"Stats__title\">\n\t\t\t<div class=\"text-center\">\n\t\t\t\t<h3>There aren't any stats here yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<!-- if this is an event, show the outcome and opponent -->\n\t\t<div v-if=\"type === 'event'\" class=\"Stats__title\">\n\t\t\t<div class=\"text-center\">\n\t\t\t\t<h1>\n\t\t\t\t\t<span v-if=\"meta.teamScore > meta.oppScore\" class=\"win\">Win</span>\n\t\t\t\t\t<span v-if=\"meta.teamScore < meta.oppScore\" class=\"loss\">Loss</span>\n\t\t\t\t\t<span v-if=\"meta.teamScore === meta.oppScore\" class=\"win\">Tie</span>\n\t\t\t\t\t<span class=\"versus\">{{ meta.home }} </span>{{ meta.opp }}\n\t\t\t\t</h1>\n\t\t\t\t<h1>{{ meta.teamScore }} - {{ meta.oppScore }}</h1>\n\t\t\t</div>\n\t\t</div>\n\n\t\n\n    \n\n\t\t<!-- team recent stats -->\n\t\t<h3 v-show=\"type === 'event' &amp;&amp; !noStats\" class=\"Stats__header\">Team Stats</h3>\t\n    <div v-show=\"type === 'teamRecent' || type === 'event'\">\n    \t<div v-if=\"overflowed.teamRecent\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.teamRecent.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.teamRecent.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\n\t\t\t<div id=\"teamRecentDiv\" class=\"table-responsive\">\n\t\t\t\t<table v-show=\"teamRecentStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in teamRecentCols\" class=\"stat-columns text-center\" :class=\"[teamSortKey === key ? 'col-sort' : '', key === 'opp' ? 'opp' : '']\" @click=\"teamSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"teamSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in teamRecentStats | orderBy teamSortKey teamSortOrders[teamSortKey]\">\n\t\t\t\t      <td v-for=\"key in teamRecentCols\" class=\"stat-entries\" :class=\"[key === 'win' ? winLossClass(val[key]) : '']\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- team season stats -->\n\t\t<div v-show=\"type === 'teamSeason'\">\n\t\t\t<div v-if=\"overflowed.teamSeason\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.teamSeason.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.teamSeason.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<div id=\"teamSeasonDiv\" class=\"table-responsive\">\n\t\t\t\t<table v-show=\"teamSeasonStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in teamSeasonCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr>\n\t\t\t\t      <td v-for=\"key in teamSeasonCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"teamSeasonStats[key] === null\">-</span>\n\t\t\t\t        {{ teamSeasonStats[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- player season stats -->\n\t\t<div v-show=\"type === 'playerSeason'\">\n\t\t\t<div v-if=\"overflowed.playerSeason\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.playerSeason.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.playerSeason.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\n\t\t\t<div id=\"playerSeasonDiv\" class=\"table-responsive\">\n\t\t\t\t<table v-show=\"playerSeasonStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in playerSeasonCols\" class=\"stat-columns text-center\" :class=\"[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '', \n\t\t\t      \t\t\t\t\t\t\t\t(playerSortKey === 'lastname' &amp;&amp; key === 'name') ? 'col-sort' : '']\" @click=\"playerSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"playerSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in playerSeasonStats | orderBy playerSortKey playerSortOrders[playerSortKey]\">\n\t\t\t\t      <td v-for=\"key in playerSeasonCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- player recent stats -->\n\t\t<div v-show=\"type === 'playerRecent' || type === 'event'\">\n\t\t\t<h3 v-show=\"type === 'event' &amp;&amp; !noStats\" class=\"Stats__header\">Player Stats</h3>\n\t\t\t<div v-if=\"overflowed.playerRecent\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.playerRecent.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.playerRecent.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\n\t\t\t<div id=\"playerRecentDiv\">\n\t\t\t\t<div class=\"table-responsive\">\n\t\t\t\t\t<table v-show=\"playerRecentStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t\t<thead>\n\t\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t\t      \t<th v-for=\"key in playerRecentCols\" class=\"stat-columns text-center\" :class=\"[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '',\n\t\t\t\t      \t\t\t\t\t\t\t\t(playerSortKey === 'lastname' &amp;&amp; key === 'name') ? 'col-sort' : '']\" @click=\"playerSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t\t      \t\t<br><span class=\"caret\" :class=\"playerSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t\t      \t</th>\n\t\t\t\t    \t</tr>\n\t\t\t\t  \t</thead>\n\t\t\t\t  \t<tbody>\n\t\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in playerRecentStats | orderBy playerSortKey playerSortOrders[playerSortKey]\">\n\t\t\t\t\t      <td v-for=\"key in playerRecentCols\" class=\"stat-entries\">\n\t\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t\t        {{ val[key] }}\n\t\t\t\t\t      </td>\n\t\t\t\t    \t</tr>\n\t\t\t\t  \t</tbody>\n\t\t\t\t\t</table>\n\t\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div v-show=\"ifPagination\" class=\"pagination text-center\">\n\t\t\t<ul class=\"pagination\">\n\t\t\t\t<li :class=\"{active: n === pagActive}\" v-for=\"n in pagCount\">\n\t\t\t\t\t<a @click=\"switchPag(n)\">{{ n + 1 }}</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>\n\n\n\t</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -27191,7 +27267,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],174:[function(require,module,exports){
+},{"../mixins/StatsScrollSpy.js":189,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],174:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Calendar.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert(".Calendar {\n  padding-bottom: 3em;\n  max-width: 775px;\n  margin: 0 auto;\n}\n.Calendar__nav {\n  margin-top: 15px;\n}\n.Calendar__nav .chevron {\n  font-size: 44px;\n  margin-top: 7px;\n}\n.Calendar__header {\n  margin: 0;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  margin-top: 45px;\n  background: #f5f5f5;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\n#calendarNav {\n  height: 54px;\n}\n#calendarNav div {\n  padding-left: 0;\n}\n@media only screen and (max-width: 767px) {\n  table#calNav {\n    margin: auto;\n  }\n}\n#calNavHeaderTable {\n  padding: 0;\n}\n#addEventContainer {\n  float: right;\n  margin-top: 17px;\n}\n@media only screen and (max-width: 767px) {\n  #addEventContainer {\n    text-align: center;\n    margin: auto;\n    margin-top: 15px;\n    margin-bottom: 15px;\n    float: none;\n  }\n}\n#addEventIcon {\n  margin: 0 auto;\n}\n#addEventText {\n  position: relative;\n  font-size: 16px;\n  left: 3px;\n}\n#addEventIconDiv {\n  margin-top: 4px;\n}\n#addEventIconDiv {\n  width: 100%;\n  text-align: right;\n}\n#addEventDiv {\n  padding-bottom: 15px;\n}\n#chevRight,\n#chevLeft {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\n#chevRight:hover,\n#chevLeft:hover {\n  cursor: pointer;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
@@ -27344,7 +27420,7 @@ exports.default = {
     chevClick: function chevClick(direction) {
 
       var chevron = $('#chev' + direction);
-      calendar.navigate(chevron.data('cal-nav'));
+      this.calendar.navigate(chevron.data('cal-nav'));
 
       //animate
       chevron.addClass(rubberBand).one(animateEnd, function () {
@@ -27376,7 +27452,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],175:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/CreateTeam.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  padding: 15px;\n  background: #fff;\n  max-width: 700px;\n}\n.CreateTeam div {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 0;\n}\n.CreateTeam__header hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 35px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 25px;\n}\n.CreateTeam__inputs .little {\n  font-size: 13px;\n  color: #9f9f9f;\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  padding-top: 25px;\n  padding-bottom: 25px;\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--addPlayers {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -27387,52 +27463,183 @@ var _GoogleTypeahead = require('./GoogleTypeahead.vue');
 
 var _GoogleTypeahead2 = _interopRequireDefault(_GoogleTypeahead);
 
+var _StatsSelection = require('../mixins/StatsSelection.js');
+
+var _StatsSelection2 = _interopRequireDefault(_StatsSelection);
+
+var _Stats = require('./Stats.vue');
+
+var _Stats2 = _interopRequireDefault(_Stats);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
 
 	name: 'CreateTeam',
 
+	mixins: [_StatsSelection2.default],
+
 	props: [],
 
 	components: {
-		'google-maps-typeahead': _GoogleTypeahead2.default
+		'google-autocomplete': _GoogleTypeahead2.default,
+		'rc-stats': _Stats2.default
 	},
 
 	data: function data() {
 
+		var players = [];
+		var coaches = [];
+		var playerErrors = [];
+		var coachErrors = [];
+
+		//initialize arrays of players/coaches for v-for/v-model
+		for (var x = 1; x <= 50; x++) {
+			players.push({
+				name: 'Kobe Bryant',
+				email: 'kbryant24@gmail.com'
+			}, {
+				name: 'Chris Paul',
+				email: 'cp3@gmail.com'
+			});
+			coaches.push({
+				name: 'Bryan Klapes',
+				email: ''
+			});
+			playerErrors.push({
+				name: '',
+				email: ''
+			});
+			coachErrors.push({
+				name: '',
+				email: ''
+			});
+		}
+
 		return {
-			name: '',
-			teamname: '',
-			slogan: '',
-			pic: '',
+			prefix: this.$root.prefix,
+			page: 'roster',
+			name: 'WHS Basketball',
+			teamname: 'whsbasketball',
+			slogan: 'Home of Warriors Basketball',
+			gender: '0',
 			location: {
-				title: '',
-				city: '',
-				long: '',
-				lat: ''
+				homefield: 'Tuck Field',
+				city: 'Hampton, NH',
+				long: -70.8389219,
+				lat: 42.9375932
 			},
 			sport: '0',
-			players: [],
-			coaches: [],
+			userIsA: '4',
+			numPlayers: 2,
+			numCoaches: 1,
+			players: players,
+			coaches: coaches,
 			errors: {
+				totals: {
+					info: 0,
+					stats: 0,
+					roster: 0
+				},
 				name: '',
 				teamname: '',
+				sport: '',
+				gender: '',
+				location: '',
 				homefield: '',
-				slogan: ''
+				slogan: '',
+				players: playerErrors,
+				coaches: coachErrors
 			}
 		};
 	},
-	created: function created() {},
 
-
-	computed: {},
 
 	methods: {
+		save: function save() {
+			this.errors.totals.roster = this.errorCheck(this.page);
+
+			if (this.errors.totals.roster > 0) return;
+
+			//build up object of all the team data
+			var data = {
+				name: this.name,
+				teamname: this.teamname,
+				slogan: this.slogan,
+				gender: this.gender,
+				homefield: this.location.homefield,
+				city: this.location.city,
+				long: this.location.long,
+				lat: this.location.lat,
+				sport: this.sport,
+				userIsA: this.userIsA,
+				numPlayers: this.numPlayers,
+				numCoaches: this.numCoaches,
+				userStats: this.userSelected,
+				rcStats: this.rcSelected
+			};
+			var players = [];
+			var coaches = [];
+			for (var x = 0; x < this.numPlayers; x++) {
+				players.push(this.players[x]);
+			}
+			for (var x = 0; x < this.numCoaches; x++) {
+				coaches.push(this.coaches[x]);
+			}
+			data.players = players;
+			data.coaches = coaches;
+
+			//send the post request to the server
+			var self = this;
+			var url = this.prefix + 'team/create';
+			this.$http.post(url, data).then(function (response) {
+				//check out the response, validator may have returned errors
+				if (!response.data.ok) self.parseErrors(response.data.errors);else {
+					//felt like this process was *too* quick, add artifical delay
+					setTimeout(function () {
+						//route the user to their newly created team
+						self.$router.go('/team/' + response.data.team.teamname);
+					}, 750);
+				}
+			}).catch(function () {
+				self.$root.banner('bad', "There was a problem saving your team, refresh the page and try again");
+			});
+		},
+
+
+		//if there were errors returned from the server when creating the team,
+		//bind them to the inputs and show the correct page
+		parseErrors: function parseErrors(errors) {
+			console.log(errors);
+			this.$root.banner('bad', "There were some errors, correct them and try again");
+			var changed = false;
+
+			//errors is structured like
+			//errors: { teamname : ['error1', 'error2']}
+			for (var key in errors) {
+				this.errors[key] = errors[key];
+
+				//if there are errors on the earlier pages, show those first
+				if (key === 'name' || key === 'teamname' || key === 'sport' || key === 'gender' || key === 'location' || key === 'slogan' || key === 'homefield') {
+					this.page = 'info';
+					changed = true;
+				} else if (!changed && (key === 'players' || key === 'coaches')) {
+					this.page = 'roster';
+					changed = true;
+				}
+			}
+		},
+		changePage: function changePage() {
+			this.errors.totals[this.page] = this.errorCheck(this.page);
+
+			if (!this.errors.totals[this.page]) {
+				if (this.page === 'info') this.page = 'stats';else if (this.page === 'stats') this.page = 'roster';else this.$root.banner('bad', "There was an error, try refreshing the page");
+			}
+		},
 		availability: function availability() {
 			var errors = this.errorCheck('teamname');
 			var self = this;
-			if (errors === 0) {
+			if (!errors) {
 				//ask the server if this teamname is available
 				var url = this.$root.prefix + '/team/create/' + this.teamname;
 				this.$http.post(url).then(function (response) {
@@ -27444,50 +27651,250 @@ exports.default = {
 
 		//checks all the fields for errors
 		//returns number of errors, error === 0 is good
-		errorCheck: function errorCheck() {
+		errorCheck: function errorCheck(field) {
 			var errors = 0;
 
-			//check teamname
-			//make sure they're only using alphanumerics for teamname
-			var alphaNum = /^[a-zA-Z0-9]+$/;
-			if (!this.teamname.length) {
-				//need at least one character
-				this.errors.teamname = 'Enter a team username';
-				errors++;
-			} else if (this.teamname.length > 18) {
-				//too long
-				this.errors.teamname = 'Must be 18 characters or less';
-				errors++;
-			} else if (!this.teamname.match(alphaNum)) {
-				this.errors.teamname = 'Only use letters and numbers';
-				errors++;
-			} else {
-				//if its fine, set error to empty
-				this.errors.teamname = '';
+			//check teamname, sometimes checks individually on input debounce
+			if (field === 'teamname' || field === 'info') {
+				//make sure they're only using alphanumerics for teamname
+				var alphaNum = /^[a-zA-Z0-9]+$/;
+				if (!this.teamname.length) {
+					//need at least one character
+					this.errors.teamname = 'Enter a team username';
+					errors++;
+				} else if (this.teamname.length > 18) {
+					//too long
+					this.errors.teamname = 'Must be 18 characters or less';
+					errors++;
+				} else if (!this.teamname.match(alphaNum)) {
+					this.errors.teamname = 'Only use letters and numbers';
+					errors++;
+				} else {
+					//if its fine, set error to empty
+					this.errors.teamname = '';
+				}
 			}
 
-			//check other stuff
+			//check all info fields if trying to move to stats section
+			if (field === 'info') {
+				//team name
+				if (!this.name.length) {
+					errors++;
+					this.errors.name = 'Choose a name for your team';
+				} else this.errors.name = '';
+
+				if (!this.sport) {
+					errors++;
+					this.errors.sport = 'Choose a sport';
+				} else this.errors.sport = '';
+
+				//check that the google typeahead has returned data
+				if (!this.location.city || !this.location.lat || !this.location.long) {
+					errors++;
+					this.errors.location = "Enter your team's location";
+				} else this.errors.location = '';
+			}
+
+			//check that the people on the rosters have valid inputs
+			if (field === 'roster') {
+				//loop through players
+				for (var x = 0; x < this.numPlayers; x++) {
+					//check that they've added a name for every player
+					var player = this.players[x];
+					if (!player.name) {
+						errors++;
+						this.errors.players[x].name = "Enter the player's name";
+					} else this.errors.players[x].name = '';
+
+					//check that any emails inputted are valid emails
+					if (player.email.length) {
+						if (!this.$root.validateEmail(player.email)) {
+							errors++;
+							this.errors.players[x].email = "Not a valid email address";
+						} else this.errors.players[x].email = '';
+					} else this.errors.players[x].email = '';
+				}
+
+				//loop through coaches
+				for (var x = 0; x < this.numCoaches; x++) {
+					//check that they've added a name for every coach
+					var coach = this.coaches[x];
+					if (!coach.name) {
+						errors++;
+						this.errors.coaches[x].name = "Enter the coach's name";
+					} else this.errors.coaches[x].name = '';
+
+					//check that any emails inputted are valid emails
+					if (coach.email.length) {
+						if (!this.$root.validateEmail(coach.email)) {
+							errors++;
+							this.errors.coaches[x].email = "Not a valid email address";
+						} else this.errors.coaches[x].email = '';
+					} else this.errors.coaches[x].email = '';
+				}
+			}
 
 			return errors;
 		}
 	},
 
+	events: {
+		initSelectPicker: function initSelectPicker() {
+
+			var userPicker = $('.selectpicker[CreateTeam="userStats"]');
+			var rcPicker = $('.selectpicker[CreateTeam="rcStats"]');
+
+			userPicker.selectpicker({});
+			rcPicker.selectpicker({});
+
+			userPicker.selectpicker('val', this.userSelected);
+			rcPicker.selectpicker('val', this.rcSelected);
+			userPicker.selectpicker('refresh');
+			rcPicker.selectpicker('refresh');
+
+			//set up listeners to tell StatsSelection mixin to update which are disabled
+			userPicker.on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+				this.setDependencies();
+			}.bind(this));
+
+			rcPicker.on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+				this.setDependencies();
+			}.bind(this));
+		},
+		renderSelectPicker: function renderSelectPicker() {
+			var userPicker = $('.selectpicker[CreateTeam="userStats"]');
+			var rcPicker = $('.selectpicker[CreateTeam="rcStats"]');
+
+			userPicker.selectpicker('refresh');
+			rcPicker.selectpicker('refresh');
+			userPicker.selectpicker('val', this.userSelected);
+			rcPicker.selectpicker('val', this.rcSelected);
+			userPicker.selectpicker('render');
+			rcPicker.selectpicker('render');
+		}
+	},
+
+	watch: {
+		//if they've changed the sport, update the stats associated with it too
+
+		sport: function sport(val) {
+			this.initSelections(this.sport);
+
+			if (this.errors.sport && val.length) {
+				//also if there were any existing errors, remove
+				this.errors.sport = '';
+			}
+		},
+
+
+		//if they've inputted something in the name field, remove error saying they didn't
+		name: function name(val) {
+			if (val.length) {
+				this.errors.name = '';
+			}
+		},
+		teamLocation: function teamLocation(val) {
+			if (val.length) {
+				this.errors.location = '';
+			}
+		},
+
+
+		//add this user to the list of coaches or players depending on how the respond to question
+		userIsA: function userIsA(val, old) {
+			var name = this.$root.user.firstname + ' ' + this.$root.user.lastname;
+			var email = this.$root.user.mail;
+
+			//they're a player, add their details to the top of the players array
+			if (val === '0') {
+				//add a player, remove a coach if that's what they were before
+				this.numPlayers++;
+				if (old === '2') this.numCoaches--;
+
+				this.players = this.players.filter(function (player) {
+					return player.name !== name;
+				});
+				this.coaches = this.coaches.filter(function (coach) {
+					return coach.name !== name;
+				});
+				this.players.unshift({
+					name: name,
+					email: email
+				});
+			}
+
+			//they're a coach, add their details to the top of the coaches array
+			else if (val === '2') {
+					//add a coach, remove a player if that's what they were before
+					this.numCoaches++;
+					if (old === '0') this.numPlayers--;
+
+					this.players = this.players.filter(function (player) {
+						return player.name !== name;
+					});
+					this.coaches = this.coaches.filter(function (coach) {
+						return coach.name !== name;
+					});
+					this.coaches.unshift({
+						name: name,
+						email: email
+					});
+				}
+
+				//they're a fan, remove their details from coaches and players arrays
+				else if (val === '4') {
+						if (old === '0') this.numPlayers--;
+						if (old === '2') this.numCoaches--;
+
+						this.players = this.players.filter(function (player) {
+							return player.name !== name;
+						});
+						this.coaches = this.coaches.filter(function (coach) {
+							return coach.name !== name;
+						});
+					}
+			//refresh the pickers
+			$('.selectpicker[CreateTeam="numPlayers"]').selectpicker('val', this.numPlayers);
+			$('.selectpicker[CreateTeam="numCoaches"]').selectpicker('val', this.numCoaches);
+		}
+	},
+
+	computed: {
+		teamLocation: function teamLocation() {
+			return this.location.city;
+		}
+	},
+
 	ready: function ready() {
+
+		//calling StatsSelection mixin function
+		this.initSelections(this.sport);
+
 		$(function () {
 
-			$('.selectpicker[CreateTeam]').selectpicker({});
+			$('.selectpicker[CreateTeam="sport"]').selectpicker({});
+			$('.selectpicker[CreateTeam="numPlayers"]').selectpicker({});
+			$('.selectpicker[CreateTeam="numCoaches"]').selectpicker({});
+			$('.selectpicker[CreateTeam="gender"]').selectpicker({});
+			$('.selectpicker[CreateTeam="userIsA"]').selectpicker({});
 		}.bind(this));
 	}
-};
+}; /*Dropzone.options.createTeamDropzone = {
+   	paramName: 'file',
+   	dictDefaultMessage: 'Drag and drop a file or click here',
+   	headers: {'X-CSRF-TOKEN': $('#_token').attr('value') },
+   	maxFiles: 1,
+   	maxFilesize: 3,
+   };*/
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t<form @submit.prevent=\"\">\n\t\t\t\t<div class=\"CreateTeam\">\n\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__title\">\n\t\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t\t</div>\n\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Username</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"[errors.teamname ? 'form-error' : '']\" maxlength=\"18\" @keyup=\"availability | debounce 750\" placeholder=\"whsbasketball16\" required=\"\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"little\">rookiecard.com/team/{{teamname}}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"0\">Basketball</option>    \n\t              <option value=\"1\">Baseball</option>    \n\t              <option value=\"2\">Softball</option>    \n            \t</select>\n\t\t\t\t\t\t\t<span class=\"little\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\">{{ slogan.length }} / 35</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"35\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"25\" placeholder=\"Cowell Stadium\" v-model=\"location.title\">\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- has its own div wrapper built in -->\n\t\t\t\t\t\t<google-maps-typeahead :city.sync=\"location.city\" :long.sync=\"location.long\" :lat.sync=\"location.lat\" label=\"City/Town\"></google-maps-typeahead>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t</div>\n\t\t\t</form>\n\n\t\t</div>\n\t</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Username</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" @keyup=\"availability | debounce 750\" placeholder=\"whsbasketball16\" required=\"\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"0\">Basketball</option>    \n\t              <option value=\"1\" disabled=\"\">Baseball</option>    \n\t              <option value=\"2\" disabled=\"\">Softball</option>    \n\t              <option value=\"3\" disabled=\"\">Football</option>    \n\t              <option value=\"4\" disabled=\"\">Soccer</option>    \n\t              <option value=\"5\" disabled=\"\">Ultimate</option>    \n\t              <option value=\"6\" disabled=\"\">Lacrosse</option>    \n\t              <option value=\"7\" disabled=\"\">Rugby</option>    \n\t              <option value=\"8\" disabled=\"\">Field Hockey</option>    \n\t              <option value=\"9\" disabled=\"\">Ice Hockey</option>    \n\t              <option value=\"10\" disabled=\"\">Volleyball</option>    \n            \t</select>\n            \t<span v-show=\"errors.sport\" class=\"form-error\">{{ errors.sport }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Gender</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"0\">Men</option>\n\t\t\t\t\t\t\t\t<option value=\"1\">Women</option>\n\t\t\t\t\t\t\t\t<option value=\"2\">Coed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t<span v-show=\"errors.gender\" class=\"form-error\">{{ errors.gender }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"25\" placeholder=\"Cowell Stadium\" v-model=\"location.homefield\">\n\t\t\t\t\t\t\t<span v-show=\"errors.homefield\" class=\"form-error\">{{ errors.homefield }}</span>\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"location.city\" :long.sync=\"location.long\" :lat.sync=\"location.lat\" label=\"City / Town\" :error=\"errors.location\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span v-show=\"errors.slogan\" class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\n\t\t\t\t\t<!-- <div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<form action=\"/team/create/unhfootball/pic\" class=\"dropzone\" id=\"create-team-dropzone\"></form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div> -->\n\t\t\t\t\t\n\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existant back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span v-show=\"errors.totals.info > 0\" class=\"form-error\">Correct errors on page before continuing</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\t\t\t\t\t<!-- stats -->\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by Admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\" :data-subtext=\"stat.subtext\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span v-show=\"errors.totals.stats > 0\" class=\"form-error\">Correct errors on page before continuing</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\t\t\t\t\t<!-- stats -->\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that will be apart of this team.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to this team, enter their email.</p>\n\t\t\t\t\t\t<p>If you leave an email field blank, a \"ghost user\" will be used instead.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of these settings at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Who are you?</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--addPlayers\">\n\t\t\t\t\t\t\t<label>I am a..</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"0\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"2\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"4\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Add Players</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--addPlayers\">\n\t\t\t\t\t\t\t<label>Number of Players</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"numPlayers\" class=\"selectpicker form-control show-tick\" v-model=\"numPlayers\">\n\t\t\t\t\t\t\t\t<option v-for=\"n in 50\" :value=\"n + 1\">{{ n + 1 }}</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-for=\"n in numPlayers\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"players[$index].name\" :class=\"{'form-error' : errors.players[$index].name}\" placeholder=\"Leonardo DaVinci\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.players[$index]\" class=\"form-error\">{{ errors.players[$index].name }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"players[$index].email\" :class=\"{'form-error' : errors.players[$index].email}\" placeholder=\"leodavinc@gmail.com\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.players[$index].email\" class=\"form-error\">{{ errors.players[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Add Coaches</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div class=\"--addPlayers\">\n\t\t\t\t\t\t\t<label>Number of Coaches</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"numCoaches\" class=\"selectpicker form-control show-tick\" v-model=\"numCoaches\">\n\t\t\t\t\t\t\t\t<option v-for=\"n in 10\" :value=\"n + 1\">{{ n + 1 }}</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-for=\"n in numCoaches\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coaches[$index].name\" :class=\"{'form-error' : errors.coaches[$index].name}\" placeholder=\"Nikola Tesla\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.coaches[$index]\" class=\"form-error\">{{ errors.coaches[$index].name }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coaches[$index].email\" :class=\"{'form-error' : errors.coaches[$index].email}\" placeholder=\"tesla@gmail.com\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.coaches[$index].email\" class=\"form-error\">{{ errors.coaches[$index].email }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span v-show=\"errors.totals.roster > 0\" class=\"form-error\">Correct errors on page before saving</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2016 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/CreateTeam.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  padding: 15px;\n  background: #fff;\n  max-width: 700px;\n}\n.CreateTeam div {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 0;\n}\n.CreateTeam__header hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 35px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 25px;\n}\n.CreateTeam__inputs .little {\n  font-size: 13px;\n  color: #9f9f9f;\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n"] = false
+    require("vueify-insert-css").cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  padding-top: 25px;\n  padding-bottom: 25px;\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--addPlayers {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -27498,7 +27905,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./GoogleTypeahead.vue":179,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],176:[function(require,module,exports){
+},{"../mixins/StatsSelection.js":190,"./GoogleTypeahead.vue":179,"./Stats.vue":182,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],176:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditBasketballStats.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert("#statsWrapper {\n  padding: 1.5em;\n}\n#statsWrapper h3 {\n  margin-top: 2em;\n}\n.stats-radio {\n  padding-left: 3em;\n}\n.stat-notes {\n  margin-bottom: 20px;\n}\n.edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-bottom: 25px;\n  }\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.meta-data {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 2em;\n}\n.meta-data div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-right: 2em;\n}\n.meta-data .opponent {\n  max-width: 300px;\n  min-width: 250px;\n}\n.meta-data .opponent-score {\n  max-width: 120px;\n  min-width: 120px;\n}\ninput.form-control.stats-input {\n  margin: 0 auto;\n  width: 50px;\n  height: 0;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n}\n.form-group .new-stats {\n  vertical-align: middle;\n  min-width: 96px;\n}\n.stats-table tr.no-hover:hover td,\n.stats-table tr.form-group:hover td {\n  background-color: #fff !important;\n  border: 1px solid #cacaca !important;\n}\n")
@@ -27512,6 +27919,10 @@ var _isInteger = require('babel-runtime/core-js/number/is-integer');
 
 var _isInteger2 = _interopRequireDefault(_isInteger);
 
+var _StatsScrollSpy = require('../mixins/StatsScrollSpy.js');
+
+var _StatsScrollSpy2 = _interopRequireDefault(_StatsScrollSpy);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
@@ -27520,8 +27931,9 @@ exports.default = {
 
 	props: ['stats', 'players', 'event', 'team', 'editEvent', 'playerCols', 'teamCols'],
 
-	data: function data() {
+	mixins: [_StatsScrollSpy2.default],
 
+	data: function data() {
 		return {
 			newStats: [],
 			teamStats: {},
@@ -27534,17 +27946,36 @@ exports.default = {
 	},
 
 
+	watch: {
+
+		//if stats change, reinitialize the page
+
+		stats: function stats() {
+			this.compile();
+		},
+
+
+		//if the viewed event changes, reinitialize the page
+		event: function event() {
+			this.compile();
+		}
+	},
+
 	computed: {
 		usesMinutes: function usesMinutes() {
-			if (this.newStatCols) {
-				if (this.newStatCols.indexOf('min') !== -1) return true;else return false;
+			if (this.newPlayerCols) {
+				if (this.newPlayerCols.indexOf('min') !== -1) return true;else return false;
 			} else return true;
 		},
 		newPlayerCols: function newPlayerCols() {
 			var index;
 			var newCols = [];
 			this.playerCols.forEach(function (col) {
-				newCols.push(col);
+				if (col === 'name') {
+					//add dnp to the list after name
+					newCols.push(col);
+					newCols.push('dnp');
+				} else newCols.push(col);
 			});
 
 			index = newCols.indexOf('date');
@@ -27565,7 +27996,7 @@ exports.default = {
 			index = newCols.indexOf('efg_');
 			if (index !== -1) newCols.splice(index, 1);
 
-			index = newCols.indexOf('ast-to');
+			index = newCols.indexOf('astto');
 			if (index !== -1) newCols.splice(index, 1);
 
 			index = newCols.indexOf('ts_');
@@ -27596,24 +28027,15 @@ exports.default = {
 			index = newCols.indexOf('name');
 			if (index !== -1) newCols.splice(index, 1);
 
+			index = newCols.indexOf('dnp');
+			if (index !== -1) newCols.splice(index, 1);
+
 			return newCols;
 		}
 	},
 
-	watch: {
-
-		//wait for an event to be clicked, initialize
-
-		stats: function stats() {
-			this.initialize();
-		},
-		event: function event() {
-			this.initialize();
-		}
-	},
-
 	methods: {
-		initialize: function initialize() {
+		compile: function compile() {
 			var players = this.players;
 			var existingStats = this.stats;
 			var newStats = [];
@@ -27636,32 +28058,33 @@ exports.default = {
 					continue;
 				}
 
-				if (IDs.indexOf(curr.owner_id) !== -1)
+				if (IDs.indexOf(curr.member_id) !== -1)
 					//this player's stats already parsed (error somewhere down the road)
 					continue;
 
 				var stats = JSON.parse(curr.stats);
 
 				stats['id'] = curr.owner_id;
+				stats['member_id'] = curr.member_id;
 
 				newStats.push(stats);
-				IDs.push(curr.owner_id);
+				IDs.push(curr.member_id);
 			}
 
 			for (var x = 0; x < players.length; x++) {
 				var curr = players[x];
 				var emptyStats = {};
 
-				if (IDs.indexOf(curr.id) !== -1)
+				if (IDs.indexOf(curr.member_id) !== -1)
 					//this player's stats already parsed, don't create empty row
 					continue;
 
-				var name = curr.firstname[0] + '. ' + curr.lastname;
 				this.newPlayerCols.forEach(function (col) {
 					emptyStats[col] = '';
 				});
 				emptyStats.id = curr.id;
-				emptyStats.name = name;
+				emptyStats.member_id = curr.member_id;
+				emptyStats.name = this.abbreviateName(curr, players);
 				emptyStats.starter = false;
 				emptyStats.dnp = false;
 
@@ -27669,7 +28092,45 @@ exports.default = {
 			}
 
 			this.newStats = newStats;
+
+			this.initScrollSpy();
 		},
+
+
+		//attach listeners for whether or not to show SCROLL > indicators
+		initScrollSpy: function initScrollSpy() {
+
+			setTimeout(function () {
+				this.attachScrollListener('#editTeamStatsDiv', 'teamStats');
+				this.attachScrollListener('#editPlayerStatsDiv', 'playerStats');
+			}.bind(this), 500);
+		},
+
+
+		//create an abbreviated name for 'thisPlayer'
+		//extend if that name exists, e.g. 2 different D. Argue, try Da. Argue, etc
+		abbreviateName: function abbreviateName(thisPlayer, players) {
+			var offset = 1;
+			var name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
+			var theirName = '';
+			//loop through checking all other players for duplicates
+			for (var x = 0; x < players.length; x++) {
+				if (thisPlayer.member_id === players[x].member_id)
+					//don't include this user
+					continue;
+
+				theirName = players[x].firstname.substring(0, 1) + '. ' + players[x].lastname;
+				while (theirName === name) {
+					offset++;
+					name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
+					if (offset > 4) break;
+				}
+			}
+			return name;
+		},
+
+
+		//decide whether or not this stat column needs special formatting
 		specialRow: function specialRow(col) {
 			if (col === 'name' || col === 'starter' || col === 'dnp') return true;
 			if (col[col.length - 1] === '_') return true;
@@ -27680,17 +28141,19 @@ exports.default = {
 
 		//submit to database
 		submitStats: function submitStats() {
-			var errorFree = this.errorCheck();
 
-			if (errorFree) {
+			//check that the inputs are error free
+			var errors = this.errorCheck();
+
+			if (!errors) {
 
 				//did these stats exist and were then updated?
-				var updated = this.stats.length ? true : false;
+				var statsAreNew = this.stats.length ? false : true;
 
 				//store how many points team had (for status update meta data)
 				this.meta.teamScore = this.teamStats.pts;
 				this.meta.team = this.team.name;
-
+				var self = this;
 				var data = {
 					playerStats: this.newStats,
 					teamStats: this.teamStats,
@@ -27699,73 +28162,68 @@ exports.default = {
 					meta: this.meta
 				};
 
-				if (!updated) {
+				//save as a new event
+				if (statsAreNew) {
 					var url = this.$parent.prefix + '/stats';
 					this.$http.post(url, data).then(function (response) {
-						this.ajaxSuccess(response, updated);
-					}.bind(this)).catch(this.ajaxError());
-				} else {
-					var url = this.$parent.prefix + '/stats/updateStats';
-					this.$http.put(url, data).then(function (response) {
-						this.ajaxSuccess(response, updated);
-					}.bind(this)).catch(this.ajaxError());
+						//send a stats updated event to parent
+						if (response.data.ok) {
+							self.$dispatch('newStats', response.data.stats, response.data.feed);
+							$('#viewEventModal').modal('hide');
+							self.stats = {};
+							self.compile();
+							self.$root.banner("good", 'Stats saved');
+						} else {
+							//they weren't allowed to add stats
+							self.$root.banner('bad', response.data.error);
+						}
+					}).catch(function () {
+						self.$root.errorMsg();
+					});
 				}
+
+				//update existing stats
+				else {
+						var url = this.$parent.prefix + '/stats';
+						this.$http.put(url, data).then(function (response) {
+							if (response.data.ok) {
+								self.$dispatch('updateStats', response.data, this.event);
+								$('#viewEventModal').modal('hide');
+								self.stats = {};
+								self.compile();
+								self.$root.banner("good", 'Stats saved');
+							} else {
+								//they weren't allowed to update stats
+								self.$root.banner('bad', response.data.error);
+							}
+						}).catch(function () {
+							self.$root.errorMsg();
+						});
+					}
 			}
 		},
 
 
 		//throw away inputted data
 		discardStats: function discardStats() {
-			this.initialize();
 			$('#viewEventModal').modal('hide');
+			this.compile();
 		},
 		deleteStats: function deleteStats() {
+			$('#viewEventModal').modal('hide');
+			this.$dispatch('deleteStats', this.event);
+			this.stats = {};
+			this.compile();
+
+			var self = this;
 			var name = this.$route.params.name;
 			var prefix = this.$parent.prefix;
 			var url = prefix + name + '/stats/' + this.event.id;
-
 			this.$http.delete(url).then(function (response) {
-				$('#viewEventModal').modal('hide');
-				this.$dispatch('deleteStats', this.event);
-				this.$root.banner('good', "Stats have been deleted from this event");
-
-				this.stats = {};
-				this.initialize();
-			}.bind(this)).catch(function (response) {
-				this.$root.banner('bad', "There was a server issue... try again?");
-			}.bind(this));
-		},
-
-
-		//if successful, save new data to state, show success banner
-		ajaxSuccess: function ajaxSuccess(response, updated) {
-
-			$('#viewEventModal').modal('hide');
-
-			if (!updated) {
-
-				var msg = "Your stats have been added to this event";
-				//send a stats updated event to parent
-				this.$dispatch('newStats', response.data.stats, response.data.feed);
-			} else {
-
-				var msg = "Your stats have been updated for this event";
-
-				//send a new stats event to parent
-				if (response.data.length) this.$dispatch('updateStats', response.data, this.event);
-			}
-
-			this.$root.banner("good", msg);
-
-			this.stats = {};
-
-			this.initialize();
-		},
-
-
-		//if unsuccessful, show error message
-		ajaxError: function ajaxError(response) {
-			this.$root.banner('bad', "There was a server problem submitting your stats...try again?");
+				self.$root.banner('good', "Stats deleted");
+			}).catch(function () {
+				self.$root.errorMsg();
+			});
 		},
 
 
@@ -27842,24 +28300,24 @@ exports.default = {
 			for (var x = 0; x < stats.length; x++) {
 				if (stats[x].fg_ > 100) {
 					this.errorMessage('FG');
-					return false;
+					return true;
 				}
 				if (stats[x].threep_ > 100) {
 					this.errorMessage('3P');
-					return false;
+					return true;
 				}
 				if (stats[x].ft_ > 100) {
 					this.errorMessage('FT');
-					return false;
+					return true;
 				}
 			}
 
 			if (!(0, _isInteger2.default)(this.meta.oppScore)) {
 				this.$root.popup('bad', 'Error in Stats!', 'Check that the Opponent\'s score is a number.');
-				return false;
+				return true;
 			}
 
-			return true;
+			return false;
 		},
 
 
@@ -27872,7 +28330,7 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div id=\"statsWrapper\">\n\n\t\t<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->\n\t\t<div class=\"edit-button\">\n\t\t\t<a class=\"btn btn-primary\" @click=\"editEvent = true\">\n\t\t\t\tEdit Event Details\n\t\t\t\t<i id=\"edit-chevron\" class=\"material-icons\">chevron_right</i>\n\t\t\t</a>\n\t\t</div>\n\n\t\t<!-- notes to user -->\n\t\t<div class=\"stat-notes\">\n\t\t\t<span><strong>Notes about stat entries:</strong></span>\n\t\t\t<ul>\n\t\t\t\t<li>\n\t\t\t\t\t<p>Any fields left empty are treated as zeros.</p>\n\t\t\t\t</li>\n\t\t\t\t<li v-show=\"usesMinutes\">\n\t\t\t\t\t<p>If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.</p>\n\t\t\t\t</li>\n\t\t\t\t<li v-show=\"!usesMinutes\">\n\t\t\t\t\t<p>If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.</p>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>\n\n\t\t<!-- input new stats here -->\n\t\t<h3>Box Score</h3>\n\t\t<form @submit.prevent=\"submitStats()\">\n\t\t\t<div class=\"table-responsive stats-container\">\n\t\t\t\t<table class=\"table stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th v-for=\"col in newPlayerCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t\t      \t\t{{ col | basketballStats }}\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-for=\"(index, row) in newStats | orderBy 'lastname'\" class=\"form-group\">\n\t\t\t\t      <td v-for=\"col in newPlayerCols\" class=\"new-stats stat-entries text-center\">\n\t\t\t\t      \t<!-- span inserts calculated data that isn't inputted by user -->\n\t\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t\t      \t\t<span v-if=\"col === 'name'\">{{ row[col] }}</span>\n\t\t\t\t      \t\t<input v-if=\"col === 'starter'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t\t      \t\t<input v-show=\"!usesMinutes\" v-if=\"col === 'dnp'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t\t      \t\t<span v-if=\"col === 'fg_'\">{{ newStats_percent(index, 'fg') | checkPercentage }}</span>\n\t\t\t\t      \t\t<span v-if=\"col === 'ft_'\">{{ newStats_percent(index, 'ft') | checkPercentage }}</span>\n\t\t\t\t      \t\t<span v-if=\"col === 'threep_'\">{{ newStats_percent(index, 'threep') | checkPercentage }}</span>\n\t\t\t\t      \t</span>\n\t\t\t\t      \t<input v-if=\"!specialRow(col)\" type=\"text\" class=\"form-control stats-input text-center\" autocomplete=\"off\" :placeholder=\"col | basketballStats\" v-model=\"newStats[index][col]\" number=\"\">\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t\t\t<div class=\"meta-data\">\n\t\t\t\t<div class=\"form-group opponent\">\n\t\t\t\t\t<label for=\"opp\">Opponent</label>\n\t\t\t\t\t<input name=\"opp\" type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" v-model=\"meta.opp\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"form-group opponent-score\">\n\t\t\t\t\t<label for=\"oppScore\">Opponent Score</label>\n\t\t\t\t\t<input name=\"oppScore\" type=\"text\" class=\"form-control\" number=\"\" required=\"\" autocomplete=\"off\" v-model=\"meta.oppScore\">\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- compiled team stats table -->\n\t\t\t<h3>Team Stats</h3>\n\t\t\t<div class=\"table-responsive stats-container\">\n\t\t\t\t<table class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th v-for=\"col in newTeamCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t\t      \t\t{{ col | basketballStats }}\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr class=\"no-hover\">\n\t\t\t\t      <td v-for=\"col in newTeamCols\" class=\"stat-entries\">\n\t\t\t\t      <!-- span inserts calculated percentages instead of totals -->\n\t\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t\t\t      \t<span v-if=\"col === 'fg_'\">{{ team_percent('fg') | checkPercentage }}</span>\n\t\t\t\t\t      \t<span v-if=\"col === 'threep_'\">{{ team_percent('threep') | checkPercentage }}</span>\n\t\t\t\t\t      \t<span v-if=\"col === 'ft_'\">{{ team_percent('ft') | checkPercentage }}</span>\n\t\t\t\t\t      </span>\n\t\t\t\t      \t<span v-else=\"\">{{ team_total(col) }}</span>\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-md-2\" :class=\"[stats.length ? 'col-md-offset-3' : 'col-md-offset-4',\n\t      \t\t\t         stats.length ? 'col-sm-offset-0' : 'col-sm-offset-2']\">\n\t      \t<input type=\"submit\" class=\"btn btn-block btn-primary btn-md\" value=\"SAVE\">\n\t      </div>\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\" v-show=\"stats.length\">\n\t      \t<a @click=\"deleteStats()\" class=\"btn btn-block btn-delete btn-md\">DELETE</a>\n\t      </div>\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\">\n\t      \t<a @click=\"discardStats()\" class=\"btn btn-block btn-cancel btn-md outline\">CANCEL</a>\n\t      </div>\n\t    </div>\n\n\t\t</form>\n\t</div>\n\t\t\n\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div id=\"statsWrapper\">\n\n\t\t<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->\n\t\t<div class=\"edit-button\">\n\t\t\t<a class=\"btn btn-primary --chevron --lg\" @click=\"editEvent = true\">\n\t\t\t\tEdit Event Details\n\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t</a>\n\t\t</div>\n\n\t\t<!-- notes to user -->\n\t\t<div class=\"stat-notes\">\n\t\t\t<span><strong>Notes about stat entries:</strong></span>\n\t\t\t<ul>\n\t\t\t\t<li>\n\t\t\t\t\t<p>Any fields left empty are treated as zeros.</p>\n\t\t\t\t</li>\n\t\t\t\t<li v-show=\"usesMinutes\">\n\t\t\t\t\t<p>If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.</p>\n\t\t\t\t</li>\n\t\t\t\t<li v-show=\"!usesMinutes\">\n\t\t\t\t\t<p>If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.</p>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>\n\n\t\t<!-- input new stats here -->\n\t\t<h3>Box Score</h3>\n\t\t<form @submit.prevent=\"\">\n\t\t\t<div v-if=\"overflowed.playerStats\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.playerStats.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.playerStats.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\t\n\t\t\t<div id=\"editPlayerStatsDiv\" class=\"table-responsive stats-container\">\n\t\t\t\t<table class=\"table stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th v-for=\"col in newPlayerCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t\t      \t\t{{ col | basketballStats }}\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-for=\"(index, row) in newStats | orderBy 'lastname'\" class=\"form-group\">\n\t\t\t\t      <td v-for=\"col in newPlayerCols\" class=\"new-stats stat-entries text-center\">\n\t\t\t\t      \t<!-- span inserts calculated data that isn't inputted by user -->\n\t\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t\t      \t\t<span v-if=\"col === 'name'\">{{ row[col] }}</span>\n\t\t\t\t      \t\t<input v-if=\"col === 'starter'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t\t      \t\t<input v-show=\"!usesMinutes\" v-if=\"col === 'dnp'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t\t      \t\t<span v-if=\"col === 'fg_'\">{{ newStats_percent(index, 'fg') | checkPercentage }}</span>\n\t\t\t\t      \t\t<span v-if=\"col === 'ft_'\">{{ newStats_percent(index, 'ft') | checkPercentage }}</span>\n\t\t\t\t      \t\t<span v-if=\"col === 'threep_'\">{{ newStats_percent(index, 'threep') | checkPercentage }}</span>\n\t\t\t\t      \t</span>\n\t\t\t\t      \t<input v-if=\"!specialRow(col)\" type=\"text\" class=\"form-control stats-input text-center\" autocomplete=\"off\" :placeholder=\"col | basketballStats\" v-model=\"newStats[index][col]\" number=\"\">\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t\t\t<div class=\"meta-data\">\n\t\t\t\t<div class=\"form-group opponent\">\n\t\t\t\t\t<label for=\"opp\">Opponent</label>\n\t\t\t\t\t<input name=\"opp\" type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" v-model=\"meta.opp\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"form-group opponent-score\">\n\t\t\t\t\t<label for=\"oppScore\">Opponent Score</label>\n\t\t\t\t\t<input name=\"oppScore\" type=\"text\" class=\"form-control\" number=\"\" required=\"\" autocomplete=\"off\" v-model=\"meta.oppScore\">\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- compiled team stats table -->\n\t\t\t<h3>Team Stats</h3>\n\t\t\t<div v-if=\"overflowed.teamStats\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.teamStats.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.teamStats.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\t\n\t\t\t<div id=\"editTeamStatsDiv\" class=\"table-responsive stats-container\">\n\t\t\t\t<table class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th v-for=\"col in newTeamCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t\t      \t\t{{ col | basketballStats }}\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr class=\"no-hover\">\n\t\t\t\t      <td v-for=\"col in newTeamCols\" class=\"stat-entries\">\n\t\t\t\t      <!-- span inserts calculated percentages instead of totals -->\n\t\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t\t\t      \t<span v-if=\"col === 'fg_'\">{{ team_percent('fg') | checkPercentage }}</span>\n\t\t\t\t\t      \t<span v-if=\"col === 'threep_'\">{{ team_percent('threep') | checkPercentage }}</span>\n\t\t\t\t\t      \t<span v-if=\"col === 'ft_'\">{{ team_percent('ft') | checkPercentage }}</span>\n\t\t\t\t\t      </span>\n\t\t\t\t      \t<span v-else=\"\">{{ team_total(col) }}</span>\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-md-2\" :class=\"[stats.length ? 'col-md-offset-3' : 'col-md-offset-4',\n\t      \t\t\t         stats.length ? 'col-sm-offset-0' : 'col-sm-offset-2']\">\n\t      \t<input type=\"submit\" class=\"btn btn-block btn-primary btn-md\" value=\"SAVE\">\n\t      </div>\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\" v-show=\"stats.length\">\n\t      \t<a @click=\"deleteStats()\" class=\"btn btn-block btn-delete btn-md\">DELETE</a>\n\t      </div>\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\">\n\t      \t<a @click=\"discardStats()\" class=\"btn btn-block btn-cancel btn-md outline\">CANCEL</a>\n\t      </div>\n\t    </div>\n\n\t\t</form>\n\t</div>\n\t\t\n\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -27890,7 +28348,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/number/is-integer":6,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],177:[function(require,module,exports){
+},{"../mixins/StatsScrollSpy.js":189,"babel-runtime/core-js/number/is-integer":6,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],177:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditEvent.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert(".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\n")
@@ -27961,9 +28419,9 @@ exports.default = {
 				$('#viewEventModal').modal('hide');
 
 				//show success banner
-				self.$root.banner('good', "This event has been updated");
+				self.$root.banner('good', "Event saved");
 			}).catch(function (response) {
-				self.$root.banner('bad', "There was a server problem, try refreshing the page.");
+				self.$root.errorMsg();
 			});
 		},
 
@@ -27986,10 +28444,10 @@ exports.default = {
 				$('#viewEventModal').modal('hide');
 
 				//show success banner
-				self.$root.banner('good', "This event has been deleted");
+				self.$root.banner('good', "Event deleted");
 			}).catch(function (response) {
 				//show error
-				self.$root.banner('bad', "There was a server problem... try refreshing the page?");
+				self.$root.errorMsg();
 			});
 		},
 
@@ -28106,7 +28564,7 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n  <div class=\"col-xs-12\">\n\n\t\t<!-- if user clicks this, show form to edit stats, value syncs up to ViewEvent.vue -->\n  \t<div v-if=\"editEvent\" class=\"edit-stats-button\">\n\t\t\t<a class=\"btn btn-primary\" @click=\"editEvent = false\">\n\t\t\t\tEdit Stats \n\t\t\t\t<i id=\"edit-chevron\" class=\"material-icons\">chevron_right</i>\n\t\t\t</a>\n\t\t</div>\n\n    <form @submit.prevent=\"updateEvent()\">\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"title\">Title</label>\n            <input class=\"form-control input-lg\" name=\"title\" type=\"text\" autocomplete=\"off\" required=\"\" v-model=\"backup.title\">\n          </div>\n          <div class=\"col-xs-12 col-sm-6 type-select\">\n            <label for=\"class\">Type</label>\n            <select data-style=\"btn-select btn-lg\" name=\"class\" class=\"selectpicker edit-event form-control show-tick\" v-model=\"backup.class\" number=\"\">\n              <option value=\"0\" class=\"practice\">Practice</option>    \n              <option value=\"1\" class=\"homeGame\">Home Game</option>\n              <option value=\"2\" class=\"awayGame\">Away Game</option>\n              <option value=\"3\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n    \t<br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"from\">Starts at</label>\n            <!-- from - date -->\n            <div class=\"input-group date edit-picker-from\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- from - time -->\n            <div class=\"input-group date edit-picker-from-time\">\n              <input type=\"text\" name=\"fromTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"to\">Ends at</label>\n            <!-- to - date -->\n            <div class=\"input-group date edit-picker-to\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date edit-picker-to-time\">\n              <input type=\"text\" name=\"toTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-12\">\n\t        <label for=\"details\">Extra details about this event</label>\n\t        <textarea v-autosize=\"backup.details\" name=\"details\" rows=\"1\" class=\"form-control\" maxlength=\"5000\" autocomplete=\"off\" v-model=\"backup.details\">{{ backup.details }}</textarea>\n\t      </div>\n\t    </div>\n\t    <hr>\n\t    <br>\n\t\t\t<div class=\"row edit-submit-buttons\">\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-1\">\n\t\t    \t<input class=\"btn btn-primary btn-block btn-md btn-first\" tabindex=\"4\" type=\"submit\" value=\"SAVE\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-delete btn-block btn-md\" tabindex=\"5\" value=\"DELETE\" @click=\"deleteEvent(false)\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-cancel btn-block btn-md outline\" tabindex=\"6\" value=\"CANCEL\" @click=\"cancel()\">\n\t\t    </div>\n\t    </div>\n\t\t</form></div>\n\t\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n  <div class=\"col-xs-12\">\n\n\t\t<!-- if user clicks this, show form to edit stats, value syncs up to ViewEvent.vue -->\n  \t<div v-if=\"editEvent\" class=\"edit-stats-button\">\n\t\t\t<a class=\"btn btn-primary --chevron --md\" @click=\"editEvent = false\">\n\t\t\t\tEdit Stats \n\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t</a>\n\t\t</div>\n\n    <form @submit.prevent=\"updateEvent()\">\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"title\">Title</label>\n            <input class=\"form-control input-lg\" name=\"title\" type=\"text\" autocomplete=\"off\" required=\"\" v-model=\"backup.title\">\n          </div>\n          <div class=\"col-xs-12 col-sm-6 type-select\">\n            <label for=\"class\">Type</label>\n            <select data-style=\"btn-select btn-lg\" name=\"class\" class=\"selectpicker edit-event form-control show-tick\" v-model=\"backup.class\" number=\"\">\n              <option value=\"0\" class=\"practice\">Practice</option>    \n              <option value=\"1\" class=\"homeGame\">Home Game</option>\n              <option value=\"2\" class=\"awayGame\">Away Game</option>\n              <option value=\"3\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n    \t<br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"from\">Starts at</label>\n            <!-- from - date -->\n            <div class=\"input-group date edit-picker-from\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- from - time -->\n            <div class=\"input-group date edit-picker-from-time\">\n              <input type=\"text\" name=\"fromTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"to\">Ends at</label>\n            <!-- to - date -->\n            <div class=\"input-group date edit-picker-to\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date edit-picker-to-time\">\n              <input type=\"text\" name=\"toTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-12\">\n\t        <label for=\"details\">Extra details about this event</label>\n\t        <textarea v-autosize=\"backup.details\" name=\"details\" rows=\"1\" class=\"form-control\" maxlength=\"5000\" autocomplete=\"off\" v-model=\"backup.details\">{{ backup.details }}</textarea>\n\t      </div>\n\t    </div>\n\t    <hr>\n\t    <br>\n\t\t\t<div class=\"row edit-submit-buttons\">\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-1\">\n\t\t    \t<input class=\"btn btn-primary btn-block btn-md btn-first\" tabindex=\"4\" type=\"submit\" value=\"SAVE\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-delete btn-block btn-md\" tabindex=\"5\" value=\"DELETE\" @click=\"deleteEvent(false)\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-cancel btn-block btn-md outline\" tabindex=\"6\" value=\"CANCEL\" @click=\"cancel()\">\n\t\t    </div>\n\t    </div>\n\t\t</form></div>\n\t\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -28142,10 +28600,7 @@ exports.default = {
 	data: function data() {
 
 		return {
-
-			errors: {
-				num: false
-			},
+			ghostEmail: false,
 			adminOptions: {
 				state: this.user.admin,
 				onText: 'YES',
@@ -28153,6 +28608,11 @@ exports.default = {
 				onSwitchChange: function (e, state) {
 					this.user.admin = state;
 				}.bind(this)
+			},
+			errors: {
+				num: '',
+				email: '',
+				name: ''
 			}
 		};
 	},
@@ -28163,6 +28623,11 @@ exports.default = {
 		//if user changed, set inputs to correct new states
 
 		user: function user() {
+
+			if (this.user.ghost) {
+				if (this.user.meta.ghost.email) this.ghostEmail = true;else this.ghostEmail = false;
+			}
+
 			//parameters to switch function are: edit 'state', set to admin status
 			$('input[bootstrap-switch="EditUser--admin"]').bootstrapSwitch('state', this.user.admin);
 
@@ -28177,24 +28642,53 @@ exports.default = {
 
 		save: function save() {
 
-			var errors = this.finalErrorCheck();
+			var errors = this.errorCheck('all');
 
-			if (!errors) {
+			if (errors) return;
 
-				this.$dispatch('updateUser', this.user);
+			if (this.user.new) this.newUser();else this.updateUser();
+		},
 
-				$('#rosterModal').modal('hide');
 
-				var self = this;
-				var url = this.$parent.prefix + '/user';
-				this.$http.put(url, { user: this.user }).then(function (response) {
-					//if successful, save new data, show success banner
-					self.$root.banner('good', "User data has been saved");
-				}).catch(function (response) {
-					//if unsuccessful, show error message
-					self.$root.banner('bad', "There was a problem editing this user... refresh the page and try again.");
-				});
-			}
+		//send post request to server to save new user
+		newUser: function newUser() {
+			var self = this;
+			var url = this.$parent.prefix + '/user';
+			this.$http.post(url, this.user).then(function (response) {
+				//if successful, save new data, show success banner
+				if (response.data.ok) {
+					self.$dispatch('newUser', response.data.user);
+
+					$('#rosterModal').modal('hide');
+
+					self.$root.banner('good', "User created");
+				} else {
+					/*for(var key in errors) {
+     	this.errors[key] = response.data.errors[key];
+     	
+     }*/
+					self.$root.banner('bad', "Correct the errors and try again");
+				}
+			}).catch(function (response) {
+				self.$root.errorMsg();
+			});
+		},
+
+
+		//send put request to server to update user
+		updateUser: function updateUser() {
+			this.$dispatch('updateUser', this.user);
+
+			$('#rosterModal').modal('hide');
+
+			var self = this;
+			var url = this.$parent.prefix + '/user';
+			this.$http.put(url, { user: this.user }).then(function (response) {
+				//if successful, save new data, show success banner
+				self.$root.banner('good', "User saved");
+			}).catch(function (response) {
+				self.$root.errorMsg();
+			});
 		},
 
 
@@ -28207,14 +28701,26 @@ exports.default = {
 		//show popup asking to confirm the kick, send event to Team if they do
 		kick: function kick() {
 			var self = this;
+
+			var title = 'Kick Player?';
+			var text = 'Are you sure you want to kick ' + self.user.firstname + ' from the team? They will become a ghost and their stats will be kept';
+			var buttonText = 'KICK';
+
+			if (this.user.ghost) {
+				//if user is a ghost, reword the popup
+				var title = 'Delete Ghost?';
+				var text = 'Are you sure you want to delete this ghost? All stats will also be deleted';
+				var buttonText = 'DELETE';
+			}
+
 			swal({
-				title: 'Kick Player?',
-				text: 'Are you sure you want to kick ' + self.user.firstname + ' from the team?',
+				title: title,
+				text: text,
 				type: "warning",
 				showCancelButton: true,
 				confirmButtonColor: '#C90019',
 				cancelButtonColor: 'whitesmoke',
-				confirmButtonText: 'KICK',
+				confirmButtonText: buttonText,
 				cancelButtonText: 'CANCEL',
 				allowOutsideClick: true,
 				closeOnConfirm: true
@@ -28227,26 +28733,31 @@ exports.default = {
 			});
 		},
 		errorCheck: function errorCheck(input) {
-			switch (input) {
+			var errors = 0;
+			var role = this.user.role;
 
-				case 'num':
-					var num = this.user.meta.num;
-					//check that the jersey number is between 00 - 99
-					if (isNaN(num)) this.errors.num = true;else if (parseInt(num) > 99 || parseInt(num) < 0) this.errors.num = true;else if (num.length > 2) this.errors.num = true;else this.errors.num = false;
-
-					break;
+			if ((input === 'num' || input === 'all') && role <= 1) {
+				//check that the jersey number is between 00 - 99
+				if (!this.$root.validateJerseyNum(this.user.meta.num)) {
+					errors++;
+					this.errors.num = 'Not a valid number';
+				} else this.errors.num = '';
 			}
-		},
 
+			if ((input === 'email' || input === 'all') && (role === 1 || role === 3)) {
+				//check that the jersey number is between 00 - 99
+				if (this.user.meta.ghost.email.length && !this.$root.validateEmail(this.user.meta.ghost.email)) {
+					errors++;
+					this.errors.email = 'Not a valid email';
+				} else this.errors.email = '';
+			}
 
-		//because you could feasibly type and submit so fast the keyup doesn't check,
-		//do one final round of error checking
-		finalErrorCheck: function finalErrorCheck() {
-			this.errorCheck('num');
-
-			var errors = false;
-			for (var error in this.errors) {
-				if (this.errors[error]) errors = true;
+			if ((input === 'name' || input === 'all') && this.user.ghost) {
+				//check that the jersey number is between 00 - 99
+				if (!this.user.meta.ghost.name.length) {
+					errors++;
+					this.errors.name = 'Enter a name';
+				} else this.errors.name = '';
 			}
 
 			return errors;
@@ -28255,6 +28766,10 @@ exports.default = {
 
 	//initialize inputs with jquery
 	ready: function ready() {
+
+		if (this.user.ghost) {
+			if (this.user.meta.ghost.email) this.ghostEmail = true;else this.ghostEmail = false;
+		}
 
 		$(function () {
 
@@ -28267,7 +28782,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n    <form @submit.prevent=\"\">\n    \t<!-- only showing this section if user is a player -->\n\t    <div v-show=\"user.role < 2\" class=\"row EditUser__data\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n            <label for=\"number\">Jersey Number</label>\n            <input type=\"text\" class=\"form-control\" :class=\"errors.num ? 'form-error' : ''\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\">\n            <span v-show=\"errors.num\" class=\"form-error\">Choose a number between 00 and 99</span>\n          </div>\n          <div class=\"col-xs-6 col-sm-4\">\n            <label>Position</label>\n            <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n              <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n            </select>\n          </div>\n          <div class=\"col-xs-6 col-sm-4\">\n            <label>Position</label>\n            <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n              <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n            </select>\n          </div>\n        </div>\n\t    </div>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser--admin\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n    <form @submit.prevent=\"save()\">\n    \t<!-- only showing this section if user is a player -->\n\t    <div v-if=\"user.role < 2\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.num}\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\" autocomplete=\"false\">\n          <span v-show=\"errors.num\" class=\"form-error\">{{ errors.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Position</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Position</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.ghost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.ghost.name\" required=\"\" :class=\"{'form-error' : errors.name}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.ghost.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.email\" class=\"form-error\">{{ errors.email }}</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; !ghostEmail\" class=\"input-info\">Sends an invitation to join the team</span>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"!user.ghost\" class=\"row\">\n        <div class=\"col-xs-12\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser--admin\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -28297,18 +28812,41 @@ exports.default = {
 
 	name: 'GoogleTypeahead',
 
-	props: ['city', 'long', 'lat', 'label'],
+	props: ['city', 'long', 'lat', 'label', 'error'],
+
+	data: function data() {
+		return {
+			location: '',
+			selected: false
+		};
+	},
+
+
+	watch: {
+		//if they have edited something previously selected, reset the data
+
+		location: function location(val) {
+			if (this.selected) {
+				this.selected = false;
+				this.city = '';
+				this.lat = '';
+				this.long = '';
+			}
+		}
+	},
 
 	methods: {
 
 		//format the results into the necessary items
 
 		placeSelected: function placeSelected(place) {
+			console.log(place.address_components);
 			var city = place.address_components[0].long_name;
 			var state = place.address_components[2].short_name;
 			this.city = city + ', ' + state;
-			this.long = place.geometry.access_points[0].location.lng;
-			this.lat = place.geometry.access_points[0].location.lat;
+			this.lat = place.geometry.location.lat();
+			this.long = place.geometry.location.lng();
+			this.selected = true;
 		}
 	},
 
@@ -28317,7 +28855,11 @@ exports.default = {
 		$(function () {
 			//when the page is loaded, init google maps api
 			var input = document.getElementById('placeSearch');
-			var autocomplete = new google.maps.places.Autocomplete(input);
+			var options = {
+				types: ['(cities)'],
+				componentRestrictions: { country: "us" }
+			};
+			var autocomplete = new google.maps.places.Autocomplete(input, options);
 
 			//set up listener, tell this.placeSelected when there was a selection
 			autocomplete.addListener('place_changed', function () {
@@ -28328,7 +28870,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t\t<label>{{ label }}</label>\n\t\t\t<input id=\"placeSearch\" type=\"text\" class=\"form-control\">\n\t</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t\t<label>{{ label }}</label>\n\t\t\t<input id=\"placeSearch\" type=\"text\" class=\"form-control\" :class=\"{'form-error' : error}\" v-model=\"location\">\n\t\t\t<span v-show=\"error\" class=\"form-error\">{{ error }}</span>\n\t</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -28345,7 +28887,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"vue":167,"vue-hot-reload-api":141}],180:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/NewsFeed.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid rgba(128,128,128,0.44);\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n.arrow-left {\n  height: 0;\n  width: 0;\n  border-bottom: 10px solid transparent;\n  border-top: 10px solid transparent;\n  border-right: 10px solid #f5f5f5;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid rgba(128,128,128,0.44);\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28644,7 +29186,7 @@ if (module.hot) {(function () {  module.hot.accept()
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/NewsFeed.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid rgba(128,128,128,0.44);\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n.arrow-left {\n  height: 0;\n  width: 0;\n  border-bottom: 10px solid transparent;\n  border-top: 10px solid transparent;\n  border-right: 10px solid #f5f5f5;\n}\n"] = false
+    require("vueify-insert-css").cache[".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid rgba(128,128,128,0.44);\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -28658,7 +29200,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],181:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Roster.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n@media screen and (max-width: 550px) {\n  .Roster__list {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.Roster__players {\n  margin-top: 25px;\n}\n.Roster__fans {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 3em;\n}\n@media screen and (max-width: 550px) {\n  .Roster__fans {\n    padding: 0;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n#adminIcon {\n  color: rgba(128,128,128,0.44);\n}\n#editIcon {\n  color: #1179c9;\n}\n#editIcon:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n#saveIcon {\n  position: absolute;\n  left: 35px;\n  top: 9px;\n  color: #fff;\n  margin: 0;\n  line-height: 0.2;\n}\n.jersey {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  max-width: 75px;\n  display: inline-block;\n}\n.jersey div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n}\n@media screen and (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n.Roster__add {\n  position: absolute;\n  right: 0;\n  top: 5px;\n  font-size: 16px;\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n@media screen and (max-width: 550px) {\n  .Roster__list {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.Roster__coaches {\n  position: relative;\n}\n.Roster__players {\n  margin-top: 25px;\n  position: relative;\n}\n.Roster__fans {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 3em;\n}\n@media screen and (max-width: 550px) {\n  .Roster__fans {\n    padding: 0;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n#adminIcon {\n  color: rgba(128,128,128,0.44);\n}\n#editIcon {\n  color: #1179c9;\n}\n#editIcon:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n#saveIcon {\n  position: absolute;\n  left: 35px;\n  top: 9px;\n  color: #fff;\n  margin: 0;\n  line-height: 0.2;\n}\n.jersey {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  max-width: 75px;\n  display: inline-block;\n}\n.jersey div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28692,6 +29234,30 @@ exports.default = {
 			//make a copy of this player (not reactive with state in case not saved)
 			this.$set('editUser', JSON.parse((0, _stringify2.default)(user)));
 			this.$root.showModal('rosterModal');
+		},
+
+
+		//clicked the 'add user' button
+		addUser: function addUser(role) {
+			if (role === 'player') var role = 1;
+			if (role === 'coach') var role = 3;
+
+			var user = {
+				role: role,
+				ghost: true,
+				new: true,
+				meta: {
+					ghost: {
+						name: '',
+						email: ''
+					},
+					positions: [],
+					num: ''
+				}
+			};
+
+			this.$set('editUser', user);
+			this.$root.showModal('rosterModal');
 		}
 	},
 
@@ -28707,14 +29273,14 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"Roster\">\n\t\t\n\t\t<div class=\"Roster__list\">\n\n\n\t\t\t<!-- coaches column -->\n\t\t\t<div v-if=\"coaches.length\" class=\"Roster__coaches\">\n\t\t\t\t<h2 class=\"Roster__header\">Coaches</h2>\n\t\t\t\t<hr>\n\t\t\t\t<div v-for=\"coach in coaches | orderBy 'lastname'\">\n\t\t\t\t\t<div class=\"Media\">\n\n\t\t\t\t\t\t<img :src=\"coach.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: coach.username}}\">\n\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: coach.username}}\">\n\t\t\t\t\t\t\t\t\t{{ coach.firstname + ' ' + coach.lastname }}\n\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(coach)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t\t\t<i v-if=\"coach.admin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\t\n\t\t\t</div>\n\n\n\t\t\t<!-- players column -->\n\t\t\t<div v-if=\"players.length\" class=\"Roster__players\">\n\t\t\t\t<h2 class=\"Roster__header\">Players</h2>\n\t\t\t\t<hr>\n\t\t\t\t\n\t\t\t\t<div v-for=\"player in players | orderBy 'lastname'\">\n\t\t\t\t\t<div class=\"Media\">\n\t\t\t\t\t\t<img :src=\"player.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: player.username}}\">\n\t\t\t\n\t\t\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t\t\t<span class=\"Media__number\">{{ player.meta.num }}<span class=\"Media__divider\">|</span></span>\n\t\t\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: player.username}}\">\n\t\t\t\t\t\t\t\t\t{{ player.firstname + ' ' + player.lastname }}\n\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(player)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t\t\t<i v-if=\"player.admin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t\t\t\t<span class=\"positions\">\n\t\t\t\t\t\t\t\t\t<span v-for=\"position in player.meta.positions\">\n\t\t\t\t\t\t\t\t\t\t{{ position | uppercase }}  \n\t\t\t\t\t\t\t\t\t\t<span v-show=\"$index !== (player.meta.positions.length - 1) &amp;&amp; \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tplayer.meta.positions[$index+1].length\"> | </span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t</div> <!-- end Roster__list -->\n\n\n\t\t<!-- fans column -->\n\t\t<div v-if=\"fans.length\" class=\"Roster__fans\">\n\t\t\t<h2 class=\"Roster__header\">Fans</h2>\n\t\t\t<hr>\n\t\t\t<div v-for=\"fan in fans | orderBy 'lastname'\" class=\"Media\">\n\n\t\t\t\t<img :src=\"fan.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: fan.username}}\">\n\t\t\t\t\n\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: fan.username}}\">\n\t\t\t\t\t\t\t{{ fan.firstname + ' ' + fan.lastname }}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\n\t</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"Roster\">\n\t\t\n\t\t<div class=\"Roster__list\">\n\n\n\t\t\t<!-- coaches column -->\n\t\t\t<div v-if=\"coaches.length\" class=\"Roster__coaches\">\n\t\t\t\t<h2 class=\"Roster__header\">Coaches</h2>\n\t\t\t\t<a v-show=\"admin\" class=\"Roster__add\" @click=\"addUser('coach')\">\n          <i class=\"material-icons\">person_add</i>\n        </a>\n\t\t\t\t<hr>\n\t\t\t\t<div v-for=\"coach in coaches | orderBy 'lastname'\">\n\t\t\t\t\t<div class=\"Media\">\n\n\t\t\t\t\t\t<img v-if=\"!coach.ghost\" :src=\"coach.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: coach.username}}\">\n\t\t\n\t\t\t\t\t\t<img v-else=\"\" :src=\"coach.pic\" class=\"Media__thumbnail --ghost\" width=\"60\" height=\"60\">\n\n\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t\t\t<a v-if=\"!coach.ghost\" v-link=\"{name: 'user', params: {name: coach.username}}\">\n\t\t\t\t\t\t\t\t\t{{ coach.firstname + ' ' + coach.lastname }}\n\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t<p v-else=\"\">\n\t\t\t\t\t\t\t\t\t{{ coach.firstname + ' ' + coach.lastname }}\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(coach)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t\t\t<i v-if=\"coach.admin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\t\n\t\t\t</div>\n\n\n\t\t\t<!-- players column -->\n\t\t\t<div v-if=\"players.length\" class=\"Roster__players\">\n\t\t\t\t<h2 class=\"Roster__header\">Players</h2>\n\t\t\t\t<a v-show=\"admin\" class=\"Roster__add\" @click=\"addUser('player')\">\n          <i class=\"material-icons\">person_add</i>\n        </a>\n\t\t\t\t<hr>\n\t\t\t\t\n\t\t\t\t<div v-for=\"player in players | orderBy 'lastname'\">\n\t\t\t\t\t<div class=\"Media\">\n\n\t\t\t\t\t\t<img v-if=\"!player.ghost\" :src=\"player.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: player.username}}\">\n\t\t\t\t\t\t<img v-else=\"\" :src=\"player.pic\" class=\"Media__thumbnail --ghost\" width=\"60\" height=\"60\">\n\t\t\t\n\t\t\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t\t\t<span v-show=\"player.meta.num\" class=\"Media__number\">\n\t\t\t\t\t\t\t\t\t\t{{ player.meta.num }}<span class=\"Media__divider\">|</span>\n\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t<a v-if=\"!player.ghost\" v-link=\"{name: 'user', params: {name: player.username}}\">\n\t\t\t\t\t\t\t\t\t{{ player.firstname + ' ' + player.lastname }}\n\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t<p v-else=\"\">\n\t\t\t\t\t\t\t\t\t{{ player.firstname + ' ' + player.lastname }}\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(player)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t\t\t<i v-if=\"player.admin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t\t\t\t<span class=\"positions\">\n\t\t\t\t\t\t\t\t\t<span v-for=\"position in player.meta.positions\">\n\t\t\t\t\t\t\t\t\t\t{{ position | uppercase }}  \n\t\t\t\t\t\t\t\t\t\t<span v-show=\"$index !== (player.meta.positions.length - 1) &amp;&amp; \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tplayer.meta.positions[$index+1].length\"> | </span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t</div> <!-- end Roster__list -->\n\n\n\t\t<!-- fans column -->\n\t\t<div v-if=\"fans.length\" class=\"Roster__fans\">\n\t\t\t<h2 class=\"Roster__header\">Fans</h2>\n\t\t\t<hr>\n\t\t\t<div v-for=\"fan in fans | orderBy 'admin' -1\" class=\"Media\">\n\n\t\t\t\t<img :src=\"fan.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: fan.username}}\">\n\t\t\t\t\n\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: fan.username}}\">\n\t\t\t\t\t\t\t{{ fan.firstname + ' ' + fan.lastname }}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(fan)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t<i v-if=\"fan.admin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\n\t</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/Roster.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n@media screen and (max-width: 550px) {\n  .Roster__list {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.Roster__players {\n  margin-top: 25px;\n}\n.Roster__fans {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 3em;\n}\n@media screen and (max-width: 550px) {\n  .Roster__fans {\n    padding: 0;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n#adminIcon {\n  color: rgba(128,128,128,0.44);\n}\n#editIcon {\n  color: #1179c9;\n}\n#editIcon:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n#saveIcon {\n  position: absolute;\n  left: 35px;\n  top: 9px;\n  color: #fff;\n  margin: 0;\n  line-height: 0.2;\n}\n.jersey {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  max-width: 75px;\n  display: inline-block;\n}\n.jersey div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n"] = false
+    require("vueify-insert-css").cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n}\n@media screen and (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n.Roster__add {\n  position: absolute;\n  right: 0;\n  top: 5px;\n  font-size: 16px;\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n@media screen and (max-width: 550px) {\n  .Roster__list {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.Roster__coaches {\n  position: relative;\n}\n.Roster__players {\n  margin-top: 25px;\n  position: relative;\n}\n.Roster__fans {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 3em;\n}\n@media screen and (max-width: 550px) {\n  .Roster__fans {\n    padding: 0;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n#adminIcon {\n  color: rgba(128,128,128,0.44);\n}\n#editIcon {\n  color: #1179c9;\n}\n#editIcon:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n#saveIcon {\n  position: absolute;\n  left: 35px;\n  top: 9px;\n  color: #fff;\n  margin: 0;\n  line-height: 0.2;\n}\n.jersey {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  max-width: 75px;\n  display: inline-block;\n}\n.jersey div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -28728,7 +29294,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"babel-runtime/core-js/json/stringify":5,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],182:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Stats.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert("#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 2em;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert("#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -7px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28774,7 +29340,7 @@ if (module.hot) {(function () {  module.hot.accept()
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/Stats.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache["#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 2em;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n"] = false
+    require("vueify-insert-css").cache["#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -7px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -28788,7 +29354,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"./BasketballStats.vue":173,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],183:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Team.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  position: relative;\n  margin-bottom: 35px;\n  border: none;\n  box-shadow: none;\n  padding: 40px 0 0 0;\n  background: #ebebeb;\n}\n.Team__name {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.Team__location,\n.Team__slogan {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 35px;\n}\n.Team__location span,\n.Team__slogan span {\n  position: relative;\n  color: #7b7b7b;\n}\n.Team__fans {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 35px;\n}\n.Team__fans a {\n  margin-left: 0;\n}\n.Team__fans .isMember {\n  background: #329acf;\n}\n.Team__fans .isMember:hover {\n  cursor: auto;\n  background: #329acf;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Team__tabs li a {\n  padding: 20px 40px 20px 64px;\n}\n@media screen and (max-width: 767px) {\n  .Team__tabs li a {\n    padding: 20px 30px 20px 54px;\n  }\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n#teamCalendarIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 30px;\n  bottom: 18px;\n}\n@media screen and (max-width: 767px) {\n  #teamCalendarIcon {\n    left: 14px;\n  }\n}\n#teamStatsIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamStatsIcon {\n    left: 15px;\n  }\n}\n#teamRosterIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamRosterIcon {\n    left: 16px;\n  }\n}\n#teamEditIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamEditIcon {\n    left: 16px;\n  }\n}\n#teamLocationIcon {\n  position: absolute;\n  left: -27px;\n  top: -4px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  position: relative;\n  margin-bottom: 35px;\n  border: none;\n  box-shadow: none;\n  padding: 40px 0 0 0;\n  background: #ebebeb;\n}\n.Team__name {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.Team__location,\n.Team__slogan {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 25px;\n  font-size: 17px;\n}\n.Team__location span,\n.Team__slogan span {\n  position: relative;\n  color: #7b7b7b;\n}\n.Team__fans {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  margin-top: 25px;\n}\n.Team__fans .num-fans {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 5px;\n  overflow: hidden;\n  height: 40px;\n  width: 70px;\n}\n.Team__fans .num-fans .fan-count {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background-color: #fff;\n  min-width: 61px;\n  height: 40px;\n  font-size: 17px;\n  border-radius: 15%;\n  color: #7b7b7b;\n}\n.Team__fans .num-fans .fan-count span {\n  position: absolute;\n  top: 8px;\n  right: 33px;\n}\n.Team__fans .num-fans .fan-count.--tensOfFans span {\n  right: 30px;\n}\n.Team__fans .num-fans .fan-count.--hundredsOfFans span {\n  right: 24px;\n}\n.Team__fans .num-fans .fan-count.--thousandsOfFans span {\n  right: 19px;\n}\n.Team__fans .num-fans .arrow-right {\n  position: absolute;\n  top: 5px;\n  right: 4px;\n  margin-top: 9px;\n  height: 0;\n  width: 0;\n  border-bottom: 6px solid transparent;\n  border-top: 6px solid transparent;\n  border-left: 6px solid #fff;\n}\n.Team__fans .fan-icon {\n  margin-left: 2px;\n}\n.Team__fans .fan-icon:hover {\n  cursor: pointer;\n}\n.Team__fans .fan-icon.--member:hover {\n  cursor: default;\n}\n.Team__invite {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 25px;\n}\n.Team__invite .btn {\n  margin-left: 0px;\n}\n.Team__invite .btn.--member:hover {\n  cursor: default;\n  color: #21c230;\n  border: 2px solid #21c230;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Team__tabs li a {\n  padding: 20px 40px 20px 64px;\n}\n@media screen and (max-width: 767px) {\n  .Team__tabs li a {\n    padding: 20px 30px 20px 54px;\n  }\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n#teamCalendarIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 30px;\n  bottom: 18px;\n}\n@media screen and (max-width: 767px) {\n  #teamCalendarIcon {\n    left: 14px;\n  }\n}\n#teamStatsIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamStatsIcon {\n    left: 15px;\n  }\n}\n#teamRosterIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamRosterIcon {\n    left: 16px;\n  }\n}\n#teamEditIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamEditIcon {\n    left: 16px;\n  }\n}\n#teamLocationIcon {\n  position: absolute;\n  left: -27px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28859,6 +29425,7 @@ exports.default = {
 		return {
 			prefix: prefix + teamname,
 			dataReady: false,
+			requestFinished: false,
 			team: {
 				meta: {}
 			},
@@ -28866,6 +29433,9 @@ exports.default = {
 			auth: {},
 			isFan: false,
 			isMember: false,
+			hasBeenInvited: false,
+			hasRequestedToJoin: false,
+			isCreator: false,
 			editUser: {
 				firstname: '',
 				lastname: '',
@@ -28875,11 +29445,13 @@ exports.default = {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'roster',
+			tab: 'calendar',
 			statsTab: 'teamRecent',
 			events: [],
 			stats: [],
-			feed: []
+			feed: [],
+			fansChanged: false,
+			numFansTransition: 'number-tick-up'
 		};
 	},
 	created: function created() {
@@ -28888,6 +29460,9 @@ exports.default = {
 		var url = this.prefix + '/data';
 		this.$http.get(url).then(function (response) {
 			self.compile(response.data);
+			setTimeout(function () {
+				self.requestFinished = true;
+			}, 100);
 		});
 		//didn't put a catch here because the 'team does not exist' header pretty much covers it
 	},
@@ -28899,18 +29474,26 @@ exports.default = {
 		},
 
 
+		//makes fan counter div wider with larger numFans
+		numFansClass: function numFansClass() {
+			if (this.fans.length >= 1000) return '--thousandsOfFans';else if (this.fans.length >= 100) return '--hundredsOfFans';else if (this.fans.length >= 10) return '--tensOfFans';else return '';
+		},
+
+
 		//create list of players from users
+		//0 = user player, 1 = ghost player
 		players: function players() {
 			return this.users.filter(function (user) {
-				return user.role <= 1;
+				return user.role === 0 || user.role === 1;
 			});
 		},
 
 
 		//create list of coaches from users
+		//2 = user coach, 3 = ghost coach
 		coaches: function coaches() {
 			return this.users.filter(function (user) {
-				return user.role === 2;
+				return user.role === 2 || user.role === 3;
 			});
 		},
 
@@ -28918,7 +29501,7 @@ exports.default = {
 		//create list of fans from users
 		fans: function fans() {
 			return this.users.filter(function (user) {
-				return user.role === 3;
+				return user.role === 4 || user.role >= 45 && user.role <= 47;
 			});
 		}
 	},
@@ -28989,26 +29572,94 @@ exports.default = {
 		},
 
 
-		//EditUser.vue was saved with new user data
+		//new user was created from EditUser
+		newUser: function newUser(user) {
+			user.meta = JSON.parse(user.meta);
+			var split = user.meta.ghost.name.split(' ');
+			user.firstname = split[0];
+			user.lastname = split[1];
+			user.member_id = user.id;
+			user.ghost = true;
+			delete user.user_id;
+
+			user.pic = '/images/ghost.png';
+
+			this.users.push(user);
+		},
+
+
+		//user was updated from EditUser
 		updateUser: function updateUser(editedUser) {
 
 			this.users = this.users.filter(function (user) {
-				return user.id !== editedUser.id;
+				return user.member_id !== editedUser.member_id;
 			});
+
+			if (editedUser.ghost) {
+				//if ghost user, set name data just in case edited
+				var split = editedUser.meta.ghost.name.split(' ');
+				editedUser.firstname = split[0];
+				editedUser.lastname = split[1];
+			}
 
 			this.users.push(editedUser);
 		},
 
 
-		//they have confirmed with a popup to kick the user that is being edited
-		//remove them from the array and send ajax request to server
+		//user was kicked from team from EditUser
 		deleteUser: function deleteUser(editedUser) {
 
-			this.users = this.users.filter(function (user) {
-				return user.id !== editedUser.id;
-			});
+			if (!editedUser.ghost) {
+				//if player was a real user, turn into ghost
+				editedUser.ghost = true;
+				editedUser.admin = false;
+				delete editedUser.gender;
+				editedUser.role = editedUser.role + 1;
+				editedUser.meta.ghost = {
+					id: editedUser.member_id,
+					name: editedUser.firstname + ' ' + editedUser.lastname,
+					email: null
+				};
+				editedUser.pic = '/images/ghost.png';
 
-			//gonna have to include some logic here about a ghost user taking over their stats
+				var deleteUser = false;
+			} else {
+				var deleteUser = true;
+			}
+
+			//tell server about new changes
+			var data = {
+				delete: deleteUser,
+				editedUser: editedUser
+			};
+			var self = this;
+			this.$http.delete(this.prefix + '/user', data).then(function (response) {
+
+				if (!response.data.ok) {
+					self.$root.banner('bad', response.data.error);
+					return;
+				}
+
+				//remove current version of user from users
+				self.users = self.users.filter(function (user) {
+					return user.member_id !== editedUser.member_id;
+				});
+
+				if (deleteUser) {
+					//if they're completely gone, remove their stats from current stats
+					self.stats = self.stats.filter(function (stat) {
+						return stat.member_id !== editedUser.member_id;
+					});
+					self.$root.banner('good', "Ghost deleted");
+				} else {
+					//add this edited version
+					editedUser.id = 0;
+					self.users.push(editedUser);
+					self.$root.banner('good', 'User kicked');
+				}
+			}).catch(function () {
+				self.$root.errorMsg();
+			});
 		}
 	},
 
@@ -29026,15 +29677,18 @@ exports.default = {
 
 			//store meta data about team
 			var meta = JSON.parse(data.team.meta);
-			this.positions = meta.positions;
-			this.teamStatCols = meta.teamCols;
-			this.playerStatCols = meta.playerCols;
+			this.teamStatCols = meta.stats.teamCols;
+			this.playerStatCols = meta.stats.playerCols;
+			this.team.slogan = meta.slogan;
+			this.team.homefield = meta.homefield;
+			this.team.city = meta.city;
 
 			//now that all team data is ready, set these variables
 			//components are listening, will format the data as needed
 			this.events = data.events;
 			this.stats = data.stats;
 			this.feed = data.feed;
+			this.positions = data.positions;
 
 			//tell App.vue to clear any notifications the logged in user may have
 			this.$dispatch('clearNotifications', this.team.id);
@@ -29056,15 +29710,47 @@ exports.default = {
 
 				if (user.admin === 1) user.admin = true;else user.admin = false;
 
+				//mark which user is the creator
+				if (this.team.creator_id === user.id) user.creator = true;
+
+				if (user.meta.ghost) {
+					//user is a ghost player, move their data around to be consistent with real players
+					var split = user.meta.ghost.name.split(' ');
+					user.firstname = split[0];
+					user.lastname = split[1];
+					user.id = 0;
+					user.ghost = true;
+					user.pic = '/images/ghost.png';
+				} else user.ghost = false;
+
 				//if logged in user is on list, save some other data about them too
 				if (user.id === this.auth.id) {
 					this.admin = user.admin;
 					this.auth.role = user.role;
-					if (user.role < 3) {
+
+					//note whether or not this user is the creator
+					if (this.team.creator_id == user.id) {
+						this.isCreator = true;
 						this.isMember = true;
-						this.isFan = null;
 					}
-					if (user.role === 3) this.isFan = true;
+
+					if (user.role <= 3) {
+						this.isMember = true;
+					}
+					//they're a fan if role is 4
+					if (user.role === 4) this.isFan = true;
+
+					//they've been invited to join if a 5 or 6
+					if (user.role === 5 || user.role === 6) this.hasBeenInvited = true;else if (user.role === 45 || user.role === 46) {
+						this.hasBeenInvited = true;
+						this.isFan = true;
+					}
+
+					//they've requested to join team if role is 7 or 47
+					if (user.role === 7) this.hasRequestedToJoin = true;else if (user.role === 47) {
+						this.hasRequestedToJoin = true;
+						this.isFan = true;
+					}
 				}
 
 				this.users.push(user);
@@ -29074,50 +29760,132 @@ exports.default = {
 
 		//user hit fan button
 		toggleFan: function toggleFan() {
-			var self = this;
 
-			if (this.isFan) {
-				//they were a fan, now they aren't
-				this.auth.role = null;
-				this.isFan = false;
-				this.users = this.users.filter(function (user) {
-					return user.id !== self.auth.id;
-				});
-				var data = { isNowFan: false };
-			} else if (!this.isFan) {
-				//they are now a fan
-				this.isFan = true;
-				this.auth.role = 3;
-				this.auth.meta = {};
-				this.auth.admin = false;
-				this.users.push(this.auth);
-				var data = { isNowFan: true };
-			} else if (this.isMember) {
+			if (this.isMember) {
 				//member should never have hit this function
-				this.$root.banner('bad', "You are already a member");
-				return;
-			} else {
-				//this case shouldn't have happened
-				this.$root.banner('bad', "There was an issue with this request, refresh the page and try again");
+				this.$root.errorMsg();
 				return;
 			}
 
+			var self = this;
 			var url = this.prefix + '/fan';
-			this.$http.post(url, data).then(function (response) {
-				if (response.data.success && self.isFan) {
-					//tell App.vue to add this team to the nav dropdown
-					self.$dispatch('addMember', self.team);
-					self.$root.banner('good', "You are now a fan of " + self.team.name);
-				} else if (response.data.success && !self.isFan) {
-					//tell App.vue to remove this team from the nav dropdown
-					self.$dispatch('removeMember', self.team.teamname);
-					self.$root.banner('good', "You are no longer a fan of " + self.team.name);
-				} else self.$root.banner('bad', "There was a server problem, refresh the page and try again.");
-			}).catch(function (response) {
-				self.$root.banner('bad', "There was a server problem, refresh the page and try again.");
+			this.$http.post(url).then(function (response) {
+				if (response.data.ok) self.updateFanStatus();else self.$root.errorMsg();
+			}).catch(function () {
+				self.$root.errorMsg();
+			});
+		},
+
+
+		//successful request, change fan status
+		updateFanStatus: function updateFanStatus() {
+			var self = this;
+
+			if (this.isFan) {
+				//use decrement animation on counter
+				this.numFansTransition = 'number-tick-down';
+			} else {
+				//increment
+				this.numFansTransition = 'number-tick-up';
+			}
+
+			//swap the fan status
+			this.isFan = !this.isFan;
+			this.fansChanged = !this.fansChanged;
+
+			if (this.isFan) {
+				//is now a fan of this team
+				this.auth.role = 4;
+				this.auth.meta = {};
+				this.auth.admin = false;
+				this.admin = false;
+				this.users.push(this.auth);
+
+				//tell App.vue to add this team to the nav dropdown
+				this.$dispatch('addMember', this.team);
+				this.$root.banner('good', "You're now a fan");
+			} else {
+				//is no longer a fan
+				this.auth.role = null;
+				this.admin = false;
+				this.users = this.users.filter(function (user) {
+					return user.id !== self.auth.id;
+				});
+
+				self.$dispatch('removeMember', self.team.teamname);
+				self.$root.banner('good', "You're no longer a fan");
+			}
+		},
+
+
+		//the player wants to send a request to join this team
+		requestToJoin: function requestToJoin(joinOrCancel) {
+			var self = this;
+			var url = this.prefix + '/join';
+			this.$http.post(url).then(function (response) {
+				if (!response.data.ok) {
+					self.$root.banner('bad', response.data.error);
+					return;
+				}
+
+				self.hasRequestedToJoin = joinOrCancel;
+				self.$root.banner('good', "Request sent to team admin");
+			}).catch(function () {
+				self.$root.errorMsg();
+			});
+		},
+
+
+		//they were invited, make them a for-real member now
+		respondToInv: function respondToInv(outcome) {
+			var self = this;
+
+			//check if their choice is confirmed
+			if (outcome === true || outcome === false) {
+				var url = this.prefix + '/join';
+				data = { accept: outcome };
+				this.$http.post(url, data).then(function (response) {
+					//check there were no authorization errors
+					if (!response.data.ok) {
+						self.$root.banner('bad', response.data.error);
+						return;
+					}
+					self.hasBeenInvited = false;
+
+					if (outcome) {
+						//add them to the team
+						self.formatUsers(response.data.users);
+						self.$root.banner('good', "You've joined this team");
+					} else self.$root.banner('good', "Invitation denied");
+				}).catch(function () {
+					self.$root.errorMsg();
+				});
+			}
+
+			//otherwise make popup to confirm their decision
+
+			if (this.auth.role === 5) var role = 'player.';
+			if (this.auth.role === 6) var role = 'coach.';
+			var text = "You've been invited to join this team as a " + role;
+			swal({
+				title: 'Respond to Invitation',
+				text: text,
+				type: "info",
+				showCancelButton: true,
+				confirmButtonColor: '#1179C9',
+				cancelButtonColor: 'whitesmoke',
+				confirmButtonText: 'JOIN',
+				cancelButtonText: 'NO THANKS',
+				closeOnConfirm: true
+			}, function (confirm) {
+				if (confirm) {
+					self.respondToInv(true);
+				} else {
+					self.respondToInv(false);
+				}
 			});
 		}
-	},
+	}, //end methods
 
 	ready: function ready() {
 
@@ -29127,18 +29895,32 @@ exports.default = {
 				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 				$('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
 			});
+
+			$('#becomeFan').on('mouseover', function () {
+				$(this).attr('src', '/images/becomeFanHover.png');
+			});
+			$('#becomeFan').on('mouseout', function () {
+				$(this).attr('src', '/images/becomeFan.png');
+			});
+
+			$('#isFan').on('mouseover', function () {
+				$(this).attr('src', '/images/isFanHover.png');
+			});
+			$('#isFan').on('mouseout', function () {
+				$(this).attr('src', '/images/isFan.png');
+			});
 		});
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t<!-- container for template -->\n\n\t\t\t<!-- no results for team, show message -->\n\t\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"!team.id\" class=\"f-el-fill text-center\">\n\t\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t\t<br>\n\t\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t\t</div>\n\n\t\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t\t<div v-cloak=\"\" v-show=\"team.id\" class=\"Team for-blurring\">\n\t\t\t\n\n\t    \t<div class=\"Team__details\">\n\t \t\t\t\n\t\t\t\t\n\t\t\t\t\t<div v-if=\"team.teamname === 'unhbasketball'\">\n\t\t\t\t\t\t<img class=\"img-thumbnail\" width=\"500\" height=\"500\" src=\"https://upload.wikimedia.org/wikipedia/commons/4/4e/Lundholm_Gym,_UNH,_Durham_NH.jpg\">\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-if=\"team.teamname === 'unhfootball'\">\n\t\t\t\t\t\t<img class=\"img-thumbnail\" width=\"500\" height=\"500\" src=\"http://unhmagazine.unh.edu/w09/images/p18b.jpg\">\n\t\t\t\t\t</div>\n\n\t\t\t \n\t\t\t\t\t\n\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t<span>Home of UNH Wildcats Football</span>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t<span><i id=\"teamLocationIcon\" class=\"material-icons no-highlight\">place</i>COWELL STADIUM, DURHAM, NH</span>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__fans\">\n\t\t\t\t\t\t<a @click=\"toggleFan\" v-show=\"isFan === false\" class=\"btn btn-primary outline\">\n\t\t\t\t\t\t\tJOIN {{ numFans }} OTHER FAN{{numFans &gt; 1 || numFans === 0 ? 'S' : ''}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<a @click=\"toggleFan\" v-show=\"isFan === true\" class=\"btn btn-primary\">\n\t\t\t\t\t\t\tYOU AND {{ numFans - 1 }} OTHER{{(numFans - 1) &gt; 1 || numFans === 0 ? 'S' : ''}} ARE FANS\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\t<a v-show=\"isMember === true\" class=\"btn btn-primary isMember\">\n\t\t\t\t\t\t\tYOUR TEAM HAS {{ numFans }} FAN{{numFans &gt; 1 || numFans === 0 ? 'S' : ''}}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\n\t   \n\t        <ul class=\"nav nav-tabs Team__tabs no-highlight\">\n\t          <li :class=\"[tab === 'calendar' ? 'active' : '']\">\n\t            <a @click=\"tab = 'calendar'\">\n\t        \t\t\t<i id=\"teamCalendarIcon\" class=\"material-icons\">date_range</i>CALENDAR\n\t            </a>\n\t          </li>\n\t          <li :class=\"[tab === 'stats' ? 'active' : '']\">\n\t            <a @click=\"tab = 'stats'\">\n\t        \t\t\t<i id=\"teamStatsIcon\" class=\"material-icons\">trending_up</i>STATS\n\t            </a>\n\t          </li>\n\t          <li :class=\"[tab === 'roster' ? 'active' : '']\">\n\t            <a @click=\"tab = 'roster'\">\n\t          \t\t<i id=\"teamRosterIcon\" class=\"material-icons\">group</i>ROSTER\n\t            </a>\n\t          </li>\n\t          <li v-if=\"admin\" :class=\"[tab === 'settings' ? 'active' : '']\">\n\t            <a @click=\"tab = 'settings'\">\n\t        \t\t\t<i id=\"teamEditIcon\" class=\"material-icons\">settings</i>SETTINGS\n\t            </a>\n\t      \t</li></ul>\t\n\t   \n\t\t\t\t</div> <!-- end team well -->\n\n\t\t\t\t<div>\n\t\t\t\t  <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t\t        \t<rc-calendar :admin=\"admin\" :events=\"events\"></rc-calendar>\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t    </ul>\n\t\t\t\t\t\t\t</div>\n\n\t\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t        \t\t</rc-stats>\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"admin\">\n\t\t\t        </rc-roster>\t\t\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\t\t\t     <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t\t        \t<h3>Settings</h3>\n\t\t        \t\n\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\t\t    </div>\n\n\t\t\t\t\n\t\t\t\t<div class=\"row\">\n\t\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t\t<rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<!-- include the footer at bottom -->\n\t\t\t\t<div class=\"Footer\">\n\t\t\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t  <!--  end of blurring wrapper --> \n\t\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n\t    <!-- inside here is complex logic handling what happens when an event is \n\t    \t\t\tclicked on from calendar or news feed -->\n\t\t\t<rc-view-event :admin=\"admin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t\t</rc-view-event>\n\n\n\n\t    <!-- modal window for adding events -->\n\t    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 class=\"modal-title\">Add an Event</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t            <div class=\"row\">\n\t                 \n\t\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n\t            </div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\t    <!-- modal for editing a player in the roster -->\n\t\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t          \t<div class=\"row\">\n\t            \n\t\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.id\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t\t</div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\n\t <!-- end container for template -->\n\t  </div>  \n\t</div>\n\n\t\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div v-show=\"requestFinished\">\n\t\t<!-- container for template -->\n\n\t\t\t<!-- no results for team, show message -->\n\t\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"!team.id\" class=\"f-el-fill text-center\">\n\t\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t\t<br>\n\t\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t\t</div>\n\n\t\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t\t<div v-cloak=\"\" v-show=\"team.id\" class=\"Team for-blurring\">\n\t\t\t\n\n\t    \t<div class=\"Team__details\">\n\t\t\t\t\t\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<img class=\"img-thumbnail\" width=\"500\" height=\"400\" :src=\"team.pic\">\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t<span>“{{ team.slogan }}”</span>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t<i id=\"teamLocationIcon\" class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t{{ team.homefield + ', ' + team.city }}\n\t\t\t\t\t\t</span>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__fans\">\n\n\t\t\t\t\t\t<div class=\"num-fans\">\n\t\t\t\t\t\t\t<div class=\"fan-count\" :class=\"numFansClass\">\n\t\t\t\t\t\t\t\t<!-- for animating a new fan counter, show numFans +- 1 -->\n\t\t\t\t\t\t\t\t<span v-if=\"!fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t<span v-if=\"fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"arrow-right --white\"></div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div v-show=\"!isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t<img src=\"/images/becomeFan.png\" width=\"35\" height=\"47\" alt=\"Become a fan\" id=\"becomeFan\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div v-show=\"isFan &amp;&amp; !admin\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a fan\" id=\"isFan\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div v-show=\"isMember || (isFan &amp;&amp; admin)\" class=\"fan-icon --member\">\n\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a member\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\n\t\t\t\t\t<!-- buttons for joining team, accepting invitation -->\n\t\t\t\t\t<div class=\"Team__invite\">\n\t\t\t\t\t\t<a v-show=\"!isMember &amp;&amp; !hasBeenInvited &amp;&amp; !hasRequestedToJoin\" class=\"btn btn-primary outline\" @click=\"requestToJoin(true)\">REQUEST TO JOIN</a>\n\n\t\t\t\t\t\t<a v-show=\"!isMember &amp;&amp; !hasBeenInvited &amp;&amp; hasRequestedToJoin\" class=\"btn btn-success outline\" @click=\"requestToJoin(false)\">CANCEL REQUEST</a>\n\n\t\t\t\t\t\t<a v-show=\"!isMember &amp;&amp; hasBeenInvited\" class=\"btn btn-success\" @click=\"respondToInv()\">ACCEPT INVITATION</a>\n\n\t\t\t\t\t\t<a v-show=\"isMember\" class=\"btn btn-success outline --member\">YOU'RE A MEMBER</a>\n\t\t\t\t\t</div>\n\n\n\t   \n\t        <ul class=\"nav nav-tabs Team__tabs no-highlight\">\n\t          <li :class=\"{'active' : tab === 'calendar'}\">\n\t            <a @click=\"tab = 'calendar'\">\n\t        \t\t\t<i id=\"teamCalendarIcon\" class=\"material-icons\">date_range</i>CALENDAR\n\t            </a>\n\t          </li>\n\t          <li :class=\"{'active' : tab === 'stats'}\">\n\t            <a @click=\"tab = 'stats'\">\n\t        \t\t\t<i id=\"teamStatsIcon\" class=\"material-icons\">trending_up</i>STATS\n\t            </a>\n\t          </li>\n\t          <li :class=\"{'active' : tab === 'roster'}\">\n\t            <a @click=\"tab = 'roster'\">\n\t          \t\t<i id=\"teamRosterIcon\" class=\"material-icons\">group</i>ROSTER\n\t            </a>\n\t          </li>\n\t          <li v-if=\"admin\" :class=\"{'active' : tab === 'settings'}\">\n\t            <a @click=\"tab = 'settings'\">\n\t        \t\t\t<i id=\"teamEditIcon\" class=\"material-icons\">settings</i>SETTINGS\n\t            </a>\n\t      \t</li></ul>\t\n\t   \n\t\t\t\t</div> <!-- end team well -->\n\n\t\t\t\t<div>\n\t\t\t\t  <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t\t        \t<rc-calendar :admin=\"admin\" :events=\"events\"></rc-calendar>\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t    </ul>\n\t\t\t\t\t\t\t</div>\n\n\t\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t        \t\t</rc-stats>\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"admin\">\n\t\t\t        </rc-roster>\t\t\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\t\t\t     <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t\t        \t<h3>Settings</h3>\n\t\t        \t\n\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\t\t    </div>\n\n\t\t\t\t\n\t\t\t\t<div class=\"row\">\n\t\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t\t<rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<!-- include the footer at bottom -->\n\t\t\t\t<div class=\"Footer\">\n\t\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t  <!--  end of blurring wrapper --> \n\t\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n\t    <!-- inside here is complex logic handling what happens when an event is \n\t    \t\t\tclicked on from calendar or news feed -->\n\t\t\t<rc-view-event :admin=\"admin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t\t</rc-view-event>\n\n\n\n\t    <!-- modal window for adding events -->\n\t    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 class=\"modal-title\">Add an Event</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t            <div class=\"row\">\n\t                 \n\t\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n\t            </div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\t    <!-- modal for editing a player in the roster -->\n\t\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 v-show=\"(editUser.id || editUser.ghost) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n\t            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 1\" class=\"modal-title\">Add a Player</h3>\n\t            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 3\" class=\"modal-title\">Add a Coach</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t          \t<div class=\"row\">\n\t            \n\t\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.id || editUser.new || editUser.ghost\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t\t</div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\n\t <!-- end container for template -->\n\t  </div>  \n\t</div>\n\n\t\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/Team.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  position: relative;\n  margin-bottom: 35px;\n  border: none;\n  box-shadow: none;\n  padding: 40px 0 0 0;\n  background: #ebebeb;\n}\n.Team__name {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.Team__location,\n.Team__slogan {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 35px;\n}\n.Team__location span,\n.Team__slogan span {\n  position: relative;\n  color: #7b7b7b;\n}\n.Team__fans {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 35px;\n}\n.Team__fans a {\n  margin-left: 0;\n}\n.Team__fans .isMember {\n  background: #329acf;\n}\n.Team__fans .isMember:hover {\n  cursor: auto;\n  background: #329acf;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Team__tabs li a {\n  padding: 20px 40px 20px 64px;\n}\n@media screen and (max-width: 767px) {\n  .Team__tabs li a {\n    padding: 20px 30px 20px 54px;\n  }\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n#teamCalendarIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 30px;\n  bottom: 18px;\n}\n@media screen and (max-width: 767px) {\n  #teamCalendarIcon {\n    left: 14px;\n  }\n}\n#teamStatsIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamStatsIcon {\n    left: 15px;\n  }\n}\n#teamRosterIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamRosterIcon {\n    left: 16px;\n  }\n}\n#teamEditIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamEditIcon {\n    left: 16px;\n  }\n}\n#teamLocationIcon {\n  position: absolute;\n  left: -27px;\n  top: -4px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
+    require("vueify-insert-css").cache[".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  position: relative;\n  margin-bottom: 35px;\n  border: none;\n  box-shadow: none;\n  padding: 40px 0 0 0;\n  background: #ebebeb;\n}\n.Team__name {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.Team__location,\n.Team__slogan {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 25px;\n  font-size: 17px;\n}\n.Team__location span,\n.Team__slogan span {\n  position: relative;\n  color: #7b7b7b;\n}\n.Team__fans {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  margin-top: 25px;\n}\n.Team__fans .num-fans {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 5px;\n  overflow: hidden;\n  height: 40px;\n  width: 70px;\n}\n.Team__fans .num-fans .fan-count {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background-color: #fff;\n  min-width: 61px;\n  height: 40px;\n  font-size: 17px;\n  border-radius: 15%;\n  color: #7b7b7b;\n}\n.Team__fans .num-fans .fan-count span {\n  position: absolute;\n  top: 8px;\n  right: 33px;\n}\n.Team__fans .num-fans .fan-count.--tensOfFans span {\n  right: 30px;\n}\n.Team__fans .num-fans .fan-count.--hundredsOfFans span {\n  right: 24px;\n}\n.Team__fans .num-fans .fan-count.--thousandsOfFans span {\n  right: 19px;\n}\n.Team__fans .num-fans .arrow-right {\n  position: absolute;\n  top: 5px;\n  right: 4px;\n  margin-top: 9px;\n  height: 0;\n  width: 0;\n  border-bottom: 6px solid transparent;\n  border-top: 6px solid transparent;\n  border-left: 6px solid #fff;\n}\n.Team__fans .fan-icon {\n  margin-left: 2px;\n}\n.Team__fans .fan-icon:hover {\n  cursor: pointer;\n}\n.Team__fans .fan-icon.--member:hover {\n  cursor: default;\n}\n.Team__invite {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 25px;\n}\n.Team__invite .btn {\n  margin-left: 0px;\n}\n.Team__invite .btn.--member:hover {\n  cursor: default;\n  color: #21c230;\n  border: 2px solid #21c230;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Team__tabs li a {\n  padding: 20px 40px 20px 64px;\n}\n@media screen and (max-width: 767px) {\n  .Team__tabs li a {\n    padding: 20px 30px 20px 54px;\n  }\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n#teamCalendarIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 30px;\n  bottom: 18px;\n}\n@media screen and (max-width: 767px) {\n  #teamCalendarIcon {\n    left: 14px;\n  }\n}\n#teamStatsIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamStatsIcon {\n    left: 15px;\n  }\n}\n#teamRosterIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamRosterIcon {\n    left: 16px;\n  }\n}\n#teamEditIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 32px;\n  bottom: 19px;\n}\n@media screen and (max-width: 767px) {\n  #teamEditIcon {\n    left: 16px;\n  }\n}\n#teamLocationIcon {\n  position: absolute;\n  left: -27px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -29327,7 +30109,7 @@ exports.default = {
 		//wait long enough to ensure calendar is fully loaded
 		setTimeout(function () {
 			//for clicks on calendar events
-			$('.Calendar__container').on('click', 'a.event-trigger', function (e) {
+			$('.Calendar__container').on('click touchstart', 'a.event-trigger', function (e) {
 				this.viewEvent($(e.target).data('event-id'));
 			}.bind(this));
 
@@ -29367,6 +30149,9 @@ module.exports = function (val) {
 
 	//if key is 'win', return 'W/L'
 	if (val === 'win') return 'W/L';
+
+	//'astto' becomes 'AST/TO'
+	if (val === 'astto') return 'AST/TO';
 
 	if (val === 'opp') return 'OPPONENT';
 
@@ -29478,7 +30263,7 @@ module.exports = function (val) {
 		case 'ts_':
 			return 'True Shooting Percentage';
 			break;
-		case 'ast-to':
+		case 'astto':
 			return 'Assist to Turnover Ratio';
 			break;
 		case 'eff':
@@ -29593,6 +30378,149 @@ module.exports = function (start, end) {
 }).apply(this, arguments);
 
 },{}],189:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsScrollSpy.js", module);
+(function(){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+//set up detection on stats tables for whether or not there is more data hidden and needs to be scrolled
+//jQuery listeners wait for scroll, update overflow object in parent
+exports.default = {
+	data: function data() {
+		return {
+			overflowed: {}
+		};
+	},
+
+
+	methods: {
+
+		//checks to see if that element is visible on screen or not
+
+		isHidden: function isHidden(element) {
+			element = element[0];
+			var rect = element.getBoundingClientRect();
+			return !(rect.top >= 0 && rect.left >= 0 && rect.bottom <= ($(window).innerHeight() || $(window).height()) && rect.right <= ($(window).innerWidth() || $(window).width()));
+		},
+
+
+		//set up listeners to constantly check visibility on scroll
+		attachScrollListener: function attachScrollListener(element, overflowIndex) {
+			var firstElement = $(element + ' th:first-child');
+			var lastElement = $(element + ' th:last-child');
+			var parent = $(element);
+
+			this.$set('overflowed.' + overflowIndex, { first: false, last: false });
+
+			this.overflowed[overflowIndex].last = this.isHidden(lastElement);
+
+			var self = this;
+			//listen for scroll, update the flag if now in view
+			parent.on('scroll', function () {
+				self.overflowed[overflowIndex].first = self.isHidden(firstElement);
+				self.overflowed[overflowIndex].last = self.isHidden(lastElement);
+			});
+		}
+	}
+
+};
+
+}).apply(this, arguments);
+
+},{}],190:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsSelection.js", module);
+(function(){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
+	data: function data() {
+		return {
+			//optional stats inputted by user
+			userStatsList: {},
+
+			//stats calculated by rookiecard
+			rcStatsList: {},
+
+			//the pre-selected ones for user inputs
+			userSelected: [],
+
+			//the pre-selected ones for rc calculated
+			rcSelected: [],
+
+			//array of the keys of the objects
+			userStatKeys: [],
+			rcStatKeys: []
+		};
+	},
+
+
+	methods: {
+		initSelections: function initSelections(sport) {
+			this.getStatsBySport(sport);
+		},
+
+
+		//calculates which stats are disabled or not
+		setDependencies: function setDependencies() {
+			var stats = this.rcStatsList;
+
+			//loop through all the keys, check their dependencies and enable/disable
+			for (var key in stats) {
+				var disabled = false;
+				for (var x = 0; x < stats[key].req.length; x++) {
+					//check that the required stats are already checked
+					var req = stats[key].req[x];
+					if (this.userSelected.indexOf(req) === -1 && this.rcSelected.indexOf(req) === -1) {
+						//they don't have all the requirements needed for this statistic, disable the option
+						disabled = true;
+
+						//uncheck on the picker if it's selected already
+						var index = this.userSelected.indexOf(key);
+						if (index !== -1) this.userSelected.splice(index, 1);
+						var index = this.rcSelected.indexOf(key);
+						if (index !== -1) this.rcSelected.splice(index, 1);
+					}
+				}
+				stats[key].disabled = disabled;
+			}
+			this.rcStatsList = stats;
+
+			setTimeout(function () {
+				this.$dispatch('renderSelectPicker');
+			}.bind(this), 50);
+		},
+
+
+		//request all the stat columns for this sport from the server
+		getStatsBySport: function getStatsBySport(sport) {
+			var url = this.prefix + 'stats/' + sport;
+			var self = this;
+			this.$http.get(url).then(function (response) {
+				self.userStatsList = response.data.user;
+				self.rcStatsList = response.data.rc;
+				self.userSelected = response.data.userSelected;
+				self.rcSelected = response.data.rcSelected;
+				self.userStatKeys = Object.keys(response.data.user);
+				self.rcStatKeys = Object.keys(response.data.rc);
+				self.setDependencies();
+				setTimeout(function () {
+					self.$dispatch('initSelectPicker');
+				}, 50);
+			}).catch(function () {
+				self.$root.banner('bad', 'There was a server problem, try refreshing the page before continuing');
+			});
+		}
+	}
+};
+
+}).apply(this, arguments);
+
+},{}],191:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/routes.js", module);
 (function(){
 'use strict';
@@ -29658,50 +30586,35 @@ var router = new VueRouter({
 router.map({
 
 	'/': {
-
 		name: 'home',
-
 		component: {
 			template: "<h1 style='margin-top: 80px'>This is the homepage</h1>"
 		}
 	},
 
 	'/team/create': {
-
 		name: 'createTeam',
-
 		component: _CreateTeam2.default
-
 	},
 
 	'/team/:name': {
-
 		name: 'team',
-
 		component: _Team2.default
-
 	},
 
 	'/:name': {
-
 		name: 'user',
-
 		component: {
 			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name}}!</h1>"
 		}
 	},
 
 	'*': {
-
 		component: {
 			template: "<div class='text-center'><h1>Uh oh!</br>Page not found!</h1></div>"
 		}
 	}
 
-});
-
-router.beforeEach(function () {
-	window.scrollTo(0, 0);
 });
 
 router.start(_App2.default, '#app');
@@ -29712,7 +30625,7 @@ router.start(_App2.default, '#app');
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"33bB9+JSZ3Fv/0aebCtK","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"o6YUsfLgDcyyb0hjB1pp","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/some.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/collection/some.js","node_modules/lodash/internal/equalArrays.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js","node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/collection/some.js","node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"sA+TwBpBZ76fQEClqyBu","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"42jxjkjkQ0n2LxQDxwDD","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"8258ZqnIXHmBUsoqENaS","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"07XDWcnPVBLNGZHDmmoR","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"rg8jHM6CQVOeuIT4feEK","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"H9GZtry9aZTymZJ9bJfl","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"iLoF8QTxOjBTisWy4+/A","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"PhbkQ7Cm+74qOmC0YiOh","parents":["resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"k6kaM0139r93hVEqMZEF","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"wB3zOt5ldIvWXR4b+/Ij","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"bN/Jg9S3jgZBS13XdhHs","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"cK6hpGTf8lRKmeSwKVcv","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"S9m2NW+VyCHHR8d+ZHT1","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"zBhGltBSpoH9GDwKr3ly","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"4ob4ArNLAFrvwVh/4+lT","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":189,"hash":"1VjNnMjYoTN6fQepib70","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/StatsSelection.js":{"index":190,"hash":"xUsbCivkOhskRsGPVyzU","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":189,"hash":"oevnwx0F0ZIb39KpCZbK","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"ZIqPcQ+UmlY3x1lzyuV2","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"yrCK0D3yvLIG/Utar/fG","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"9ua/2IECcz1+ESJRBxNc","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"EE7kB+WqYWnigGS27UW9","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"qc5YYgsFdun+KdrXLzXz","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"v8o+ktKJdfISPtqMOHjK","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"lTE60x/l7iVxmDn2M2II","parents":["resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"jLBKRhxLjlGac3bpbA4o","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"piTfc2CRXnrrSQQIdcZd","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"EJKfCbIhUFHcncoWiHp9","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"hl9GrxYthehtrSKja+pe","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"AYqTcutlfzzAZpNVlP/D","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":191,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";
@@ -29756,6 +30669,6 @@ router.start(_App2.default, '#app');
   arguments[3], arguments[4], arguments[5], arguments[6]
 );
 
-},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":128,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":189}]},{},[1]);
+},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":128,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":191}]},{},[1]);
 
 //# sourceMappingURL=routes.js.map

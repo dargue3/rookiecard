@@ -217,9 +217,9 @@ export default  {
 					$('#addEventModal').modal('hide');
 
 					if(self.repeats) //plural
-						var msg = "Your events have been added to the calendar";
+						var msg = "Events saved";
 					else
-						var msg = "Your event has been added to the calendar";
+						var msg = "Event saved";
 
 					self.$root.banner('good', msg);
 
@@ -228,7 +228,7 @@ export default  {
 				})
 				.catch(function(response) {
 					//if unsuccessful, show error message
-					self.$root.banner('bad', "There was a problem adding your event... try again?");
+					self.$root.errorMsg();
 				});
 			}
 			

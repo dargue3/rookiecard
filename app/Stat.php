@@ -30,13 +30,24 @@ class Stat extends Model
 
     /**
     * current supported stat types (stored as int):
-    * user (0), team (1)
+    * 0 = user stats
+    * 1 = team stats
     *
     * current supported sports (stored as int):
-    * basketball (0), baseball (1), football (2), rugby (3)
+    * 0 = basketball
 	*
 	* stats are stored as a json string
     */
+
+
+    protected $basketballPlayerKeys = ['name', 'gs', 'gp', 'min', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
+            'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
+
+    protected $basketballTeamKeys = ['date', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
+            'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf'];   
+
+
+
 
     //returns all stats associated with a given team
     public function getTeamStats($team) {
@@ -195,6 +206,39 @@ class Stat extends Model
 
         return $stats;
     }
+
+
+    //return the list of stat keys (in correct precedence order)
+    public function getStatKeys($sport, $userStats, $rcStats) {
+
+        count($userStats) == 0 ? $playerCols = [] : $playerCols = ['name'];
+        $teamCols = ['date', 'win', 'opp'];
+        switch($sport) {
+            case 0:
+                //basketball
+                $playerKeys = $this->basketballPlayerKeys;
+                $teamKeys = $this->basketballTeamKeys;
+                break;
+            default:
+                $keys = [];
+                break;
+        }
+
+        //loop through the keys, if they exist in either array, add to master list
+        foreach($playerKeys as $key) {
+            if(in_array($key, $userStats) || in_array($key, $rcStats))
+                $playerCols[] = $key;
+        }
+
+        //loop through the keys, if they exist in either array, add to master list
+        foreach($teamKeys as $key) {
+            if(in_array($key, $userStats) || in_array($key, $rcStats))
+                $teamCols[] = $key;
+        }
+
+        return ['playerCols' => $playerCols, 'teamCols' => $teamCols];
+    }
+
 
 
 

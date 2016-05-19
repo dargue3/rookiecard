@@ -5,9 +5,9 @@
 
 		<!-- if user clicks this, show form to edit stats, value syncs up to ViewEvent.vue -->
   	<div v-if="editEvent" class="edit-stats-button">
-			<a class="btn btn-primary" @click="editEvent = false">
+			<a class="btn btn-primary --chevron --md" @click="editEvent = false">
 				Edit Stats 
-				<i id="edit-chevron" class="material-icons">chevron_right</i>
+				<i class="material-icons btn-chevron --right">chevron_right</i>
 			</a>
 		</div>
 
@@ -170,11 +170,11 @@ export default  {
 				$('#viewEventModal').modal('hide');
 
 				//show success banner
-				self.$root.banner('good', "This event has been updated");
+				self.$root.banner('good', "Event saved");
 
 			})
 			.catch(function(response) {
-				self.$root.banner('bad', "There was a server problem, try refreshing the page.");
+				self.$root.errorMsg();
 			});
 		},
 
@@ -199,11 +199,11 @@ export default  {
 				$('#viewEventModal').modal('hide');
 
 				//show success banner
-				self.$root.banner('good', "This event has been deleted");
+				self.$root.banner('good', "Event deleted");
 			})
 			.catch(function(response) {
 				//show error
-				self.$root.banner('bad', "There was a server problem... try refreshing the page?");
+				self.$root.errorMsg();
 			});
 		},
 

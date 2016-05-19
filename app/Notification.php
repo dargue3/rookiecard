@@ -45,10 +45,16 @@ class Notification extends Model
             case 'team_stats':
                 $type = 4;
                 break;
-            case 'user_stats':
+            case 'team_invite':
                 $type = 5;
+                break;
+            case 'user_stats':
+                $type = 10;
                 break;    
         }
+
+        if(!is_array($userIDs))
+            $userIDs = [$userIDs];
 
 
         foreach($userIDs as $id) {
@@ -65,7 +71,7 @@ class Notification extends Model
     }
 
 
-    public function scopeUser($query, $user_id, $team_id) {
+    public function scopeTeamUser($query, $user_id, $team_id) {
 
         return $query->where('user_id', $user_id)->where('creator_id', $team_id);
 
