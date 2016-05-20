@@ -105,5 +105,16 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     }
 
 
+    //return a minimal amount of info about the user
+    public function brief() {
+        return [
+            'id'            => $this->id,
+            'firstname'     => $this->firstname,
+            'lastname'      => $this->lastname,
+            'username'      => $this->username,
+        ];
+    }
+
+
 
 }

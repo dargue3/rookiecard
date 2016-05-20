@@ -179,8 +179,9 @@ export default  {
 			this.entries[index].$remove(entry);
 
 			var self = this;
-			var url = this.$parent.prefix + '/feed/' + entry.id;
-			this.$http.delete(url)
+			var url = this.$parent.prefix + '/feed'
+			var data = { id: entry.id };
+			this.$http.delete(url, data)
 			.then(function(response) {
 				//successful ajax request
 				self.$root.banner('good', 'This post has been deleted');
@@ -212,7 +213,8 @@ export default  {
 
 			var self = this;
 			var url = this.$parent.prefix + '/feed';
-			this.$http.post(url, {post: entry.details})
+			var data = { post: entry.details };
+			this.$http.post(url, data)
 			.then(function(response) {
 				//successful ajax post, dynamically add post to the feed
 				self.$root.banner('good', 'Your post has been added to the team feed');

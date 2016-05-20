@@ -2,11 +2,14 @@
 
 namespace App;
 
+use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+
 use App\Stat;
+use App\NewsFeed;
 
 class Event extends Model
 {
@@ -52,43 +55,44 @@ class Event extends Model
 
         return $query->where('start', '>=', Carbon::now());
 
-
     }
 
-    public function deleteEvent($team, $notify) {
 
-        
-        
 
-            //send delete status update and notification
-            $update = new StatusUpdate;
-            $metaData = json_encode(['event' => $this]);
-            $update = $update->createStatusUpdate($team->id, $this->id, 'team_event_delete', $metaData);
-          
-        if($notify) {
-            $notification = new Notification();
-            $notification->createNotifications($team->members(), $team->id, 'team_event_delete', $this->id);
+    //delete a team event
+    public function deleteTeamEvent($team) {
+
+        //only tell the team and create news feed entry if the event hasn't happened yet
+        if(Carbon::createFromTimestampUTC($this->end)->isFuture()) {
+            $feed = new NewsFeed;
+            $feed = $feed->deleteTeamEvent($team, $this);
+        }
+        else {
+            $feed = null;
         }
 
         //delete associated stats
-        Stat::where('event_id', $this->id)->where('team_id', $team->id)->delete();
+        $stats = new Stat;
+        $stats->deleteByEvent($team, $event);
 
         $this->delete();
 
-        return $update;
-        
+        return $feed;
     }
 
 
 
     //updates an event, notifies team members and fans
-    public function updateEvent($request, $team, $notify) {
+    public function updateTeamEvent($request, $team) {
 
-        $start = $request->get('start');
-        $end = $request->get('end');
+        $start = $request->start;
+        $end = $request->end;
+        
+        //keep a copy of the old event
+        $oldEvent = $this;
        
-        $this->title = $request->get('title');
-        $this->class = intval($request->get('class'));
+        $this->title = $request->title;
+        $this->class = intval($request->class);
         $tz = $request->session()->get('timezone');
         if(!$tz)
             $tz = 'UTC';
@@ -97,37 +101,32 @@ class Event extends Model
         $this->end = Carbon::parse($end, $tz)->timezone('UTC')->timestamp;
 
         if($this->end < $this->start) {
-            echo json_encode(['msg' => 'Event ends before it starts, please try again', 'result' => false]);
-            return;
+            return false;
         }
 
-        $this->details = $request->get('details');
-        
-        
-            //get all users, send them a new notification
-            
-            $update = new StatusUpdate;  
-            $metaData = json_encode(['event' => $this]);
-            $update = $update->createStatusUpdate($team->id, $this->id, 'team_event_update', $metaData);
-
-        if($notify) {
-            $notification = new Notification;
-            $users = $team->members();
-            $notification->createNotifications($users, $team->id, 'team_event_update', $this->id);
-        }
-
+        $this->details = $request->details;
         $this->save();
 
-        return $update;
+
+        //only tell the team and create news feed entry if the event hasn't happened yet
+        if(Carbon::createFromTimestampUTC($this->end)->isFuture()) {
+            $feed = new NewsFeed;
+            $feed = $feed->updateTeamEvent($team, $this, $oldEvent);
+        }
+        else {
+            $feed = null;
+        }
+        
+        return $feed;
     }
 
 
 
     //creates an event, notifies players and fans
-    public function createEvent($request, $team) {
+    public function createTeamEvent($team, Request $request) {
 
 
-        $eventCount = Event::where('owner_id', $team->id)->count();
+        $eventCount = $this->where('owner_id', $team->id)->count();
 
         //if they have a lot of events, throw error
         //not sure if necessary, just some security for the beginning
@@ -342,13 +341,7 @@ class Event extends Model
             Carbon::setTestNow();
 
             $repeatsString = "$firstEvent->start:$lastEvent->start:$repeatDaysForStatus";
-
-            $metaData = json_encode(['event' => $firstEvent, 'repeats' => $repeatsString]);
-
-            //make a status update for this event
-            $update = new StatusUpdate;
-            $update = $update->createStatusUpdate($team->id, $firstEvent->id, 'team_event', $metaData);
-
+            $metaData = ['event' => $firstEvent, 'repeats' => $repeatsString];
 
         }
 
@@ -366,20 +359,12 @@ class Event extends Model
             $event->type = 0;
             $event->save();
 
-            //make a status update for this event
-            $update = new StatusUpdate;
-
-            $metaData = json_encode(['event' => $event]);
-
-            $update = $update->createStatusUpdate($team->id, $event->id, 'team_event', $metaData);
-
-            $firstEvent = $event;
-
+            $metaData = ['event' => $event];
         }
 
-        //grab all of the users (that didn't create this event) and send them a notification
-        $notifications = new Notification;
-        $notifications->createNotifications($team->members(), $team->id, 'team_event', $firstEvent->id);
+        //add this event to the news feed
+        $update = new NewsFeed;
+        $update = $update->newTeamEvents($team, $metaData);
 
         return $update;
     }

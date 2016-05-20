@@ -35,6 +35,8 @@ class TeamMember extends Model
      * 46 = invited coach AND fan
      * 47 = has requested to join AND fan
     */
+
+
     protected $fillable = ['user_id', 'team_id', 'role', 'admin', 'meta'];
 
     protected $dates = ['deleted_at'];
@@ -53,7 +55,7 @@ class TeamMember extends Model
 
 
     //makes a user a fan of a team
-    public function makeFan($user_id, $team_id) {
+    public function makeFan($user_id, $team) {
 
         $member = $this->member($user_id, $team_id)->withTrashed()->first();
 
@@ -80,6 +82,10 @@ class TeamMember extends Model
             //seems like they must already be a member of the team, shouldn't have happened
             return ['ok' => false, 'error' => 'There was a problem, try refreshing the page'];
         }
+
+        //post to it to the feed
+        $feed = new NewsFeed;
+        $feed->teamFan($team, Auth::user());
 
         return ['ok' => true];
     }
@@ -156,7 +162,7 @@ class TeamMember extends Model
 
             //create a notification telling them to check this team out
             $notification = new Notification;
-            $notification->createNotifications($existingUser->id, $team_id, 'team_invite');
+            $notification->teamInvite($existingUser, $team_id);
         }
 
         else {
@@ -232,22 +238,22 @@ class TeamMember extends Model
     //a user has opted to join a team, switch them from invited to player/coach/fan
     public function acceptInvitation($team, $user) {
 
-        $thisUser = $this->member($user->id, $team->id)->first();
+        $member = $this->member($user->id, $team->id)->first();
 
-        if(!$thisUser) {
+        if(!$member) {
             //no member with these credentials
             return ['ok' => false, 'error' => "You haven't been invited"];
         }
 
         //switch from invited to actual member
-        if($thisUser->role == 5) $thisUser->role = 0; //make them a player
+        if($member->role == 5) $member->role = 0; //make them a player
 
-        else if($thisUser->role == 6) $thisUser->role = 2; //make them a coach
+        else if($member->role == 6) $member->role = 2; //make them a coach
 
         else return ['ok' => false, 'error' => "You haven't been invited"]; //they shouldn't have gotten here
 
-        $thisUser->meta = json_encode(['positions' => []]);
-        $thisUser->save();
+        $member->meta = json_encode(['positions' => []]);
+        $member->save();
 
 
         $ghost = $this->findGhostByEmail($team, $user->email);
@@ -265,8 +271,8 @@ class TeamMember extends Model
                 $meta = json_decode($stat->meta);
                 if($meta->id == $ghost->id) {
                     //found stats associated with this ghost, change the data to this user's data
-                    $meta->id = $thisUser->user_id;
-                    $stat->owner_id = $thisUser->user_id;
+                    $meta->id = $member->user_id;
+                    $stat->owner_id = $member->user_id;
                     $stat->meta = json_encode($meta);
                     $stat->save();
                 }
@@ -306,17 +312,18 @@ class TeamMember extends Model
         $theirGhost = null;
 
         foreach($ghosts as $ghost) {
+
             $meta = json_decode($ghost->meta);
 
-            //does this ghost's meta data show the user's email?
+            //does this ghost's meta data contain the user's email?
             if($meta->ghost->email == $email) {
                 $theirGhost = $ghost;
+                //won't be needing this anymore
                 $ghost->delete();
             }
         }
 
         return $theirGhost;
-
     }
 
 

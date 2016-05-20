@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateRcStatusUpdatesTable extends Migration
+class CreateRcNewsFeed extends Migration
 {
     /**
      * Run the migrations.
@@ -12,13 +12,13 @@ class CreateRcStatusUpdatesTable extends Migration
      */
     public function up()
     {
-        Schema::create('rc_status_updates', function (Blueprint $table) {
+        Schema::create('rc_news_feed', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('owner_id')->unsigned();
             $table->index('owner_id');
             $table->integer('creator_id')->unsigned();
-            $table->integer('target_id')->unsigned()->nullable();
             $table->tinyInteger('type');
+            $table->text('meta');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateRcStatusUpdatesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('rc_status_updates');
+        Schema::drop('rc_news_feed');
     }
 }

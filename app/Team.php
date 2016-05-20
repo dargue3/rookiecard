@@ -2,12 +2,16 @@
 
 namespace App;
 
+use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use App\TeamMember;
 use App\Event;
 use App\Stat;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\NewsFeed;
+use App\Notification;
 
 class Team extends Model
 {
@@ -33,7 +37,7 @@ class Team extends Model
         $members = TeamMember::where('team_id', $this->id)->get();
         
         foreach($members as $member) {
-            if(!$includeThisUser && $member->user_id === Auth::user()->id)
+            if(!$includeThisUser && $member->user_id == Auth::user()->id)
                 continue;
             $users[] = $member->user_id;
         }    
@@ -84,8 +88,8 @@ class Team extends Model
     public function events() {
 
         $events = new Event;
-        return $events->getTeamEvents($this);
 
+        return $events->getTeamEvents($this);
     }
 
 
@@ -93,17 +97,17 @@ class Team extends Model
     public function stats() {
 
         $stats = new Stat;
-        return $stats->getTeamStats($this);
 
+        return $stats->getTeamStats($this);
     }
 
 
     //returns all news feed entries associated with this team
     public function feed() {
 
-        $feed = new StatusUpdate;
-        return $feed->getTeamFeed($this);
+        $feed = new NewsFeed;
 
+        return $feed->getTeamFeed($this);
     }
 
 
@@ -221,6 +225,176 @@ class Team extends Model
 
         return $team;
     }
+
+
+
+    //someone wrote a post onto the team's news feed
+    //post is an array ready to be json_encoded
+    public function postToFeed($post) {
+
+        $feed = new NewsFeed;
+
+        $entry = $feed->newsFeedPost($this, $post);
+
+        return ['ok' => true, 'post' => $entry];
+    }
+
+
+
+    //admin deleted an entry on the team feed
+    public function deleteFeedEntry(Request $request) {
+
+        NewsFeed::findOrFail($request->id)->delete();
+
+        return ['ok' => true, 'post' => $entry];
+    }
+
+
+
+    //admin created some events, create them and return some data
+    public function createEvents(Request $request) {
+
+        $event = new Event;
+
+        $feed = $event->createTeamEvent($this, $request);
+
+        $events = $event->getTeamEvents($this);
+
+        return ['ok' => true, 'feed' => $feed, 'events' => $events];
+    }
+
+
+
+    //admin has deleted an event
+    public function deleteEvent(Request $request) {
+
+        $event = Event::findOrFail($request->id);
+   
+        $feed = $event->deleteTeamEvent($team);
+
+        return ['ok' => true, 'feed' => $feed];
+    }
+
+
+
+    //admin has updated an event
+    public function updateEvent(Request $request) {
+
+        $event = Event::findOrFail($request->id);
+   
+        $feed = $event->updateTeamEvent($team);
+
+        if($feed == false) 
+            return ['ok' => false, 'error' => 'Event finishes before it starts'];
+
+        return ['ok' => true, 'feed' => $feed];
+    }
+
+
+
+    //admin has edited the meta data associated with a team member
+    public function editMember(Request $request) {
+        //save the data 
+        $user = $request->user;
+
+        $member = TeamMember::findOrFail($user['member_id']);
+
+        if($user['admin'])
+            $member->admin = 1;
+        else
+            $member->admin = 0;
+
+        $member->meta = json_encode($user['meta']);
+        $member->save();
+
+        return ['ok' => true, 'user' => $member];
+    }
+
+
+
+    //admin has created a new team member
+    public function newMember(Request $request) {
+
+        //gather data and create ghost, invite email to team
+        $user = [];
+        $user['email'] = $request->meta['ghost']['email'];
+        $user['name'] = $request->meta['ghost']['name'];
+
+        $member = new TeamMember;
+        $ghost = $member->inviteAndCreateGhost($team->id, $user, $request->role);
+
+        //add any included meta data
+        $meta = json_decode($ghost->meta);
+        $meta->num = $request->meta['num'];
+        $meta->positions = $request->meta['positions'];
+        $ghost->meta = json_encode($meta);
+        $ghost->save();
+
+        return ['ok' => true, 'user' => $ghost];
+    }
+
+
+
+    //admin has deleted a team member
+    //depending on whether they are a ghost or a real user, take different actions
+    public function deleteMember(Request $request) {
+
+        $user = $request->user;
+        $member = TeamMember::findOrFail($user['member_id']);
+
+        //if they're a ghost, remove from team entirely
+        if($member->user_id == 0) {
+            $stats = new Stat;
+            $stats->deleteByMember($member);
+            $member->delete();
+            return ['ok' => true];
+        }
+
+        //if they're a real user, switch them to being a ghost
+        $member->role = $user['role'];
+        $member->id = 0;
+        $member->admin = 0;
+        $member->meta = json_encode($user['meta']);
+        $member->save();
+
+        return ['ok' => true];
+    }
+
+
+    //logged in use is responding to their invitation to join this team
+    public function userHasRespondedToInvitation(Request $request) {
+
+        $member = new TeamMember;
+
+        //the user is accepting an invitation
+        if($request->accept == true)
+            $outcome = $member->acceptInvitation($team, Auth::user());
+
+        //user is declining an invitation
+        else if($request->accept == false)
+            $outcome = $member->thanksButNoThanks($team);
+
+        if(!$outcome['ok']) {
+            //something bad happened, give error to user
+            return $outcome;
+        }
+   
+        //return updated list of users on this team
+        return ['ok' => true, 'users' => $team->membersData()];
+    }
+
+
+
+    //logged in user has requested to join this team
+    public function userHasAskedToJoin() {
+        
+        $member = new TeamMember;
+
+        return $member->requestToJoin($this);
+    }
+
+
+
 
 
 

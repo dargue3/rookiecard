@@ -37,7 +37,7 @@ Route::post ('/api/v1/team/update/{teamname}/pic', 	'TeamController@uploadPic');
 Route::resource('/api/v1/team/{teamname}/stats', 			'StatController');
 Route::get  	 ('/api/v1/team/{teamname}/data', 			'TeamController@getTeamData');
 Route::post  	 ('/api/v1/team/{teamname}/feed', 			'TeamController@postNewPost');
-Route::delete  ('/api/v1/team/{teamname}/feed/{id}', 	'TeamController@deletePost');
+Route::delete  ('/api/v1/team/{teamname}/feed', 			'TeamController@deletePost');
 Route::post  	 ('/api/v1/team/{teamname}/fan', 				'TeamController@toggleFan');
 Route::put  	 ('/api/v1/team/{teamname}/user', 			'TeamController@updateUser');
 Route::post  	 ('/api/v1/team/{teamname}/user', 			'TeamController@newUser');

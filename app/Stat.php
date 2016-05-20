@@ -240,6 +240,23 @@ class Stat extends Model
     }
 
 
+    //deletes all stats associated with this event
+    public function deleteByEvent($team, $event) {
+
+        Stat::where('team_id', $team->id)->where('event_id', $event->id)->delete();
+
+    }
+
+
+
+    //deletes all stats associated with this team member
+    public function deleteByEvent($member_id) {
+
+        Stat::where('member_id', $member_id)->delete();
+
+    }
+
+
 
 
 }

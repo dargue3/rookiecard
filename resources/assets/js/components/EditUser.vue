@@ -135,7 +135,6 @@ export default  {
 			if(errors)
 				return;
 
-
 			if(this.user.new)
 				this.newUser();
 			else
@@ -178,7 +177,8 @@ export default  {
 
 			var self = this;
 			var url = this.$parent.prefix + '/user'; 
-			this.$http.put(url, {user: this.user})
+			var data = { user: this.user };
+			this.$http.put(url, data)
 				.then(function(response) {
 					//if successful, save new data, show success banner
 					self.$root.banner('good', "User saved");

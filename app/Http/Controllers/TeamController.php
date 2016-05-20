@@ -9,7 +9,7 @@ use App\Event;
 use App\TeamMember;
 use App\User;
 use App\Stat;
-use App\StatusUpdate;
+use App\NewsFeed;
 use App\Notification;
 use Carbon\Carbon;
 use Validator;
@@ -38,8 +38,6 @@ class TeamController extends Controller
         ]);
 
     }
-
-
 
 
 
@@ -83,17 +81,17 @@ class TeamController extends Controller
         if(!$member) {
             //if not a member, make them one
             $member = new TeamMember;
-            $outcome = $member->makeFan(Auth::user()->id, $team->id);
+            $outcome = $member->makeFan(Auth::user()->id, $team);
         }
 
         else if($member->role == 5 || $member->role == 6 || $member->role == 7) {
             //they've either been invited to join or have requested it, they can be fans too
-            $outcome = $member->makeFan(Auth::user()->id, $team->id);
+            $outcome = $member->makeFan(Auth::user()->id, $team);
         }
 
         else if($member->role == 4 || $member->role == 45 || $member->role == 46 || $member->role == 47) {
             //they're some type of fan, remove
-            $outcome = $member->removeFan(Auth::user()->id, $team->id);
+            $outcome = $member->removeFan(Auth::user()->id, $team);
         }
 
         else {
@@ -110,53 +108,34 @@ class TeamController extends Controller
 
         $team = Team::name($teamname)->firstOrFail();
 
-        $event = new Event;
-        //createEvent returns the StatusUpdate data it created
-        $statusUpdate = $event->createEvent($request, $team);
-
-        $teamEvents = $event->getTeamEvents($team);
-
-        return json_encode(['feed' => $statusUpdate, 'events' => $teamEvents]);
+        //create event(s), returns array of all events and news feed entry
+        return $team->createEvent($request);
     }
 
 
 
-    //from ajax request to edit or delete an event
+    //admin has deleted an event, return news feed entry
     public function deleteEvent(Request $request, $teamname) {
 
         $team  = Team::name($teamname)->firstOrFail();
-        $event = Event::findOrFail($request->get('id'));
 
-        $notify = true;
-        if(Carbon::createFromTimestampUTC($event['end'])->isPast())
-            $notify = false;
+        if(Auth::user()->cannot('edit-events', [$team, $request->id]))
+            return ['ok' => false, 'error' => 'Unauthorized request'];
 
-        $statusUpdate = $event->deleteEvent($team, $notify);
-
-        if($statusUpdate != null)
-            return json_encode(['feed' => $statusUpdate]);
-        else
-            return null;
+        return $team->deleteEvent($request);
     }
 
 
 
-    //from ajax request to edit or delete an event
+    //admin has updated an event, return news feed entry
     public function updateEvent(Request $request, $teamname) {
 
         $team  = Team::name($teamname)->firstOrFail();
-        $event = Event::findOrFail($request->get('id'));
 
-        $notify = true;
-        if(Carbon::createFromTimestampUTC($event['end'])->isPast())
-            $notify = false;
+        if(Auth::user()->cannot('edit-events', [$team, $request->id]))
+            return ['ok' => false, 'error' => 'Unauthorized request'];
 
-        $statusUpdate = $event->updateEvent($request, $team, $notify);
-
-        if($statusUpdate != null)
-            return json_encode(['feed' => $statusUpdate]);
-        else
-            return null;
+        return $team->updateEvent($request);
 
     }
     
@@ -166,56 +145,38 @@ class TeamController extends Controller
 
         $team  = Team::name($teamname)->firstOrFail();
 
-        //turn post details into json for inserting as metadata in status update
-        $post = json_encode(['details' => $request->get('post')]);
-
-        $status = new StatusUpdate;
-        $notification = new Notification;
-
-        $newPost = $status->createStatusUpdate($team->id, null, 'team_post', $post);
-        $notification->createNotifications($team->members(), $team->id, 'team_post');
-
-        return $newPost;
-
-    }
-
-    //for deleting a post
-    public function deletePost($teamname, $id) {
-
-        $status = new StatusUpdate;
-
-        $status->findOrFail($id)->delete();
-
+        return $team->postToFeed($request->post);
     }
 
 
 
-    //for editing the meta data associated with a user on a team
+    //a team admin has deleted a post on the team news feed
+    public function deletePost(Request $request, $teamname) {
+
+        $team  = Team::name($teamname)->firstOrFail();
+
+        if(Auth::user()->cannot('edit-posts', [$team, $request->id]))
+            return ['ok' => false, 'error' => 'Unauthorized request'];
+
+        return $team->deleteFeedEntry($request);
+    }
+
+
+
+    //a team admin has edited the meta data associated with a user on a team
+    //returns new saved member
     public function updateUser(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
 
-        $user = $request->get('user');
+        $member_id = $request->user['member_id'];
 
-        if($user['ghost']) {
-            //if a ghost, its id is the TeamMember id
-            $member = TeamMember::findOrFail($user['id']);
-        }
-        else {
-            //otherwise search by user's id
-            $member = TeamMember::member($user['id'], $team->id)->firstOrFail();
+        if(Auth::user()->cannot('edit-user', [$team, $member_id])) {
+            //they're not allowed to edit this user (probably malicious)
+            return ['ok' => false, 'error' => 'Unauthorized request'];
         }
 
-        if($user['admin'])
-            $member->admin = 1;
-        else
-            $member->admin = 0;
-
-        $member->meta = json_encode($user['meta']);
-        $member->save();
-
-        return;
-
+        return $team->editMember($request);
     }
 
 
@@ -236,56 +197,23 @@ class TeamController extends Controller
         if($validator->fails())
             return ['ok' => false, 'errors' => $validator->errors()];
 
-        //gather data and create ghost, invite email to team
-        $user = [];
-        $user['email'] = $request->meta['ghost']['email'];
-        $user['name'] = $request->meta['ghost']['name'];
-
-        $member = new TeamMember;
-        $ghost = $member->inviteAndCreateGhost($team->id, $user, $request->role);
-
-        //add any included meta data
-        $meta = json_decode($ghost->meta);
-        $meta->num = $request->meta['num'];
-        $meta->positions = $request->meta['positions'];
-        $ghost->meta = json_encode($meta);
-        $ghost->save();
-
-        return ['ok' => true, 'user' => $ghost];
+        return $team->newMember($request);
     }
 
 
     //kick a user from the team
     public function deleteUser(Request $request, $teamname) {
 
-        $team = Team::name($teamname)->firstOrFail();
+        $team = Team::name($teamname)->firstOrFail(); 
 
-        $data = (object) $request->editedUser;
+        $member_id = $request->user['member_id'];
 
-        if(Auth::user()->cannot('edit-user', [$team, $request])) {
+        if(Auth::user()->cannot('edit-user', [$team, $member_id])) {
             //they're not allowed to edit this user (probably malicious)
             return ['ok' => false, 'error' => 'Unauthorized request'];
         }
-
-        $deleting = $request->delete;
-        $member = TeamMember::findOrFail($data->member_id);
-
-        if($deleting) {
-            //this user was a ghost and is being deleted, easy
-            $member->delete();
-            Stat::where('member_id', $data->member_id)->delete();
-            return ['ok' => true];
-        }
-
-        //otherwise switch $member from a real user to a ghost
-        $member->role = $data->role;
-        $member->id = 0;
-        $member->admin = 0;
-        $member->meta = json_encode($data->meta);
-        $member->save();
-
-        return ['ok' => true];
-
+        
+        return $team->deleteMember($request);
     }
 
 
@@ -294,29 +222,10 @@ class TeamController extends Controller
 
         $team = Team::name($teamname)->firstOrFail();
 
-        $member = new TeamMember;
-
-        if($request->has('accept')) {
-            //the user is accepting an invitation
-            if($request->accept == true)
-                $outcome = $member->acceptInvitation($team, Auth::user());
-
-            //user is declining an invitation
-            else if($request->accept == false)
-                $outcome = $member->thanksButNoThanks($team);
-
-            if(!$outcome['ok']) {
-                //something bad happened, give error to user
-                return $outcome;
-            }
-        }
-        else {
-            //they're requesting to join
-            $member->requestToJoin($team);
-        }
-       
-        //return updated list of users on this team for ease
-        return ['ok' => true, 'users' => $team->membersData()];
+        if($request->has('accept'))
+            return $team->userHasRespondedToInvitation($request);
+        else
+            return $team->userHasAskedToJoin();
     }
 
 
