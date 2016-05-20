@@ -76,30 +76,8 @@ class TeamController extends Controller
     public function toggleFan($teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
-        $member = TeamMember::member(Auth::user()->id, $team->id)->first();
 
-        if(!$member) {
-            //if not a member, make them one
-            $member = new TeamMember;
-            $outcome = $member->makeFan(Auth::user()->id, $team);
-        }
-
-        else if($member->role == 5 || $member->role == 6 || $member->role == 7) {
-            //they've either been invited to join or have requested it, they can be fans too
-            $outcome = $member->makeFan(Auth::user()->id, $team);
-        }
-
-        else if($member->role == 4 || $member->role == 45 || $member->role == 46 || $member->role == 47) {
-            //they're some type of fan, remove
-            $outcome = $member->removeFan(Auth::user()->id, $team);
-        }
-
-        else {
-            //they're already a member but not a fan, they shouldn't have arrived here
-            return ['ok' => false, 'error' => 'There was a problem, try refreshing the page'];
-        }
-  
-        return $outcome;
+        return $team->toggleFan();
     }
 
 

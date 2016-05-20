@@ -250,9 +250,9 @@ class Stat extends Model
 
 
     //deletes all stats associated with this team member
-    public function deleteByEvent($member_id) {
+    public function deleteByMember($member) {
 
-        Stat::where('member_id', $member_id)->delete();
+        Stat::where('member_id', $member->id)->delete();
 
     }
 
