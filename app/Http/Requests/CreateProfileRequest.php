@@ -28,7 +28,7 @@ class CreateProfileRequest extends Request
             'lastname'               => 'required|alpha_dash|max:30',
             'username'               => 'required|unique:rc_users,username|max:30|
                                          not_in:register,login,logout,team,league,search,
-                                         feedback,leaderboard',
+                                         feedback,leaderboard,leaderboards',
             'email'                  => 'required|email|unique:rc_users,email',
             'password'               => 'required|min:8|alphaNum|confirmed',
             'password_confirmation'  => 'required',

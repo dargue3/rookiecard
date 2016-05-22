@@ -20,11 +20,9 @@ class Notification extends Model
      * team_event_delete (2) - when an event is "cancelled"
      * team_post (3) - when someone posts to the team feed
      * team_stats (4) - when stats are posted for a previous event
-     * team_fan (5) - someone became a fan of user's team
      * team_invite (6) - a team admin invited this user to join their team
      *
      * user_post (20) - someone wrote on this user's news feed
-     * user_fan (21) - someone became a fan of this user 
      */
 
 
@@ -37,7 +35,6 @@ class Notification extends Model
         'team_post'             => 3,
         'team_stats'            => 4,
         'team_invite'           => 5,
-        'team_fan'              => 6,
         'user_post'             => 20,
         'user_fan'              => 21,
     ];
@@ -64,32 +61,11 @@ class Notification extends Model
     }
 
 
-    //tell users someone is a fan of their team
-    public function teamFan($team) {
-
-        $users = $team->members();
-
-        //this is contacting the whole team, loop through all IDs
-        foreach($users as $user_id) {
-
-            $notification = $this->notify($user_id, $team->id, 'team_fan');
-
-            //email them if that's what they want
-            if($this->theyWantAnEmailToo($user_id, 'team_fan')) {
-
-                // EMAIL THEM HERE
-
-            }
-        }
-
-        return;
-    }
-
 
     //tell team members someone has posted to their team's news feed
     public function newsFeedPost($team) {
 
-        $users = $team->members();
+        $users = $team->allAssociatedUsers();
 
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
@@ -112,7 +88,7 @@ class Notification extends Model
     //tell team members an admin has added events
     public function newTeamEvents($team) {
 
-        $users = $team->members();
+        $users = $team->allAssociatedUsers();
 
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
@@ -135,7 +111,7 @@ class Notification extends Model
     //tell team members an admin has deleted an event
     public function deleteTeamEvent($team) {
 
-        $users = $team->members();
+        $users = $team->allAssociatedUsers();
 
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
@@ -158,7 +134,7 @@ class Notification extends Model
     //tell team members an admin has updated an event
     public function updateTeamEvent($team) {
 
-        $users = $team->members();
+        $users = $team->allAssociatedUsers();
 
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {

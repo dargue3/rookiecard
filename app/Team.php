@@ -28,59 +28,11 @@ class Team extends Model
     protected $basketballPositions = ['pg', 'sg', 'sf', 'pf', 'c'];
 
 
-
-    //returns IDs of all members of a team, useful for creating notifications
-    //includeThisUser is whether or not logged in user is included in results
-    public function members($includeThisUser = false) {
-
-        //grab all of the players, coaches, and fans
-        $members = TeamMember::where('team_id', $this->id)->get();
-        
-        foreach($members as $member) {
-            if(!$includeThisUser && $member->user_id == Auth::user()->id)
-                continue;
-            $users[] = $member->user_id;
-        }    
- 
-        return $users;
-
-    }
-
     //allows you to query team by Team::name($teamname)
     public function scopeName($query, $teamname) {
 
         return $query->where('teamname', $teamname);
 
-    }
-
-
-    public function membersData() {
-
-        $members =  TeamMember::where('team_id', $this->id)->get();
-        $admin = Auth::user()->isTeamAdmin($this->teamname);
-        $users = [];
-
-        foreach($members as $member) {
-            $user = User::find($member->user_id);
-            $user['role'] = $member->role;
-            $user['admin'] = $member->admin;
-            $user['member_id'] = $member->id;
-
-            if(!$admin) {
-                //if they aren't an admin, hide emails of invited users if applicable
-                $meta = json_decode($member->meta);
-                if(isset($meta->ghost)) {
-                    unset($meta->ghost->email);
-                    $member->meta = json_encode($meta);
-                }
-            }
-            //attach TeamMember meta data instead of User meta data
-            $user['meta'] = $member->meta;
-
-            $users[] = $user;
-        }
-
-        return $users;
     }
 
 
@@ -137,8 +89,88 @@ class Team extends Model
     }
 
 
+
+    //returns all the data associated with this team to Vue
+    public function getAllTeamData() {
+
+        $members    = $this->members();
+        $feed       = $this->feed();
+        $events     = $this->events();
+        $stats      = $this->stats();
+        $positions  = $this->positions();
+        $auth       = Auth::user();
+
+        $data = [
+            'team'      => $this,
+            'members'   => $members,
+            'feed'      => $feed,
+            'events'    => $events,
+            'stats'     => $stats,
+            'positions' => $positions,
+            'auth'      => $auth,
+        ];
+
+        return ['ok' => true, 'data' => $data];
+    }
+
+
+    public function members() {
+
+        $members =  TeamMember::where('team_id', $this->id)->get();
+        $admin = Auth::user()->isTeamAdmin($this->teamname);
+        $users = [];
+
+        foreach($members as $member) {
+            $user = User::find($member->user_id);
+            $user['role'] = $member->role;
+            $user['admin'] = $member->admin;
+            $user['member_id'] = $member->id;
+
+            if(!$admin) {
+                //if they aren't an admin, hide emails of invited users if applicable
+                $meta = json_decode($member->meta);
+                if(isset($meta->ghost)) {
+                    unset($meta->ghost->email);
+                    $member->meta = json_encode($meta);
+                }
+            }
+            //attach TeamMember meta data instead of User meta data
+            $user['meta'] = $member->meta;
+
+            $users[] = $user;
+        }
+
+        return $users;
+    }
+
+
+
+
+    //returns IDs of all users associated with this team. useful for creating notifications
+    //includeThisUser is whether or not logged in user is included in results
+    public function allAssociatedUsers($includeThisUser = false) {
+
+        //grab all of the players, coaches, and fans
+        $members = TeamMember::where('team_id', $this->id)->get();
+        
+        foreach($members as $member) {
+            //don't care about ghosts
+            if($member->user_id == 0)
+                continue;
+
+            //whether or not to include logged in user
+            if(!$includeThisUser && $member->user_id == Auth::user()->id)
+                continue;
+
+            $users[] = $member->user_id;
+        }    
+ 
+        return $users;
+    }
+
+
     //create a team with request data from TeamController
-    public function newTeam($request) {
+    public function createTeam($request) {
 
         //do some quick housekeeping of the numbers
         //they should all be validated already
@@ -147,18 +179,17 @@ class Team extends Model
             $gender = 0;
 
         $sport = intval($request->sport);
-        if($sport < 0 || $sport > 50)
-            $sport = 0;
+        //look up supported sports in Sports::class
 
         $role = intval($request->userIsA);
 
         //put together an array of meta data
         $stats = new Stat;
-        $stats = $stats->getStatKeys($sport, $request->userStats, $request->rcStats);
+        $statKeys = $stats->getStatKeys($sport, $request->userStats, $request->rcStats);
 
 
         $meta = [
-            'stats'     => $stats,
+            'stats'     => $statKeys,
             'homefield' => $request->homefield,
             'city'      => $request->city,
             'slogan'    => $request->slogan,
@@ -190,11 +221,11 @@ class Team extends Model
             'meta'      => json_encode(['positions' => []]),
         ]);
         //remove auth user from array of players or coaches if necessary
-        if($role === 0) {
+        if($role == 0) {
             //remove from players
             array_shift($players);
         }
-        if($role === 2) {
+        if($role == 2) {
             //remove from coaches
             array_shift($coaches);
         }
@@ -223,7 +254,7 @@ class Team extends Model
             $user = $member->inviteAndCreateGhost($team->id, $coach, 6);
         }
 
-        return $team;
+        return ['ok' => true, 'team' => $team];
     }
 
 
@@ -294,52 +325,29 @@ class Team extends Model
 
     //toggle the fan status of logged in user 
     public function toggleFan() {
+
+        $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
         
-        $member = TeamMember::member(Auth::user()->id, $this->id)->first();
+        //check the trashed members for this user and team, otherwise grab a new one
+        $member = TeamMember::where($attributes)->withTrashed()->first() ?: new TeamMember($attributes);
 
-        if(!$member) {
-            //if not a member, make them one
-            $member = new TeamMember;
-            $outcome = $member->makeFan(Auth::user()->id, $this);
-        }
-
-        else if($member->role == 5 || $member->role == 6 || $member->role == 7) {
-            //they've either been invited to join or have requested it, they can be fans too
-            $outcome = $member->makeFan(Auth::user()->id, $this);
-        }
-
-        else if($member->role == 4 || $member->role == 45 || $member->role == 46 || $member->role == 47) {
-            //they're some type of fan, remove
-            $outcome = $member->removeFan(Auth::user()->id, $this);
-        }
-
-        else {
-            //they're already a member but not a fan, they shouldn't have arrived here
-            return ['ok' => false, 'error' => 'There was a problem, try refreshing the page'];
-        }
-
-        //there's some logic behind the response, so its specified within the TeamMember model
-        return $outcome;
+        return $member->toggleFan();
     }
 
 
 
     //admin has edited the meta data associated with a team member
     public function editMember(Request $request) {
+        
         //save the data 
         $user = $request->user;
 
         $member = TeamMember::findOrFail($user['member_id']);
 
-        if($user['admin'])
-            $member->admin = 1;
-        else
-            $member->admin = 0;
+        if(!$member)
+            return ['ok' => false, 'error' => "This user doesn't exist"];
 
-        $member->meta = json_encode($user['meta']);
-        $member->save();
-
-        return ['ok' => true, 'user' => $member];
+        return $member->editMember($user);
     }
 
 
@@ -396,15 +404,19 @@ class Team extends Model
     //logged in use is responding to their invitation to join this team
     public function userHasRespondedToInvitation(Request $request) {
 
-        $member = new TeamMember;
+        $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
+        
+        //check the trashed members for this user and team, otherwise grab a new one
+        $member = TeamMember::where($attributes)->first() ?: new TeamMember($attributes);
 
         //the user is accepting an invitation
-        if($request->accept == true)
-            $outcome = $member->acceptInvitation($team, Auth::user());
+        if($request->accept == true) 
+            $outcome = $member->acceptInvitation();
 
         //user is declining an invitation
         else if($request->accept == false)
-            $outcome = $member->thanksButNoThanks($team);
+            $outcome = $member->thanksButNoThanks();
+
 
         if(!$outcome['ok']) {
             //something bad happened, give error to user
@@ -412,7 +424,7 @@ class Team extends Model
         }
    
         //return updated list of users on this team
-        return ['ok' => true, 'users' => $team->membersData()];
+        return ['ok' => true, 'users' => $this->members()];
     }
 
 
@@ -420,9 +432,50 @@ class Team extends Model
     //logged in user has requested to join this team
     public function userHasAskedToJoin() {
         
-        $member = new TeamMember;
+        $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
+        
+        //check the trashed members for this user and team, otherwise grab a new one
+        $member = TeamMember::where($attributes)->withTrashed()->first() ?: new TeamMember($attributes);
 
-        return $member->requestToJoin($this);
+        return $member->requestToJoin();
+    }
+
+
+
+    //admin wants to upload a new profile picture
+    public function uploadPic(Request $request) {
+
+        //make sure there's a picture
+        if($request->hasFile('pic')) {
+
+            $pic = $request->file('pic');
+
+            //check that it's a valid image
+            if(!$pic->isValid())
+                return ['ok' => false, 'error' => 'Invalid picture'];
+
+            //deny if over 10MB
+            if($pic->getSize() > 10485760)
+                return ['ok' => false, 'error' => 'Maximum image size is 10MB'];
+        }
+        else
+            return ['ok' => false];
+
+
+        //build up a filename such as 2842.jpeg
+        $filename = $this->id . '.' . $pic->getClientOriginalExtension();
+
+        //save images in the path specified in .env file
+        $filepath = base_path() . env('TEAM_PROFILE_PICS');
+
+        //move the file to that path, save as filename
+        $pic->move($filepath, $filename);
+
+        //save the picture's location in database
+        $this->pic = env('TEAM_PROFILE_PICS') . $filename;
+        $this->save();
+
+        return ['ok' => true];
     }
 
 

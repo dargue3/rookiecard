@@ -10,8 +10,10 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
+
+use App\Team;
+use App\TeamMember;
 
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract, AuthorizableContract
 {
@@ -90,6 +92,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     }
 
+
+
     //checks if this user is an admin of the given team
     public function isTeamAdmin($teamname) {
 
@@ -97,11 +101,29 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
         $member = TeamMember::member($this->id, $team->id)->first();
 
-        if($member)
-            return $member->admin;
+        //check if they're an admin or they're the team creator
+        if($member->admin || $this->id == $team->creator_id)
+            return true;
         else
             return false;
 
+    }
+
+
+
+    //checks if this user is a member/creator of this team
+    public function isTeamMember(Team $team) {
+
+        $member = TeamMember::member($this->id, $team->id)->first();
+
+        if(!$member)
+            return false;
+
+        else if($member->isMember())
+            return true;
+        
+        else
+            return false;
     }
 
 

@@ -48,13 +48,13 @@
 							<div class="arrow-right --white"></div>
 						</div>
 
-						<div v-show="!isFan && !isMember" class="fan-icon" @click="toggleFan">
+						<div v-show="showRemoveFan" class="fan-icon" @click="toggleFan">
 							<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
 						</div>
-						<div v-show="isFan && !admin" class="fan-icon" @click="toggleFan">
+						<div v-show="showBecomeFan" class="fan-icon" @click="toggleFan">
 							<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
 						</div>
-						<div v-show="isMember || (isFan && admin)" class="fan-icon --member">
+						<div v-show="showIsFan" class="fan-icon --member">
 							<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
 						</div>
 					</div>
@@ -62,15 +62,15 @@
 
 					<!-- buttons for joining team, accepting invitation -->
 					<div class="Team__invite">
-						<a v-show="!isMember && !hasBeenInvited && !hasRequestedToJoin" 
-								class="btn btn-primary outline" @click="requestToJoin(true)">REQUEST TO JOIN</a>
+						<a v-show="showRequestToJoin" 
+								class="btn btn-primary outline" @click="requestToJoin('join')">REQUEST TO JOIN</a>
 
-						<a v-show="!isMember && !hasBeenInvited && hasRequestedToJoin" 
-								class="btn btn-success outline" @click="requestToJoin(false)">CANCEL REQUEST</a>
+						<a v-show="showCancelRequest" 
+								class="btn btn-success outline" @click="requestToJoin('cancel')">CANCEL REQUEST</a>
 
-						<a v-show="!isMember && hasBeenInvited" class="btn btn-success" @click="respondToInv()">ACCEPT INVITATION</a>
+						<a v-show="showRespondToInvitation" class="btn btn-success" @click="respondToInv()">RESPOND TO INVITATION</a>
 
-						<a v-show="isMember" class="btn btn-success outline --member">YOU'RE A MEMBER</a>
+						<a v-show="showYoureAMember" class="btn btn-success outline --member">YOU'RE A MEMBER</a>
 					</div>
 
 
@@ -337,7 +337,7 @@ export default  {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'calendar',
+			tab: 'roster',
 			statsTab: 'teamRecent',
 			events: [], 
 			stats: [], 
@@ -353,11 +353,20 @@ export default  {
 		var url = this.prefix + '/data';
 		this.$http.get(url)
 		.then(function(response) {
-			self.compile(response.data);	
-			setTimeout(function() {
-				self.requestFinished = true;
-			}, 100);
+			if(response.data.ok) {
+				self.compile(response.data.data);	
+				setTimeout(function() {
+					self.requestFinished = true;
+				}, 100);
+			}
+			else
+				throw response.data.error
 		})
+		.catch(function(error) {
+			console.log(error);
+			self.$root.errorMsg(error);
+		})
+
 		//didn't put a catch here because the 'team does not exist' header pretty much covers it
 	},
 
@@ -381,6 +390,35 @@ export default  {
 			else
 				return '';
 		},
+
+		//the following three functions pick which of the fan icons to display
+		showRemoveFan() {
+			return !this.isFan && !this.isMember;
+		},
+		showBecomeFan() {
+			return this.isFan && !this.admin;
+		},
+		showIsFan() {
+			//this icon is unclickable
+			return this.isMember || (this.isFan && this.admin)
+		},
+
+
+		//the following four functions pick which of the membership buttons to display
+		showYoureAMember() {
+			return this.isMember || this.isCreator;
+		},
+		showRequestToJoin() {
+			return !this.hasRequestedToJoin && !this.isMember && !this.isCreator;
+		},
+		showCancelRequest() {
+			return this.hasRequestedToJoin;
+		},
+		showRespondToInvitation() {
+			return this.hasBeenInvited;
+		},
+
+
 
 		//create list of players from users
 		//0 = user player, 1 = ghost player
@@ -601,6 +639,12 @@ export default  {
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
 
+			//note whether or not this user is the creator
+			if(this.team.creator_id == this.auth.id) {
+				this.isCreator = true;
+				this.admin = true;
+			}
+
 			//now that all team data is ready, set these variables
 			//components are listening, will format the data as needed
 			this.events = data.events;
@@ -655,15 +699,10 @@ export default  {
 					this.admin = user.admin;
 					this.auth.role = user.role;
 
-					//note whether or not this user is the creator
-					if(this.team.creator_id == user.id) {
-						this.isCreator = true;
-						this.isMember = true;
-					}
-
 					if(user.role <= 3) {
 						this.isMember = true;
 					}
+
 					//they're a fan if role is 4
 					if(user.role === 4)
 						this.isFan = true;
@@ -689,14 +728,10 @@ export default  {
 			}
 		},
 
+
+
 		//user hit fan button
 		toggleFan() {
-
-			if(this.isMember) {
-				//member should never have hit this function
-				this.$root.errorMsg();
-				return;
-			}
 
 			var self = this;
 			var url = this.prefix + '/fan';
@@ -705,13 +740,14 @@ export default  {
 					if(response.data.ok) 
 						self.updateFanStatus();
 					else
-						self.$root.errorMsg();
+						throw response.data.error
 				})
-				.catch(function() {
-					self.$root.errorMsg();
+				.catch(function(error) {
+					self.$root.errorMsg(error);
 				});
-
 		},
+
+
 
 		//successful request, change fan status
 		updateFanStatus() {
@@ -739,7 +775,7 @@ export default  {
 				this.users.push(this.auth);
 
 				//tell App.vue to add this team to the nav dropdown
-				this.$dispatch('addMember', this.team);
+				this.$dispatch('becameAFanOfTeam', this.team);
 				this.$root.banner('good', "You're now a fan");
 			}
 
@@ -752,84 +788,97 @@ export default  {
 					return user.id !== self.auth.id;
 				});
 
-				self.$dispatch('removeMember', self.team.teamname);
+				self.$dispatch('removedAsFanOfTeam', self.team.teamname);
 				self.$root.banner('good', "You're no longer a fan");	
 			}
 		},
 
 
+
 		//the player wants to send a request to join this team
-		requestToJoin(joinOrCancel) {
+		requestToJoin(action) {
 			var self = this;
 			var url = this.prefix + '/join';
 			this.$http.post(url)
 				.then(function(response) {
-					if(!response.data.ok) {
-						self.$root.banner('bad', response.data.error);
-						return;
-					}
+					if(!response.data.ok)
+						throw response.data.error;
 
-					self.hasRequestedToJoin = joinOrCancel;
-					self.$root.banner('good', "Request sent to team admin");
+					if(action === 'join') {
+						self.hasRequestedToJoin = true;
+						self.$root.banner('good', "Request sent to team admin");
+					}
+					else if(action === 'cancel') {
+						self.hasRequestedToJoin = false
+						self.$root.banner('good', "Request cancelled");
+					}
 				})
-				.catch(function() {
-					self.$root.errorMsg();
+				.catch(function(error) {
+					self.$root.errorMsg(error);
 				});
 		},
+
+
+
 
 		//they were invited, make them a for-real member now
 		respondToInv(outcome) {
 			var self = this;
+			//first they should confirm whether they want to accept the invite or not
+			//only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
+			if(typeof outcome !== 'boolean') {
+				if(this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
+				if(this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
+				var text = "You've been invited to join this team as a " + role;
+				swal({   
+					title: 'Respond to Invitation',
+					text: text,
+					type: "info",
+					showCancelButton: true,
+					confirmButtonColor: '#1179C9',
+					cancelButtonColor: 'whitesmoke',
+					confirmButtonText: 'JOIN',
+					cancelButtonText: 'NO THANKS',
+					closeOnConfirm: true
+				}, function(confirm) {
+					//call this function with boolean response
+					if(confirm) {
+						self.respondToInv(true);
+					}
+					else {
+						self.respondToInv(false);
+					}
+				});
 
-			//check if their choice is confirmed
-			if(outcome === true || outcome === false) {
-				var url = this.prefix + '/join';
-				data = {accept: outcome};
-				this.$http.post(url, data)
-					.then(function(response) {
-						//check there were no authorization errors
-						if(!response.data.ok) {
-							self.$root.banner('bad', response.data.error);
-							return;
-						}
-						self.hasBeenInvited = false;
-
-						if(outcome) {
-							//add them to the team
-							self.formatUsers(response.data.users);
-							self.$root.banner('good', "You've joined this team");
-						}
-						else
-							self.$root.banner('good', "Invitation denied");
-					})
-					.catch(function() {
-						self.$root.errorMsg();
-					});
+				//they will be back after confirming
+				return;
 			}
 
-			//otherwise make popup to confirm their decision
-			
-			if(this.auth.role === 5) var role = 'player.';
-			if(this.auth.role === 6) var role = 'coach.';
-			var text = "You've been invited to join this team as a " + role;
-			swal({   
-				title: 'Respond to Invitation',
-				text: text,
-				type: "info",
-				showCancelButton: true,
-				confirmButtonColor: '#1179C9',
-				cancelButtonColor: 'whitesmoke',
-				confirmButtonText: 'JOIN',
-				cancelButtonText: 'NO THANKS',
-				closeOnConfirm: true
-			}, function(confirm) {
-				if(confirm) {
-					self.respondToInv(true);
-				}
-				else {
-					self.respondToInv(false);
-				}
-			});
+			var url = this.prefix + '/join';
+			data = { accept: outcome };
+			this.$http.post(url, data)
+				.then(function(response) {
+					//check there were no authorization errors
+					if(!response.data.ok) {
+						throw response.data.error;
+					}
+
+					self.hasBeenInvited = false;
+
+					if(outcome) {
+						//add them to the team
+						self.formatUsers(response.data.users);
+						self.$root.banner('good', "You've joined this team");
+						self.isFan = false;
+					}
+					else {
+						self.$root.banner('good', "Invitation denied");
+					}
+				})
+				.catch(function(error) {
+					self.$root.errorMsg(error);
+				});
+
 		},
 
 

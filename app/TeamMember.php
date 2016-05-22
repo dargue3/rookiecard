@@ -4,9 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\StatusUpdate;
-use App\TeamInvite;
 use Illuminate\Support\Facades\Auth;
+
+use App\TeamInvite;
+use App\Stat;
 
 class TeamMember extends Model
 {
@@ -44,74 +45,142 @@ class TeamMember extends Model
 
     //creates shortcut TeamMember::member($user_id, $team_id) to fetch a user
     public function scopeMember($query, $user_id, $team_id) {
+
         return $query->where('user_id', $user_id)->where('team_id', $team_id);
+
     }
 
 
     //creates shortcut TeamMember::ghosts($team_id) to fetch all ghosts
     public function scopeGhosts($query, $team_id) {
+
         return $query->where('user_id', 0)->where('team_id', $team_id);
+
     }
+
+
+    //checks if this user is a fan
+    public function isFan() {
+
+        return $this->role == 4 || $this->role == 45 || $this->role == 46 || $this->role == 47;
+
+    }
+
+
+    //checks if this user is a member of some sort
+    public function isMember() {
+
+        return $this->role == 0 || $this->role == 2;
+
+    }
+
+
+    //checks if this user has been invited to join this team
+    public function isInvited() {
+
+        return $this->role == 5 || $this->role == 6 || $this->role == 45 || $this->role == 46;
+
+    }
+
+
+    //checks if this user has been invited to join this team
+    public function isAnInvitedPlayer() {
+
+        return $this->role == 5 || $this->role == 45;
+
+    }
+
+
+    //checks if this user has been invited to join this team
+    public function isAnInvitedCoach() {
+
+        return $this->role == 6 || $this->role == 46;
+
+    }
+
+
+
+    //checks if this user has been invited to join this team
+    public function hasRequestedToJoin() {
+
+        return $this->role == 7 || $this->role == 47;
+
+    }
+
+
+
+    //switch the fan status of a user
+    public function toggleFan() {
+
+        if(!$this->exists) {
+            //this is a brand new model
+            $this->role = 4;
+            $this->save();
+        }
+
+        else if($this->isMember()) {
+            //we don't want someone to be a fan and a member
+            return ['ok' => false, 'error' => "You're already a member of this team"];
+        }
+
+        else if($this->isFan() && !$this->trashed()) {
+            //they're a fan, undo that
+            $this->removeFan();
+        }
+
+        else {
+            //they're not a fan, make them one
+            $this->makeFan();
+        }
+
+        return ['ok' => true];
+    }
+
+
 
 
     //makes a user a fan of a team
-    public function makeFan($user_id, $team) {
-
-        $member = $this->member($user_id, $team_id)->withTrashed()->first();
-
-        if(!$member) {
-            //they're not already a member in some form
-            $this->create([
-                'user_id'   => $user_id,
-                'team_id'   => $team_id,
-                'role'      => 4,
-            ]);
-        }
-        else if($member->deleted_at) {
+    public function makeFan() {
+ 
+        if($this->trashed()) {
             //this member was deleted, but here at rookiecard we recycle   
-            $member->role = 4;
-            $member->restore();
-            $member->save();
+            $this->role = 4;
+            $this->restore();
+            $this->save();
         }
-        else if($member->role == 5 || $member->role == 6 || $member->role == 7) {
+
+        else if($this->isInvited() || $this->hasRequestedToJoin()) {
             //if they've been invited or have requested to join, they can be fans too
-            $member->role += 40; //see roles description above for why this makes sense
-            $member->save();
+            $this->role += 40; //see roles description above for why this makes sense
+            $this->save();
         }
+
         else {
-            //seems like they must already be a member of the team, shouldn't have happened
-            return ['ok' => false, 'error' => 'There was a problem, try refreshing the page'];
+            //just make them a fan
+            $this->role = 4;
+            $this->save();
         }
 
-        //post to it to the feed
-        $feed = new NewsFeed;
-        $feed->teamFan($team, Auth::user());
-
-        return ['ok' => true];
+        return;
     }
 
 
+
+
     //remove this user as a fan of this team
-    public function removeFan($user_id, $team_id) {
+    public function removeFan() {
 
-        $member = $this->member($user_id, $team_id)->first();
-
-        if(!$member) {
-            //should've found some data
-            return ['ok' => false, 'error' => 'There was a problem, try refreshing the page'];
-        }
-        else if($member->role == 45 || $member->role == 46 || $member->role == 47) {
+        if($this->isInvited() || $this->hasRequestedToJoin()) {
             //they're a fan and have been invited or have requested to join the team
             //save the other section of their membership
-            $member->role -= 40;
-            $member->save();
+            $this->role -= 40;
+            $this->save();
         }
         else {
-            //they're just a plain ol' fan 
-            $member->delete();
+            $this->delete();
         }
 
-        return ['ok' => true];
+        return;
     }
 
 
@@ -124,9 +193,10 @@ class TeamMember extends Model
         //add a ghost user as a placeholder for the time being
         $ghost = $this->createGhostUser($team_id, $user, $role);
 
-        //invite that email to join team
-        if($user['email'])
+        if($user['email']) {
+            //invite that email to join team
             $this->invite($team_id, $ghost->id, $user, $role);
+        }
   
         return $ghost;
     }
@@ -208,75 +278,123 @@ class TeamMember extends Model
 
 
 
-    //logged in user has requested to join a team
-    public function requestToJoin($team) {
+    //logged in user has requested to join a team or cancelled their request
+    public function requestToJoin() {
 
-        //check if Auth user is already part of this team
-        $member = $this->member(Auth::user()->id, $team->id)->first();
-
-        if(!$member) {
-            //user isn't a member or fan, just request to join
-            $member = $this->create([
-                'user_id'   => Auth::user()->id,
-                'team_id'   => $team->id,
-                'role'      => 7
-            ]);
+        if(!$this->exists) {
+            //this is a new member entry
+            $this->role = 7;
+            $this->save();
         }
 
-        else if($member->role == 4) {
-            //they're already a fan, update their role from 4 -> 47
-            $member->role = 47;
-            $member->save();
+        else if($this->trashed()) {
+            //member was deleted, make a request and restore
+            $this->role = 7;
+            $this->restore();
+            $this->save();
         }
-       
-        return $member;
+
+        else if($this->isMember()) {
+            //members shouldn't be able to request to be members
+            return ['ok' => false, 'error' => "You're already a member of this team"];
+        }
+
+        else if($this->hasRequestedToJoin()) {
+            //they've already been here, so they must be cancelling this request
+            if($this->isFan()) {
+                //keep fan status, remove request stats
+                $this->role = 4;
+                $this->save();
+            }
+            else {
+                //otherwise just get rid of this model
+                $this->delete();
+            }
+        }
+
+        else if($this->isInvited()) {
+            //this shouldn't happen... but if they want to join and are invited, let them join
+            $this->acceptInvitation();
+        }
+
+        else {
+            if($this->isFan()) {
+                //make them a fan and requested
+                $this->role = 47;
+                $this->save();
+            }
+
+            else {
+                //okay, finally just add them as requested to join
+                $this->role = 7;
+                $this->save();
+            }
+        }
+
+        return ['ok' => true];
     }
 
 
 
 
     //a user has opted to join a team, switch them from invited to player/coach/fan
-    public function acceptInvitation($team, $user) {
+    public function acceptInvitation() {
 
-        $member = $this->member($user->id, $team->id)->first();
+        if(!$this->exists) {
+            //this was a new instantiated class, which means no invite
+            return ['ok' => false, 'error' => "You haven't been invited to this team"];
+        }
 
-        if(!$member) {
-            //no member with these credentials
-            return ['ok' => false, 'error' => "You haven't been invited"];
+        else if(!$this->isInvited()) {
+            //they aren't marked as being invited
+            return ['ok' => false, 'error' => "You haven't been invited to this team"];
+        }
+
+        else if($this->isMember()) {
+            //they're already a member of this team
+            return ['ok' => false, 'error' => "You're already a member of this team"];
         }
 
         //switch from invited to actual member
-        if($member->role == 5) $member->role = 0; //make them a player
+        if($this->isAnInvitedPlayer()) {
+            //make them a player
+            $this->role = 0; 
+        }
+        else if($this->isAnInvitedCoach()) {
+            //make them a coach
+            $this->role = 2;
+        }
 
-        else if($member->role == 6) $member->role = 2; //make them a coach
-
-        else return ['ok' => false, 'error' => "You haven't been invited"]; //they shouldn't have gotten here
-
-        $member->meta = json_encode(['positions' => []]);
-        $member->save();
-
-
-        $ghost = $this->findGhostByEmail($team, $user->email);
+        //track down their ghost by looking for their email in ghost meta data
+        $email = Auth::user()->email; 
+        $ghost = $this->findGhostByEmail($email);
 
         if($ghost) {
-            //they are replacing a ghost user in the TeamMember table
+            //get rid of the ghost-only meta data but keep the rest of it
+            $meta = json_decode($ghost->meta);
+            unset($meta->ghost);
+            $this->meta = json_encode($meta);
+            $this->save();
+        }
+        else {
+            $this->meta = json_encode($this->getDefaultMetaData());
+            $this->save();
+        }
+        
+        //find any stats associated with this ghost
+        if($ghost) {
 
-            //find all of the stats associated with ghosts for this team
-            $stats = new Stat;
-            $stats = $stats->where('team_id', $team->id)->where('owner_id', 0)->get();
+            $stats = Stat::findByTeamMember($this->team_id, $ghost->id)->get();
 
             foreach($stats as $stat) {
-                //loop through all the stats, check the meta data for
-                //a ghost ID matching the one we are replacing
-                $meta = json_decode($stat->meta);
-                if($meta->id == $ghost->id) {
-                    //found stats associated with this ghost, change the data to this user's data
-                    $meta->id = $member->user_id;
-                    $stat->owner_id = $member->user_id;
-                    $stat->meta = json_encode($meta);
-                    $stat->save();
-                }
+                //found some ghost stats, switch data to this user's data            
+                $stat->member_id = $this->id;
+                $stat->owner_id = $this->user_id;
+                $stat->save();
             }
+
+            //get rid of the ghost, this user is replacing it
+            $ghost->delete();
         }
     
         return ['ok' => true];
@@ -284,32 +402,50 @@ class TeamMember extends Model
 
 
     //logged in user is declining their invitation to join a team
-    public function thanksButNoThanks($team) {
+    public function thanksButNoThanks() {
 
-        $member = $this->member(Auth::user()->id, $team->id)->first();
+        if(!$this->exists) {
+            //this was a new instantiated class, which means no invite
+            return ['ok' => false, 'error' => "You haven't been invited to this team"];
+        }
 
-        if(!$member) {
-            //they weren't invited after all
-            return ['ok' => false, 'error' => "You haven't been invited"];
+        else if(!$this->isInvited()) {
+            //they aren't marked as being invited
+            return ['ok' => false, 'error' => "You haven't been invited to this team"];
         }
-        else if($member->role == 45 || $member->role == 46) {
-            //they were a fan, keep their fan status and remove invitation
-            $member->role -= 40;
-            $member->save();
+
+        else if($this->isMember()) {
+            //they're already a member of this team
+            return ['ok' => false, 'error' => "You're already a member of this team"];
         }
+
+        else if($this->isFan()) {
+            //they're a fan and were invited, just retain their fan status
+            $this->role = 4;
+            $this->save();
+        }
+
         else {
-            $member->delete();
+            //just delete their invitation
+            $this->delete();
         }
 
         return ['ok' => true];
     }
 
 
-    //find the ghost associated with an email on a ceratin team
-    public function findGhostByEmail($team, $email) {
+    //return the default meta data for a new player on a team
+    public function getDefaultMetaData() {
 
-        $ghosts = $this->ghosts($team->id)->get();
-        $theirGhost = null;
+        return ['positions' => [], 'num' => ''];
+
+    }
+
+
+    //find the ghost associated with an email on this team
+    public function findGhostByEmail($email) {
+
+        $ghosts = $this->ghosts($this->team_id)->get();
 
         foreach($ghosts as $ghost) {
 
@@ -317,13 +453,29 @@ class TeamMember extends Model
 
             //does this ghost's meta data contain the user's email?
             if($meta->ghost->email == $email) {
-                $theirGhost = $ghost;
-                //won't be needing this anymore
-                $ghost->delete();
+                return $ghost;
             }
         }
 
-        return $theirGhost;
+        //if we got here without finding a ghost, there isn't one
+        return null;
+    }
+
+
+
+    //edit an existing member to match the credentials passed in
+    public function editMember($newMember) {
+
+        $this->admin = $newMember['admin'] ? 1 : 0;
+
+        if(!$this->isFan()) {
+            //save member related info
+            $this->meta = json_encode($newMember['meta']);
+            $this->role = $newMember['role'];
+            $this->save();
+        }
+
+        return ['ok' => true, 'user' => $this];
     }
 
 

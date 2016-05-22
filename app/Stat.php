@@ -48,6 +48,15 @@ class Stat extends Model
 
 
 
+    //find stats for this member on this team
+    public function scopeFindByTeamMember($query, $team_id, $member_id) {
+
+        return $query->where('team_id', $team_id)->where('member_id', $member_id);
+
+    }
+
+
+
 
     //returns all stats associated with a given team
     public function getTeamStats($team) {

@@ -18,11 +18,9 @@ class NewsFeed extends Model
      * team_event_delete (2) - when an event is "cancelled"
      * team_post (3) - when someone posts to the team feed
      * team_stats (4) - when stats are posted for a previous event
-     * team_fan (5) - when stats are posted for a previous event
      *
      * user_post (20) - someone wrote on a user's news feed
-     * user_fan (21) - someone wrote on a user's news feed
-     * user_stats (22) - when stats are posted for a user 
+     * user_stats (21) - when stats are posted for a user 
      */
 
     protected $table = 'rc_news_feed';
@@ -37,8 +35,8 @@ class NewsFeed extends Model
         'team_event_delete'     => 2,
         'team_post'             => 3,
         'team_stats'            => 4,
-        'user_post'             => 13,
-        'user_stats'            => 14,
+        'user_post'             => 20,
+        'user_stats'            => 21,
     ];
 
 
@@ -62,21 +60,6 @@ class NewsFeed extends Model
 
         //add the entry to team feed
         return $this->createEntry($team->id, 'team_post', $post);
-    }
-
-
-    //someone became a fan of the team, post to news feed
-    public function teamFan($team, $user) {
-
-        //notify the team about it
-        $notification = new Notification;
-        $notification->teamFan($team);
-
-        //prepare meta data about entry
-        $meta = ['fan' => $user->brief()];
-
-        //add the entry to team feed
-        //return $this->createEntry($team->id, 'team_fan', $meta);
     }
 
 

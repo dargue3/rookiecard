@@ -4,16 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Team;
-use App\Event;
-use App\TeamMember;
-use App\User;
-use App\Stat;
-use App\NewsFeed;
-use App\Notification;
 use Carbon\Carbon;
 use Validator;
 use Illuminate\Support\Facades\Auth;
+
+use App\Http\Requests\CreateTeamRequest;
+use App\Team;
 
 
 class TeamController extends Controller
@@ -32,44 +28,23 @@ class TeamController extends Controller
                 'deleteEvent',
                 'uploadPic',
                 'deletePost',
+                'newUser',
                 'updateUser',
                 'deleteUser',
             ]
         ]);
-
     }
 
 
-
-    //returns main team data to Team.vue
-    public function getTeamData(Request $request, $teamname) {
+    //return all data associated with team for view
+    public function getTeamData($teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
 
-        $members = $team->membersData();
-
-        $feed = $team->feed();
-
-        $events = $team->events();
-
-        $stats = $team->stats();
-
-        $positions = $team->positions();
-
-        $auth = Auth::user();
-
-        $data = [
-            'team'      => $team,
-            'auth'      => $auth,
-            'members'   => $members,
-            'feed'      => $feed,
-            'stats'     => $stats,
-            'positions' => $positions,
-            'events'    => $events,
-        ];
-
-        return $data;
+        return $team->getAllTeamData();
     }
+
+
 
 
     //for toggling whether this user is a fan of this team
@@ -77,16 +52,20 @@ class TeamController extends Controller
 
         $team = Team::name($teamname)->firstOrFail();
 
+        if(Auth::user()->isTeamMember($team))
+            return ['ok' => false, 'error' => "You're already a member of this team"];
+
         return $team->toggleFan();
     }
 
 
-    //for handling ajax POSTs from 'add event' modal
+
+
+    //admin has added an event, return array of team events and news feed entry
     public function newEvent(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
 
-        //create event(s), returns array of all events and news feed entry
         return $team->createEvent($request);
     }
 
@@ -97,7 +76,9 @@ class TeamController extends Controller
 
         $team  = Team::name($teamname)->firstOrFail();
 
-        if(Auth::user()->cannot('edit-events', [$team, $request->id]))
+        $event_id = $request->id;
+
+        if(Auth::user()->cannot('edit-events', [$team, $event_id]))
             return ['ok' => false, 'error' => 'Unauthorized request'];
 
         return $team->deleteEvent($request);
@@ -110,7 +91,9 @@ class TeamController extends Controller
 
         $team  = Team::name($teamname)->firstOrFail();
 
-        if(Auth::user()->cannot('edit-events', [$team, $request->id]))
+        $event_id = $request->id;
+
+        if(Auth::user()->cannot('edit-events', [$team, $event_id]))
             return ['ok' => false, 'error' => 'Unauthorized request'];
 
         return $team->updateEvent($request);
@@ -133,29 +116,14 @@ class TeamController extends Controller
 
         $team  = Team::name($teamname)->firstOrFail();
 
-        if(Auth::user()->cannot('edit-posts', [$team, $request->id]))
+        $post_id = $request->id;
+
+        if(Auth::user()->cannot('edit-posts', [$team, $post_id]))
             return ['ok' => false, 'error' => 'Unauthorized request'];
 
         return $team->deleteFeedEntry($request);
     }
 
-
-
-    //a team admin has edited the meta data associated with a user on a team
-    //returns new saved member
-    public function updateUser(Request $request, $teamname) {
-
-        $team = Team::name($teamname)->firstOrFail();
-
-        $member_id = $request->user['member_id'];
-
-        if(Auth::user()->cannot('edit-user', [$team, $member_id])) {
-            //they're not allowed to edit this user (probably malicious)
-            return ['ok' => false, 'error' => 'Unauthorized request'];
-        }
-
-        return $team->editMember($request);
-    }
 
 
     //creates new ghost user and sends invitation if email is inputted
@@ -179,17 +147,32 @@ class TeamController extends Controller
     }
 
 
-    //kick a user from the team
+
+    //a team admin has edited the meta data associated with a user on a team
+    //returns new saved member
+    public function updateUser(Request $request, $teamname) {
+
+        $team = Team::name($teamname)->firstOrFail();
+
+        $member_id = $request->user['member_id'];
+
+        if(Auth::user()->cannot('edit-user', [$team, $member_id]))
+            return ['ok' => false, 'error' => 'Unauthorized request'];
+
+        return $team->editMember($request);
+    }
+
+
+
+    //admin wants to kick a user from the team
     public function deleteUser(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail(); 
 
         $member_id = $request->user['member_id'];
 
-        if(Auth::user()->cannot('edit-user', [$team, $member_id])) {
-            //they're not allowed to edit this user (probably malicious)
+        if(Auth::user()->cannot('edit-user', [$team, $member_id]))
             return ['ok' => false, 'error' => 'Unauthorized request'];
-        }
         
         return $team->deleteMember($request);
     }
@@ -207,8 +190,9 @@ class TeamController extends Controller
     }
 
 
-    //check if that teamname is taken yet or not
+    //check if a teamname is taken yet or not (used in CreateTeam.vue)
     public function checkAvailability($teamname) {
+
         if(Team::name($teamname)->first())
             return ['available' => false];
         else
@@ -217,68 +201,22 @@ class TeamController extends Controller
 
 
 
-    //for when a team uploads a new profile picture
+    //admin has uploaded a new team profile picture
     public function uploadPic(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
-        $imageName = $team->id . '.' . $request->file('file')->getClientOriginalExtension();
-        $imagePath = base_path() . '/public/images/proPic_teams/';
-        $request->file('file')->move(
-            $imagePath, $imageName
-        );
-
-        $team->pic = '/images/proPic_teams/' . $imageName;
-        $team->save();
-
-        return ['ok' => true];
+        
+        return $team->uploadPic($request);
     }
 
 
-    //creates a new team
-    public function createTeam(Request $request) {
 
+    //creates a new team, request already validated
+    public function createTeam(CreateTeamRequest $request) {
 
-        //pick easier error message for team username
-        $messages = [
-            'unique'    => 'Already taken, try another',
-        ];
-
-        //validate the inputs
-        $rules = [
-            'name'              => 'required|max:25',
-            'teamname'          => 'required|unique:rc_teams|alpha_num|max:18',
-            'name'              => 'required|max:25',
-            'gender'            => 'required|size:1',
-            'sport'             => 'required|between:1,2',
-            'slogan'            => 'max:50',
-            'homefield'         => 'max:25',
-            'city'              => 'required',
-            'lat'               => 'required|numeric',
-            'long'              => 'required|numeric',
-            'userIsA'           => 'required|size:1',
-            'players'           => 'required|array',
-            'coaches'           => 'required|array',
-            'userStats'         => 'array',
-            'rcStats'           => 'array',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-
-     
-        //if validation fails, return to front-end with array of errors
-        if($validator->fails()) {
-            return ['ok' => false, 'errors' => $validator->errors()];
-        }
-
-
-        //create a new team with these inputs
         $team = new Team;
 
-        $team = $team->newTeam($request);
-
-
-        //return this new team data to front-end
-        return ['ok' => true, 'team' => $team];
+        return $team->createTeam($request);
     }
 
 

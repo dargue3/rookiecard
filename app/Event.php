@@ -14,27 +14,20 @@ use App\NewsFeed;
 class Event extends Model
 {
     /**
-    * type column:
+    * currently supported event types:
     * 0 = team event
     * 
     *
     */
+
+
     use SoftDeletes;
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
+    
     protected $table = 'rc_events';
 
     protected $dates = ['deleted_at'];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = ['id', 'type', 'owner_id', 'creator_id', 'title', 'details', 'start', 'end'];
+    protected $guarded = [];
 
 
 
@@ -46,7 +39,6 @@ class Event extends Model
         return $this->where('owner_id', $team->id)->where('type', 0)->orderBy('start')->get();
 
     }
-
 
     
 
@@ -83,7 +75,7 @@ class Event extends Model
 
 
     //updates an event, notifies team members and fans
-    public function updateTeamEvent($request, $team) {
+    public function updateTeamEvent(Request $request, $team) {
 
         $start = $request->start;
         $end = $request->end;
@@ -123,7 +115,7 @@ class Event extends Model
 
 
     //creates an event, notifies players and fans
-    public function createTeamEvent($team, Request $request) {
+    public function createTeamEvent(Request $request, $team) {
 
 
         $eventCount = $this->where('owner_id', $team->id)->count();
@@ -363,10 +355,10 @@ class Event extends Model
         }
 
         //add this event to the news feed
-        $update = new NewsFeed;
-        $update = $update->newTeamEvents($team, $metaData);
+        $feed = new NewsFeed;
+        $feed = $feed->newTeamEvents($team, $metaData);
 
-        return $update;
+        return $feed;
     }
 
 

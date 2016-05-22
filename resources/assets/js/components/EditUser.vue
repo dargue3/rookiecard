@@ -3,6 +3,16 @@
 	<div class="col-xs-12 EditUser">
     <form @submit.prevent="save()">
     	<!-- only showing this section if user is a player -->
+    	<div class="row EditUser__role">
+	    	<div v-if="user.role === 0 || user.role === 2" class="col-xs-6 col-xs-offset-3">
+	        <label>Is a...</label>
+	        <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
+	        				data-max-options="1" v-model="user.role" number>
+	          <option value="0">Player</option>    
+	          <option value="2">Coach</option>    
+	        </select>
+	      </div>
+	    </div>
 	    <div v-if="user.role < 2" class="row EditUser__data">
         <div class="col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0">
           <label for="number">Jersey Number</label>
@@ -44,7 +54,7 @@
   			</div>
 			</div>
 	    <div v-if="!user.ghost" class="row">
-        <div class="col-xs-12">
+        <div class="col-xs-6">
           <div class="switch-container">
 						<input type="checkbox" bootstrap-switch="EditUser--admin">
 						<span class="switch-label">Team Admin</span>
@@ -103,6 +113,12 @@ export default  {
 		}
 	},
 
+	computed: {
+		role() {
+			return this.user.role;
+		}
+	},
+
 	watch: {
 
 		//if user changed, set inputs to correct new states
@@ -120,6 +136,13 @@ export default  {
 
 			//re-render selectpicker to detect change in array
 			$('.selectpicker[EditUser]').selectpicker('render');
+		},
+
+		role() {
+			//re-render selectpicker to detect change in array
+			$('.selectpicker[EditUser]').selectpicker({
+				noneSelectedText: 'None'
+			});
 		},
 
 
@@ -273,7 +296,7 @@ export default  {
 
 	//initialize inputs with jquery
 	ready() {
-
+		var self = this;
 		if(this.user.ghost) {
 			if(this.user.meta.ghost.email)
 				this.ghostEmail = true;
@@ -304,10 +327,16 @@ export default  {
 	
 .EditUser
 	background white	
+	
+.EditUser__role
+	margin-bottom 25px	
 
 .EditUser__data
 	margin-bottom 25px
 	
 .EditUser__buttons
 	margin-bottom 12px
+	
 </style>
+
+

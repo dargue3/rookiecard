@@ -169,7 +169,7 @@ export default  {
 		},
 
 		//if user became a member/fan of a team, add that team to their nav dropdown
-		addMember(team) {
+		becameAFanOfTeam(team) {
 
 			var newTeam = {
 				id: team.id,
@@ -184,7 +184,7 @@ export default  {
 		},
 
 		//the opposite of above
-		removeMember(teamname) {
+		removedAsFanOfTeam(teamname) {
 			this.teams = this.teams.filter(function(team) {
 				return team.teamname !== teamname;
 			})
@@ -218,7 +218,7 @@ export default  {
 		//which teams they are a fan of
 		fanOf() {
 			return this.teams.filter(function(team) {
-				return team.role === 4;
+				return team.role === 4 || (team.role >= 45 && team.role <= 47);
 			});
 		},
 
@@ -226,7 +226,7 @@ export default  {
 		//5 = invited to be a player, 6 = a coach
 		invitedTo() {
 			return this.teams.filter(function(team) {
-				return team.role === 5 || team.role === 6;
+				return team.role === 5 || team.role === 6 || team.role === 45 || team.role === 46;
 			});
 		}
 	},
@@ -267,10 +267,16 @@ export default  {
 			}, 400);
 		},
 
+
 		//the default msg when erroring during ajax requests
-		errorMsg() {
-			this.banner('bad', 'There was a problem, refresh the page and try again');
+		errorMsg(msg = null) {
+
+			if(typeof msg === 'string')
+				this.banner('bad', msg);
+			else
+				this.banner('bad', 'There was a problem, refresh the page and try again');
 		},
+
 
 		showModal(id) {
 			$('.for-blurring').removeClass('modal-unblur').addClass('modal-blur');

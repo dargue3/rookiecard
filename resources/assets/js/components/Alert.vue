@@ -1,18 +1,21 @@
 <template>
 	
-		<div :class="alertClasses" v-show="show">
+	<div class="Alert__container" v-show="show">
+		<div :class="alertClasses">
 
-				<i class="material-icons alert-icon pull-left" v-show="type === 'good'">done</i>
-				<i class="material-icons alert-icon pull-left" v-show="type === 'bad'">error</i>
-				<i class="material-icons alert-icon pull-left" v-show="type === 'info'">info_outline</i>
+			<i class="material-icons alert-icon pull-left" v-show="type === 'good'">done</i>
+			<i class="material-icons alert-icon pull-left" v-show="type === 'bad'">error</i>
+			<i class="material-icons alert-icon pull-left" v-show="type === 'info'">info_outline</i>
 
-				<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->
-				<span @click="$root.hideAlert(type)" class="close" v-show="type !== 'good'">&times;</span>
-				<span>
-					{{ msg }}
-				</span>
+			<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->
+			<span @click="show = false" class="close" v-show="type !== 'good'">&times;</span>
+			<span>
+				{{ msg }}
+			</span>
 
 		</div>
+	</div>
+		
 
 </template>
 
@@ -84,21 +87,40 @@ export default  {
 
 <!-- Alert styling -->
 <style lang="stylus">
-	
-.alert 
+
+@import '/resources/assets/stylus/variables.styl'
+
+.Alert__container
 	position fixed
-	top 88px
-	right 36px
+	width 100%
+	top 90px
+	display flex
+	flex-flow row
+	justify-content flex-end
+	align-items center
+	z-index 5000
+	@media screen and (max-width 767px)
+		justify-content center
+.alert 
 	opacity 0.9
-	z-index 9000
-	vertical-align middle
 	border none
 	box-shadow none
 	text-shadow none
+	margin-right 30px
+	@media screen and (max-width 767px)
+		margin-right 0
 	&.alert-success
-		background-color lighten(#90C07F, 50%)
-		color darken(#90C07F, 50%)
+		background-color rc_alert_success
+		color darken(rc_alert_success, 70%)
 		background-image none
+	&.alert-info
+		background-color rc_alert_info
+		color darken(rc_alert_info, 70%)
+		background-image none
+	&.alert-danger
+		background-color rc_alert_danger
+		color darken(rc_alert_danger, 55%)
+		background-image none	
 
 	.alert-icon
 		margin-right 15px

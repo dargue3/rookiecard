@@ -14,10 +14,8 @@ class RedirectIfNotTeamAdmin
     {
 
         if(!$request->user()->isTeamAdmin($request->teamname)) {
-
             //user isn't admin of that team, abort
-            abort(403, 'You must be a Team Admin to perform this action.');
-            
+            abort(403, 'You must be a Team Admin to perform this action.');       
         }
 
         return $next($request);

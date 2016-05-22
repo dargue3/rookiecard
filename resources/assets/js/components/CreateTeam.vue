@@ -206,7 +206,7 @@
 						<div class="--addPlayers">
 							<label>I am a..</label>
 							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
-											v-model="userIsA">
+											required v-model="userIsA">
 								<option value="0">Player</option>
 								<option value="2">Coach</option>
 								<option value="4">Fan</option>
@@ -301,11 +301,11 @@
 <script>
 
 /*Dropzone.options.createTeamDropzone = {
-	paramName: 'file',
+	paramName: 'pic',
 	dictDefaultMessage: 'Drag and drop a file or click here',
 	headers: {'X-CSRF-TOKEN': $('#_token').attr('value') },
 	maxFiles: 1,
-	maxFilesize: 3,
+	maxFilesize: 10,
 };*/
 
 
@@ -360,12 +360,12 @@ export default  {
 		return {
 			prefix: this.$root.prefix,
 			page: 'roster',
-			name: 'WHS Basketball',
+			name: '',
 			teamname: 'whsbasketball',
 			slogan: 'Home of Warriors Basketball',
 			gender: '0',
 			location: {
-				homefield: 'Tuck Field',
+				homefield: '',
 				city: 'Hampton, NH',
 				long: -70.8389219,
 				lat: 42.9375932
@@ -436,38 +436,35 @@ export default  {
 			var url = this.prefix + 'team/create';
 			this.$http.post(url, data)
 				.then(function(response) {
-					//check out the response, validator may have returned errors
-					if(!response.data.ok)
-						self.parseErrors(response.data.errors);
-					else {
-						//felt like this process was *too* quick, add artifical delay
-						setTimeout(function() {
-							//route the user to their newly created team
-							self.$router.go('/team/' + response.data.team.teamname);
-						}, 750);	
-					}
-						
+	
+					//felt like this process was *too* quick, add artifical delay
+					setTimeout(function() {
+						//route the user to their newly created team
+						self.$router.go('/team/' + response.data.team.teamname);
+					}, 750);							
 				})
-				.catch(function() {
-					self.$root.banner('bad', "There was a problem saving your team, refresh the page and try again")
-				})
-					
+				.catch(function(response) {
+					self.parseErrors(response.data.error);
+				});
 		},
 
 
 		//if there were errors returned from the server when creating the team,
 		//bind them to the inputs and show the correct page
 		parseErrors(errors) {
-			console.log(errors);
-			this.$root.banner('bad', "There were some errors, correct them and try again")
+			this.$root.banner('bad', "Correct the errors and try again");
 			var changed = false;
 
 			//errors is structured like 
 			//errors: { teamname : ['error1', 'error2']}
 			for(var key in errors) {
+
+				if(key === 'lat' || key === 'long' || key === 'city')
+					key = 'location';
+
 				this.errors[key] = errors[key];
 
-				//if there are errors on the earlier pages, show those first
+				//if there are errors on the first page, jump there
 				if(key === 'name' || key === 'teamname' || key === 'sport' ||
 						key === 'gender' || key === 'location' || key === 'slogan' || key === 'homefield') {
 					this.page = 'info';
