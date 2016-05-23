@@ -337,7 +337,7 @@ export default  {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'roster',
+			tab: 'calendar',
 			statsTab: 'teamRecent',
 			events: [], 
 			stats: [], 
@@ -449,12 +449,12 @@ export default  {
 
 		//new stats have been posted from ViewEvent
 		newStats(data, entry) {
-		
-			data.forEach(function(val) {
-				this.stats.push(val);
-			}.bind(this))
-			
 
+			var self = this;
+			data.forEach(function(val) {
+				self.stats.push(val);
+			});
+		
 			this.$broadcast('updateFeed', entry);
 		},
 
@@ -472,6 +472,7 @@ export default  {
 					this.stats.push(val);
 				}.bind(this));
 			}
+
 			//tell Stats.vue to re-compile the stats
 			this.$broadcast('updateStats', this.stats);
 		},
@@ -521,102 +522,38 @@ export default  {
 
 		//new user was created from EditUser
 		newUser(user) {
-			user.meta = JSON.parse(user.meta);
-			var split = user.meta.ghost.name.split(' ');
-			user.firstname = split[0];
-			user.lastname = split[1];
-			user.member_id = user.id;
-			user.ghost = true;
-			delete user.user_id;
 
-			user.pic = '/images/ghost.png';
-
-			this.users.push(user);
+			//format raw data and add to array of users
+			this.formatUsers(user);
 
 		},
 
 		//user was updated from EditUser
 		updateUser(editedUser) {
 	
+			//remove current version of this user
 			this.users = this.users.filter(function(user) {
 				return user.member_id !== editedUser.member_id
 			});
 
-			if(editedUser.ghost) {
-				//if ghost user, set name data just in case edited
-				var split = editedUser.meta.ghost.name.split(' ');
-				editedUser.firstname = split[0];
-				editedUser.lastname = split[1];
-			}
-
-			this.users.push(editedUser);
-
+			//format raw data and add to array of users
+			this.formatUsers(editedUser);
 		},
 
 
 		//user was kicked from team from EditUser
 		deleteUser(editedUser) {	
 
-			if(!editedUser.ghost) {
-				//if player was a real user, turn into ghost
-				editedUser.ghost = true;
-				editedUser.admin = false;
-				delete editedUser.gender;
-				editedUser.role = editedUser.role + 1;
-				editedUser.meta.ghost = {
-					id: editedUser.member_id,
-					name: editedUser.firstname + ' ' + editedUser.lastname,
-					email: null
-				};
-				editedUser.pic = '/images/ghost.png';
+			//remove current version of user from users
+			this.users = this.users.filter(function(user) {
+				return user.member_id !== editedUser.member_id
+			});
 
-				var deleteUser = false;
-
+			if(!editedUser.deleted) {
+				//if there's a ghost remaining, format raw data and add to array of users
+				this.formatUsers(editedUser);
 			}
-
-			else {
-				var deleteUser = true;
-			}
-
-			//tell server about new changes
-			var data = {
-				delete: deleteUser,
-				editedUser: editedUser
-			};
-			var self = this;
-			this.$http.delete(this.prefix + '/user', data)
-				.then(function(response) {
-
-					if(!response.data.ok) {
-						self.$root.banner('bad', response.data.error);
-						return;
-					}
-
-					//remove current version of user from users
-					self.users = self.users.filter(function(user) {
-						return user.member_id !== editedUser.member_id
-					});
-
-					if(deleteUser) {
-						//if they're completely gone, remove their stats from current stats
-						self.stats = self.stats.filter(function(stat) {
-							return stat.member_id !== editedUser.member_id;
-						});
-						self.$root.banner('good', "Ghost deleted");
-					}
-					else {
-						//add this edited version
-						editedUser.id = 0;
-						self.users.push(editedUser);
-						self.$root.banner('good', 'User kicked');
-					}
-				})
-				
-				.catch(function() {
-					self.$root.errorMsg();
-				});	
-		},
-
+		}
 	},
 	
 
@@ -629,6 +566,7 @@ export default  {
 			this.team = data.team;
 
 			//loop through all the users, create user objects
+			this.users = [];
 			this.formatUsers(data.members);
 			
 			//store meta data about team
@@ -662,7 +600,13 @@ export default  {
 		//compile meta data for users and push into this.users
 		formatUsers(users) {
 
-			this.users = [];
+			if(!users) {
+				//its possible there is a 'null' here 
+				return;
+			}
+
+			if(!Array.isArray(users))
+				users = [users];
 
 			for(var x = 0; x < users.length; x++) {
 				
@@ -880,8 +824,6 @@ export default  {
 				});
 
 		},
-
-
 	}, //end methods
 
 	ready() {

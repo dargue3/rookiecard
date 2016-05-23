@@ -449,6 +449,11 @@ div.bootstrap-select.form-control
 			a:focus
 				background-color white
 				background-image none
+
+div.form-error
+	.bootstrap-select		
+		button
+			border 1px solid red		
 				
 
 
@@ -563,31 +568,30 @@ input[type="text"]:focus,
 
 .slide-sm-enter
 	@media only screen and (max-width xs_max_width)
-		animation slide-sm-phone-enter 0.2s ease-in
-	animation slide-sm-enter 0.2s ease-in
+		animation slide-sm-phone-enter 0.4s ease-in
+	animation slide-sm-enter 0.4s ease-in
 .slide-sm-leave
 	@media only screen and (max-width xs_max_width)
-		animation slide-sm-phone-leave 0.2s ease-in
-	animation slide-sm-leave 0.2s ease-out
+		animation slide-sm-phone-leave 0.4s ease-in
+	animation slide-sm-leave 0.4s ease-out
 
 .slide-md-enter
 	@media only screen and (max-width xs_max_width)
-		animation slide-md-phone-enter 0.2s ease-in
-	animation slide-md-enter 0.2s ease-in
+		animation slide-md-phone-enter 0.3s ease-in
+	animation slide-md-enter 0.3s ease-in
 .slide-md-leave
 	@media only screen and (max-width xs_max_width)
-		animation slide-md-phone-leave 0.2s ease-in
-	animation slide-md-leave 0.2s ease-out
+		animation slide-md-phone-leave 0.3s ease-in
+	animation slide-md-leave 0.3s ease-out
 
 .slide-lg-enter
 	@media only screen and (max-width xs_max_width)
-		animation slide-lg-phone-enter 0.2s ease-in
-	animation slide-lg-enter 0.2s ease-in
-	animation-delay 0.2s
+		animation slide-lg-phone-enter 0.3s ease-in
+	animation slide-lg-enter 0.3s ease-in
 .slide-lg-leave
 	@media only screen and (max-width xs_max_width)
-		animation slide-lg-phone-leave 0.2s ease-in
-	animation slide-lg-leave 0.2s ease-out
+		animation slide-lg-phone-leave 0.3s ease-in
+	animation slide-lg-leave 0.3s ease-out
 	
 
 @keyframes slide-sm-enter
@@ -597,13 +601,13 @@ input[type="text"]:focus,
 		max-height 0
 	100%
 		opacity 1
-		max-height 75px
+		max-height 100px
 		
 
 @keyframes slide-sm-leave
 	0%
 		opacity 1
-		max-height 75px
+		max-height 100px
 	100%
 		opacity 0
 		max-height 0

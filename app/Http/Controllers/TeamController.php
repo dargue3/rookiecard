@@ -9,6 +9,7 @@ use Validator;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Requests\CreateTeamRequest;
+use App\Http\Requests\NewEventRequest;
 use App\Team;
 
 
@@ -62,11 +63,11 @@ class TeamController extends Controller
 
 
     //admin has added an event, return array of team events and news feed entry
-    public function newEvent(Request $request, $teamname) {
+    public function newEvent(NewEventRequest $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
 
-        return $team->createEvent($request);
+        return $team->createEvents($request);
     }
 
 
@@ -127,15 +128,15 @@ class TeamController extends Controller
 
 
     //creates new ghost user and sends invitation if email is inputted
-    public function newUser(Request $request, $teamname) {
+    public function newMember(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
 
         //do a little bit of validation first
         $rules = [
-            'meta.ghost.email'     => 'email',
-            'meta.ghost.name'      => 'required|max:100',
-            'role'                 => 'required|numeric'
+            'user.meta.ghost.email'     => 'email',
+            'user.meta.ghost.name'      => 'required|max:100',
+            'user.role'                 => 'required|numeric'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -150,7 +151,7 @@ class TeamController extends Controller
 
     //a team admin has edited the meta data associated with a user on a team
     //returns new saved member
-    public function updateUser(Request $request, $teamname) {
+    public function updateMember(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail();
 
@@ -165,7 +166,7 @@ class TeamController extends Controller
 
 
     //admin wants to kick a user from the team
-    public function deleteUser(Request $request, $teamname) {
+    public function deleteMember(Request $request, $teamname) {
 
         $team = Team::name($teamname)->firstOrFail(); 
 
@@ -194,9 +195,9 @@ class TeamController extends Controller
     public function checkAvailability($teamname) {
 
         if(Team::name($teamname)->first())
-            return ['available' => false];
+            return ['ok' => true, 'available' => false];
         else
-            return ['available' => true];
+            return ['ok' => true, 'available' => true];
     }
 
 

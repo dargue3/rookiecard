@@ -114,33 +114,43 @@ class Team extends Model
     }
 
 
+    //format and return all the data about each of this team's members
     public function members() {
 
-        $members =  TeamMember::where('team_id', $this->id)->get();
-        $admin = Auth::user()->isTeamAdmin($this->teamname);
+        $members =  TeamMember::where('team_id', $this->id)->get();   
         $users = [];
 
         foreach($members as $member) {
-            $user = User::find($member->user_id);
-            $user['role'] = $member->role;
-            $user['admin'] = $member->admin;
-            $user['member_id'] = $member->id;
-
-            if(!$admin) {
-                //if they aren't an admin, hide emails of invited users if applicable
-                $meta = json_decode($member->meta);
-                if(isset($meta->ghost)) {
-                    unset($meta->ghost->email);
-                    $member->meta = json_encode($meta);
-                }
-            }
-            //attach TeamMember meta data instead of User meta data
-            $user['meta'] = $member->meta;
-
-            $users[] = $user;
+            $users[] = $this->formatMemberData($member);
         }
 
         return $users;
+    }
+
+
+    //format a given member's data for front-end consumption
+    public function formatMemberData($member) {
+
+        //will hide some data if they're not an admin
+        $admin = Auth::user()->isTeamAdmin($this->teamname);
+       
+        $user = User::find($member->user_id);
+        $user['role'] = $member->role;
+        $user['admin'] = $member->admin;
+        $user['member_id'] = $member->id;
+
+        if(!$admin) {
+            //if they aren't an admin, hide emails of invited users if applicable
+            $meta = json_decode($member->meta);
+            if(isset($meta->ghost)) {
+                unset($meta->ghost->email);
+                $member->meta = json_encode($meta);
+            }
+        }
+        //attach TeamMember meta data instead of User meta data
+        $user['meta'] = $member->meta;
+
+        return $user;
     }
 
 
@@ -187,7 +197,6 @@ class Team extends Model
         $stats = new Stat;
         $statKeys = $stats->getStatKeys($sport, $request->userStats, $request->rcStats);
 
-
         $meta = [
             'stats'     => $statKeys,
             'homefield' => $request->homefield,
@@ -218,8 +227,9 @@ class Team extends Model
             'team_id'   => $team->id,
             'admin'     => 1,
             'role'      => $role,
-            'meta'      => json_encode(['positions' => []]),
+            'meta'      => json_encode($member->getDefaultMetaData()),
         ]);
+
         //remove auth user from array of players or coaches if necessary
         if($role == 0) {
             //remove from players
@@ -233,25 +243,33 @@ class Team extends Model
 
         //loop through the players and coaches to create TeamMember entries 
         foreach($players as $player) {
+
+            $member = new TeamMember(['team_id' => $team->id, 'role' => 1]);
+
             if(!$player['name']) {
                 //the name wasn't included (though should've been), use default
                 $player['name'] = 'Leonardo DaVinci';
             }
+            $player['role'] = 1;
+
             //invite user to join team
             //creates ghost player until they accept the invitation
-            //the 5 designates that this user is invited to be a player
-            $user = $member->inviteAndCreateGhost($team->id, $player, 5);   
+            $member->createGhostAndInviteUser($player);   
         }
 
         foreach($coaches as $coach) {
+
+            $member = new TeamMember(['team_id' => $team->id, 'role' => 3]);
+
             if(!$coach['name']) {
                 //the name wasn't included (though should've been), use default
                 $coach['name'] = 'Nikola Tesla';
             }
+            $coach['role'] = 3;
+
             //invite user to join team
             //creates ghost player until they accept the invitation
-            //the 6 designates that this user is invited to be a coach
-            $user = $member->inviteAndCreateGhost($team->id, $coach, 6);
+            $member->createGhostAndInviteUser($coach);
         }
 
         return ['ok' => true, 'team' => $team];
@@ -287,7 +305,7 @@ class Team extends Model
 
         $event = new Event;
 
-        $feed = $event->createTeamEvent($this, $request);
+        $feed = $event->createTeamEvents($request, $this);
 
         $events = $event->getTeamEvents($this);
 
@@ -301,7 +319,7 @@ class Team extends Model
 
         $event = Event::findOrFail($request->id);
    
-        $feed = $event->deleteTeamEvent($team);
+        $feed = $event->deleteTeamEvent($this);
 
         return ['ok' => true, 'feed' => $feed];
     }
@@ -313,10 +331,7 @@ class Team extends Model
 
         $event = Event::findOrFail($request->id);
    
-        $feed = $event->updateTeamEvent($team);
-
-        if($feed == false) 
-            return ['ok' => false, 'error' => 'Event finishes before it starts'];
+        $feed = $event->updateTeamEvent($request, $this);
 
         return ['ok' => true, 'feed' => $feed];
     }
@@ -329,7 +344,7 @@ class Team extends Model
         $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
         
         //check the trashed members for this user and team, otherwise grab a new one
-        $member = TeamMember::where($attributes)->withTrashed()->first() ?: new TeamMember($attributes);
+        $member = TeamMember::firstOrNew($attributes);
 
         return $member->toggleFan();
     }
@@ -338,16 +353,15 @@ class Team extends Model
 
     //admin has edited the meta data associated with a team member
     public function editMember(Request $request) {
-        
+
         //save the data 
         $user = $request->user;
 
         $member = TeamMember::findOrFail($user['member_id']);
 
-        if(!$member)
-            return ['ok' => false, 'error' => "This user doesn't exist"];
+        $member->editMember($user);
 
-        return $member->editMember($user);
+        return ['ok' => true, 'user' => $this->formatMemberData($member)];
     }
 
 
@@ -357,20 +371,17 @@ class Team extends Model
 
         //gather data and create ghost, invite email to team
         $user = [];
-        $user['email'] = $request->meta['ghost']['email'];
-        $user['name'] = $request->meta['ghost']['name'];
+        $user['email'] = $request->user['meta']['ghost']['email'];
+        $user['name'] = $request->user['meta']['ghost']['name'];
+        $user['role'] = $request->user['role'];
 
-        $member = new TeamMember;
-        $ghost = $member->inviteAndCreateGhost($team->id, $user, $request->role);
+        $ghost = new TeamMember(['team_id' => $this->id, 'user_id' => 0]);
+        $ghost->createGhostAndInviteUser($user);
 
-        //add any included meta data
-        $meta = json_decode($ghost->meta);
-        $meta->num = $request->meta['num'];
-        $meta->positions = $request->meta['positions'];
-        $ghost->meta = json_encode($meta);
-        $ghost->save();
+        //add any meta data that was included with the request
+        $ghost->attachMetaData($request->user['meta']);
 
-        return ['ok' => true, 'user' => $ghost];
+        return ['ok' => true, 'user' => $this->formatMemberData($ghost)];
     }
 
 
@@ -382,22 +393,15 @@ class Team extends Model
         $user = $request->user;
         $member = TeamMember::findOrFail($user['member_id']);
 
-        //if they're a ghost, remove from team entirely
-        if($member->user_id == 0) {
-            $stats = new Stat;
-            $stats->deleteByMember($member);
-            $member->delete();
-            return ['ok' => true];
+        $member->deleteMember($user['meta']);
+
+        if($member->exists) {
+            //is now just a ghost
+            return ['ok' => true, 'user' => $this->formatMemberData($member)];
         }
 
-        //if they're a real user, switch them to being a ghost
-        $member->role = $user['role'];
-        $member->id = 0;
-        $member->admin = 0;
-        $member->meta = json_encode($user['meta']);
-        $member->save();
-
-        return ['ok' => true];
+        //otherwise it was deleted completely
+        return ['ok' => true, 'user' => null];   
     }
 
 
@@ -407,7 +411,7 @@ class Team extends Model
         $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
         
         //check the trashed members for this user and team, otherwise grab a new one
-        $member = TeamMember::where($attributes)->first() ?: new TeamMember($attributes);
+        $member = TeamMember::firstOrNew($attributes);
 
         //the user is accepting an invitation
         if($request->accept == true) 
@@ -434,8 +438,7 @@ class Team extends Model
         
         $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
         
-        //check the trashed members for this user and team, otherwise grab a new one
-        $member = TeamMember::where($attributes)->withTrashed()->first() ?: new TeamMember($attributes);
+        $member = TeamMember::firstOrNew($attributes);
 
         return $member->requestToJoin();
     }

@@ -142,7 +142,7 @@ export default  {
         temp.end = event.end * 1000;
         temp.title = this.formatEventTitle(event.title, temp.start, temp.end);
 
-        switch(event.class) {
+        switch(event.type) {
           case 0:
             //practice event
             temp.class = 'event-practice';

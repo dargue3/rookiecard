@@ -7,19 +7,20 @@
 	    <div class="row">
         <div class="form-group">
           <div class="col-xs-12 col-sm-6">
-            <label for="title">Title</label>
-            <input type="text" name="title" class="form-control"
-            				placeholder="vs. Georgia Tech" required v-model="title"
+            <label>Title</label>
+            <input type="text" class="form-control" :class="{'form-error' : errors.title }"
+            				placeholder="vs. Georgia Tech" maxlength="50" v-model="title"
             				autocomplete="off">
+            <span v-show="errors.title" class="form-error">{{ errors.title }}</span>
           </div>
           <div class="col-xs-12 col-sm-6">
-            <label for="eventClass">Type</label>
-            <select v-model="eventClass" data-style="btn-select btn-lg"
-                    name="eventClass" class="selectpicker add-event form-control show-tick">
-              <option value='0' class="practice">Practice</option>    
-              <option value='1' class="homeGame">Home Game</option>
-              <option value='2' class="awayGame">Away Game</option>
-              <option value='3' class="other">Other</option>
+            <label>Type</label>
+            <select v-model="type" data-style="btn-select btn-lg"
+                    class="selectpicker add-event form-control show-tick">
+              <option value="0" class="practice">Practice</option>    
+              <option value="1" class="homeGame">Home Game</option>
+              <option value="2" class="awayGame">Away Game</option>
+              <option value="3" class="other">Other</option>
             </select>
           </div>
         </div>
@@ -29,53 +30,55 @@
         <div class='col-xs-12 col-sm-6'>
           <div class="form-group">
 						<!-- from - date -->
-            <label for="from">Starts at</label>
+            <label>Starts at</label>
             <div class='input-group date picker-from'>
-          		<input type="text" name="from" class="form-control" required>
+          		<input type="text" class="form-control" :class="{'form-error' : errors.start }">
               <span class="input-group-addon">
               	<span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
 						<!-- from - time -->
             <div class='input-group date picker-from-time'>
-          		<input type="text" name="from" class="form-control" required>
+          		<input type="text" name="from" class="form-control" :class="{'form-error' : errors.start }">
               <span class="input-group-addon">
               	<span class="glyphicon glyphicon-time"></span>
               </span>
             </div>
+            <span v-show="errors.start" class="form-error">{{ errors.start }}</span>
           </div>
         </div>
         <div class='col-xs-12 col-sm-6'>
           <div class="form-group">
-            <label for="to">Ends at <span class="form-error" v-show="endsError">Event ends before it starts!</span></label>
+            <label for="to">Ends at</label>
             <div class='input-group date picker-to'>
-              <input type="text" name="to" class="form-control" required>
+              <input type="text" name="to" class="form-control" :class="{'form-error' : errors.end }">
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
             <!-- to - time -->
             <div class='input-group date picker-to-time'>
-              <input type="text" name="to" class="form-control" required>
+              <input type="text" name="to" class="form-control" :class="{'form-error' : errors.end }">
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-time"></span>
               </span>
             </div>
+            <span v-show="errors.end" class="form-error">{{ errors.end }}</span>
           </div>
         </div>
 	    </div>
 	    <br>
 	    <div class="row">
         <div class="col-xs-12">
-          <div class="form-group">
-          	<input type="checkbox" value="1" v-model="repeats">
-              <span>&nbsp;&nbsp;This event repeats...</span>
-          </div>
+          <div class="switch-container">
+						<input type="checkbox" bootstrap-switch="AddEvent">
+						<span class="switch-label">This event repeats...</span>
+					</div>
 				</div>
 	    </div>
 	    <div id="repeatDaysDiv" class="row" v-show="repeats" transition="slide-sm" >
         <div class="form-group">
-          <div class="col-xs-12 col-sm-6">
+          <div class="col-xs-12 col-sm-6" :class="{'form-error' : errors.repeatDays }">
             <label for="repeatDays">Every</label>
             <select name="repeatDays[]" class="selectpicker form-control show-tick" data-style="btn-select btn-lg"
                     data-selected-text-format="count>2" title="" multiple v-model="repeatDays">
@@ -87,15 +90,17 @@
                 <option>Friday</option>
                 <option>Saturday</option>
             </select>
+            <span v-show="errors.repeatDays" class="form-error">{{ errors.repeatDays }}</span>
           </div>
           <div class="col-xs-12 col-sm-6">
-            <label for="until">Until<span class="form-error" v-show="untilError">Until date must be after the end date</span></label>
+            <label for="until">Until</label>
             <div class='input-group date picker-until'>
-              <input type="text" name="until" class="form-control">
+              <input type="text" name="until" class="form-control" :class="{'form-error' : errors.until }">
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
+            <span v-show="errors.until" class="form-error">{{ errors.until }}</span>
           </div>
           <br>
         </div>
@@ -104,7 +109,7 @@
 	    <br>
 	    <div id="eventDetailsDiv" class="row">
         <div class="col-xs-12">
-          <label for="eventClass">Extra details about this event</label>
+          <label>Extra details about this event</label>
           <textarea v-autosize="details" name="details" class="form-control" maxlength="5000" rows="1"
           				 placeholder="Remember your water bottle!" v-model="details"></textarea>
         </div>
@@ -140,7 +145,7 @@ export default  {
 
 		return {
 			title: '',
-			eventClass: '0',
+			type: '0',
 			fromDate: '',
 			fromTime: '',
 			toDate: '',
@@ -153,7 +158,16 @@ export default  {
 			details: '',
 			endsError: false,
 			untilError: false,
+			errors: {
+				title: '',
+				start: '',
+				end: '',
+				until: '',
+				repeatDays: '',
+			},
+			switchInit: false,
 		}
+		
 		
 	},
 
@@ -164,14 +178,116 @@ export default  {
 		//submit post request
 		createEvent() {
 
-			this.endsError = false;
-			this.untilError = false;
-			var error = false;
 
-			//incase model wasn't updated (user skipped a blur and submitted)
-			this.fromDate = $('.picker-from input[name="from"]').val();
-			this.toDate = $('.picker-to input[name="to"]').val();
-			this.until = $('.picker-until input[name="until"]').val();
+
+			var errors = this.errorCheck();
+
+			if(errors) {
+				//errors are displayed, let them fix
+				return;
+			}
+
+			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
+			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+			var momentUntil = moment(this.until, 'MMM D, YYYY');
+
+			//if no error, send the post request
+	
+			var newEvent = {
+				title: this.title,
+				type: this.type,
+				start: momentFrom.unix(),
+				end: momentTo.unix(),
+				details: this.details,
+			};
+
+			if(this.repeats) {
+				//if the event repeats, add this extra data with the request	
+				newEvent.until = momentUntil.unix();
+				newEvent.repeats = true;
+				newEvent.repeatDays = this.repeatDays;
+			}
+
+			var self = this;
+			var url = this.$parent.prefix + '/events'; 
+			this.$http.post(url, newEvent)
+			.then(function(response) {
+				if(!response.data.ok) 
+					throw response.data.error;
+
+				self.$dispatch('newEvent', response.data.events, response.data.feed);
+
+				$('#addEventModal').modal('hide');
+
+				if(self.repeats) //plural
+					var msg = "Events saved";
+				else
+					var msg = "Event saved";
+
+				self.$root.banner('good', msg);
+
+				self.reinitializeData();
+				self.resetPickers();
+
+			})
+			.catch(function(response) {
+				//with a validated request, an error is thrown but laravel let's us supply an error message
+				self.$root.errorMsg(response.data.error);
+			});
+		
+		},
+
+
+		//make sure there are no errors before saving data
+		errorCheck() {
+			var errors = 0;
+
+			if(!this.title.length) {
+				errors++;
+				this.errors.title = 'Enter a title';
+			}
+			else {
+				this.errors.title = '';
+			}
+
+			if(!this.toDate.length || !this.toTime.length)  {
+				errors++;
+				this.errors.end = 'Choose an end date and time';
+			}
+			else {
+				this.errors.end = '';
+			}
+
+			if(!this.fromDate.length || !this.fromTime.length) {
+				errors++;
+				this.errors.start = 'Choose an end date and time';
+			}
+			else {
+				this.errors.start = '';
+			}
+
+			if(this.repeats) {
+				if(!this.repeatDays.length) {
+					errors++;
+					this.errors.repeatDays = 'Which days does it repeat?';
+				}
+				else {
+					this.errors.repeatDays = '';
+				}
+				if(!this.until.length) {
+					errors++;
+					this.errors.until = 'When does it repeat until?'
+				}
+				else {
+					this.errors.until = '';
+				}
+			}
+
+			if(errors) {
+				//if any of these failed, solve those issues first
+				return errors;
+			}
+
 
 			//check for end dates < start dates
 			//until dates < end dates
@@ -179,59 +295,23 @@ export default  {
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			var momentUntil = moment(this.until, 'MMM D, YYYY');
 
-			if(moment(momentTo).isBefore(moment(momentFrom))) {
-				this.endsError = true;
-				error = true;
+			if(!momentTo.isAfter(momentFrom)) {
+				errors++;
+				this.errors.end = 'Ends before it starts';
+			}
+			else {
+				this.errors.end = '';
 			}
 
-			if(moment(momentUntil).isBefore(moment(momentFrom)) && this.repeats) {
-				this.untilError = true;
-				error = true;
+			if(!momentUntil.isAfter(momentTo) && this.repeats) {
+				errors++;
+				this.errors.until = 'Stops repeating before the event ends';
+			}
+			else {
+				this.errors.until = '';
 			}
 
-
-			//if no error, send the post request
-			if(!error) {
-
-				var newEvent = {
-					title: this.title,
-					eventClass: this.eventClass,
-					fromDate: this.fromDate,
-					fromTime: this.fromTime,
-					toDate: this.toDate,
-					toTime: this.toTime,
-					until: this.until,
-					repeats: this.repeats,
-					repeatDays: this.repeatDays,
-					details: this.details,
-				};
-
-				var self = this;
-				var url = this.$parent.prefix + '/events'; 
-				this.$http.post(url, newEvent)
-				.then(function(response) {
-					//if successful, save new data, show success banner
-
-					self.$dispatch('newEvent', response.data.events, response.data.feed);
-	
-					$('#addEventModal').modal('hide');
-
-					if(self.repeats) //plural
-						var msg = "Events saved";
-					else
-						var msg = "Event saved";
-
-					self.$root.banner('good', msg);
-
-					self.reinitializeData();
-
-				})
-				.catch(function(response) {
-					//if unsuccessful, show error message
-					self.$root.errorMsg();
-				});
-			}
-			
+			return errors;
 		},
 
 		//discard button was clicked
@@ -240,13 +320,17 @@ export default  {
 
 			this.reinitializeData();
 
-		  //set datetimepickers back to normal
+			this.resetPickers();
+
+		},
+
+		resetPickers() {
+			//set datetimepickers back to normal
 		  $('.picker-from').data('DateTimePicker').date(this.momentFrom);
 		  $('.picker-to').data('DateTimePicker').date(this.momentTo);
 		  $('.picker-until').data('DateTimePicker').date(this.momentUntil);
 		  $('.picker-from-time').data('DateTimePicker').date(this.momentFrom);
 		  $('.picker-to-time').data('DateTimePicker').date(this.momentTo);
-
 		},
 
 
@@ -277,8 +361,12 @@ export default  {
 			this.momentTo =  toDate;
 			this.momentUntil =  untilDate;
 
-		  this.endsError = false;
-		  this.untilError = false;
+		  for(var key in this.errors) {
+		   	this.errors[key] = '';
+		  }
+
+		  if(this.switchInit)
+				$('input[bootstrap-switch="AddEvent"]').bootstrapSwitch('state', false);
 			
 		},
 
@@ -293,9 +381,7 @@ export default  {
 			this.reinitializeData();
 
 
-		  $('.selectpicker').selectpicker({
-
-		  });
+		  $('.selectpicker').selectpicker();
 
 		  var fromDate = this.momentFrom;
 		  var toDate = this.momentTo;
@@ -318,12 +404,18 @@ export default  {
 
 		  	//when 'from' changes, save this new date into the state
 		  	//set 'to' and 'until' minimum dates so they don't end before it starts
+		  	if(!e.date) {
+		  		this.fromDate = '';
+		  		return;
+		  	}
+
 		  	this.fromDate = e.date.format('MMM D, YYYY');
 		  	toPicker.data('DateTimePicker').minDate(e.date);
 
-		  	if(!this.toPickerChange)
+		  	if(!this.toPickerChange) {
 		  		//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
 		  		toPicker.data('DateTimePicker').date(e.date);
+		  	}
 
 		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
 		  	
@@ -339,6 +431,10 @@ export default  {
 		  })
 		  .on('dp.change', function(e) {
 
+		  	if(!e.date) {
+		  		this.toDate = '';
+		  		return;
+		  	}
 		  	this.toDate = e.date.format('MMM D, YYYY');
 		  	this.toPickerChange = true;
 		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
@@ -355,6 +451,10 @@ export default  {
 		  })
 		  .on('dp.change', function(e) {
 
+		  	if(!e.date) {
+		  		this.until = '';
+		  		return;
+		  	}
 		  	this.until = e.date.format('MMM D, YYYY');
 
 		  }.bind(this));
@@ -367,7 +467,10 @@ export default  {
 	      defaultDate: fromDate
 		  })
 		  .on('dp.change', function(e) {
-
+		  	if(!e.date) {
+		  		this.fromTime = '';
+		  		return;
+		  	}
 		  	this.fromTime = e.date.format('h:mm a');
 
 		  }.bind(this));
@@ -380,13 +483,29 @@ export default  {
 	      defaultDate: toDate
 		  })
 		  .on('dp.change', function(e) {
-
+		  	if(!e.date) {
+		  		this.toTime = '';
+		  		return;
+		  	}
 		  	this.toTime = e.date.format('h:mm a');
 
 		  }.bind(this));
 
 		  this.toPickerChange = false;
 		  this.untilPickerChange = false;
+
+		  var self = this;
+		  var options = {
+				state: false,
+				onText: 'YES',
+				offText: 'NO',
+				onSwitchChange: function(e, state) {
+					this.repeats = state;
+				}.bind(this)
+			};
+
+		  $('input[bootstrap-switch="AddEvent"]').bootstrapSwitch(options);
+		  this.switchInit = true;
 
 		}.bind(this));
 	}

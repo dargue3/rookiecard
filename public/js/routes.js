@@ -26114,7 +26114,7 @@ exports.default = {
 
 		return {
 			title: '',
-			eventClass: '0',
+			type: '0',
 			fromDate: '',
 			fromTime: '',
 			toDate: '',
@@ -26126,7 +26126,15 @@ exports.default = {
 			until: '',
 			details: '',
 			endsError: false,
-			untilError: false
+			untilError: false,
+			errors: {
+				title: '',
+				start: '',
+				end: '',
+				until: '',
+				repeatDays: ''
+			},
+			switchInit: false
 		};
 	},
 
@@ -26137,14 +26145,101 @@ exports.default = {
 
 		createEvent: function createEvent() {
 
-			this.endsError = false;
-			this.untilError = false;
-			var error = false;
+			var errors = this.errorCheck();
 
-			//incase model wasn't updated (user skipped a blur and submitted)
-			this.fromDate = $('.picker-from input[name="from"]').val();
-			this.toDate = $('.picker-to input[name="to"]').val();
-			this.until = $('.picker-until input[name="until"]').val();
+			if (errors) {
+				//errors are displayed, let them fix
+				return;
+			}
+
+			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
+			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+			var momentUntil = moment(this.until, 'MMM D, YYYY');
+
+			//if no error, send the post request
+
+			var newEvent = {
+				title: this.title,
+				type: this.type,
+				start: momentFrom.unix(),
+				end: momentTo.unix(),
+				details: this.details
+			};
+
+			if (this.repeats) {
+				//if the event repeats, add this extra data with the request	
+				newEvent.until = momentUntil.unix();
+				newEvent.repeats = true;
+				newEvent.repeatDays = this.repeatDays;
+			}
+
+			var self = this;
+			var url = this.$parent.prefix + '/events';
+			this.$http.post(url, newEvent).then(function (response) {
+				if (!response.data.ok) throw response.data.error;
+
+				self.$dispatch('newEvent', response.data.events, response.data.feed);
+
+				$('#addEventModal').modal('hide');
+
+				if (self.repeats) //plural
+					var msg = "Events saved";else var msg = "Event saved";
+
+				self.$root.banner('good', msg);
+
+				self.reinitializeData();
+				self.resetPickers();
+			}).catch(function (response) {
+				//with a validated request, an error is thrown but laravel let's us supply an error message
+				self.$root.errorMsg(response.data.error);
+			});
+		},
+
+
+		//make sure there are no errors before saving data
+		errorCheck: function errorCheck() {
+			var errors = 0;
+
+			if (!this.title.length) {
+				errors++;
+				this.errors.title = 'Enter a title';
+			} else {
+				this.errors.title = '';
+			}
+
+			if (!this.toDate.length || !this.toTime.length) {
+				errors++;
+				this.errors.end = 'Choose an end date and time';
+			} else {
+				this.errors.end = '';
+			}
+
+			if (!this.fromDate.length || !this.fromTime.length) {
+				errors++;
+				this.errors.start = 'Choose an end date and time';
+			} else {
+				this.errors.start = '';
+			}
+
+			if (this.repeats) {
+				if (!this.repeatDays.length) {
+					errors++;
+					this.errors.repeatDays = 'Which days does it repeat?';
+				} else {
+					this.errors.repeatDays = '';
+				}
+				if (!this.until.length) {
+					errors++;
+					this.errors.until = 'When does it repeat until?';
+				} else {
+					this.errors.until = '';
+				}
+			}
+
+			if (errors) {
+				//if any of these failed, solve those issues first
+				return errors;
+			}
 
 			//check for end dates < start dates
 			//until dates < end dates
@@ -26152,52 +26247,21 @@ exports.default = {
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			var momentUntil = moment(this.until, 'MMM D, YYYY');
 
-			if (moment(momentTo).isBefore(moment(momentFrom))) {
-				this.endsError = true;
-				error = true;
+			if (!momentTo.isAfter(momentFrom)) {
+				errors++;
+				this.errors.end = 'Ends before it starts';
+			} else {
+				this.errors.end = '';
 			}
 
-			if (moment(momentUntil).isBefore(moment(momentFrom)) && this.repeats) {
-				this.untilError = true;
-				error = true;
+			if (!momentUntil.isAfter(momentTo) && this.repeats) {
+				errors++;
+				this.errors.until = 'Stops repeating before the event ends';
+			} else {
+				this.errors.until = '';
 			}
 
-			//if no error, send the post request
-			if (!error) {
-
-				var newEvent = {
-					title: this.title,
-					eventClass: this.eventClass,
-					fromDate: this.fromDate,
-					fromTime: this.fromTime,
-					toDate: this.toDate,
-					toTime: this.toTime,
-					until: this.until,
-					repeats: this.repeats,
-					repeatDays: this.repeatDays,
-					details: this.details
-				};
-
-				var self = this;
-				var url = this.$parent.prefix + '/events';
-				this.$http.post(url, newEvent).then(function (response) {
-					//if successful, save new data, show success banner
-
-					self.$dispatch('newEvent', response.data.events, response.data.feed);
-
-					$('#addEventModal').modal('hide');
-
-					if (self.repeats) //plural
-						var msg = "Events saved";else var msg = "Event saved";
-
-					self.$root.banner('good', msg);
-
-					self.reinitializeData();
-				}).catch(function (response) {
-					//if unsuccessful, show error message
-					self.$root.errorMsg();
-				});
-			}
+			return errors;
 		},
 
 
@@ -26207,6 +26271,9 @@ exports.default = {
 
 			this.reinitializeData();
 
+			this.resetPickers();
+		},
+		resetPickers: function resetPickers() {
 			//set datetimepickers back to normal
 			$('.picker-from').data('DateTimePicker').date(this.momentFrom);
 			$('.picker-to').data('DateTimePicker').date(this.momentTo);
@@ -26241,8 +26308,11 @@ exports.default = {
 			this.momentTo = toDate;
 			this.momentUntil = untilDate;
 
-			this.endsError = false;
-			this.untilError = false;
+			for (var key in this.errors) {
+				this.errors[key] = '';
+			}
+
+			if (this.switchInit) $('input[bootstrap-switch="AddEvent"]').bootstrapSwitch('state', false);
 		}
 	},
 
@@ -26252,7 +26322,7 @@ exports.default = {
 
 			this.reinitializeData();
 
-			$('.selectpicker').selectpicker({});
+			$('.selectpicker').selectpicker();
 
 			var fromDate = this.momentFrom;
 			var toDate = this.momentTo;
@@ -26274,12 +26344,18 @@ exports.default = {
 
 				//when 'from' changes, save this new date into the state
 				//set 'to' and 'until' minimum dates so they don't end before it starts
+				if (!e.date) {
+					this.fromDate = '';
+					return;
+				}
+
 				this.fromDate = e.date.format('MMM D, YYYY');
 				toPicker.data('DateTimePicker').minDate(e.date);
 
-				if (!this.toPickerChange)
+				if (!this.toPickerChange) {
 					//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
 					toPicker.data('DateTimePicker').date(e.date);
+				}
 
 				untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
 			}.bind(this));
@@ -26292,6 +26368,10 @@ exports.default = {
 
 			}).on('dp.change', function (e) {
 
+				if (!e.date) {
+					this.toDate = '';
+					return;
+				}
 				this.toDate = e.date.format('MMM D, YYYY');
 				this.toPickerChange = true;
 				untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
@@ -26305,6 +26385,10 @@ exports.default = {
 				defaultDate: untilDate
 			}).on('dp.change', function (e) {
 
+				if (!e.date) {
+					this.until = '';
+					return;
+				}
 				this.until = e.date.format('MMM D, YYYY');
 			}.bind(this));
 
@@ -26315,7 +26399,10 @@ exports.default = {
 				format: 'h:mm a',
 				defaultDate: fromDate
 			}).on('dp.change', function (e) {
-
+				if (!e.date) {
+					this.fromTime = '';
+					return;
+				}
 				this.fromTime = e.date.format('h:mm a');
 			}.bind(this));
 
@@ -26326,17 +26413,33 @@ exports.default = {
 				format: 'h:mm a',
 				defaultDate: toDate
 			}).on('dp.change', function (e) {
-
+				if (!e.date) {
+					this.toTime = '';
+					return;
+				}
 				this.toTime = e.date.format('h:mm a');
 			}.bind(this));
 
 			this.toPickerChange = false;
 			this.untilPickerChange = false;
+
+			var self = this;
+			var options = {
+				state: false,
+				onText: 'YES',
+				offText: 'NO',
+				onSwitchChange: function (e, state) {
+					this.repeats = state;
+				}.bind(this)
+			};
+
+			$('input[bootstrap-switch="AddEvent"]').bootstrapSwitch(options);
+			this.switchInit = true;
 		}.bind(this));
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div id=\"addEventDiv\" class=\"col-xs-12\">\n    <form @submit.prevent=\"createEvent()\">\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"title\">Title</label>\n            <input type=\"text\" name=\"title\" class=\"form-control\" placeholder=\"vs. Georgia Tech\" required=\"\" v-model=\"title\" autocomplete=\"off\">\n          </div>\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"eventClass\">Type</label>\n            <select v-model=\"eventClass\" data-style=\"btn-select btn-lg\" name=\"eventClass\" class=\"selectpicker add-event form-control show-tick\">\n              <option value=\"0\" class=\"practice\">Practice</option>    \n              <option value=\"1\" class=\"homeGame\">Home Game</option>\n              <option value=\"2\" class=\"awayGame\">Away Game</option>\n              <option value=\"3\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n\t\t\t\t\t\t<!-- from - date -->\n            <label for=\"from\">Starts at</label>\n            <div class=\"input-group date picker-from\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n\t\t\t\t\t\t<!-- from - time -->\n            <div class=\"input-group date picker-from-time\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"to\">Ends at <span class=\"form-error\" v-show=\"endsError\">Event ends before it starts!</span></label>\n            <div class=\"input-group date picker-to\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date picker-to-time\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12\">\n          <div class=\"form-group\">\n          \t<input type=\"checkbox\" value=\"1\" v-model=\"repeats\">\n              <span>&nbsp;&nbsp;This event repeats...</span>\n          </div>\n\t\t\t\t</div>\n\t    </div>\n\t    <div id=\"repeatDaysDiv\" class=\"row\" v-show=\"repeats\" transition=\"slide-sm\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"repeatDays\">Every</label>\n            <select name=\"repeatDays[]\" class=\"selectpicker form-control show-tick\" data-style=\"btn-select btn-lg\" data-selected-text-format=\"count>2\" title=\"\" multiple=\"\" v-model=\"repeatDays\">\n                <option>Sunday</option>\n                <option>Monday</option>\n                <option>Tuesday</option>\n                <option>Wednesday</option>\n                <option>Thursday</option>\n                <option>Friday</option>\n                <option>Saturday</option>\n            </select>\n          </div>\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"until\">Until<span class=\"form-error\" v-show=\"untilError\">Until date must be after the end date</span></label>\n            <div class=\"input-group date picker-until\">\n              <input type=\"text\" name=\"until\" class=\"form-control\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n          </div>\n          <br>\n        </div>\n\t    </div>\n\t    <br>\n\t    <br>\n\t    <div id=\"eventDetailsDiv\" class=\"row\">\n        <div class=\"col-xs-12\">\n          <label for=\"eventClass\">Extra details about this event</label>\n          <textarea v-autosize=\"details\" name=\"details\" class=\"form-control\" maxlength=\"5000\" rows=\"1\" placeholder=\"Remember your water bottle!\" v-model=\"details\"></textarea>\n        </div>\n\t    </div>\n    \t<hr>\n    \t<br>\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-2\">\n\t      \t<input type=\"submit\" class=\"btn btn-primary btn-block btn-md btn-first\" value=\"SAVE\">\n\t      </div>\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <a id=\"addEventCancel\" @click=\"discardEvent()\" class=\"btn btn-cancel btn-block btn-md outline\">CANCEL</a>\n\t      </div>\n\t    </div>\n    </form>\n\t</div>\n\t\t\n\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div id=\"addEventDiv\" class=\"col-xs-12\">\n    <form @submit.prevent=\"createEvent()\">\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label>Title</label>\n            <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.title }\" placeholder=\"vs. Georgia Tech\" maxlength=\"50\" v-model=\"title\" autocomplete=\"off\">\n            <span v-show=\"errors.title\" class=\"form-error\">{{ errors.title }}</span>\n          </div>\n          <div class=\"col-xs-12 col-sm-6\">\n            <label>Type</label>\n            <select v-model=\"type\" data-style=\"btn-select btn-lg\" class=\"selectpicker add-event form-control show-tick\">\n              <option value=\"0\" class=\"practice\">Practice</option>    \n              <option value=\"1\" class=\"homeGame\">Home Game</option>\n              <option value=\"2\" class=\"awayGame\">Away Game</option>\n              <option value=\"3\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n\t\t\t\t\t\t<!-- from - date -->\n            <label>Starts at</label>\n            <div class=\"input-group date picker-from\">\n          \t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.start }\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n\t\t\t\t\t\t<!-- from - time -->\n            <div class=\"input-group date picker-from-time\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" :class=\"{'form-error' : errors.start }\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.start\" class=\"form-error\">{{ errors.start }}</span>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"to\">Ends at</label>\n            <div class=\"input-group date picker-to\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" :class=\"{'form-error' : errors.end }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date picker-to-time\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" :class=\"{'form-error' : errors.end }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.end\" class=\"form-error\">{{ errors.end }}</span>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"AddEvent\">\n\t\t\t\t\t\t<span class=\"switch-label\">This event repeats...</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\t    <div id=\"repeatDaysDiv\" class=\"row\" v-show=\"repeats\" transition=\"slide-sm\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\" :class=\"{'form-error' : errors.repeatDays }\">\n            <label for=\"repeatDays\">Every</label>\n            <select name=\"repeatDays[]\" class=\"selectpicker form-control show-tick\" data-style=\"btn-select btn-lg\" data-selected-text-format=\"count>2\" title=\"\" multiple=\"\" v-model=\"repeatDays\">\n                <option>Sunday</option>\n                <option>Monday</option>\n                <option>Tuesday</option>\n                <option>Wednesday</option>\n                <option>Thursday</option>\n                <option>Friday</option>\n                <option>Saturday</option>\n            </select>\n            <span v-show=\"errors.repeatDays\" class=\"form-error\">{{ errors.repeatDays }}</span>\n          </div>\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"until\">Until</label>\n            <div class=\"input-group date picker-until\">\n              <input type=\"text\" name=\"until\" class=\"form-control\" :class=\"{'form-error' : errors.until }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.until\" class=\"form-error\">{{ errors.until }}</span>\n          </div>\n          <br>\n        </div>\n\t    </div>\n\t    <br>\n\t    <br>\n\t    <div id=\"eventDetailsDiv\" class=\"row\">\n        <div class=\"col-xs-12\">\n          <label>Extra details about this event</label>\n          <textarea v-autosize=\"details\" name=\"details\" class=\"form-control\" maxlength=\"5000\" rows=\"1\" placeholder=\"Remember your water bottle!\" v-model=\"details\"></textarea>\n        </div>\n\t    </div>\n    \t<hr>\n    \t<br>\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-2\">\n\t      \t<input type=\"submit\" class=\"btn btn-primary btn-block btn-md btn-first\" value=\"SAVE\">\n\t      </div>\n\t      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <a id=\"addEventCancel\" @click=\"discardEvent()\" class=\"btn btn-cancel btn-block btn-md outline\">CANCEL</a>\n\t      </div>\n\t    </div>\n    </form>\n\t</div>\n\t\t\n\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -26630,10 +26733,12 @@ exports.default = {
 			$('#' + id).modal('show');
 		},
 		validateEmail: function validateEmail(email) {
-			var expression = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+			var expression = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i;
 			if (!email.match(expression)) return false;else return true;
 		},
 		validateJerseyNum: function validateJerseyNum(num) {
+			if (!num.length) return true;
+
 			if (isNaN(num)) return false;else if (parseInt(num) > 99 || parseInt(num) < 0) return false;else if (num.length > 2) return false;else return true;
 		}
 	}, //end methods
@@ -27370,7 +27475,7 @@ exports.default = {
         temp.end = event.end * 1000;
         temp.title = this.formatEventTitle(event.title, temp.start, temp.end);
 
-        switch (event.class) {
+        switch (event.type) {
           case 0:
             //practice event
             temp.class = 'event-practice';
@@ -27500,14 +27605,17 @@ exports.default = {
 		for (var x = 1; x <= 50; x++) {
 			players.push({
 				name: 'Kobe Bryant',
-				email: 'kbryant24@gmail.com'
+				email: 'kbryant24@gmail.com',
+				role: 1
 			}, {
 				name: 'Chris Paul',
-				email: 'cp3@gmail.com'
+				email: 'cp3@gmail.com',
+				role: 1
 			});
 			coaches.push({
 				name: 'Bryan Klapes',
-				email: ''
+				email: '',
+				role: 3
 			});
 			playerErrors.push({
 				name: '',
@@ -28491,10 +28599,10 @@ exports.default = {
 			this.backup = JSON.parse((0, _stringify2.default)(this.event));
 
 			//init moment instances, milliseconds
-			this.fromDate = moment(this.event.start * 1000).format('MMM D, YYYY');
-			this.fromTime = moment(this.event.start * 1000).format('h:mm a');
-			this.toDate = moment(this.event.end * 1000).format('MMM D, YYYY');
-			this.toTime = moment(this.event.end * 1000).format('h:mm a');
+			this.fromDate = moment(this.event.start * 1000);
+			this.fromTime = moment(this.event.start * 1000);
+			this.toDate = moment(this.event.end * 1000);
+			this.toTime = moment(this.event.end * 1000);
 
 			//initialize the jquery and event data
 			$(function () {
@@ -28503,7 +28611,7 @@ exports.default = {
 				var selectList = '.type-select div.bootstrap-select li';
 				$('.selectpicker.edit-event').selectpicker({});
 				$(selectList + '.selected').removeClass('selected');
-				var selected = $(selectList + '[data-original-index="' + this.event.class + '"]').addClass('selected');
+				var selected = $(selectList + '[data-original-index="' + this.event.type + '"]').addClass('selected');
 				var text = selected.find('a').text();
 				$('.type-select div.bootstrap-select span.filter-option').text(text);
 
@@ -28516,7 +28624,8 @@ exports.default = {
 				fromPicker.datetimepicker({
 					allowInputToggle: true,
 					focusOnShow: true,
-					format: 'MMM D, YYYY'
+					format: 'MMM D, YYYY',
+					defaultDate: this.fromDate
 				}).on('dp.change', function (e) {
 
 					//when 'from' changes, save this new date into the state
@@ -28524,15 +28633,17 @@ exports.default = {
 					this.fromDate = e.date.format('MMM D, YYYY');
 					toPicker.data('DateTimePicker').minDate(e.date);
 
-					if (!this.toPickerChange)
+					if (!this.toPickerChange) {
 						//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
 						toPicker.data('DateTimePicker').date(e.date);
+					}
 				}.bind(this));
 
 				toPicker.datetimepicker({
 					allowInputToggle: true,
 					focusOnShow: true,
-					format: 'MMM D, YYYY'
+					format: 'MMM D, YYYY',
+					defaultDate: this.toDate
 				}).on('dp.change', function (e) {
 					this.toPickerChange = true;
 					this.toDate = e.date.format('MMM D, YYYY');
@@ -28542,7 +28653,8 @@ exports.default = {
 					stepping: 5,
 					allowInputToggle: true,
 					focusOnShow: true,
-					format: 'h:mm a'
+					format: 'h:mm a',
+					defaultDate: this.fromDate
 				}).on('dp.change', function (e) {
 					this.fromTime = e.date.format('h:mm a');
 				}.bind(this));
@@ -28551,7 +28663,8 @@ exports.default = {
 					stepping: 5,
 					allowInputToggle: true,
 					focusOnShow: true,
-					format: 'h:mm a'
+					format: 'h:mm a',
+					defaultDate: this.toDate
 				}).on('dp.change', function (e) {
 					this.toTime = e.date.format('h:mm a');
 				}.bind(this));
@@ -28567,7 +28680,7 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n  <div class=\"col-xs-12\">\n\n\t\t<!-- if user clicks this, show form to edit stats, value syncs up to ViewEvent.vue -->\n  \t<div v-if=\"editEvent\" class=\"edit-stats-button\">\n\t\t\t<a class=\"btn btn-primary --chevron --md\" @click=\"editEvent = false\">\n\t\t\t\tEdit Stats \n\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t</a>\n\t\t</div>\n\n    <form @submit.prevent=\"updateEvent()\">\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"title\">Title</label>\n            <input class=\"form-control input-lg\" name=\"title\" type=\"text\" autocomplete=\"off\" required=\"\" v-model=\"backup.title\">\n          </div>\n          <div class=\"col-xs-12 col-sm-6 type-select\">\n            <label for=\"class\">Type</label>\n            <select data-style=\"btn-select btn-lg\" name=\"class\" class=\"selectpicker edit-event form-control show-tick\" v-model=\"backup.class\" number=\"\">\n              <option value=\"0\" class=\"practice\">Practice</option>    \n              <option value=\"1\" class=\"homeGame\">Home Game</option>\n              <option value=\"2\" class=\"awayGame\">Away Game</option>\n              <option value=\"3\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n    \t<br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"from\">Starts at</label>\n            <!-- from - date -->\n            <div class=\"input-group date edit-picker-from\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- from - time -->\n            <div class=\"input-group date edit-picker-from-time\">\n              <input type=\"text\" name=\"fromTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"to\">Ends at</label>\n            <!-- to - date -->\n            <div class=\"input-group date edit-picker-to\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date edit-picker-to-time\">\n              <input type=\"text\" name=\"toTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-12\">\n\t        <label for=\"details\">Extra details about this event</label>\n\t        <textarea v-autosize=\"backup.details\" name=\"details\" rows=\"1\" class=\"form-control\" maxlength=\"5000\" autocomplete=\"off\" v-model=\"backup.details\">{{ backup.details }}</textarea>\n\t      </div>\n\t    </div>\n\t    <hr>\n\t    <br>\n\t\t\t<div class=\"row edit-submit-buttons\">\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-1\">\n\t\t    \t<input class=\"btn btn-primary btn-block btn-md btn-first\" tabindex=\"4\" type=\"submit\" value=\"SAVE\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-delete btn-block btn-md\" tabindex=\"5\" value=\"DELETE\" @click=\"deleteEvent(false)\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-cancel btn-block btn-md outline\" tabindex=\"6\" value=\"CANCEL\" @click=\"cancel()\">\n\t\t    </div>\n\t    </div>\n\t\t</form></div>\n\t\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n  <div class=\"col-xs-12\">\n\n\t\t<!-- if user clicks this, show form to edit stats, value syncs up to ViewEvent.vue -->\n  \t<div v-if=\"editEvent\" class=\"edit-stats-button\">\n\t\t\t<a class=\"btn btn-primary --chevron --md\" @click=\"editEvent = false\">\n\t\t\t\tEdit Stats \n\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t</a>\n\t\t</div>\n\n    <form @submit.prevent=\"updateEvent()\">\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label for=\"title\">Title</label>\n            <input class=\"form-control input-lg\" name=\"title\" type=\"text\" autocomplete=\"off\" required=\"\" v-model=\"backup.title\">\n          </div>\n          <div class=\"col-xs-12 col-sm-6 type-select\">\n            <label for=\"class\">Type</label>\n            <select data-style=\"btn-select btn-lg\" name=\"class\" class=\"selectpicker edit-event form-control show-tick\" v-model=\"backup.type\" number=\"\">\n              <option value=\"0\" class=\"practice\">Practice</option>    \n              <option value=\"1\" class=\"homeGame\">Home Game</option>\n              <option value=\"2\" class=\"awayGame\">Away Game</option>\n              <option value=\"3\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n    \t<br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"from\">Starts at</label>\n            <!-- from - date -->\n            <div class=\"input-group date edit-picker-from\">\n          \t\t<input type=\"text\" name=\"from\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- from - time -->\n            <div class=\"input-group date edit-picker-from-time\">\n              <input type=\"text\" name=\"fromTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n            <label for=\"to\">Ends at</label>\n            <!-- to - date -->\n            <div class=\"input-group date edit-picker-to\">\n              <input type=\"text\" name=\"to\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date edit-picker-to-time\">\n              <input type=\"text\" name=\"toTime\" class=\"form-control\" required=\"\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n\t      <div class=\"col-xs-12\">\n\t        <label for=\"details\">Extra details about this event</label>\n\t        <textarea v-autosize=\"backup.details\" name=\"details\" rows=\"1\" class=\"form-control\" maxlength=\"5000\" autocomplete=\"off\" v-model=\"backup.details\">{{ backup.details }}</textarea>\n\t      </div>\n\t    </div>\n\t    <hr>\n\t    <br>\n\t\t\t<div class=\"row edit-submit-buttons\">\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-1\">\n\t\t    \t<input class=\"btn btn-primary btn-block btn-md btn-first\" tabindex=\"4\" type=\"submit\" value=\"SAVE\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-delete btn-block btn-md\" tabindex=\"5\" value=\"DELETE\" @click=\"deleteEvent(false)\">\n\t\t    </div>\n\t\t    <div class=\"col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0\">\n\t\t    \t<input class=\"btn btn-cancel btn-block btn-md outline\" tabindex=\"6\" value=\"CANCEL\" @click=\"cancel()\">\n\t\t    </div>\n\t    </div>\n\t\t</form></div>\n\t\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -28588,7 +28701,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"babel-runtime/core-js/json/stringify":5,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],178:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditUser.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".EditUser {\n  background: #fff;\n}\n.EditUser__role {\n  margin-bottom: 25px;\n}\n.EditUser__data {\n  margin-bottom: 25px;\n}\n.EditUser__buttons {\n  margin-bottom: 12px;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".EditUser {\n  background: #fff;\n}\n.EditUser__role {\n  margin-bottom: 25px;\n}\n.EditUser__data {\n  margin-bottom: 25px;\n}\n.EditUser__buttons {\n  margin-bottom: 12px;\n}\n.EditUser__confirm .kick {\n  width: 100%;\n  text-align: center;\n  margin-bottom: 35px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28612,6 +28725,10 @@ exports.default = {
 					this.user.admin = state;
 				}.bind(this)
 			},
+			confirmKick: false,
+			kickButton: '',
+			kickMsg: '',
+			kickText: '',
 			errors: {
 				num: '',
 				email: '',
@@ -28624,6 +28741,12 @@ exports.default = {
 	computed: {
 		role: function role() {
 			return this.user.role;
+		},
+
+
+		//whether or not this user is a fan
+		isFan: function isFan() {
+			return this.user.role === 4 || this.user.role === 45 || this.user.role === 46 || this.user.role === 47;
 		}
 	},
 
@@ -28633,28 +28756,39 @@ exports.default = {
 
 		user: function user() {
 
-			if (this.user.ghost) {
-				if (this.user.meta.ghost.email) this.ghostEmail = true;else this.ghostEmail = false;
-			}
-
-			//parameters to switch function are: edit 'state', set to admin status
-			$('input[bootstrap-switch="EditUser--admin"]').bootstrapSwitch('state', this.user.admin);
-
-			//re-render selectpicker to detect change in array
-			$('.selectpicker[EditUser]').selectpicker('render');
+			this.initialize();
 		},
+
+
+		//if role changed, set inputs to correct new states
 		role: function role() {
-			//re-render selectpicker to detect change in array
-			$('.selectpicker[EditUser]').selectpicker({
-				noneSelectedText: 'None'
-			});
+
+			this.initialize();
 		}
 	},
 
 	methods: {
 
-		//send ajax request to save data
+		//whenever the data reloads, reset the input elements and some logic
 
+		initialize: function initialize() {
+
+			this.confirmKick = false;
+
+			if (this.user.ghost) {
+				if (this.user.meta.ghost.email) this.ghostEmail = true;else this.ghostEmail = false;
+			}
+
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.admin);
+
+			$('.selectpicker[EditUser]').selectpicker({
+				noneSelectedText: 'None'
+			});
+		},
+
+
+		//send ajax request to save data
 		save: function save() {
 
 			var errors = this.errorCheck('all');
@@ -28667,32 +28801,24 @@ exports.default = {
 
 		//send post request to server to save new user
 		newUser: function newUser() {
+
 			var self = this;
 			var url = this.$parent.prefix + '/user';
-			this.$http.post(url, this.user).then(function (response) {
-				//if successful, save new data, show success banner
-				if (response.data.ok) {
-					self.$dispatch('newUser', response.data.user);
+			var data = { user: this.user };
+			this.$http.post(url, data).then(function (response) {
+				if (!response.data.ok) throw response.data.error;
 
-					$('#rosterModal').modal('hide');
-
-					self.$root.banner('good', "User created");
-				} else {
-					/*for(var key in errors) {
-     	this.errors[key] = response.data.errors[key];
-     	
-     }*/
-					self.$root.banner('bad', "Correct the errors and try again");
-				}
-			}).catch(function (response) {
-				self.$root.errorMsg();
+				$('#rosterModal').modal('hide');
+				self.$dispatch('newUser', response.data.user);
+				self.$root.banner('good', "User created");
+			}).catch(function (error) {
+				self.$root.errorMsg(error);
 			});
 		},
 
 
 		//send put request to server to update user
 		updateUser: function updateUser() {
-			this.$dispatch('updateUser', this.user);
 
 			$('#rosterModal').modal('hide');
 
@@ -28700,10 +28826,14 @@ exports.default = {
 			var url = this.$parent.prefix + '/user';
 			var data = { user: this.user };
 			this.$http.put(url, data).then(function (response) {
+				if (!response.data.ok) throw response.data.error;
+
+				$('#rosterModal').modal('hide');
+				this.$dispatch('updateUser', response.data.user);
 				//if successful, save new data, show success banner
 				self.$root.banner('good', "User saved");
-			}).catch(function (response) {
-				self.$root.errorMsg();
+			}).catch(function (error) {
+				self.$root.errorMsg(error);
 			});
 		},
 
@@ -28715,38 +28845,66 @@ exports.default = {
 
 
 		//show popup asking to confirm the kick, send event to Team if they do
-		kick: function kick() {
-			var self = this;
+		kick: function kick(confirm) {
 
-			var title = 'Kick Player?';
-			var text = 'Are you sure you want to kick ' + self.user.firstname + ' from the team? They will become a ghost and their stats will be kept';
-			var buttonText = 'KICK';
-
-			if (this.user.ghost) {
-				//if user is a ghost, reword the popup
-				var title = 'Delete Ghost?';
-				var text = 'Are you sure you want to delete this ghost? All stats will also be deleted';
-				var buttonText = 'DELETE';
+			if (typeof confirm !== 'boolean') {
+				//they need to first confirm their decision to kick
+				this.confirm();
+				return;
 			}
 
-			swal({
-				title: title,
-				text: text,
-				type: "warning",
-				showCancelButton: true,
-				confirmButtonColor: '#C90019',
-				cancelButtonColor: 'whitesmoke',
-				confirmButtonText: buttonText,
-				cancelButtonText: 'CANCEL',
-				allowOutsideClick: true,
-				closeOnConfirm: true
-			}, function (confirm) {
-				if (confirm) {
-					//send event to kick user
-					self.$dispatch('deleteUser', self.user);
-					$('#rosterModal').modal('hide');
+			if (!confirm) {
+				//they don't want to kick
+				this.confirmKick = false;
+				return;
+			}
+
+			if (this.user.ghost) var msg = 'Ghost deleted';else if (this.isFan) var msg = 'Fan removed';else var msg = 'User kicked, replaced with ghost';
+
+			//tell server about new changes
+			var data = { user: this.user };
+			var self = this;
+			this.$http.delete(this.$parent.prefix + '/user', data).then(function (response) {
+				if (!response.data.ok) throw response.data.error;
+
+				var user = response.data.user;
+				if (!user) {
+					user = { deleted: true, member_id: self.user.member_id };
 				}
+
+				self.confirmKick = false;
+
+				self.$dispatch('deleteUser', user);
+				self.$root.banner('good', msg);
+				$('#rosterModal').modal('hide');
+			}).catch(function (error) {
+				self.$root.errorMsg(error);
 			});
+
+			return;
+		},
+
+
+		//change the popup so they can confirm their kick on a player
+		confirm: function confirm() {
+			if (this.isFan) {
+				//this is a fan
+				this.kickMsg = 'Remove ' + this.user.firstname + ' as a fan?';
+				this.kickText = '';
+				this.kickButton = 'REMOVE';
+			} else if (this.ghost) {
+				//they're a ghost, stats will be deleted too
+				this.kickMsg = 'Delete this ghost?';
+				this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
+				this.kickButton = 'DELETE';
+			} else {
+				//they're kick a player
+				this.kickMsg = 'Kick ' + this.user.firstname + ' from the team?';
+				this.kickText = "They will be replaced with a ghost user";
+				this.kickButton = 'KICK';
+			}
+
+			this.confirmKick = true;
 		},
 		errorCheck: function errorCheck(input) {
 			var errors = 0;
@@ -28757,23 +28915,29 @@ exports.default = {
 				if (!this.$root.validateJerseyNum(this.user.meta.num)) {
 					errors++;
 					this.errors.num = 'Not a valid number';
-				} else this.errors.num = '';
+				} else {
+					this.errors.num = '';
+				}
 			}
 
 			if ((input === 'email' || input === 'all') && (role === 1 || role === 3)) {
-				//check that the jersey number is between 00 - 99
+				//check that the email is valid
 				if (this.user.meta.ghost.email.length && !this.$root.validateEmail(this.user.meta.ghost.email)) {
 					errors++;
 					this.errors.email = 'Not a valid email';
-				} else this.errors.email = '';
+				} else {
+					this.errors.email = '';
+				}
 			}
 
 			if ((input === 'name' || input === 'all') && this.user.ghost) {
-				//check that the jersey number is between 00 - 99
+				//check that they've added a name
 				if (!this.user.meta.ghost.name.length) {
 					errors++;
 					this.errors.name = 'Enter a name';
-				} else this.errors.name = '';
+				} else {
+					this.errors.name = '';
+				}
 			}
 
 			return errors;
@@ -28782,10 +28946,10 @@ exports.default = {
 
 	//initialize inputs with jquery
 	ready: function ready() {
+
 		var self = this;
-		if (this.user.ghost) {
-			if (this.user.meta.ghost.email) this.ghostEmail = true;else this.ghostEmail = false;
-		}
+
+		this.initialize();
 
 		$(function () {
 
@@ -28793,19 +28957,19 @@ exports.default = {
 				noneSelectedText: 'None'
 			});
 
-			$('input[bootstrap-switch="EditUser--admin"]').bootstrapSwitch(this.adminOptions);
-		}.bind(this));
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(self.adminOptions);
+		});
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n    <form @submit.prevent=\"save()\">\n    \t<!-- only showing this section if user is a player -->\n    \t<div class=\"row EditUser__role\">\n\t    \t<div v-if=\"user.role === 0 || user.role === 2\" class=\"col-xs-6 col-xs-offset-3\">\n\t        <label>Is a...</label>\n\t        <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" data-max-options=\"1\" v-model=\"user.role\" number=\"\">\n\t          <option value=\"0\">Player</option>    \n\t          <option value=\"2\">Coach</option>    \n\t        </select>\n\t      </div>\n\t    </div>\n\t    <div v-if=\"user.role < 2\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.num}\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\" autocomplete=\"false\">\n          <span v-show=\"errors.num\" class=\"form-error\">{{ errors.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Position</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Position</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.ghost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.ghost.name\" required=\"\" :class=\"{'form-error' : errors.name}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.ghost.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.email\" class=\"form-error\">{{ errors.email }}</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; !ghostEmail\" class=\"input-info\">Sends an invitation to join the team</span>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"!user.ghost\" class=\"row\">\n        <div class=\"col-xs-6\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser--admin\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n\n\n\t\t<div v-show=\"confirmKick\" class=\"EditUser__confirm\">\n\t\t\t<!-- show this div when user is confirming a kick on someone -->\n\t\t\t<div class=\"row kick\">\n\t\t\t\t<h3>{{ kickMsg }}</h3>\n\t\t\t\t<p>{{ kickText }}</p>\n\t\t\t</div>\n\t\t\t<div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t    \t<a class=\"btn btn-delete btn-block btn-md\" @click=\"kick(true)\">{{ kickButton }}</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"kick(false)\">CANCEL</a>\n\t\t    </div>\n\t\t  </div>\n\t\t</div>\n\n    <form v-else=\"\" @submit.prevent=\"save()\">\n    \t<div v-if=\"!user.new\" class=\"row EditUser__role\">\n\t    \t<div v-if=\"user.role < 4\" class=\"col-xs-6\">\n\t        <label>Is a...</label>\n\t        <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" data-max-options=\"1\" v-model=\"user.role\" number=\"\">\n\t        \t<option v-if=\"user.ghost\" value=\"1\">Player</option>    \n\t          <option v-else=\"\" value=\"0\">Player</option>    \n\t          <option v-if=\"user.ghost\" value=\"3\">Coach</option>    \n\t          <option v-else=\"\" value=\"2\">Coach</option>    \n\t        </select>\n\t      </div>\n\t    </div>\n\t    <div v-if=\"user.role < 2\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.num}\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\" autocomplete=\"false\">\n          <span v-show=\"errors.num\" class=\"form-error\">{{ errors.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Position</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Position</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.ghost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.ghost.name\" required=\"\" :class=\"{'form-error' : errors.name}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{ 'form-error' : this.errors.email }\" maxlength=\"100\" v-model=\"user.meta.ghost.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.email\" class=\"form-error\">{{ errors.email }}</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; !ghostEmail\" class=\"input-info\">Sends an invitation to join the team</span>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"!user.ghost\" class=\"row\">\n        <div class=\"col-xs-6\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/EditUser.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".EditUser {\n  background: #fff;\n}\n.EditUser__role {\n  margin-bottom: 25px;\n}\n.EditUser__data {\n  margin-bottom: 25px;\n}\n.EditUser__buttons {\n  margin-bottom: 12px;\n}\n"] = false
+    require("vueify-insert-css").cache[".EditUser {\n  background: #fff;\n}\n.EditUser__role {\n  margin-bottom: 25px;\n}\n.EditUser__data {\n  margin-bottom: 25px;\n}\n.EditUser__buttons {\n  margin-bottom: 12px;\n}\n.EditUser__confirm .kick {\n  width: 100%;\n  text-align: center;\n  margin-bottom: 35px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -29463,7 +29627,7 @@ exports.default = {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'roster',
+			tab: 'calendar',
 			statsTab: 'teamRecent',
 			events: [],
 			stats: [],
@@ -29564,9 +29728,10 @@ exports.default = {
 
 		newStats: function newStats(data, entry) {
 
+			var self = this;
 			data.forEach(function (val) {
-				this.stats.push(val);
-			}.bind(this));
+				self.stats.push(val);
+			});
 
 			this.$broadcast('updateFeed', entry);
 		},
@@ -29586,6 +29751,7 @@ exports.default = {
 					this.stats.push(val);
 				}.bind(this));
 			}
+
 			//tell Stats.vue to re-compile the stats
 			this.$broadcast('updateStats', this.stats);
 		},
@@ -29626,92 +29792,37 @@ exports.default = {
 
 		//new user was created from EditUser
 		newUser: function newUser(user) {
-			user.meta = JSON.parse(user.meta);
-			var split = user.meta.ghost.name.split(' ');
-			user.firstname = split[0];
-			user.lastname = split[1];
-			user.member_id = user.id;
-			user.ghost = true;
-			delete user.user_id;
 
-			user.pic = '/images/ghost.png';
-
-			this.users.push(user);
+			//format raw data and add to array of users
+			this.formatUsers(user);
 		},
 
 
 		//user was updated from EditUser
 		updateUser: function updateUser(editedUser) {
 
+			//remove current version of this user
 			this.users = this.users.filter(function (user) {
 				return user.member_id !== editedUser.member_id;
 			});
 
-			if (editedUser.ghost) {
-				//if ghost user, set name data just in case edited
-				var split = editedUser.meta.ghost.name.split(' ');
-				editedUser.firstname = split[0];
-				editedUser.lastname = split[1];
-			}
-
-			this.users.push(editedUser);
+			//format raw data and add to array of users
+			this.formatUsers(editedUser);
 		},
 
 
 		//user was kicked from team from EditUser
 		deleteUser: function deleteUser(editedUser) {
 
-			if (!editedUser.ghost) {
-				//if player was a real user, turn into ghost
-				editedUser.ghost = true;
-				editedUser.admin = false;
-				delete editedUser.gender;
-				editedUser.role = editedUser.role + 1;
-				editedUser.meta.ghost = {
-					id: editedUser.member_id,
-					name: editedUser.firstname + ' ' + editedUser.lastname,
-					email: null
-				};
-				editedUser.pic = '/images/ghost.png';
-
-				var deleteUser = false;
-			} else {
-				var deleteUser = true;
-			}
-
-			//tell server about new changes
-			var data = {
-				delete: deleteUser,
-				editedUser: editedUser
-			};
-			var self = this;
-			this.$http.delete(this.prefix + '/user', data).then(function (response) {
-
-				if (!response.data.ok) {
-					self.$root.banner('bad', response.data.error);
-					return;
-				}
-
-				//remove current version of user from users
-				self.users = self.users.filter(function (user) {
-					return user.member_id !== editedUser.member_id;
-				});
-
-				if (deleteUser) {
-					//if they're completely gone, remove their stats from current stats
-					self.stats = self.stats.filter(function (stat) {
-						return stat.member_id !== editedUser.member_id;
-					});
-					self.$root.banner('good', "Ghost deleted");
-				} else {
-					//add this edited version
-					editedUser.id = 0;
-					self.users.push(editedUser);
-					self.$root.banner('good', 'User kicked');
-				}
-			}).catch(function () {
-				self.$root.errorMsg();
+			//remove current version of user from users
+			this.users = this.users.filter(function (user) {
+				return user.member_id !== editedUser.member_id;
 			});
+
+			if (!editedUser.deleted) {
+				//if there's a ghost remaining, format raw data and add to array of users
+				this.formatUsers(editedUser);
+			}
 		}
 	},
 
@@ -29725,6 +29836,7 @@ exports.default = {
 			this.team = data.team;
 
 			//loop through all the users, create user objects
+			this.users = [];
 			this.formatUsers(data.members);
 
 			//store meta data about team
@@ -29758,7 +29870,12 @@ exports.default = {
 		//compile meta data for users and push into this.users
 		formatUsers: function formatUsers(users) {
 
-			this.users = [];
+			if (!users) {
+				//its possible there is a 'null' here
+				return;
+			}
+
+			if (!Array.isArray(users)) users = [users];
 
 			for (var x = 0; x < users.length; x++) {
 
@@ -30071,19 +30188,19 @@ exports.default = {
 			if (this.editEvent) {
 				//user wants to specifically edit the event regardless of date
 				return false;
-			} else return moment().isAfter(moment.unix(this.event.start)) && this.admin && (this.event.class === 1 || this.event.class === 2);
+			} else return moment().isAfter(moment.unix(this.event.start)) && this.admin && (this.event.type === 1 || this.event.type === 2);
 		},
 
 
 		//event has happened, user is an admin, event was NOT a game
 		pastEventNoStats: function pastEventNoStats() {
-			if (this.editEvent) return false;else return moment().isAfter(moment.unix(this.event.start)) && this.admin && this.event.class !== 1 && this.event.class !== 2;
+			if (this.editEvent) return false;else return moment().isAfter(moment.unix(this.event.start)) && this.admin && this.event.type !== 1 && this.event.type !== 2;
 		},
 
 
 		//event has happened, user is NOT an admin, event was a game
 		pastEventStats: function pastEventStats() {
-			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && (this.event.class === 1 || this.event.class === 2);
+			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && (this.event.type === 1 || this.event.type === 2);
 		},
 
 
@@ -30130,7 +30247,7 @@ exports.default = {
 
 			if (this.futureEvent || this.pastEvent) {
 				//if just showing info about the event to a non admin, pick CSS class for title
-				switch (this.event.class) {
+				switch (this.event.type) {
 					case 0:
 						//practice
 						this.event.titleClass = 'practice';
@@ -30679,7 +30796,7 @@ router.start(_App2.default, '#app');
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/StatsSelection.js":{"index":190,"hash":"xUsbCivkOhskRsGPVyzU","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":189,"hash":"oevnwx0F0ZIb39KpCZbK","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"Y/6C6cNL63kNIJMSS7Dy","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"3T4CCvyrb2tW0C0/HUve","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"EE7kB+WqYWnigGS27UW9","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"yNl8fo1/xI8iPCnubDr5","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"qc5YYgsFdun+KdrXLzXz","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"ju/Oil6eHzUb86qE9u4/","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"ZIqPcQ+UmlY3x1lzyuV2","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"6S89Z0Z2CZP3w7wgMzO3","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"piTfc2CRXnrrSQQIdcZd","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"EJKfCbIhUFHcncoWiHp9","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"hl9GrxYthehtrSKja+pe","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"2mckodk08wW/MTkkGEkz","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":191,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/StatsSelection.js":{"index":190,"hash":"xUsbCivkOhskRsGPVyzU","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":189,"hash":"oevnwx0F0ZIb39KpCZbK","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"Y/6C6cNL63kNIJMSS7Dy","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"B0zznuS8nBU/kSBp5fUS","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"ZIqPcQ+UmlY3x1lzyuV2","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"vq2eLFSujZXHicbHvuP0","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"LGA1zEi3nKTy6n68mLrg","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"ju/Oil6eHzUb86qE9u4/","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"ZVMVgUIbbUUFAVFY+xuu","parents":["resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"Hw80hs8hcqK0XMAK9DjV","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"6qvONkOoBfmlXnewzq0j","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"EJKfCbIhUFHcncoWiHp9","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"4N+/2xSdjlBlh4n9Vn+M","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"dylpZ3J0CHqOspZ+llyE","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":191,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";

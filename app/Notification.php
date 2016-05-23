@@ -28,7 +28,7 @@ class Notification extends Model
 
     protected $fillable = ['id', 'user_id', 'creator_id', 'type'];
 
-    protected $notifyTypes = [
+    protected $typeLookup = [
         'team_event'            => 0,
         'team_event_update'     => 1,
         'team_event_delete'     => 2,
@@ -39,6 +39,8 @@ class Notification extends Model
         'user_fan'              => 21,
     ];
 
+    protected $stringType = '';
+
 
     public function scopeTeamUser($query, $user_id, $team_id) {
         return $query->where('user_id', $user_id)->where('creator_id', $team_id);
@@ -47,12 +49,16 @@ class Notification extends Model
 
 
     //tell user they're invited to the team
-    public function teamInvite($user, $team_id) {
+    public function teamInvite($team_id, $user_id) {
 
-        $this->notify($user->id, $team_id, 'team_invite');
+        $this->creator_id = $team_id;
+        $this->user_id = $user_id;
+        $this->stringType = 'team_invite';
+
+        $this->notify();
 
         //email them if that's what they want
-        if($this->theyWantAnEmailToo($user_id, 'team_invite')) {
+        if($this->theyWantAnEmailToo()) {
 
             // EMAIL THEM HERE
 
@@ -60,20 +66,26 @@ class Notification extends Model
 
     }
 
+    
 
 
     //tell team members someone has posted to their team's news feed
-    public function newsFeedPost($team) {
+    public function teamNewsFeedPost($team) {
 
         $users = $team->allAssociatedUsers();
+
+        $this->creator_id = $team->id;
+        $this->stringType = 'team_post';
 
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
 
-            $notification = $this->notify($user_id, $team->id, 'team_post');
+            $this->user_id = $user_id;
+
+            $this->notify();
 
             //email them if that's what they want
-            if($this->theyWantAnEmailToo($user_id, 'team_post')) {
+            if($this->theyWantAnEmailToo()) {
 
                 // EMAIL THEM HERE
 
@@ -90,13 +102,18 @@ class Notification extends Model
 
         $users = $team->allAssociatedUsers();
 
+        $this->creator_id = $team->id;
+        $this->stringType = 'team_event';
+
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
 
-            $notification = $this->notify($user_id, $team->id, 'team_event');
+            $this->user_id = $user_id;
+
+            $this->notify();
 
             //email them if that's what they want
-            if($this->theyWantAnEmailToo($user_id, 'team_event')) {
+            if($this->theyWantAnEmailToo()) {
 
                 // EMAIL THEM HERE
 
@@ -113,13 +130,18 @@ class Notification extends Model
 
         $users = $team->allAssociatedUsers();
 
+        $this->creator_id = $team->id;
+        $this->stringType = 'team_event_delete';
+
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
 
-            $notification = $this->notify($user_id, $team->id, 'team_event_delete');
+            $this->user_id = $user_id;
+
+            $this->notify();
 
             //email them if that's what they want
-            if($this->theyWantAnEmailToo($user_id, 'team_event_delete')) {
+            if($this->theyWantAnEmailToo()) {
 
                 // EMAIL THEM HERE
 
@@ -136,13 +158,19 @@ class Notification extends Model
 
         $users = $team->allAssociatedUsers();
 
+        $this->creator_id = $team->id;
+        $this->stringType = 'team_event_update';
+
+
         //this is contacting the whole team, loop through all IDs
         foreach($users as $user_id) {
 
-            $notification = $this->notify($user_id, $team->id, 'team_event_update');
+            $this->user_id = $user_id;
+
+            $this->notify();
 
             //email them if that's what they want
-            if($this->theyWantAnEmailToo($user_id, 'team_event_update')) {
+            if($this->theyWantAnEmailToo()) {
 
                 // EMAIL THEM HERE
 
@@ -155,13 +183,13 @@ class Notification extends Model
 
     //creates a notification for all users in array
     //generates from creator's id, of a specific type (types described above)
-    public function notify($user_id, $creator_id, $type) {
+    public function notify() {
 
-        $typeInt = $this->notifyTypes[$type];
+        $typeInt = $this->typeLookup[$this->stringType];
   
         $notification = $this->create([
-            'user_id'       => $user_id,
-            'creator_id'    => $creator_id,
+            'user_id'       => $this->user_id,
+            'creator_id'    => $this->creator_id,
             'type'          => $typeInt
         ]);
 
@@ -170,10 +198,11 @@ class Notification extends Model
 
 
     //has this user told us they would like to be emailed for this notification?
-    public function theyWantAnEmailToo($user_id, $type) {
+    public function theyWantAnEmailToo() {
 
-        $settings = new UserEmailSetting;
-        return $settings->doesUserWantAnEmail($user_id, $type);
+        $settings = UserEmailSetting::where('user_id', $this->user_id)->first();
+
+        return $settings[$this->stringType];
     }
 
 

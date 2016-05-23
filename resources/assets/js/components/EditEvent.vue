@@ -23,7 +23,7 @@
           <div class="col-xs-12 col-sm-6 type-select">
             <label for="class">Type</label>
             <select data-style="btn-select btn-lg" name="class"
-            				class="selectpicker edit-event form-control show-tick" v-model="backup.class" number>
+            				class="selectpicker edit-event form-control show-tick" v-model="backup.type" number>
               <option value='0' class="practice">Practice</option>    
               <option value='1' class="homeGame">Home Game</option>
               <option value='2' class="awayGame">Away Game</option>
@@ -242,10 +242,10 @@ export default  {
 			this.backup = JSON.parse(JSON.stringify(this.event));
 
 			//init moment instances, milliseconds
-			this.fromDate = moment(this.event.start * 1000).format('MMM D, YYYY');
-			this.fromTime = moment(this.event.start * 1000).format('h:mm a');
-			this.toDate 	= moment(this.event.end * 1000).format('MMM D, YYYY');
-			this.toTime 	= moment(this.event.end * 1000).format('h:mm a');
+			this.fromDate = moment(this.event.start * 1000)
+			this.fromTime = moment(this.event.start * 1000)
+			this.toDate 	= moment(this.event.end * 1000)
+			this.toTime 	= moment(this.event.end * 1000)
 
 			//initialize the jquery and event data
 			$(function() {
@@ -254,7 +254,7 @@ export default  {
 				var selectList = '.type-select div.bootstrap-select li';
 			  $('.selectpicker.edit-event').selectpicker({});
 			  $(selectList + '.selected').removeClass('selected');
-			  var selected = $(selectList + '[data-original-index="' + this.event.class + '"]').addClass('selected');
+			  var selected = $(selectList + '[data-original-index="' + this.event.type + '"]').addClass('selected');
 			  var text = selected.find('a').text()
 			  $('.type-select div.bootstrap-select span.filter-option').text(text)
 
@@ -267,7 +267,8 @@ export default  {
 			  fromPicker.datetimepicker({
 			    allowInputToggle: true,
 			    focusOnShow: true,
-			    format: 'MMM D, YYYY'
+			    format: 'MMM D, YYYY',
+			    defaultDate: this.fromDate,
 			  })
 			  .on('dp.change', function(e) { 
 
@@ -276,16 +277,18 @@ export default  {
 			  	this.fromDate = e.date.format('MMM D, YYYY');
 			  	toPicker.data('DateTimePicker').minDate(e.date);
 
-			  	if(!this.toPickerChange)
+			  	if(!this.toPickerChange) {
 			  		//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
 			  		toPicker.data('DateTimePicker').date(e.date);
+			  	}
 
 			  }.bind(this));
 
 			  toPicker.datetimepicker({
 		      allowInputToggle: true,
 		      focusOnShow: true,
-		      format: 'MMM D, YYYY'
+		      format: 'MMM D, YYYY',
+		      defaultDate: this.toDate,
 			  })
 			  .on('dp.change', function(e) {
 			  	this.toPickerChange = true;
@@ -296,7 +299,8 @@ export default  {
 		      stepping: 5,
 		      allowInputToggle: true,
 		      focusOnShow: true,
-		      format: 'h:mm a'
+		      format: 'h:mm a',
+		      defaultDate: this.fromDate,
 			  })
 			  .on('dp.change', function(e) {
 			  	this.fromTime = e.date.format('h:mm a');
@@ -306,7 +310,8 @@ export default  {
 			      stepping: 5,
 			      allowInputToggle: true,
 			      focusOnShow: true,
-			      format: 'h:mm a'
+			      format: 'h:mm a',
+			      defaultDate: this.toDate,
 			  })
 		   	.on('dp.change', function(e) {
 			  	this.toTime = e.date.format('h:mm a');

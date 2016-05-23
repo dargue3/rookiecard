@@ -75,6 +75,31 @@ class TeamMember extends Model
     }
 
 
+    //checks if this user is a ghost
+    public function isGhost() {
+
+        return $this->user_id == 0;
+
+    }
+
+
+    //checks if this user is a ghost
+    public function isPlayer() {
+
+        return $this->role == 0 || $this->role == 1;
+
+    }
+
+
+
+    //checks if this user is a ghost
+    public function isCoach() {
+
+        return $this->role == 2 || $this->role == 3;
+
+    }
+
+
     //checks if this user has been invited to join this team
     public function isInvited() {
 
@@ -109,6 +134,7 @@ class TeamMember extends Model
 
 
 
+
     //switch the fan status of a user
     public function toggleFan() {
 
@@ -123,7 +149,7 @@ class TeamMember extends Model
             return ['ok' => false, 'error' => "You're already a member of this team"];
         }
 
-        else if($this->isFan() && !$this->trashed()) {
+        else if($this->isFan()) {
             //they're a fan, undo that
             $this->removeFan();
         }
@@ -142,14 +168,7 @@ class TeamMember extends Model
     //makes a user a fan of a team
     public function makeFan() {
  
-        if($this->trashed()) {
-            //this member was deleted, but here at rookiecard we recycle   
-            $this->role = 4;
-            $this->restore();
-            $this->save();
-        }
-
-        else if($this->isInvited() || $this->hasRequestedToJoin()) {
+        if($this->isInvited() || $this->hasRequestedToJoin()) {
             //if they've been invited or have requested to join, they can be fans too
             $this->role += 40; //see roles description above for why this makes sense
             $this->save();
@@ -187,60 +206,17 @@ class TeamMember extends Model
 
 
     //add a user to the team based on their email
-    //used during a team creation request
-    public function inviteAndCreateGhost($team_id, $user, $role) {
+    //assumes a fresh instance of TeamMember
+    public function createGhostAndInviteUser($user) {
 
         //add a ghost user as a placeholder for the time being
-        $ghost = $this->createGhostUser($team_id, $user, $role);
+        $this->createGhostUser($user);
 
         if($user['email']) {
             //invite that email to join team
-            $this->invite($team_id, $ghost->id, $user, $role);
+            $this->invite($user['email']);
         }
   
-        return $ghost;
-    }
-
-
-
-
-    //invite this email to the team
-    //if not a RC user, invite them to join the site
-    public function invite($team_id, $ghost_id, $user, $role) {
-
-        //check if that email is already tied to an account
-        $existingUser = User::where('email', $user['email'])->first();
-
-        
-        if($existingUser) {
-            //user exists, add them as an 'invited' user
-            $member = $this->firstOrNew([
-                'user_id'   => $existingUser->id,
-                'team_id'   => $team_id,
-            ]);
-
-            if($member->role) {
-                //they're already a member, that shouldn't happen...
-                return;
-            }
-          
-            //save their ghost's id so they can easily take its spot if they join
-            $member->meta = json_encode(['ghost_id' => $ghost_id]);
-            
-            $member->role = $role;
-            $member->save();
-
-            //create a notification telling them to check this team out
-            $notification = new Notification;
-            $notification->teamInvite($existingUser, $team_id);
-        }
-
-        else {
-            //user isn't in our database yet, send email inviting them to RC
-            $invite = new TeamInvite;
-            $invite->inviteToRookiecard($team_id, $user['email'], $role, $ghost_id);
-        }
-
         return;
     }
 
@@ -248,32 +224,79 @@ class TeamMember extends Model
 
 
     //create a placeholder 'ghost' user with a given name
-    public function createGhostUser($team_id, $user, $role) {
+    public function createGhostUser($user) {
 
-        if($role == 5) $role = 1; //ghost player
-        if($role == 6) $role = 3; //ghost coach
-
-        //ghost users have a 0 for a user_id
-        $ghost = $this->create([
-            'user_id'   => 0,
-            'team_id'   => $team_id,
-            'role'      => $role
-        ]);
-
-        //storing their TeamMember id here for easier access to an identifier
-        $meta = [
-            'ghost' => [
-                'name'  => $user['name'],
-                'email' => $user['email'],
-            ],
-            'positions' => [],
-        ];
-
-        $ghost->meta = json_encode($meta);
-        $ghost->save();
+        $this->user_id = 0;
+        $this->role = $user['role'];
+        $this->meta = json_encode($this->getDefaultGhostMetaData($user['name'], $user['email']));
+        $this->save();
         
-        return $ghost;
+        return;
     }
+
+
+
+
+    //invite this email to the team
+    //if not a RC user, invite them to join the site
+    //assumes role and team_id are set
+    public function invite($email) {
+
+        if($this->role == 1 || $this->role == 5) $role = 5; //invited player
+        if($this->role == 3 || $this->role == 6) $role = 6; //invited coach
+
+        //check if that email is already tied to an account
+        $existingUser = User::where('email', $email)->first();
+
+        if($existingUser) {
+
+            $attributes = ['user_id' => $existingUser->id, 'team_id' => $this->team_id];
+            $member = TeamMember::firstOrNew($attributes);
+
+            if(!$member->exists) {
+                $member->role = $role;
+                $member->save();
+            }
+
+            else if($member->isMember()) {
+                //they're already a member, that shouldn't happen...
+                return;
+            }
+
+            else if($member->hasRequestedToJoin()) {
+                //they wanted to join already anyways, accept invitation
+                if($member->isFan()) {
+                    $member->role = 40 + $role;
+                }
+                else {
+                    $member->role = $role;
+                }
+
+                $member->save();
+                $member->acceptInvitation($email);
+                return;
+            }
+
+            else if($member->isFan()) {
+                //if they're a fan, update role to fan + invited
+                $member->role = 40 + $role;
+                $member->save();
+            }
+
+            //create a notification telling them to check this team out
+            (new Notification)->teamInvite($this->team_id, $existingUser->id);
+        }
+
+        else {
+            //user isn't in our database yet, send email inviting them to RC
+            $attributes = ['email' => $email, 'team_id' => $this->team_id];
+            TeamInvite::firstOrNew($attributes)->inviteToRookiecard($role);
+        }
+
+        return;
+    }
+
+
 
 
 
@@ -284,13 +307,6 @@ class TeamMember extends Model
         if(!$this->exists) {
             //this is a new member entry
             $this->role = 7;
-            $this->save();
-        }
-
-        else if($this->trashed()) {
-            //member was deleted, make a request and restore
-            $this->role = 7;
-            $this->restore();
             $this->save();
         }
 
@@ -338,7 +354,7 @@ class TeamMember extends Model
 
 
     //a user has opted to join a team, switch them from invited to player/coach/fan
-    public function acceptInvitation() {
+    public function acceptInvitation($email = null) {
 
         if(!$this->exists) {
             //this was a new instantiated class, which means no invite
@@ -366,7 +382,7 @@ class TeamMember extends Model
         }
 
         //track down their ghost by looking for their email in ghost meta data
-        $email = Auth::user()->email; 
+        $email = $email ? $email : Auth::user()->email; 
         $ghost = $this->findGhostByEmail($email);
 
         if($ghost) {
@@ -435,9 +451,25 @@ class TeamMember extends Model
 
 
     //return the default meta data for a new player on a team
-    public function getDefaultMetaData() {
+    public function getDefaultPlayerMetaData() {
 
         return ['positions' => [], 'num' => ''];
+
+    }
+
+
+
+    //return the default meta data for a new ghost on a team
+    public function getDefaultGhostMetaData($name, $email) {
+
+        return [
+            'ghost' => [
+                'name'  => $name,
+                'email' => $email,
+            ],
+            'positions' => [],
+            'num'       => '',
+        ];
 
     }
 
@@ -463,19 +495,96 @@ class TeamMember extends Model
 
 
 
-    //edit an existing member to match the credentials passed in
-    public function editMember($newMember) {
+    //given an array of meta data, add it to this member
+    public function attachMetaData($data) {
 
-        $this->admin = $newMember['admin'] ? 1 : 0;
+        //add any included meta data
+        $meta = json_decode($this->meta);
+
+        if(isset($data['num']))
+            $meta->num = $data['num'];
+
+        if(isset($data['positions']))
+            $meta->positions = $data['positions'];
+
+        $this->meta = json_encode($meta);
+        $this->save();
+
+        return;
+    }
+
+
+    //edit an existing member to match the credentials passed in
+    public function editMember($data) {
+
+        if(isset($data['admin']))
+            $this->admin = $data['admin'] ? 1 : 0;
+        else
+            $this->admin = 0;
 
         if(!$this->isFan()) {
             //save member related info
-            $this->meta = json_encode($newMember['meta']);
-            $this->role = $newMember['role'];
-            $this->save();
+            $this->attachMetaData($data['meta']);
+            $this->role = $data['role'];
         }
 
-        return ['ok' => true, 'user' => $this];
+        $this->save();
+
+        return;
+    }
+
+
+
+
+    //process for deleting a member:
+    //if member is a user, they become a ghost
+    //if member is a ghost, they get completely deleted, stats erased
+    public function deleteMember($metaData) {
+
+        if($this->isFan()) {
+
+            //nothing special here
+            $this->delete();
+
+            return;
+        }
+
+        //if they're a ghost, remove from team entirely
+        if($this->isGhost()) {
+
+            //a bit of work, outsourced it to a separate function
+            $this->deleteGhost();
+
+            return;
+        }
+
+        //if they're a real user, switch them to being a ghost
+        $this->role = $this->isPlayer() ? 1 : 3;
+        $this->id = 0;
+        $this->admin = 0;
+        $this->meta = $this->getDefaultGhostMetaData(); //first just fill with ghost data
+        $this->meta = $this->attachMetaData($metaData); //re-attach existing meta data
+        $this->save();
+
+        return;
+    }
+
+
+
+    //delete a ghost and all the data that could be scattered around attached to them
+    public function deleteGhost() {
+
+        //delete any stats
+        $stats = new Stat;
+        $stats->deleteByMember($this);
+
+        //delete any outstanding invitations this is placeholding
+        $email = json_decode($this->meta)->ghost->email;
+        TeamInvite::where('email', $email)->where('team_id', $this->team_id)->delete();
+        
+        $this->delete();
+
+        return;
     }
 
 

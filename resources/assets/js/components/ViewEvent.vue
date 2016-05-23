@@ -141,7 +141,7 @@ export default  {
 			}
 			else
 				return moment().isAfter(moment.unix(this.event.start)) && this.admin &&
-										(this.event.class === 1 || this.event.class === 2);
+										(this.event.type === 1 || this.event.type === 2);
 		},
 
 
@@ -151,14 +151,14 @@ export default  {
 				return false;
 			else
 				return moment().isAfter(moment.unix(this.event.start)) && this.admin  &&
-										(this.event.class !== 1 && this.event.class !== 2);
+										(this.event.type !== 1 && this.event.type !== 2);
 		},
 
 
 		//event has happened, user is NOT an admin, event was a game
 		pastEventStats() {
 			return moment().isAfter(moment.unix(this.event.start)) && !this.admin  &&
-										(this.event.class === 1 || this.event.class === 2);
+										(this.event.type === 1 || this.event.type === 2);
 		},
 
 
@@ -212,7 +212,7 @@ export default  {
 
 			if(this.futureEvent || this.pastEvent) {
 				//if just showing info about the event to a non admin, pick CSS class for title
-				switch(this.event.class) {
+				switch(this.event.type) {
 					case 0:
 						//practice
 						this.event.titleClass = 'practice';

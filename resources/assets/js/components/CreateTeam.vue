@@ -338,14 +338,17 @@ export default  {
 			players.push({
 				name: 'Kobe Bryant',
 				email: 'kbryant24@gmail.com',
+				role: 1,
 			},
 			{
 				name: 'Chris Paul',
 				email: 'cp3@gmail.com',
+				role: 1,
 			});
 			coaches.push({
 				name: 'Bryan Klapes',
 				email: '',
+				role: 3
 			});
 			playerErrors.push({
 				name: '',

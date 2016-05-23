@@ -15,8 +15,7 @@ class CreateRcTeamsTable extends Migration
         Schema::create('rc_teams', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('teamname')->unique(); //teamname is equivalent to username
-            $table->string('sport');
+            $table->string('teamname')->unique();
             $table->timestamps();
         });
     }

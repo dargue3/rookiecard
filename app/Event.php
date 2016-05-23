@@ -15,7 +15,10 @@ class Event extends Model
 {
     /**
     * currently supported event types:
-    * 0 = team event
+    * 0 = practice
+    * 1 = home game
+    * 2 = away game
+    * 3 = other
     * 
     *
     */
@@ -36,7 +39,7 @@ class Event extends Model
     public function getTeamEvents($team) {
 
         //parse all events related to team, return as json
-        return $this->where('owner_id', $team->id)->where('type', 0)->orderBy('start')->get();
+        return $this->where('owner_id', $team->id)->orderBy('start')->get();
 
     }
 
@@ -56,16 +59,15 @@ class Event extends Model
 
         //only tell the team and create news feed entry if the event hasn't happened yet
         if(Carbon::createFromTimestampUTC($this->end)->isFuture()) {
-            $feed = new NewsFeed;
-            $feed = $feed->deleteTeamEvent($team, $this);
+            $meta = ['event' => $this];
+            $feed = (new NewsFeed)->deleteTeamEvent($team, $meta);
         }
         else {
             $feed = null;
         }
 
         //delete associated stats
-        $stats = new Stat;
-        $stats->deleteByEvent($team, $event);
+        (new Stat)->deleteByEvent($team, $this);
 
         $this->delete();
 
@@ -84,7 +86,7 @@ class Event extends Model
         $oldEvent = $this;
        
         $this->title = $request->title;
-        $this->class = intval($request->class);
+        $this->type = intval($request->type);
         $tz = $request->session()->get('timezone');
         if(!$tz)
             $tz = 'UTC';
@@ -102,8 +104,8 @@ class Event extends Model
 
         //only tell the team and create news feed entry if the event hasn't happened yet
         if(Carbon::createFromTimestampUTC($this->end)->isFuture()) {
-            $feed = new NewsFeed;
-            $feed = $feed->updateTeamEvent($team, $this, $oldEvent);
+            $meta = ['event' => $this, 'oldEvent' => $oldEvent];
+            $feed = (new NewsFeed)->updateTeamEvent($team, $meta);
         }
         else {
             $feed = null;
@@ -115,64 +117,49 @@ class Event extends Model
 
 
     //creates an event, notifies players and fans
-    public function createTeamEvent(Request $request, $team) {
-
-
-        $eventCount = $this->where('owner_id', $team->id)->count();
+    public function createTeamEvents(Request $request, $team) {
 
         //if they have a lot of events, throw error
         //not sure if necessary, just some security for the beginning
-        if($eventCount > 1000) {
-            echo "Too many events already created!";
-            return;
+        if($this->where('owner_id', $team->id)->count() > 5000) {
+            return ['ok' => false, 'error' => 'Event limit reached'];
         }
 
 
-        $title      = $request->get('title');
-        $class      = $request->get('eventClass');
-        $from       = $request->get('fromDate') . " " . $request->get('fromTime');
-        $to         = $request->get('toDate') . " " . $request->get('toTime');
-        $until      = $request->get('until');
-        $repeats    = $request->get('repeats');
-        $days       = $request->get('repeatDays');
-        $details    = $request->get('details');
+        $title      = $request->title;
+        $type      = $request->type;
+        $from       = $request->start;
+        $to         = $request->end;
+        $details    = $request->details;
         $tz         = $request->session()->get('timezone');
 
-        if($repeats) {
-            //more than one event
-            if(empty($until) || empty($days))
-                //they checked 'repeats' but didn't fill in enough data
-                $repeats = false;
+        //check if this is a repeating event
+        if($request->has('repeats')) {
+            $repeats    = $request->repeats;
+            $days       = $request->repeatDays;
+            $until      = $request->until;
+        }
+        else {
+            $repeats = false;
         }
 
-        //create carbon instances from date strings in user's timezone
-        $startDate  = Carbon::parse($from, $tz);
-        $endDate    = Carbon::parse($to, $tz);
-
-        if($endDate < $startDate) {
-            //dates got messed up, fail
-            echo json_encode(['data' => 'End date is before start date!', 'result' => false]);
-            return;
-        }
+        //create carbon instances in user's timezone
+        $startDate  = Carbon::createFromTimestamp($from, $tz);
+        $endDate    = Carbon::createFromTimestamp($to, $tz);
         
         $done = false;
         $count = 0;
 
         //check if it repeats, store all event info
         if($repeats) {
-
             
-            $stopDate   = Carbon::parse($until, $tz);
+            $stopDate   = Carbon::createFromTimestamp($until, $tz);
 
             $startHour      = $startDate->hour;
             $startMinutes   = $startDate->minute;
             $lapse          = $endDate->diffInMinutes($startDate);
 
-
-            $days = $request->get('repeatDays');
-
-
-            //for storing what days are repeated
+            //will use this in the news feed meta data later
             $repeatDaysForStatus = '';
 
             //reassign integer values to the days of the week repeated
@@ -247,84 +234,95 @@ class Event extends Model
             }
 
 
-            $createFirstEvent = false;
+            
             //if the event starts on a day of the week that isn't in the repeating sequence,
-            //make sure that first event gets created also 
-            //e.g. the Carbon('this Monday') would skip otherwise
+            //make sure that first event gets created also.
+            //Example: if your repeating days were W F and the start date was on Monday,
+            //the first Carbon('this Wednesday') would completely skip that first  Monday event
+            $createFirstEvent = false;
             if(!in_array($dayOfWeek, $tempRepeatDays))
                 $createFirstEvent = true;
     
-
             $today = $startDate;
 
-
-
-            //loop through all the possible days
-            //count is a fail-safe in case of error
+            //continuously loop through the repeatDays adding events for each one
+            //think of each iteration of the while loop as being a week
+            //goes until a break triggers or $count exceeds its limit
             while($count < 250) {
 
+                //each iteration of this loop creates an event
                 for($x = 0; $x < count($repeatDays); $x++) {
-
-                    $event = new Event;
 
                     //make new definition of 'today' every loop
                     Carbon::setTestNow($today);
 
-                    //include this first event
                     if($createFirstEvent) {
-                        $x = -1; //reset the loop count
+                        //include this first event but next loop move on with the 'next Monday' logic
+                        $x = -1; //reset the loop counter back to the beginning
                         $createFirstEvent = false;
                     }
-                    //like saying: today is now defined as "this Monday"
-                    elseif(count($repeatDays) > 1)
-                        $today = new Carbon('this ' . $repeatDays[$x], $tz);
-                    elseif($count == 0)
-                        $today = new Carbon('this ' . $repeatDays[$x], $tz);
-                    else
-                        $today = new Carbon('next ' . $repeatDays[$x], $tz);
 
-                    //is today past the stop day? then quit creating
+                    //below code checks how to move the the date forward based on which days of the week
+                    //the event repeats
+
+                    else if(count($repeatDays) > 1) { 
+                        //e.g. if it repeats W F, you'd say 'this Wednesday', 'this Friday', 'this Wednesday', etc.
+                        $today = new Carbon('this ' . $repeatDays[$x], $tz);
+                    }
+
+                    else if($count == 0) {
+                        //e.g. if this is the first event and the event is on a Monday, start with 'this Monday'
+                        $today = new Carbon('this ' . $repeatDays[$x], $tz);
+                    }
+
+                    else {
+                        //e.g. if it only repeats on Monday, you always say 'next Monday' to move the iteration
+                        $today = new Carbon('next ' . $repeatDays[$x], $tz);
+                    }
+
+                    //is today past the stop day? we're done, don't create this event
                     if($today->startOfDay() > $stopDate->startOfDay())
                         break 2;
 
-                    //is today the stop day? then add this and quit
+
+                    //is today the last day it repeats? then add this and quit
                     if($today->isSameDay($stopDate))
                         $done = true;
-
-
-                    //save the new event data
-                    $event->start   = $today->addHours($startHour)->addMinutes($startMinutes)->timezone('UTC')->timestamp;
-                    $event->end     = $today->addMinutes($lapse)->timestamp;
-                    $event->title   = $title;
-                    $event->class   = intval($class);
-                    $event->owner_id = $team->id;
-                    $event->creator_id = Auth::user()->id;
-                    $event->details = $details;
-                    $event->type    = 0;
-                    $event->save();
-
-
 
                     //reset carbon's definition of 'now', create method uses it
                     Carbon::setTestNow();
 
+                    $event = new Event;
 
-                    if($count == 0)
-                        //save first event for repeats meta data
+                    //save the new event data
+                    $event->start       = $today->addHours($startHour)->addMinutes($startMinutes)->timezone('UTC')->timestamp;
+                    $event->end         = $today->addMinutes($lapse)->timestamp;
+                    $event->title       = $title;
+                    $event->type        = intval($type);
+                    $event->owner_id    = $team->id;
+                    $event->creator_id  = Auth::user()->id;
+                    $event->details     = $details;
+
+                    $event->save();   
+
+                    if($count == 0) {
+                        //save first event for news feed meta data
                         $firstEvent = $event;
-                    else
-                        //store last event for repeats meta data
+                    }
+                    else {
+                        //store last event for news feed meta data
                         $lastEvent = $event;
+                    }
 
-
-
-                    //reset today back to midnight on that day in their timezone
+                    //reset today back to midnight
                     $today->subHours($startHour)->subMinutes($startMinutes + $lapse)->timezone($tz);
 
                     $count++;
 
-                    if($done)
+                    if($done) {
+                        //that was the last event needed
                         break 2;
+                    }
 
                 }
             }
@@ -341,24 +339,21 @@ class Event extends Model
             //if just single event, add
             $event = new Event;
 
-            $event->title = $title;
-            $event->class = intval($class);
-            $event->start = $startDate->timezone('UTC')->timestamp;
-            $event->end   = $endDate->timezone('UTC')->timestamp;
-            $event->owner_id = $team->id;
-            $event->creator_id = Auth::user()->id;
-            $event->details = $details;
-            $event->type = 0;
+            $event->title       = $title;
+            $event->type        = intval($type);
+            $event->start       = $startDate->timezone('UTC')->timestamp;
+            $event->end         = $endDate->timezone('UTC')->timestamp;
+            $event->owner_id    = $team->id;
+            $event->creator_id  = Auth::user()->id;
+            $event->details     = $details;
+
             $event->save();
 
             $metaData = ['event' => $event];
         }
 
         //add this event to the news feed
-        $feed = new NewsFeed;
-        $feed = $feed->newTeamEvents($team, $metaData);
-
-        return $feed;
+        return (new NewsFeed)->newTeamEvents($team, $metaData);
     }
 
 

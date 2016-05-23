@@ -29,7 +29,7 @@ class NewsFeed extends Model
     protected $fillable = ['id', 'owner_id', 'creator_id', 'type', 'meta'];
 
     //see above for descriptions
-    protected $feedTypes = [
+    protected $typeLookup = [
         'team_event'            => 0,
         'team_event_update'     => 1,
         'team_event_delete'     => 2,
@@ -38,6 +38,8 @@ class NewsFeed extends Model
         'user_post'             => 20,
         'user_stats'            => 21,
     ];
+
+    protected $stringType = '';
 
 
     //returns the news feed for a team
@@ -49,17 +51,16 @@ class NewsFeed extends Model
 
 
     //someone has posted to the team feed
-    public function newsFeedPost($team, $post) {
+    public function teamNewsFeedPost($team, $meta) {
 
         //notify the team about it
-        $notification = new Notification;
-        $notification->newsFeedPost($team);
+        (new Notification)->teamNewsFeedPost($team);
 
-        //prepare meta data about entry
-        $meta = ['details' => $post];
+        $this->stringType = 'team_post';
+        $this->owner_id = $team->id;
 
         //add the entry to team feed
-        return $this->createEntry($team->id, 'team_post', $post);
+        return $this->createEntry($meta);
     }
 
 
@@ -68,46 +69,43 @@ class NewsFeed extends Model
     public function newTeamEvents($team, $meta) {
 
         //notify the team about it
-        $notification = new Notification;
-        $notification->newTeamEvents($team);
-
-        //in this particular case, the meta data was custom enough that 
-        //it is passed in straight from the Event model
+        (new Notification)->newTeamEvents($team);
+        
+        $this->stringType = 'team_event';
+        $this->owner_id = $team->id;
 
         //add the entry to team feed
-        return $this->createEntry($team->id, 'team_event', $meta);
+        return $this->createEntry($meta);
     }
 
 
 
     //team admin deleted an event
-    public function deleteTeamEvent($team, $event) {
+    public function deleteTeamEvent($team, $meta) {
 
         //notify the team about it
-        $notification = new Notification;
-        $notification->deleteTeamEvent($team);
+        (new Notification)->deleteTeamEvent($team);
 
-        //prepare meta data about entry
-        $meta = ['event' => $event];
+        $this->stringType = 'team_event_delete';
+        $this->owner_id = $team->id;
 
         //add the entry to team feed
-        return $this->createEntry($team->id, 'team_event_delete', $meta);
+        return $this->createEntry($meta);
     }
 
 
 
     //team admin updated an event
-    public function updateTeamEvent($team, $event, $oldEvent) {
+    public function updateTeamEvent($team, $meta) {
 
         //notify the team about it
-        $notification = new Notification;
-        $notification->updateTeamEvent($team);
+        (new Notification)->updateTeamEvent($team);
 
-        //prepare meta data about entry
-        $meta = ['event' => $event, 'oldEvent' => $oldEvent];
+        $this->stringType = 'team_event_update';
+        $this->owner_id = $team->id;
 
         //add the entry to team feed
-        return $this->createEntry($team->id, 'team_event_update', $meta);
+        return $this->createEntry($meta);
     }
 
 
@@ -115,12 +113,11 @@ class NewsFeed extends Model
 
 
     //create an entry to this owner's news feed
-    public function createEntry($owner_id, $type, $meta = null) {
+    public function createEntry($meta = null) {
 
-        $typeInt = $this->feedTypes[$type];
+        $typeInt = $this->typeLookup[$this->stringType];
 
         $update = $this->create([
-            'owner_id'   => $owner_id,
             'type'       => $typeInt,
             'meta'       => json_encode($meta),
             'creator_id' => Auth::user()->id

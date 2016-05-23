@@ -527,6 +527,9 @@ div.bootstrap-select.form-control .dropdown-menu li a:focus {
   background-color: #fff;
   background-image: none;
 }
+div.form-error .bootstrap-select button {
+  border: 1px solid #f00;
+}
 label {
   margin-bottom: 5px;
   margin-left: 1px;
@@ -618,65 +621,63 @@ border-color rc_lite_gray {
   animation: fade-leave 0.2s ease-out;
 }
 .slide-sm-enter {
-  -webkit-animation: slide-sm-enter 0.2s ease-in;
-  animation: slide-sm-enter 0.2s ease-in;
+  -webkit-animation: slide-sm-enter 0.4s ease-in;
+  animation: slide-sm-enter 0.4s ease-in;
 }
 @media only screen and (max-width: 767px) {
   .slide-sm-enter {
-    -webkit-animation: slide-sm-phone-enter 0.2s ease-in;
-    animation: slide-sm-phone-enter 0.2s ease-in;
+    -webkit-animation: slide-sm-phone-enter 0.4s ease-in;
+    animation: slide-sm-phone-enter 0.4s ease-in;
   }
 }
 .slide-sm-leave {
-  -webkit-animation: slide-sm-leave 0.2s ease-out;
-  animation: slide-sm-leave 0.2s ease-out;
+  -webkit-animation: slide-sm-leave 0.4s ease-out;
+  animation: slide-sm-leave 0.4s ease-out;
 }
 @media only screen and (max-width: 767px) {
   .slide-sm-leave {
-    -webkit-animation: slide-sm-phone-leave 0.2s ease-in;
-    animation: slide-sm-phone-leave 0.2s ease-in;
+    -webkit-animation: slide-sm-phone-leave 0.4s ease-in;
+    animation: slide-sm-phone-leave 0.4s ease-in;
   }
 }
 .slide-md-enter {
-  -webkit-animation: slide-md-enter 0.2s ease-in;
-  animation: slide-md-enter 0.2s ease-in;
+  -webkit-animation: slide-md-enter 0.3s ease-in;
+  animation: slide-md-enter 0.3s ease-in;
 }
 @media only screen and (max-width: 767px) {
   .slide-md-enter {
-    -webkit-animation: slide-md-phone-enter 0.2s ease-in;
-    animation: slide-md-phone-enter 0.2s ease-in;
+    -webkit-animation: slide-md-phone-enter 0.3s ease-in;
+    animation: slide-md-phone-enter 0.3s ease-in;
   }
 }
 .slide-md-leave {
-  -webkit-animation: slide-md-leave 0.2s ease-out;
-  animation: slide-md-leave 0.2s ease-out;
+  -webkit-animation: slide-md-leave 0.3s ease-out;
+  animation: slide-md-leave 0.3s ease-out;
 }
 @media only screen and (max-width: 767px) {
   .slide-md-leave {
-    -webkit-animation: slide-md-phone-leave 0.2s ease-in;
-    animation: slide-md-phone-leave 0.2s ease-in;
+    -webkit-animation: slide-md-phone-leave 0.3s ease-in;
+    animation: slide-md-phone-leave 0.3s ease-in;
   }
 }
 .slide-lg-enter {
-  -webkit-animation: slide-lg-enter 0.2s ease-in;
-  animation: slide-lg-enter 0.2s ease-in;
-  -webkit-animation-delay: 0.2s;
-  animation-delay: 0.2s;
+  -webkit-animation: slide-lg-enter 0.3s ease-in;
+  animation: slide-lg-enter 0.3s ease-in;
 }
 @media only screen and (max-width: 767px) {
   .slide-lg-enter {
-    -webkit-animation: slide-lg-phone-enter 0.2s ease-in;
-    animation: slide-lg-phone-enter 0.2s ease-in;
+    -webkit-animation: slide-lg-phone-enter 0.3s ease-in;
+    animation: slide-lg-phone-enter 0.3s ease-in;
   }
 }
 .slide-lg-leave {
-  -webkit-animation: slide-lg-leave 0.2s ease-out;
-  animation: slide-lg-leave 0.2s ease-out;
+  -webkit-animation: slide-lg-leave 0.3s ease-out;
+  animation: slide-lg-leave 0.3s ease-out;
 }
 @media only screen and (max-width: 767px) {
   .slide-lg-leave {
-    -webkit-animation: slide-lg-phone-leave 0.2s ease-in;
-    animation: slide-lg-phone-leave 0.2s ease-in;
+    -webkit-animation: slide-lg-phone-leave 0.3s ease-in;
+    animation: slide-lg-phone-leave 0.3s ease-in;
   }
 }
 .number-tick-up-enter {
@@ -771,7 +772,7 @@ transform rotate(90deg),
   }
   100% {
     opacity: 1;
-    max-height: 75px;
+    max-height: 100px;
   }
 }
 @keyframes slide-sm-enter {
@@ -782,13 +783,13 @@ transform rotate(90deg),
   }
   100% {
     opacity: 1;
-    max-height: 75px;
+    max-height: 100px;
   }
 }
 @-webkit-keyframes slide-sm-leave {
   0% {
     opacity: 1;
-    max-height: 75px;
+    max-height: 100px;
   }
   100% {
     opacity: 0;
@@ -799,7 +800,7 @@ transform rotate(90deg),
 @keyframes slide-sm-leave {
   0% {
     opacity: 1;
-    max-height: 75px;
+    max-height: 100px;
   }
   100% {
     opacity: 0;
