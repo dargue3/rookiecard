@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\TeamMember;
+use App\TeamRole;
 use App\Event;
 use App\Stat;
 use App\NewsFeed;
@@ -180,18 +181,18 @@ class Team extends Model
 
 
     //create a team with request data from TeamController
-    public function createTeam($request) {
+    public function createTeam($request)
+    {
+        //request is already validated
 
-        //do some quick housekeeping of the numbers
-        //they should all be validated already
+        //do some quick housekeeping of the inputs
         $gender = intval($request->gender);
-        if($gender < 0 || $gender > 2)
+        if ($gender < 0 || $gender > 2)
             $gender = 0;
 
         $sport = intval($request->sport);
         //look up supported sports in Sports::class
 
-        $role = intval($request->userIsA);
 
         //put together an array of meta data
         $stats = new Stat;
@@ -217,59 +218,51 @@ class Team extends Model
             'creator_id'    => Auth::user()->id,
         ]);
 
+        $role = $request->userIsA;
+        if ($role == 'fan')
+        {
+            $role = TeamRole::FAN;
+        }
+        else if ($role == 'player')
+        {
+            $role = TeamRole::PLAYER;
+        }
+        else if ($role == 'coach')
+        {
+            $role = TeamRole::COACH;
+        }
 
-        $member = new TeamMember;
-        $players = $request->players;
-        $coaches = $request->coaches;
         //add the user who created the team as their perspective role (and admin)
-        $member->create([
+        TeamMember::create([
             'user_id'   => Auth::user()->id,
             'team_id'   => $team->id,
             'admin'     => 1,
             'role'      => $role,
-            'meta'      => json_encode($member->getDefaultMetaData()),
+            'meta'      => json_encode(TeamMember::getDefaultMetaData()),
         ]);
 
+        $players = $request->players;
+        $coaches = $request->coaches;
         //remove auth user from array of players or coaches if necessary
-        if($role == 0) {
-            //remove from players
+        if ($role == TeamRole::PLAYER)
+        {
             array_shift($players);
         }
-        if($role == 2) {
-            //remove from coaches
+        else if ($role == TeamRole::COACH)
+        {
             array_shift($coaches);
         }
 
 
         //loop through the players and coaches to create TeamMember entries 
-        foreach($players as $player) {
-
-            $member = new TeamMember(['team_id' => $team->id, 'role' => 1]);
-
-            if(!$player['name']) {
-                //the name wasn't included (though should've been), use default
-                $player['name'] = 'Leonardo DaVinci';
-            }
-            $player['role'] = 1;
-
-            //invite user to join team
-            //creates ghost player until they accept the invitation
-            $member->createGhostAndInviteUser($player);   
+        foreach ($players as $player)
+        {
+            TeamMember::addMember($team->id, TeamRole::GHOST_PLAYER, $player);
         }
 
-        foreach($coaches as $coach) {
-
-            $member = new TeamMember(['team_id' => $team->id, 'role' => 3]);
-
-            if(!$coach['name']) {
-                //the name wasn't included (though should've been), use default
-                $coach['name'] = 'Nikola Tesla';
-            }
-            $coach['role'] = 3;
-
-            //invite user to join team
-            //creates ghost player until they accept the invitation
-            $member->createGhostAndInviteUser($coach);
+        foreach ($coaches as $coach)
+        {
+            TeamMember::addMember($team->id, TeamRole::GHOST_COACH, $coach);
         }
 
         return ['ok' => true, 'team' => $team];

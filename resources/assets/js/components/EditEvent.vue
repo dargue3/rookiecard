@@ -18,12 +18,12 @@
           <div class="col-xs-12 col-sm-6">
             <label for="title">Title</label>
             <input class="form-control input-lg" name="title" type="text"
-            				autocomplete="off" required v-model="backup.title">
+            				autocomplete="off" required v-model="event.title">
           </div>
           <div class="col-xs-12 col-sm-6 type-select">
             <label for="class">Type</label>
             <select data-style="btn-select btn-lg" name="class"
-            				class="selectpicker edit-event form-control show-tick" v-model="backup.type" number>
+            				class="selectpicker form-control show-tick" EditEvent v-model="event.type" number>
               <option value='0' class="practice">Practice</option>    
               <option value='1' class="homeGame">Home Game</option>
               <option value='2' class="awayGame">Away Game</option>
@@ -38,15 +38,15 @@
           <div class="form-group">
             <label for="from">Starts at</label>
             <!-- from - date -->
-            <div class='input-group date edit-picker-from'>
-          		<input type="text" name="from" class="form-control" required>
+            <div class="input-group date" EditEvent="fromDate">
+          		<input type="text" class="form-control" required>
               <span class="input-group-addon">
               	<span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
             <!-- from - time -->
-            <div class='input-group date edit-picker-from-time'>
-              <input type="text" name="fromTime" class="form-control" required>
+            <div class="input-group date" EditEvent="fromTime">
+              <input type="text" class="form-control" required>
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-time"></span>
               </span>
@@ -57,15 +57,15 @@
           <div class="form-group">
             <label for="to">Ends at</label>
             <!-- to - date -->
-            <div class="input-group date edit-picker-to">
-              <input type="text" name="to" class="form-control" required>
+            <div class="input-group date" EditEvent="toDate">
+              <input type="text" class="form-control" required>
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
             <!-- to - time -->
-            <div class="input-group date edit-picker-to-time">
-              <input type="text" name="toTime" class="form-control" required>
+            <div class="input-group date" EditEvent="toTime">
+              <input type="text" class="form-control" required>
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-time"></span>
               </span>
@@ -77,8 +77,8 @@
 	    <div class="row">
 	      <div class="col-xs-12">
 	        <label for="details">Extra details about this event</label>
-	        <textarea v-autosize="backup.details" name="details" rows="1" class="form-control" maxlength="5000"
-	        					autocomplete="off" v-model="backup.details">{{ backup.details }}</textarea>
+	        <textarea v-autosize="event.details" rows="1" class="form-control" maxlength="5000"
+	        					autocomplete="off" v-model="event.details">{{ event.details }}</textarea>
 	      </div>
 	    </div>
 	    <hr>
@@ -132,11 +132,18 @@ export default  {
 	watch: {
 		event(val, old) {
 			//wait for an new event to be clicked
-			if(val === old) 
-				return
-			else
+			if(this.event.id)
 				this.initialize();
+			else
+				return;
 		},
+	},
+
+	computed: {
+		//figure out if this event is a game
+		isGame() {
+			return this.event.type === 1 || this.event.type === 2;
+		}
 	},
 
 	methods: {
@@ -189,12 +196,11 @@ export default  {
 
 			var self = this;
     	var url = this.$parent.prefix + '/events';
-    	this.$http.delete(url, this.event).then(function(response) {
+    	this.$http.delete(url).then(function(response) {
+    		if(!response.data.ok)
+    			throw response.data.error;
 
-    		if(response.data.feed)
-					var data = response.data.feed;
-				else
-					var data = null;
+
 				self.$dispatch('deleteEvent', self.event, data);
 				$('#viewEventModal').modal('hide');
 
@@ -231,6 +237,7 @@ export default  {
 		cancel() {
 			this.event = this.backup;
 			this.editEvent = false;
+			this.initialize();
 			$('#viewEventModal').modal('hide');
 		},
 
@@ -238,31 +245,27 @@ export default  {
 		//initialize data and get date/time pickers ready
 		initialize() {
 
-			//make a backup of event
+			//make a backup of event so changes aren't reflected in rest of app unless saved
 			this.backup = JSON.parse(JSON.stringify(this.event));
 
 			//init moment instances, milliseconds
-			this.fromDate = moment(this.event.start * 1000)
-			this.fromTime = moment(this.event.start * 1000)
-			this.toDate 	= moment(this.event.end * 1000)
-			this.toTime 	= moment(this.event.end * 1000)
+			this.fromDate = moment(this.event.start * 1000);
+			this.fromTime = moment(this.event.start * 1000);
+			this.toDate 	= moment(this.event.end * 1000);
+			this.toTime 	= moment(this.event.end * 1000);
 
 			//initialize the jquery and event data
 			$(function() {
 
-				//select picker is tricky to initialize to current value, trust that this works
-				var selectList = '.type-select div.bootstrap-select li';
-			  $('.selectpicker.edit-event').selectpicker({});
-			  $(selectList + '.selected').removeClass('selected');
-			  var selected = $(selectList + '[data-original-index="' + this.event.type + '"]').addClass('selected');
-			  var text = selected.find('a').text()
-			  $('.type-select div.bootstrap-select span.filter-option').text(text)
-
-			  //datepickers for adding events, sel
-			  var fromPicker  		= $('.edit-picker-from');
-			  var toPicker    		= $('.edit-picker-to');
-			  var fromPickerTime  = $('.edit-picker-from-time');
-			  var toPickerTime    = $('.edit-picker-to-time');
+				//init selectpicker, set to correct type
+			  $('.selectpicker[EditEvent]').selectpicker();
+			  $('.selectpicker[EditEvent]').selectpicker('val', this.event.type);
+			 
+			  //datepickers for adding events
+			  var fromPicker  		= $('[EditEvent="fromDate"]');
+			  var toPicker    		= $('[EditEvent="toDate"]');
+			  var fromPickerTime  = $('[EditEvent="fromTime"]');
+			  var toPickerTime    = $('[EditEvent="toTime"]');
 
 			  fromPicker.datetimepicker({
 			    allowInputToggle: true,
@@ -271,6 +274,10 @@ export default  {
 			    defaultDate: this.fromDate,
 			  })
 			  .on('dp.change', function(e) { 
+			  	if(!e.date) {
+			  		this.fromDate = '';
+			  		return;
+			  	}
 
 			  	//when 'from' changes, save this new date into the state
 			  	//set 'to' and 'until' minimum dates so they don't end before it starts
@@ -291,6 +298,10 @@ export default  {
 		      defaultDate: this.toDate,
 			  })
 			  .on('dp.change', function(e) {
+			  	if(!e.date) {
+			  		this.toDate = '';
+			  		return;
+			  	}
 			  	this.toPickerChange = true;
 			  	this.toDate = e.date.format('MMM D, YYYY');
 			  }.bind(this));
@@ -300,9 +311,13 @@ export default  {
 		      allowInputToggle: true,
 		      focusOnShow: true,
 		      format: 'h:mm a',
-		      defaultDate: this.fromDate,
+		      defaultDate: this.fromDate
 			  })
 			  .on('dp.change', function(e) {
+			  	if(!e.date) {
+			  		this.fromTime = '';
+			  		return;
+			  	}
 			  	this.fromTime = e.date.format('h:mm a');
 			  }.bind(this));
 
@@ -314,18 +329,94 @@ export default  {
 			      defaultDate: this.toDate,
 			  })
 		   	.on('dp.change', function(e) {
+		   		if(!e.date) {
+			  		this.toTime = '';
+			  		return;
+			  	}
 			  	this.toTime = e.date.format('h:mm a');
 			  }.bind(this));
 
-			  //initialize dates and times
-			  fromPicker.data('DateTimePicker').date(this.fromDate);
-			  toPicker.data('DateTimePicker').date(this.toDate);
-			  fromPickerTime.data('DateTimePicker').date(this.fromTime);
-			  toPickerTime.data('DateTimePicker').date(this.toTime);
-
+			  this.toPickerChange = false;
 
 			}.bind(this));
-		}		
+		},	
+
+
+		//make sure there are no errors before saving data
+		errorCheck() {
+			var errors = 0;
+
+			if(!this.backup.title.length) {
+				errors++;
+				this.errors.title = 'Enter a title';
+			}
+			else {
+				this.errors.title = '';
+			}
+
+			if(!this.backup.toDate.length || !this.backup.toTime.length)  {
+				errors++;
+				this.errors.end = 'Choose an end date and time';
+			}
+			else {
+				this.errors.end = '';
+			}
+
+			if(!this.fromDate.length || !this.fromTime.length) {
+				errors++;
+				this.errors.start = 'Choose an end date and time';
+			}
+			else {
+				this.errors.start = '';
+			}
+
+			if(this.repeats) {
+				if(!this.repeatDays.length) {
+					errors++;
+					this.errors.repeatDays = 'Which days does it repeat?';
+				}
+				else {
+					this.errors.repeatDays = '';
+				}
+				if(!this.until.length) {
+					errors++;
+					this.errors.until = 'When does it repeat until?'
+				}
+				else {
+					this.errors.until = '';
+				}
+			}
+
+			if(errors) {
+				//if any of these failed, solve those issues first
+				return errors;
+			}
+
+
+			//check for end dates < start dates
+			//until dates < end dates
+			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
+			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+			var momentUntil = moment(this.until, 'MMM D, YYYY');
+
+			if(!momentTo.isAfter(momentFrom)) {
+				errors++;
+				this.errors.end = 'Ends before it starts';
+			}
+			else {
+				this.errors.end = '';
+			}
+
+			if(!momentUntil.isAfter(momentTo) && this.repeats) {
+				errors++;
+				this.errors.until = 'Stops repeating before the event ends';
+			}
+			else {
+				this.errors.until = '';
+			}
+
+			return errors;
+		},	
 	},
 
 
@@ -359,6 +450,10 @@ export default  {
 	
 .edit-submit-buttons
 	margin-bottom 20px
+	
+div[EditEvent="fromTime"]
+div[EditEvent="toTime"]
+	margin-top 10px
 
 
 

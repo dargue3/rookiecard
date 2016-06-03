@@ -15,91 +15,111 @@
 			<div v-cloak v-show="team.id" class="Team for-blurring">
 			
 
-	    	<div class="Team__details">
+	    	<div class="Team__details" :style="team.backdrop">
 					
-					<div>
-						<img class="img-thumbnail" width="500" height="400" :src="team.pic">
+					<div class="Team__pic">
+						<img width="250" height="250" :src="team.pic">
 					</div>
 					
-					
-					<h1 class="Team__name">{{ team.name }}</h1>
-					
+					<div class="black-container">
+						
+						<div class="filler"></div>						
 
-					<div class="Team__slogan">
-						<span>&ldquo;{{ team.slogan }}&rdquo;</span>
-					</div>
+						<div class="Team__info__tabs">
 
-					<div class="Team__location">
-						<span>
-							<i id="teamLocationIcon" class="material-icons no-highlight">place</i>
-							{{ team.homefield + ', ' + team.city }}
-						</span>
-					</div>
-					
+							<div class="filler"></div>
+							
+							<div class="Team__info">
+								<div class="Team__text">
+									<h1 class="Team__name">{{ team.name }}</h1>
+									<div class="Team__slogan">
+										<i>{{ team.slogan }}</i>
+									</div>
+									<div class="Team__location">
+										<span>
+											<i class="material-icons no-highlight">place</i>
+											{{ team.homefield + ', ' + team.city }}
+										</span>
+									</div>	
+								</div>
 
-					<div class="Team__fans">
+								<div class="Team__fans">
+									<div class="Team__join_buttons">
+										<!-- buttons for joining team, accepting invitation -->
+										<div class="Team__invite">
+											<a v-show="showRequestToJoin" 
+													class="btn btn-primary" @click="requestToJoin('join')">REQUEST TO JOIN</a>
 
-						<div class="num-fans">
-							<div class="fan-count" :class="numFansClass">
-								<!-- for animating a new fan counter, show numFans +- 1 -->
-								<span v-if="!fansChanged" :transition="numFansTransition">{{ numFans }}</span>
-								<span v-if="fansChanged" :transition="numFansTransition">{{ numFans }}</span>
+											<a v-show="showCancelRequest" 
+													class="btn btn-delete" @click="requestToJoin('cancel')">CANCEL REQUEST</a>
+
+											<a v-show="showRespondToInvitation" class="btn btn-success" @click="respondToInv()">RESPOND TO INVITATION</a>
+
+											<a v-show="showYoureAMember" class="btn btn-success --member">YOU'RE A MEMBER</a>
+										</div>
+									</div>
+									<div class="num-fans">
+										<div class="fan-count" :class="numFansClass">
+											<!-- for animating a new fan counter, show numFans +- 1 -->
+											<span v-if="!fansChanged" :transition="numFansTransition">{{ numFans }}</span>
+											<span v-if="fansChanged" :transition="numFansTransition">{{ numFans }}</span>
+										</div>
+										<div class="arrow-right --white"></div>
+									</div>
+
+									<div v-show="showRemoveFan" class="fan-icon" @click="toggleFan">
+										<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
+									</div>
+									<div v-show="showBecomeFan" class="fan-icon" @click="toggleFan">
+										<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
+									</div>
+									<div v-show="showIsFan" class="fan-icon --member">
+										<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
+									</div>
+								</div> <!-- end  Team__fans -->
+								
 							</div>
-							<div class="arrow-right --white"></div>
-						</div>
 
-						<div v-show="showRemoveFan" class="fan-icon" @click="toggleFan">
-							<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
-						</div>
-						<div v-show="showBecomeFan" class="fan-icon" @click="toggleFan">
-							<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
-						</div>
-						<div v-show="showIsFan" class="fan-icon --member">
-							<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
+							<div class="Team__tabs">
+								<div class="tab" :class="{'--active' : tab === 'calendar'}"
+											@click="tab = 'calendar'">
+									<div class="tab-box"></div>
+									<a id="calendarTab">
+		        				<i class="material-icons">date_range</i>CALENDAR
+			            </a>			
+								</div>
+								<div class="tab" :class="{'--active' : tab === 'stats'}"
+											@click="tab = 'stats'">
+									<div class="tab-box"></div>
+									<a id="statsTab">
+		        				<i class="material-icons">trending_up</i>STATS
+			            </a>	
+								</div>
+								<div class="tab" :class="{'--active' : tab === 'roster'}"
+											@click="tab = 'roster'">
+									<div class="tab-box"></div>
+									<a id="rosterTab">
+		        				<i class="material-icons">group</i>ROSTER
+			            </a>	
+								</div>
+								<div v-show="admin" class="tab" :class="{'--active' : tab === 'settings'}"
+											@click="tab = 'settings'">
+									<div class="tab-box"></div>
+									<a id="settingsTab">
+		        				<i class="material-icons">settings</i>SETTINGS
+			            </a>	
+								</div>
+							</div>	
 						</div>
 					</div>
-
-
-					<!-- buttons for joining team, accepting invitation -->
-					<div class="Team__invite">
-						<a v-show="showRequestToJoin" 
-								class="btn btn-primary outline" @click="requestToJoin('join')">REQUEST TO JOIN</a>
-
-						<a v-show="showCancelRequest" 
-								class="btn btn-success outline" @click="requestToJoin('cancel')">CANCEL REQUEST</a>
-
-						<a v-show="showRespondToInvitation" class="btn btn-success" @click="respondToInv()">RESPOND TO INVITATION</a>
-
-						<a v-show="showYoureAMember" class="btn btn-success outline --member">YOU'RE A MEMBER</a>
-					</div>
-
-
-	   
-	        <ul class="nav nav-tabs Team__tabs no-highlight">
-	          <li :class="{'active' : tab === 'calendar'}">
-	            <a @click="tab = 'calendar'">
-	        			<i id="teamCalendarIcon" class="material-icons">date_range</i>CALENDAR
-	            </a>
-	          </li>
-	          <li :class="{'active' : tab === 'stats'}">
-	            <a @click="tab = 'stats'">
-	        			<i id="teamStatsIcon" class="material-icons">trending_up</i>STATS
-	            </a>
-	          </li>
-	          <li :class="{'active' : tab === 'roster'}">
-	            <a @click="tab = 'roster'">
-	          		<i id="teamRosterIcon" class="material-icons">group</i>ROSTER
-	            </a>
-	          </li>
-	          <li v-if="admin" :class="{'active' : tab === 'settings'}">
-	            <a @click="tab = 'settings'">
-	        			<i id="teamEditIcon" class="material-icons">settings</i>SETTINGS
-	            </a>
-	      	</ul>	
-	   
 				</div> <!-- end team well -->
 
-				<div>
+
+
+				
+				<div> <!-- begin calendar/roster/stats/newsfeed container -->
+
+
 				  <div class="row">
 			      <div class="col-xs-12 Team__calendar"
 			      			v-show="tab === 'calendar'">
@@ -409,7 +429,7 @@ export default  {
 			return this.isMember || this.isCreator;
 		},
 		showRequestToJoin() {
-			return !this.hasRequestedToJoin && !this.isMember && !this.isCreator;
+			return !this.hasRequestedToJoin && !this.hasBeenInvited && !this.isMember && !this.isCreator;
 		},
 		showCancelRequest() {
 			return this.hasRequestedToJoin;
@@ -576,6 +596,9 @@ export default  {
 			this.team.slogan = meta.slogan;
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
+
+			//format the backdrop image as a style tag 
+			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
 
 			//note whether or not this user is the creator
 			if(this.team.creator_id == this.auth.id) {
@@ -868,42 +891,84 @@ export default  {
 	
 .Team__details
 	display flex
-	flex-flow row wrap
-	justify-content center
-	text-align center
-	position relative
+	flex-flow column
 	margin-bottom 35px
-	border none
-	box-shadow none
-	padding 40px 0 0 0 
-	background rc_two_tone
+	padding 110px 0 0 0px 
+	background-size cover
+	background-attachment fixed
+	//background-image url()
+
+.Team__pic
+	flex 1
+	padding-left 40px
+	max-width 290px
+	transform translate(0, 125px)
+	img
+		border-radius 50%
+		border 3px solid white
 		
-.Team__name		
-	flex-basis 100%
+.black-container
+	display flex
+	flex-flow row
+	background rgba(0,0,0,0.70)
+	.filler
+		flex 1
 	
-.Team__location		
-.Team__slogan
-	flex-basis 100%
-	margin-top 25px
-	font-size 17px
+.Team__info__tabs
+	display flex
+	flex-flow column
+	justify-content flex-start
+	flex 3
+	padding 0
+	
+.Team__info
+	display flex
+	flex-flow row
+	
+.Team__text
+	flex 1
+	display flex
+	flex-flow column wrap
+	color white
+
+.Team__tabs
+	display flex
+	flex-flow row
+	
+.Team__name		
+	flex-basis 1
+	font-size 42px
+	
+.Team__location
+	padding-left 22px
+	flex-basis 1
+	margin-top 15px
+	font-size 16px
 	span
 		position relative
-		color rc_dark_gray
+	.material-icons
+		position absolute
+		font-size 21px
+		left -27px
+		top -2px
+		
+.Team__slogan
+	flex-basis 1
+	margin-top 15px
+	font-size 16px
 
 .Team__fans
-	flex-basis 100%
+	flex 1
 	display flex
-	flex-flow row wrap
-	justify-content center
-	align-items center
-	margin-top 25px
+	flex-flow row
+	align-items flex-end
+	margin-top 20px
 	.num-fans
 		position relative
 		display flex
 		flex-flow row
-		margin-bottom 5px
 		overflow hidden
-		height 40px
+		height 44px
 		width 70px
 		.fan-count
 			display flex
@@ -912,9 +977,9 @@ export default  {
 			align-items center
 			background-color white
 			min-width 61px
-			height 40px
+			height 44px
 			font-size 17px	
-			border-radius 15%
+			border-radius 10%
 			color rc_dark_gray
 			span
 				position absolute
@@ -947,25 +1012,69 @@ export default  {
 			cursor default
 			
 .Team__invite
-	flex-basis 100%		
-	margin-top 25px
-	.btn
-		margin-left 0px
+	background white
+	border-radius 5px
+	margin-right 15px
+	a.btn.outline
+	a.btn
+		border 0
+		margin 0
+		&:hover
+			border 0
 		&.--member:hover
 			cursor default
-			color rc_bright_green
-			border 2px solid rc_bright_green
+			color white
+			background-color rc_bright_green
 		
 			
 .Team__tabs
-	display flex
-	flex-flow row wrap
-	justify-content center
-	li
+	margin-top 25px
+	height 45px
+	padding 0
+	overflow visible
+	.tab
+		width 200px
+		position relative
+		height 45px
+		float left
+		overflow hidden
+		margin 0 -15px 0 0
+		.tab-box
+			height 53px
+			background #CCC
+			border-radius 6px
+			border 1px solid rc_lite_gray
+			border-bottom 9px solid rc_lite_gray
+			margin 0 7px 0
+			box-shadow 0 0 2px white inset
+			transform perspective(100px) rotateX(23deg)
+			transition background 0.3s, border-bottom 0.05s
 		a
-			padding 20px 40px 20px 64px
-			@media screen and (max-width xs_max_width) 				
-				padding 20px 30px 20px 54px			
+			color link_blue
+			transition color 0.3s
+		&:hover
+			cursor pointer
+			.tab-box
+				background white
+				transition background 0.3s
+			a
+				color link_blue_hover
+				transition color 0.3s
+		&.--active
+			z-index 40
+			position relative
+			padding-bottom 1px
+			.tab-box
+				background-color whitesmoke
+				border-bottom 0
+				transition border-bottom 0.05s
+				box-shadow 0 0 2px white inset
+			a
+			&:hover
+				cursor default
+				color black
+					
+				
 
 .Team__feed
 	background rc_two_tone
@@ -976,44 +1085,46 @@ export default  {
 .Team__stats
 	padding 0 2em
 
-
-
-#teamCalendarIcon
-	font-size 24px
+#calendarTab
 	position absolute
-	left 30px
-	bottom 18px
-	@media screen and (max-width 767px)
-		left 14px
+	top 17px
+	left 69px
+	i
+		position absolute
+		font-size 24px
+		left -28px
+		top -3px
 
-#teamStatsIcon
-	font-size 24px
+#statsTab
 	position absolute
-	left 32px
-	bottom 19px
-	@media screen and (max-width 767px)
-		left 15px
+	top 17px
+	left 84px
+	i
+		position absolute
+		font-size 24px
+		left -28px
+		top -3px
+		
+#rosterTab
+	position absolute
+	top 17px
+	left 81px
+	i
+		position absolute
+		font-size 24px
+		left -28px
+		top -3px
+		
+#settingsTab
+	position absolute
+	top 15px
+	left 74px
+	i
+		position absolute
+		font-size 24px
+		left -28px
+		top -3px						
 
-#teamRosterIcon
-	font-size 24px
-	position absolute
-	left 32px
-	bottom 19px
-	@media screen and (max-width 767px)
-		left 16px	
-
-#teamEditIcon
-	font-size 24px
-	position absolute
-	left 32px
-	bottom 19px
-	@media screen and (max-width 767px)
-		left 16px		
-			
-#teamLocationIcon
-	position absolute
-	left -27px
-	top -3px
 
 
 #noTeam

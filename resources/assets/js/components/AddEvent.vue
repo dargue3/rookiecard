@@ -16,7 +16,7 @@
           <div class="col-xs-12 col-sm-6">
             <label>Type</label>
             <select v-model="type" data-style="btn-select btn-lg"
-                    class="selectpicker add-event form-control show-tick">
+                    class="selectpicker form-control show-tick" AddEvent>
               <option value="0" class="practice">Practice</option>    
               <option value="1" class="homeGame">Home Game</option>
               <option value="2" class="awayGame">Away Game</option>
@@ -31,15 +31,15 @@
           <div class="form-group">
 						<!-- from - date -->
             <label>Starts at</label>
-            <div class='input-group date picker-from'>
+            <div class="input-group date" AddEvent="fromDate">
           		<input type="text" class="form-control" :class="{'form-error' : errors.start }">
               <span class="input-group-addon">
               	<span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
 						<!-- from - time -->
-            <div class='input-group date picker-from-time'>
-          		<input type="text" name="from" class="form-control" :class="{'form-error' : errors.start }">
+            <div class="input-group date" AddEvent="fromTime">
+          		<input type="text" class="form-control" :class="{'form-error' : errors.start }">
               <span class="input-group-addon">
               	<span class="glyphicon glyphicon-time"></span>
               </span>
@@ -49,16 +49,16 @@
         </div>
         <div class='col-xs-12 col-sm-6'>
           <div class="form-group">
-            <label for="to">Ends at</label>
-            <div class='input-group date picker-to'>
-              <input type="text" name="to" class="form-control" :class="{'form-error' : errors.end }">
+            <label>Ends at</label>
+            <div class="input-group date" AddEvent="toDate">
+              <input type="text" class="form-control" :class="{'form-error' : errors.end }">
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-calendar"></span>
               </span>
             </div>
             <!-- to - time -->
-            <div class='input-group date picker-to-time'>
-              <input type="text" name="to" class="form-control" :class="{'form-error' : errors.end }">
+            <div class="input-group date" AddEvent="toTime">
+              <input type="text" class="form-control" :class="{'form-error' : errors.end }">
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-time"></span>
               </span>
@@ -94,8 +94,8 @@
           </div>
           <div class="col-xs-12 col-sm-6">
             <label for="until">Until</label>
-            <div class='input-group date picker-until'>
-              <input type="text" name="until" class="form-control" :class="{'form-error' : errors.until }">
+            <div class="input-group date" AddEvent="until">
+              <input type="text" class="form-control" :class="{'form-error' : errors.until }">
               <span class="input-group-addon">
                 <span class="glyphicon glyphicon-calendar"></span>
               </span>
@@ -150,10 +150,10 @@ export default  {
 			fromTime: '',
 			toDate: '',
 			toTime: '',
-			toPickerChange: 0,
+			toPickerChange: false,
 			repeats: false,
 			repeatDays: [],
-			untilPickerChange: 0,
+			untilPickerChange: false,
 			until: '',
 			details: '',
 			endsError: false,
@@ -326,11 +326,11 @@ export default  {
 
 		resetPickers() {
 			//set datetimepickers back to normal
-		  $('.picker-from').data('DateTimePicker').date(this.momentFrom);
-		  $('.picker-to').data('DateTimePicker').date(this.momentTo);
-		  $('.picker-until').data('DateTimePicker').date(this.momentUntil);
-		  $('.picker-from-time').data('DateTimePicker').date(this.momentFrom);
-		  $('.picker-to-time').data('DateTimePicker').date(this.momentTo);
+		  $('div[AddEvent="fromDate"]').data('DateTimePicker').date(this.momentFrom);
+		  $('div[AddEvent="toDate"]').data('DateTimePicker').date(this.momentTo);
+		  $('div[AddEvent="until"]').data('DateTimePicker').date(this.momentUntil);
+		  $('div[AddEvent="fromTime"]').data('DateTimePicker').date(this.momentFrom);
+		  $('div[AddEvent="toTime"]').data('DateTimePicker').date(this.momentTo);
 		},
 
 
@@ -381,18 +381,18 @@ export default  {
 			this.reinitializeData();
 
 
-		  $('.selectpicker').selectpicker();
+		  $('.selectpicker[AddEvent]').selectpicker();
 
 		  var fromDate = this.momentFrom;
 		  var toDate = this.momentTo;
 		  var untilDate = this.momentUntil;
 
 		  //datepickers for adding events, sel
-		  var fromPicker  = $('.picker-from');
-		  var toPicker    = $('.picker-to');
-		  var untilPicker = $('.picker-until');
-		  var fromPickerTime  = $('.picker-from-time');
-		  var toPickerTime    = $('.picker-to-time');
+		  var fromPicker  = $('div[AddEvent="fromDate"]');
+		  var toPicker    = $('div[AddEvent="toDate"]');
+		  var untilPicker = $('div[AddEvent="until"]');
+		  var fromPickerTime  = $('div[AddEvent="fromTime"]');
+		  var toPickerTime    = $('div[AddEvent="toTime"]');
 
 		  fromPicker.datetimepicker({
 		    allowInputToggle: true,
@@ -401,24 +401,21 @@ export default  {
 		    defaultDate: fromDate
 		  })
 		  .on('dp.change', function(e) { 
-
-		  	//when 'from' changes, save this new date into the state
-		  	//set 'to' and 'until' minimum dates so they don't end before it starts
 		  	if(!e.date) {
 		  		this.fromDate = '';
 		  		return;
 		  	}
 
+				//when 'from' changes, save this new date into the state
+		  	//set 'to' and 'until' minimum dates so they don't end before it starts
 		  	this.fromDate = e.date.format('MMM D, YYYY');
 		  	toPicker.data('DateTimePicker').minDate(e.date);
+		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
 
 		  	if(!this.toPickerChange) {
 		  		//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
 		  		toPicker.data('DateTimePicker').date(e.date);
 		  	}
-
-		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
-		  	
 
 		  }.bind(this));
 
@@ -427,18 +424,16 @@ export default  {
 	      focusOnShow: true,
 	      format: 'MMM D, YYYY',
 	      defaultDate: toDate
-
 		  })
 		  .on('dp.change', function(e) {
-
 		  	if(!e.date) {
 		  		this.toDate = '';
 		  		return;
 		  	}
+
 		  	this.toDate = e.date.format('MMM D, YYYY');
 		  	this.toPickerChange = true;
 		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
-		  	
 
 		  }.bind(this));
 
@@ -450,11 +445,11 @@ export default  {
 	      defaultDate: untilDate
 		  })
 		  .on('dp.change', function(e) {
-
 		  	if(!e.date) {
 		  		this.until = '';
 		  		return;
 		  	}
+
 		  	this.until = e.date.format('MMM D, YYYY');
 
 		  }.bind(this));
@@ -526,6 +521,7 @@ export default  {
 #addEventCancel
 	@media screen and (max-width 767px)
 		margin-left 0px
+		
 //for the colors of the 'event type' dropdown
 .homeGame
 	color rc_red !important
@@ -536,6 +532,9 @@ export default  {
 .other
 	color rc_green !important
 
+div[AddEvent="fromTime"]
+div[AddEvent="toTime"]
+	margin-top 10px
 
 
 </style>

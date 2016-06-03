@@ -14,7 +14,7 @@ use App\NewsFeed;
 class Event extends Model
 {
     /**
-    * currently supported event types:
+    * event types:
     * 0 = practice
     * 1 = home game
     * 2 = away game

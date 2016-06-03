@@ -11,229 +11,80 @@ use App\Stat;
 
 class TeamMember extends Model
 {
-     /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
+    use SoftDeletes;
 
     protected $table = 'rc_team_members';
 
-    use SoftDeletes;
-
-
-    /**
-     * possible roles are as follows:
-     * 0 = player 
-     * 1 = ghost player
-     * 2 = coach
-     * 3 = ghost coach
-     * 4 = fan
-     * 5 = invited player
-     * 6 = invited coach
-     * 7 = has requested to join
-     * 45 = invited player AND fan (it's like joining a 4 and a 5, right?)
-     * 46 = invited coach AND fan
-     * 47 = has requested to join AND fan
-    */
-
-
-    protected $fillable = ['user_id', 'team_id', 'role', 'admin', 'meta'];
+    protected $guarded = [];
 
     protected $dates = ['deleted_at'];
 
 
-    //creates shortcut TeamMember::member($user_id, $team_id) to fetch a user
-    public function scopeMember($query, $user_id, $team_id) {
-
+    public function scopeMember($query, $user_id, $team_id)
+    {
         return $query->where('user_id', $user_id)->where('team_id', $team_id);
-
     }
 
 
-    //creates shortcut TeamMember::ghosts($team_id) to fetch all ghosts
-    public function scopeGhosts($query, $team_id) {
-
+    public function scopeGhosts($query, $team_id)
+    {
         return $query->where('user_id', 0)->where('team_id', $team_id);
-
     }
 
 
-    //checks if this user is a fan
-    public function isFan() {
-
-        return $this->role == 4 || $this->role == 45 || $this->role == 46 || $this->role == 47;
-
+    //turn role into a value object
+    public function getRoleAttribute($role)
+    {
+        return new TeamRole($role);
     }
-
-
-    //checks if this user is a member of some sort
-    public function isMember() {
-
-        return $this->role == 0 || $this->role == 2;
-
-    }
-
-
-    //checks if this user is a ghost
-    public function isGhost() {
-
-        return $this->user_id == 0;
-
-    }
-
-
-    //checks if this user is a ghost
-    public function isPlayer() {
-
-        return $this->role == 0 || $this->role == 1;
-
-    }
-
-
-
-    //checks if this user is a ghost
-    public function isCoach() {
-
-        return $this->role == 2 || $this->role == 3;
-
-    }
-
-
-    //checks if this user has been invited to join this team
-    public function isInvited() {
-
-        return $this->role == 5 || $this->role == 6 || $this->role == 45 || $this->role == 46;
-
-    }
-
-
-    //checks if this user has been invited to join this team
-    public function isAnInvitedPlayer() {
-
-        return $this->role == 5 || $this->role == 45;
-
-    }
-
-
-    //checks if this user has been invited to join this team
-    public function isAnInvitedCoach() {
-
-        return $this->role == 6 || $this->role == 46;
-
-    }
-
-
-
-    //checks if this user has been invited to join this team
-    public function hasRequestedToJoin() {
-
-        return $this->role == 7 || $this->role == 47;
-
-    }
-
-
 
 
     //switch the fan status of a user
-    public function toggleFan() {
-
-        if(!$this->exists) {
-            //this is a brand new model
-            $this->role = 4;
+    public function toggleFan()
+    {
+        $newRole = $this->role->toggleFan();
+        if ($newRole)
+        {
+            $this->role = $newRole;
             $this->save();
+            return ['ok' => true];
         }
-
-        else if($this->isMember()) {
-            //we don't want someone to be a fan and a member
-            return ['ok' => false, 'error' => "You're already a member of this team"];
-        }
-
-        else if($this->isFan()) {
-            //they're a fan, undo that
-            $this->removeFan();
-        }
-
-        else {
-            //they're not a fan, make them one
-            $this->makeFan();
-        }
-
-        return ['ok' => true];
+       
+        //they don't have a role anymore, delete this member entry
+        $this->delete();
+        return ['ok' => true];   
     }
 
 
 
+    //add a member to the team
+    //makes them a ghost to start out
+    public static function addMember($team_id, $role, $ghost)
+    {
+        $this->team_id = $team_id;
+        $this->role = $role;
+        $this->createGhostUser($ghost);
 
-    //makes a user a fan of a team
-    public function makeFan() {
- 
-        if($this->isInvited() || $this->hasRequestedToJoin()) {
-            //if they've been invited or have requested to join, they can be fans too
-            $this->role += 40; //see roles description above for why this makes sense
-            $this->save();
-        }
-
-        else {
-            //just make them a fan
-            $this->role = 4;
-            $this->save();
-        }
-
-        return;
-    }
-
-
-
-
-    //remove this user as a fan of this team
-    public function removeFan() {
-
-        if($this->isInvited() || $this->hasRequestedToJoin()) {
-            //they're a fan and have been invited or have requested to join the team
-            //save the other section of their membership
-            $this->role -= 40;
-            $this->save();
-        }
-        else {
-            $this->delete();
-        }
-
-        return;
-    }
-
-
-
-
-    //add a user to the team based on their email
-    //assumes a fresh instance of TeamMember
-    public function createGhostAndInviteUser($user) {
-
-        //add a ghost user as a placeholder for the time being
-        $this->createGhostUser($user);
-
-        if($user['email']) {
-            //invite that email to join team
-            $this->invite($user['email']);
+        //if an email was included, invite this user to the team
+        if ($ghost['email'])
+        {
+            $this->invite($ghost['email']);
         }
   
-        return;
+        return $this;
     }
-
 
 
 
     //create a placeholder 'ghost' user with a given name
-    public function createGhostUser($user) {
-
+    private function createGhostUser($ghost)
+    {
         $this->user_id = 0;
-        $this->role = $user['role'];
-        $this->meta = json_encode($this->getDefaultGhostMetaData($user['name'], $user['email']));
+        $this->meta = json_encode($this->getDefaultGhostMetaData($ghost));
         $this->save();
         
         return;
     }
-
 
 
 
@@ -451,16 +302,18 @@ class TeamMember extends Model
 
 
     //return the default meta data for a new player on a team
-    public function getDefaultPlayerMetaData() {
-
+    public static function getDefaultPlayerMetaData()
+    {
         return ['positions' => [], 'num' => ''];
-
     }
 
 
 
     //return the default meta data for a new ghost on a team
-    public function getDefaultGhostMetaData($name, $email) {
+    public static function getDefaultGhostMetaData($ghost)
+    {
+        $name = $ghost['name'] ? $ghost['name'] : 'Ghosty McGhostFace';
+        $email = $ghost['email'] ? $ghost['email'] : '';
 
         return [
             'ghost' => [
@@ -470,13 +323,12 @@ class TeamMember extends Model
             'positions' => [],
             'num'       => '',
         ];
-
     }
 
 
     //find the ghost associated with an email on this team
-    public function findGhostByEmail($email) {
-
+    public function findGhostByEmail($email)
+    {
         $ghosts = $this->ghosts($this->team_id)->get();
 
         foreach($ghosts as $ghost) {

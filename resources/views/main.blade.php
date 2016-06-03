@@ -45,6 +45,7 @@
     <script src='/js/nav.js'></script>
     <script src='/js/pace.js'></script>
     <script src='/js/dropzone.js'></script>
+    <script src='/js/parallax.min.js'></script>
     <script src="/bower_components/moment/moment.js"></script>
     <script src="/bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
     <script src="/bower_components/underscore/underscore-min.js"></script>

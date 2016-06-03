@@ -266,13 +266,7 @@ div.modal
 		flex 1
 		text-align center	
 		font-size 11px
-
-
-div.picker-to-time
-div.picker-from-time
-div.edit-picker-from-time
-div.edit-picker-to-time
-	margin-top 10px	
+	
 
 .input-group-addon
 	background whitesmoke
@@ -365,6 +359,7 @@ textarea
 
 .btn-cancel
 	background #BDBBBB
+	padding 12px 22px
 	color white
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
@@ -372,6 +367,7 @@ textarea
 
 .btn-delete
 	background rc_red
+	padding 12px 22px
 	color white
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
@@ -379,6 +375,7 @@ textarea
 
 .btn-primary
 	background link_blue
+	padding 12px 22px
 	text-shadow none
 	box-shadow none
 	&:hover, &:active, &:active:focus, &:focus
@@ -388,6 +385,7 @@ textarea
 .btn-success
 	background rc_bright_green
 	text-shadow none
+	padding 12px 22px
 	box-shadow none
 	&:hover, &:active, &:active:focus, &:focus
 		color white
@@ -524,10 +522,10 @@ input[type="text"]:focus,
 
 		
 .modal-blur
-	-webkit-filter blur(3px)
+	filter blur(3px)
 .modal-unblur
-	-webkit-filter blur(0px)
-	-webkit-transition -webkit-filter 0.2s ease-out
+	filter blur(0px)
+	transition filter 0.2s ease-out
 	
 
 .fade-fast-enter

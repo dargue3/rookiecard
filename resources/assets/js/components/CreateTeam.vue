@@ -52,17 +52,10 @@
 							<label>Sport</label>
 							<select data-style="btn-select btn-lg" CreateTeam="sport" class="selectpicker form-control show-tick"
 											 required v-model="sport">
-	              <option value="0">Basketball</option>    
-	              <option value="1" disabled>Baseball</option>    
-	              <option value="2" disabled>Softball</option>    
-	              <option value="3" disabled>Football</option>    
-	              <option value="4" disabled>Soccer</option>    
-	              <option value="5" disabled>Ultimate</option>    
-	              <option value="6" disabled>Lacrosse</option>    
-	              <option value="7" disabled>Rugby</option>    
-	              <option value="8" disabled>Field Hockey</option>    
-	              <option value="9" disabled>Ice Hockey</option>    
-	              <option value="10" disabled>Volleyball</option>    
+	              <option value="basketball">Basketball</option>    
+	              <option value="baseball" disabled>Baseball</option>    
+	              <option value="softball" disabled>Softball</option>    
+	              <option value="football" disabled>Football</option>    
             	</select>
             	<span v-show="errors.sport" class="form-error">{{ errors.sport }}</span>
 							<span v-else class="input-info">More coming soon!</span>
@@ -207,9 +200,9 @@
 							<label>I am a..</label>
 							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
 											required v-model="userIsA">
-								<option value="0">Player</option>
-								<option value="2">Coach</option>
-								<option value="4">Fan</option>
+								<option value="player">Player</option>
+								<option value="coach">Coach</option>
+								<option value="fan">Fan</option>
 							</select>
 						</div>
 						<hr class="CreateTeam__separator">
@@ -374,7 +367,7 @@ export default  {
 				lat: 42.9375932
 			},
 			sport: '0',
-			userIsA: '4',
+			userIsA: 'fan',
 			numPlayers: 2,
 			numCoaches: 1,
 			players: players,
@@ -691,10 +684,10 @@ export default  {
 			var email = this.$root.user.mail;
 
 			//they're a player, add their details to the top of the players array
-			if(val === '0') {
+			if(val === 'player') {
 				//add a player, remove a coach if that's what they were before
 				this.numPlayers++;
-				if(old === '2') this.numCoaches--;
+				if(old === 'coach') this.numCoaches--;
 
 				this.players = this.players.filter(function(player) {
 					return player.name !== name;
@@ -709,10 +702,10 @@ export default  {
 			}
 
 			//they're a coach, add their details to the top of the coaches array
-			else if(val === '2') {
+			else if(val === 'coach') {
 				//add a coach, remove a player if that's what they were before
 				this.numCoaches++;
-				if(old === '0') this.numPlayers--;
+				if(old === 'player') this.numPlayers--;
 
 				this.players = this.players.filter(function(player) {
 					return player.name !== name;
@@ -727,9 +720,9 @@ export default  {
 			}
 
 			//they're a fan, remove their details from coaches and players arrays
-			else if(val === '4') {
-				if(old === '0') this.numPlayers--;
-				if(old === '2') this.numCoaches--;
+			else if(val === 'fan') {
+				if(old === 'player') this.numPlayers--;
+				if(old === 'coach') this.numCoaches--;
 
 				this.players = this.players.filter(function(player) {
 					return player.name !== name;

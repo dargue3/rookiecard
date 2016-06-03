@@ -376,7 +376,7 @@ nav.navbar
 
 nav.navbar.navbar-default
 	border 0
-	height 52px 
+	height 53px 
 				
 //holy navbar styling batman
 ul.nav.navbar-nav.navbar-right
@@ -400,7 +400,7 @@ ul.nav.navbar-nav.navbar-right
 				&:hover
 					color white		
 		.dropdown-menu
-			top 51px
+			top 52px
 			li
 				:first-of-type
 					padding-top 5px

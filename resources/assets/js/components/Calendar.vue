@@ -1,45 +1,48 @@
 
 <template>
+  <div class="calendar-wrapper">
+    <div class="filler"></div>
 
-	<div class="Calendar">
+  	<div class="Calendar">
 
-    <div id="calendarNav" class="row">
-      <div class="col-xs-12 col-sm-6 Calendar__nav no-highlight ">
-        <table id="calNav">
-          <tr>
-            <td id="chevLeft" @click="chevClick('Left')" data-cal-nav="prev">
-              <a><i class="material-icons chevron">chevron_left</i></a>
-            </td>
-            <td id="calNavHeaderTable">
-              <!-- h3 tag dynamically set by calendar.js -->
-              <h3 class="Calendar__header"></h3>
-            </td>
-            <td id="chevRight" @click="chevClick('Right')" data-cal-nav="next">
-              <a><i class="material-icons chevron">chevron_right</i></a>
-            </td>
-          </tr>
-        </table>
-      </div>
-      <div class="col-xs-12 col-sm-6 Calendar__nav">
-        <table id="addEventContainer">
-          <tr>
-            <td id='addEventIconDiv'>
-              <a v-show="admin" id='addEventTrigger' @click="$root.showModal('addEventModal')">
-                <i id="addEventIcon" class="glyphicon glyphicon-plus"></i>
-                <span id="addEventText">Add an Event</span>
-              </a>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div class="row">
-        <div class="col-xs-12 Calendar__container">
-            <div class="calendar"></div>
+      <div id="calendarNav" class="row">
+        <div class="col-xs-12 col-sm-6 Calendar__nav no-highlight ">
+          <table id="calNav">
+            <tr>
+              <td id="chevLeft" @click="chevClick('Left')" data-cal-nav="prev">
+                <a><i class="material-icons chevron">chevron_left</i></a>
+              </td>
+              <td id="calNavHeaderTable">
+                <!-- h3 tag dynamically set by calendar.js -->
+                <h3 class="Calendar__header"></h3>
+              </td>
+              <td id="chevRight" @click="chevClick('Right')" data-cal-nav="next">
+                <a><i class="material-icons chevron">chevron_right</i></a>
+              </td>
+            </tr>
+          </table>
         </div>
-    </div>
+        <div class="col-xs-12 col-sm-6 Calendar__nav">
+          <table id="addEventContainer">
+            <tr>
+              <td id='addEventIconDiv'>
+                <a v-show="admin" id='addEventTrigger' @click="$root.showModal('addEventModal')">
+                  <i id="addEventIcon" class="glyphicon glyphicon-plus"></i>
+                  <span id="addEventText">Add an Event</span>
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="row">
+          <div class="col-xs-12 Calendar__container">
+              <div class="calendar"></div>
+          </div>
+      </div>
 
-	</div>
+  	</div>
+  </div> 
 	
 </template>
 
@@ -218,10 +221,15 @@ export default  {
 
 <style lang="stylus">
 
+.calendar-wrapper
+  display flex 
+  flex-flow row
+  .filler
+    flex 1
+
 .Calendar
+  flex 3
   padding-bottom 3em
-  max-width 775px
-  margin 0 auto
 
 .Calendar__nav
   margin-top 15px
@@ -236,6 +244,7 @@ export default  {
 
 .Calendar__container
   margin-top 45px
+  max-width 775px
   background whitesmoke
   .calendar
     background lighten(whitesmoke, 40%)

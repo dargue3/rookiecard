@@ -19,6 +19,8 @@ class UpdateRcTeams extends Migration
             $table->tinyInteger('gender');
             $table->float('long');
             $table->float('lat');
+            $table->string('pic');
+            $table->string('backdrop');
             $table->integer('creator_id')->unsigned();
         });
     }
