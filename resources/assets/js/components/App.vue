@@ -193,10 +193,11 @@ export default  {
 
 	},
 
-	computed: {
-		
+	computed:
+	{
 		//the total notifications this user has
-		totalCount() {
+		totalCount()
+		{
 			var totalCount = 0;
 			this.teams.forEach(function(team) {
 				totalCount = totalCount + team.notifications;
@@ -209,14 +210,16 @@ export default  {
 		},
 
 		//which teams they are a member of
-		memberOf() {
+		memberOf()
+		{
 			return this.teams.filter(function(team) {
 				return team.role <= 2;
 			});
 		},
 
 		//which teams they are a fan of
-		fanOf() {
+		fanOf()
+		{
 			return this.teams.filter(function(team) {
 				return team.role === 4 || (team.role >= 45 && team.role <= 47);
 			});
@@ -224,20 +227,20 @@ export default  {
 
 		//which teams an admin has invited them to join
 		//5 = invited to be a player, 6 = a coach
-		invitedTo() {
+		invitedTo()
+		{
 			return this.teams.filter(function(team) {
 				return team.role === 5 || team.role === 6 || team.role === 45 || team.role === 46;
 			});
 		}
 	},
 
-	methods: {
-
-
+	methods:
+	{
 		//show popup message (for more attention)
 		//uses sweetalert.js
-		popup(type, title, msg) {
-
+		popup(type, title, msg)
+		{
 			switch(type) {
 				case 'good':
 					swal(title, msg, "success");
@@ -254,8 +257,8 @@ export default  {
 		},
 
 		//show banner message, triggers Alert.vue
-		banner(type, msg) {
-
+		banner(type, msg)
+		{
 			//always hide any existing alerts
 			this.showAlert = false;
 
@@ -269,8 +272,8 @@ export default  {
 
 
 		//the default msg when erroring during ajax requests
-		errorMsg(msg = null) {
-
+		errorMsg(msg = null)
+		{
 			if(typeof msg === 'string')
 				this.banner('bad', msg);
 			else
@@ -278,13 +281,15 @@ export default  {
 		},
 
 
-		showModal(id) {
+		showModal(id)
+		{
 			$('.for-blurring').removeClass('modal-unblur').addClass('modal-blur');
       $('nav.navbar').removeClass('modal-unblur').addClass('modal-blur');
       $('#' + id).modal('show');
 		},
 
-		validateEmail(email) {
+		validateEmail(email)
+		{
 			var expression = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i;
 			if(!email.match(expression))
 				return false;
@@ -293,7 +298,8 @@ export default  {
 		},
 
 
-		validateJerseyNum(num) {
+		validateJerseyNum(num)
+		{
 			if(!num.length) 
 				return true;
 
@@ -310,11 +316,10 @@ export default  {
 				return true;
 		},
 
-
-
 	}, //end methods
 
-	ready() {
+	ready()
+	{
 		
 		/*
 		//job offer
@@ -341,7 +346,6 @@ export default  {
 		});
 
 	}
-
 };
 
 

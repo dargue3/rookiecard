@@ -26,56 +26,51 @@ Route::post ('/resetPass',   'Auth\PasswordController@postEmail');
 Route::get  ('/newPass',     'Auth\PasswordController@getReset');
 Route::post ('/newPass',     'Auth\PasswordController@postReset');
 
+//all of the URIs in this group are API end points prefixed with /api/v1/
+Route::group(['prefix' => '/api/v1'], function() {
 
-Route::post ('/api/v1/team/create', 								'TeamController@createTeam');
-Route::post ('/api/v1/team/create/{teamname}', 			'TeamController@checkAvailability');
-Route::post ('/api/v1/team/update/{teamname}/pic', 	'TeamController@uploadPic');
-
-
-
-//api routes for ajax requests
-Route::resource('/api/v1/team/{teamname}/stats', 			'StatController');
-Route::get  	 ('/api/v1/team/{teamname}/data', 			'TeamController@getTeamData');
-Route::post  	 ('/api/v1/team/{teamname}/feed', 			'TeamController@postNewPost');
-Route::delete  ('/api/v1/team/{teamname}/feed', 			'TeamController@deletePost');
-Route::post  	 ('/api/v1/team/{teamname}/fan', 				'TeamController@toggleFan');
-Route::put  	 ('/api/v1/team/{teamname}/user', 			'TeamController@updateMember');
-Route::post  	 ('/api/v1/team/{teamname}/user', 			'TeamController@newMember');
-Route::delete  ('/api/v1/team/{teamname}/user', 			'TeamController@deleteMember');
-Route::get  	 ('/api/v1/team/{teamname}/events', 		'TeamController@getEvents');
-Route::post 	 ('/api/v1/team/{teamname}/events', 		'TeamController@newEvent');
-Route::put  	 ('/api/v1/team/{teamname}/events', 		'TeamController@updateEvent');
-Route::delete  ('/api/v1/team/{teamname}/events', 		'TeamController@deleteEvent');
-Route::post  	 ('/api/v1/team/{teamname}/join', 			'TeamController@joinTeam');
+	Route::post ('team/create', 							'TeamController@createTeam');
+	Route::post ('team/create/{teamname}', 		'TeamController@checkAvailability');
+	Route::post ('team/update/{teamname}/pic','TeamController@uploadPic');
 
 
+	Route::resource ('team/{teamname}/stats', 'StatController');
+
+	Route::get  	('team/{teamname}/data', 		'TeamController@getTeamData');
+	Route::post  	('team/{teamname}/feed', 		'TeamController@postNewPost');
+	Route::delete ('team/{teamname}/feed', 		'TeamController@deletePost');
+	Route::post  	('team/{teamname}/fan', 		'TeamController@toggleFan');
+	Route::put  	('team/{teamname}/user', 		'TeamController@updateMember');
+	Route::post  	('team/{teamname}/user', 		'TeamController@newMember');
+	Route::delete ('team/{teamname}/user', 		'TeamController@deleteMember');
+	Route::get  	('team/{teamname}/events', 	'TeamController@getEvents');
+	Route::post 	('team/{teamname}/events', 	'TeamController@newEvent');
+	Route::put  	('team/{teamname}/events', 	'TeamController@updateEvent');
+	Route::delete ('team/{teamname}/events', 	'TeamController@deleteEvent');
+	Route::post  	('team/{teamname}/join', 		'TeamController@joinTeam');
 
 
-Route::get  ('/api/v1/user/auth/data', 'UserController@getUserData');
-Route::post ('/api/v1/user/auth/team/{id}', 'UserController@clearNotifications');
+	Route::get ('user/auth/data', 		 'UserController@getUserData');
+	Route::post('user/auth/team/{id}', 'UserController@clearNotifications');
 
-
-Route::post('/api/v1/settings', function () {
-    // Save the user's timezone
-    if (Request::has('timezone')) {
-        Session::put('timezone', Request::get('timezone'));
-    }
-    // Save the user's locale
-    if (Request::has('locale')) {
-        Session::put('locale', Request::get('locale'));
-    }
+	Route::post('settings', function () {
+	    // Save the user's timezone
+	    if (Request::has('timezone')) {
+	        Session::put('timezone', Request::get('timezone'));
+	    }
+	    // Save the user's locale
+	    if (Request::has('locale')) {
+	        Session::put('locale', Request::get('locale'));
+	    }
+	});
+	Route::post  ('settings/stats/{sport}', 'StatController@addStatColumns');
+	Route::get  ('stats/{sport}', 'StatController@getStatColumns');
 });
-Route::post  ('/api/v1/settings/stats/{sport}', 'StatController@addStatColumns');
-Route::get  ('/api/v1/stats/{sport}', 'StatController@getStatColumns');
+
+
+//otherwise route to the javascript front-end and let vue-router handle it
+Route::any('/{any}', 'SiteController@home')->where('any', '.*');
 
 
 
 
-//routes for redirecting all other traffic to javascript app
-Route::any  ('/',       										'SiteController@home');
-Route::any  ('/{a}',       									'SiteController@home');
-Route::any  ('/{a}/{b}',       							'SiteController@home');
-Route::any  ('/{a}/{b}/{c}',       					'SiteController@home');
-Route::any  ('/{a}/{b}/{c}/{e}',       			'SiteController@home');
-Route::any  ('/{a}/{b}/{c}/{e}/{h}',				'SiteController@home');
-Route::any  ('/{a}/{b}/{c}/{e}/{h}/{m}', 		'SiteController@home');

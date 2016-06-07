@@ -332,11 +332,9 @@ class Team extends Model
 
 
     //toggle the fan status of logged in user 
-    public function toggleFan() {
-
+    public function toggleFan()
+    {
         $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
-        
-        //check the trashed members for this user and team, otherwise grab a new one
         $member = TeamMember::firstOrNew($attributes);
 
         return $member->toggleFan();
@@ -345,13 +343,10 @@ class Team extends Model
 
 
     //admin has edited the meta data associated with a team member
-    public function editMember(Request $request) {
-
-        //save the data 
+    public function editMember(Request $request)
+    {
         $user = $request->user;
-
         $member = TeamMember::findOrFail($user['member_id']);
-
         $member->editMember($user);
 
         return ['ok' => true, 'user' => $this->formatMemberData($member)];
@@ -360,8 +355,8 @@ class Team extends Model
 
 
     //admin has created a new team member
-    public function newMember(Request $request) {
-
+    public function newMember(Request $request)
+    {
         //gather data and create ghost, invite email to team
         $user = [];
         $user['email'] = $request->user['meta']['ghost']['email'];
@@ -381,8 +376,8 @@ class Team extends Model
 
     //admin has deleted a team member
     //depending on whether they are a ghost or a real user, take different actions
-    public function deleteMember(Request $request) {
-
+    public function deleteMember(Request $request)
+    {
         $user = $request->user;
         $member = TeamMember::findOrFail($user['member_id']);
 
@@ -399,11 +394,9 @@ class Team extends Model
 
 
     //logged in use is responding to their invitation to join this team
-    public function userHasRespondedToInvitation(Request $request) {
-
+    public function userHasRespondedToInvitation(Request $request)
+    {
         $attributes = ['user_id' => Auth::user()->id, 'team_id' => $this->id];
-        
-        //check the trashed members for this user and team, otherwise grab a new one
         $member = TeamMember::firstOrNew($attributes);
 
         //the user is accepting an invitation

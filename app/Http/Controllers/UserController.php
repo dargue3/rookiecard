@@ -17,72 +17,28 @@ use App\Fan;
 
 class UserController extends Controller
 {
-    
-    public function index()
-    {
-        //
-    }
-
-  
-    public function create()
-    {
-        //
-    }
-
- 
-    public function store(Request $request)
-    {
-        //
-    }
-
-
-    public function show($id)
-    {
-        //
-    }
-
-
-    public function edit($id)
-    {
-        //
-    }
-
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-
-    public function destroy($id)
-    {
-        //
-    }
-
 
     //for ajax requests from App.vue
     //returns logged in user data
-    public function getUserData() {
-
-        $auth = Auth::user();
+    public function getUserData()
+    {
+        $user = Auth::user();
 
         //User model by default hides emails
-        $auth->mail = Auth::user()->email;
-
-        $teams = $auth->teams();
+        $user->mail = Auth::user()->email;
+        $teams = $user->teams();
 
         return [
-            'auth'  => $auth,
+            'auth'  => $user,
             'teams' => $teams,
         ];
 
     }
 
     //for clearing notifications when a Team page is visited this user belongs to
-    public function clearNotifications($id) {
-
+    public function clearNotifications($id)
+    {
         Notification::where('user_id', Auth::user()->id)->where('creator_id', $id)->delete();
-
     }
 
 

@@ -14,10 +14,10 @@ class TeamMember extends Model
     use SoftDeletes;
 
     protected $table = 'rc_team_members';
-
     protected $guarded = [];
-
     protected $dates = ['deleted_at'];
+
+    private $roleArray = [];
 
 
     public function scopeMember($query, $user_id, $team_id)
@@ -32,27 +32,126 @@ class TeamMember extends Model
     }
 
 
-    //turn role into a value object
-    public function getRoleAttribute($role)
+    public function roles()
     {
-        return new TeamRole($role);
+        return $this->belongsToMany('App\TeamRole', 'rc_member_role', 'member_id', 'role_id')->withTimestamps();
+    }
+
+
+    //fetch all of the member's roles and save in an array for later
+    private function fetchRoles()
+    {
+        $this->roleArray = [];
+
+        foreach($this->roles()->get() as $role) {
+            $this->roleArray[] = $role->name;
+        }
+
+        return $this;
+    }
+
+
+    //check if a member has a particular role
+    private function hasRole($role)
+    {
+        if (! $this->roleArray) {
+            $this->fetchRoles();
+        }
+
+        return in_array($role, $this->roleArray);
+    }
+
+    public function isMember()
+    {
+        return $this->isPlayer() or $this->isCoach();
+    }
+
+
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+
+    public function isPlayer()
+    {
+        return $this->hasRole('player') or $this->hasRole('ghost_player');
+    }
+
+
+    public function isCoach()
+    {
+        return $this->hasRole('coach') or $this->hasRole('ghost_coach');
+    }
+
+
+    public function isFan()
+    {
+        return $this->hasRole('fan');
+    }
+
+
+    public function hasBeenInvited()
+    {
+        return $this->hasRole('invited_player') or $this->hasRole('invited_coach');
+    }
+
+
+    public function hasRequestedToJoin()
+    {
+        return $this->hasRole('requested_to_join');
     }
 
 
     //switch the fan status of a user
     public function toggleFan()
     {
-        $newRole = $this->role->toggleFan();
-        if ($newRole)
-        {
-            $this->role = $newRole;
+        if (! $this->exists) {
             $this->save();
-            return ['ok' => true];
+            return $this->makeFan();
+        }
+        else if ($this->isMember()) {
+            throw Exception('User is already a member.');
+        }
+        else if (! $this->isFan()) {
+            return $this->makeFan();
         }
        
-        //they don't have a role anymore, delete this member entry
-        $this->delete();
-        return ['ok' => true];   
+        return $this->removeFan();
+    }
+
+
+    //make this member a fan of this team
+    private function makeFan()
+    {
+        //attach new role in pivot table
+        $role_id = TeamRole::where('role', 'fan')->first()->id;
+        $this->roles()->attach($role_id);
+
+        return $this->fetchRoles();
+    }
+
+
+    //this member isn't a fan of this team anymore
+    private function removeFan()
+    {
+        //delete this role in the pivot table
+        $role_id = TeamRole::where('role', 'fan')->first()->id;
+        $this->roles()->detach($role_id);
+
+        return $this->fetchRoles()->checkDelete();
+    }
+
+
+    //if a member doesn't have any roles, delete this instance of TeamMember
+    private function checkDelete()
+    {
+        if (! $this->roleArray) {
+            $this->delete();
+            return null;
+        }
+
+        return $this;
     }
 
 
@@ -66,8 +165,7 @@ class TeamMember extends Model
         $this->createGhostUser($ghost);
 
         //if an email was included, invite this user to the team
-        if ($ghost['email'])
-        {
+        if ($ghost['email']) {
             $this->invite($ghost['email']);
         }
   
@@ -91,58 +189,34 @@ class TeamMember extends Model
     //invite this email to the team
     //if not a RC user, invite them to join the site
     //assumes role and team_id are set
-    public function invite($email) {
-
-        if($this->role == 1 || $this->role == 5) $role = 5; //invited player
-        if($this->role == 3 || $this->role == 6) $role = 6; //invited coach
+    public function invite($email)
+    {
+        if ($this->role->isPlayer()) $role = TeamRole::INVITED_PLAYER;
+        if ($this->role->isCoach())  $role = TeamRole::INVITED_COACH;
 
         //check if that email is already tied to an account
         $existingUser = User::where('email', $email)->first();
 
-        if($existingUser) {
-
+        if ($existingUser) {
             $attributes = ['user_id' => $existingUser->id, 'team_id' => $this->team_id];
             $member = TeamMember::firstOrNew($attributes);
 
-            if(!$member->exists) {
+            if (!$member->exists) {
                 $member->role = $role;
-                $member->save();
             }
 
-            else if($member->isMember()) {
-                //they're already a member, that shouldn't happen...
-                return;
-            }
-
-            else if($member->hasRequestedToJoin()) {
-                //they wanted to join already anyways, accept invitation
-                if($member->isFan()) {
-                    $member->role = 40 + $role;
-                }
-                else {
-                    $member->role = $role;
-                }
-
-                $member->save();
-                $member->acceptInvitation($email);
-                return;
-            }
-
-            else if($member->isFan()) {
-                //if they're a fan, update role to fan + invited
-                $member->role = 40 + $role;
-                $member->save();
-            }
+            $member->role = $member->role->invite($role);
+            $member->save();
 
             //create a notification telling them to check this team out
             (new Notification)->teamInvite($this->team_id, $existingUser->id);
+
+            return;
         }
 
-        else {
-            //user isn't in our database yet, send email inviting them to RC
-            $attributes = ['email' => $email, 'team_id' => $this->team_id];
-            TeamInvite::firstOrNew($attributes)->inviteToRookiecard($role);
-        }
+        //user isn't in our database yet, send email inviting them to RC
+        $attributes = ['email' => $email, 'team_id' => $this->team_id];
+        TeamInvite::firstOrNew($attributes)->inviteToRookiecard($role);
 
         return;
     }
@@ -153,8 +227,8 @@ class TeamMember extends Model
 
 
     //logged in user has requested to join a team or cancelled their request
-    public function requestToJoin() {
-
+    public function requestToJoin()
+    {
         if(!$this->exists) {
             //this is a new member entry
             $this->role = 7;
