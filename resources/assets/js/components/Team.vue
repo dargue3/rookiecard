@@ -47,15 +47,15 @@
 									<div class="Team__join_buttons">
 										<!-- buttons for joining team, accepting invitation -->
 										<div class="Team__invite">
-											<a v-show="showRequestToJoin" 
+											<a  
 													class="btn btn-primary" @click="requestToJoin('join')">REQUEST TO JOIN</a>
 
-											<a v-show="showCancelRequest" 
+											<a v-show="false" 
 													class="btn btn-delete" @click="requestToJoin('cancel')">CANCEL REQUEST</a>
 
-											<a v-show="showRespondToInvitation" class="btn btn-success" @click="respondToInv()">RESPOND TO INVITATION</a>
+											<a v-show="false" class="btn btn-success" @click="respondToInv()">RESPOND TO INVITATION</a>
 
-											<a v-show="showYoureAMember" class="btn btn-success --member">YOU'RE A MEMBER</a>
+											<a v-show="false" class="btn btn-success --member">YOU'RE A MEMBER</a>
 										</div>
 									</div>
 									<div class="num-fans">
@@ -67,13 +67,13 @@
 										<div class="arrow-right --white"></div>
 									</div>
 
-									<div v-show="showRemoveFan" class="fan-icon" @click="toggleFan">
+									<div class="fan-icon" @click="toggleFan">
 										<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
 									</div>
-									<div v-show="showBecomeFan" class="fan-icon" @click="toggleFan">
+									<div class="fan-icon" @click="toggleFan">
 										<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
 									</div>
-									<div v-show="showIsFan" class="fan-icon --member">
+									<div v-show="false" class="fan-icon --member">
 										<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
 									</div>
 								</div> <!-- end  Team__fans -->

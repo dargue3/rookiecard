@@ -10,6 +10,10 @@ class TeamRole extends Model
 
     public $timestamps = false;
 
-
+    // fetches the id of a role or fails
+    public function ScopeId($query, $role)
+    {
+    	return $query->where('name', $role)->firstOrFail()->id;
+    }
 
 }

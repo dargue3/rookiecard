@@ -39,7 +39,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        if ($request->ajax() || $request->wantsJson()) {
+        // when an API Exception, 
+        if ($e instanceof ApiException) {
             $json = [
                 'ok' => false,
                 'error' => $e->getMessage(),
