@@ -2,14 +2,28 @@
 
 namespace App;
 
+use App\Rookiecard\Team\Roles\ManagesTeamRoles;
+use App\Rookiecard\Team\Roles\RoleInterface;
+use App\Rookiecard\Team\Roles\GhostInterface;
+use App\Rookiecard\Team\Roles\MemberInterface;
+use App\Rookiecard\Team\Roles\Player;
+use App\Rookiecard\Team\Roles\GhostPlayer;
+use App\Rookiecard\Team\Roles\Coach;
+use App\Rookiecard\Team\Roles\GhostCoach;
+use App\Rookiecard\Team\Roles\Fan;
+use App\Rookiecard\Team\Roles\InvitedPlayer;
+use App\Rookiecard\Team\Roles\InvitedCoach;
+use App\Rookiecard\Team\Roles\RequestedToJoin;
+
+use App\Stat;
+use App\TeamInvite;
+use App\TeamRole;
+use App\Exception\ApiException;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-
-use App\TeamInvite;
-use App\Stat;
-use App\TeamRole;
-use App\Rookiecard\Team\ManagesTeamRoles;
+use Faker\Factory;
 
 class TeamMember extends Model
 {
@@ -21,90 +35,94 @@ class TeamMember extends Model
     protected $dates = ['deleted_at'];
 
 
+    /**
+     * Build query to find all of the members of this team
+     * 
+     * @param  Illuminate\Database\Query\Builder
+     * @param  integer
+     * @param  integer
+     * @return Illuminate\Database\Query\Builder
+     */
     public function scopeMember($query, $user_id, $team_id)
     {
         return $query->where('user_id', $user_id)->where('team_id', $team_id);
     }
 
-
+    /**
+     * Build query to find all of the ghosts on this team
+     * 
+     * @param  Illuminate\Database\Query\Builder
+     * @param  integer
+     * @return Illuminate\Database\Query\Builder
+     */
     public function scopeGhosts($query, $team_id)
     {
         return $query->where('user_id', 0)->where('team_id', $team_id);
     }
 
-
+    /**
+     * Returns this member's roles
+     * 
+     * @return Illuminate\Support\Collection
+     */
     public function roles()
     {
         return $this->belongsToMany('App\TeamRole', 'rc_member_role', 'member_id', 'role_id')->withTimestamps();
     }
 
 
-    // switch the fan status of a user
-    public function toggleFan()
+    /**
+     * Instantiate a new (ghost) player on this team
+     * 
+     * @param string
+     * @return App\TeamMember
+     */
+    public function addNewPlayer($name = '')
     {
-        if (! $this->exists) {
-            $this->roles()->attach(TeamRole::id('fan'));
-            $this->save();
-        }
-        else if ($this->isMember()) {
-            throw ApiException('User is already a member.');
-        }
-        else if (! $this->isFan()) {
-            $this->roles()->attach(TeamRole::id('fan'));
-        }
-        else {
-            $this->roles()->detach(TeamRole::id('fan'));
-        }
-
-        $this->fetchRoles()->deleteIfNecessary();
+        return $this->addGhost(new GhostPlayer, $name);
     }
 
 
-    // create a new player on this team
-    public static function addPlayer($team_id, $name = 'Ghosty McGhostFace', $email = '')
+    /**
+     * Instantiate a new (ghost) coach on this team
+     * 
+     * @param string
+     * @return App\TeamMember
+     */
+    public function addNewCoach($name = '')
     {
-        // instantiate a ghost version of this player
-        $player = (new static(['team_id' => $team_id, 'user_id' => 0]))->makeThemAPlayer();
-        $player->meta = json_encode($player->defaultGhostMetaData($name, $email));
-
-        // if an email was included, invite this person to the team
-        if ($email) {
-            $player->invite($email);
-        }
-
-        $player->save();
-  
-        return $player;
+        return $this->addGhost(new GhostCoach, $name);
     }
 
 
 
-    // create a new coach on this team
-    public static function addCoach($team_id, $name = 'Coach Ghost', $email = '')
+    /**
+     * Setup and instantiate a new ghost member on this team
+     * 
+     * @param App\Rookiecard\Team\Roles\GhostInterface
+     * @param string
+     * @return App\TeamMember
+     */
+    private function addGhost(GhostInterface $role, $name)
     {
-        // instantiate a ghost version of this coach
-        $coach = new static(['team_id' => $team_id, 'user_id' => 0]);
-        $coach->meta = json_encode($coach->defaultGhostMetaData($name, $email));
+        // if no name included, make one up
+        $name = $name ?: Factory::create()->name;
+        $this->user_id = 0;
+        $this->meta = json_encode($role->getDefaultMetaData($name));
+        $this->save();
 
-        // if an email was included, invite this person to the team
-        if ($email) {
-            $coach->invite($email);
-        }
+        $this->setRole($role);
 
-        $coach->save();
-  
-        return $coach;
+        return $this;
     }
 
 
 
-    // invite this email to the team
-    // if not a RC user, invite them to join the site
-    // assumes role and team_id are set
+
+
+
     public function invite($email)
     {
-        if ($this->role->isPlayer()) $role = TeamRole::INVITED_PLAYER;
-        if ($this->role->isCoach())  $role = TeamRole::INVITED_COACH;
 
         // check if that email is already tied to an account
         $existingUser = User::where('email', $email)->first();
@@ -284,28 +302,6 @@ class TeamMember extends Model
         }
 
         return ['ok' => true];
-    }
-
-
-    // return the default meta data for a new player on a team
-    public static function getDefaultPlayerMetaData()
-    {
-        return ['positions' => [], 'num' => ''];
-    }
-
-
-
-    // return the default meta data for a new ghost on a team
-    public static function defaultGhostMetaData($name, $email)
-    {
-        return [
-            'ghost' => [
-                'name'  => $name,
-                'email' => $email,
-            ],
-            'positions' => [],
-            'num'       => '',
-        ];
     }
 
 

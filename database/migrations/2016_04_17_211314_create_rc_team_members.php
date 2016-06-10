@@ -18,7 +18,6 @@ class CreateRcTeamMembers extends Migration
             $table->index('user_id');
             $table->integer('team_id')->unsigned();
             $table->index('team_id');
-            $table->tinyInteger('admin')->default(0);
             $table->text('meta')->nullable();
             $table->timestamps();
             $table->softDeletes();
