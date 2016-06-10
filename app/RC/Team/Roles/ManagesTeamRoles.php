@@ -2,6 +2,8 @@
 namespace App\RC\Team\Roles;
 
 use App\TeamRole;
+use App\Exceptions\ApiException;
+
 use App\RC\Team\Roles\RoleInterface;
 use App\RC\Team\Roles\Player;
 use App\RC\Team\Roles\Coach;
@@ -19,7 +21,7 @@ trait ManagesTeamRoles
      * 
      * @var array
      */
-	private $roleArray;
+	public $roleArray = null;
 	
 
     /**
@@ -29,11 +31,9 @@ trait ManagesTeamRoles
      */
     private function fetchRoles()
     {
-        $this->roleArray = [];
-
-        foreach($this->roles()->get() as $role) {
-            $this->roleArray[] = $role->name;
-        }
+        $this->roleArray = $this->roles()->get()->map(function($role) {
+            return $role->name;
+        })->all();
 
         return $this;
     }
@@ -42,12 +42,12 @@ trait ManagesTeamRoles
     /**
      * Checks if member has a given role
      * 
-     * @param  App\RC\Team\Roles\RoleInterface
+     * @param  App\RC\Team\Roles\RoleInterface $role
      * @return boolean
      */
-    private function hasRole(RoleInterface $role)
+    public function hasRole(RoleInterface $role)
     {
-        if (! $this->roleArray) {
+        if (! is_array($this->roleArray)) {
             $this->fetchRoles();
         }
 
@@ -59,19 +59,23 @@ trait ManagesTeamRoles
     /**
      * Attaches a given role to this member
      * 
-     * @param App\RC\Team\Roles\RoleInterface
-     * @param boolean
+     * @param App\RC\Team\Roles\RoleInterface $role
+     * @param boolean $detachOthers
      * @return App\TeamMember
      */
-    private function setRole(RoleInterface $role, $detachOthers = true)
-    {
+    public function addRole(RoleInterface $role, $detachOthers = false)
+    {   
+        if($this->hasRole($role)) {
+            throw new ApiException("User is already a " . $role->name());
+        }
+
         if ($detachOthers) {
-            $this->roles()->detach();
+            $this->removeAllRoles();
         }
 
         $this->roles()->attach($role->id());
 
-        $this->fetchRoles();
+        array_push($this->roleArray, $role->name());
 
         return $this;
     }
@@ -80,22 +84,54 @@ trait ManagesTeamRoles
     /**
      * Removes a given role from the member
      * 
-     * @param  App\RC\Team\Roles\RoleInterface
-     * @param  boolean
-     * @return App\TeamMember
+     * @param  RoleInterface $role
+     * @return TeamMember
      */
-    public function removeRole(RoleInterface $role, $delete = true)
+    public function removeRole(RoleInterface $role)
     {
         $this->roles()->detach($role->id());
 
-        $this->fetchRoles();
-
-        if ($delete) {
-            return $this->deleteIfNecessary();
-        }
+        unset($this->roleArray[$role->name()]);
 
         return $this;
     }
+
+
+    /**
+     * Attach or remove a role according to boolean input
+     * 
+     * @param RoleInterface $role   
+     * @param boolean        $status
+     * @return TeamMember
+     */
+    public function setRole(RoleInterface $role, $status)
+    {
+        if ($status) {
+            return $this->addRole($role);
+        }
+
+        return $this->removeRole($role);
+    }
+
+
+
+
+    /**
+     * Toggle whether the member has this role
+     * 
+     * @param RoleInterface $role   
+     * @param boolean        $status
+     * @return TeamMember
+     */
+    public function toggleRole(RoleInterface $role)
+    {
+        if ($this->hasRole($role)) {
+            return $this->removeRole($role);
+        }
+
+        return $this->setRole($role);
+    }
+
 
 
     /**
@@ -103,9 +139,11 @@ trait ManagesTeamRoles
      * 
      * @return  App\TeamMember
      */
-    private function removeAllRoles()
+    public function removeAllRoles()
     {
         $this->roles()->detach();
+
+        $this->roleArray = [];
 
         return $this;
     }
@@ -116,41 +154,16 @@ trait ManagesTeamRoles
      * 
      * @return mixed
      */
-    private function deleteIfNecessary()
+    public function deleteIfNecessary()
     {
-        if (! $this->roleArray) {
+        if (is_array($this->roleArray) and empty($this->roleArray)) {
             $this->delete();
+            return null;
         }
 
         return $this;
     }
 
-
-    /**
-     * Toggle the fan status of this user
-     * 
-     * @return App\TeamMember
-     */
-    public function toggleFan()
-    {
-        if (! $this->exists) {
-            $this->setRole(new Fan);
-            $this->save();
-            return $this;
-        }
-
-        // we don't want members also becoming fans
-        else if ($this->isMember()) {
-            throw ApiException('User is already a member.');
-        }
-
-        else if (! $this->isFan()) {
-            $this->setRole(new Fan);
-            return $this;
-        }
-
-        $this->removeRole(new Fan);        
-    }
 
 
     /**
@@ -171,7 +184,8 @@ trait ManagesTeamRoles
      */
     public function isGhost()
     {
-        return $this->hasRole(new GhostPlayer) or $this->hasRole(new GhostCoach);
+        return  $this->hasRole(new GhostPlayer) or 
+                $this->hasRole(new GhostCoach);
     }
 
 
@@ -191,7 +205,8 @@ trait ManagesTeamRoles
      */
     public function isPlayer()
     {
-        return $this->hasRole(new Player) or $this->hasRole(new GhostPlayer);
+        return  $this->hasRole(new Player) or
+                $this->hasRole(new GhostPlayer);
     }
 
 
@@ -201,7 +216,8 @@ trait ManagesTeamRoles
      */
     public function isCoach()
     {
-        return $this->hasRole(new Coach) or $this->hasRole(new GhostCoach);
+        return  $this->hasRole(new Coach) or
+                $this->hasRole(new GhostCoach);
     }
 
 
@@ -221,7 +237,8 @@ trait ManagesTeamRoles
      */
     public function hasBeenInvited()
     {
-        return $this->hasRole(new InvitedPlayer) or $this->hasRole(new InvitedCoach);
+        return  $this->hasRole(new InvitedPlayer) or
+                $this->hasRole(new InvitedCoach);
     }
 
 

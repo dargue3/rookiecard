@@ -18,7 +18,7 @@ use App\RC\Team\Roles\RequestedToJoin;
 use App\Stat;
 use App\TeamInvite;
 use App\TeamRole;
-use App\Exception\ApiException;
+use App\Exceptions\ApiException;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -38,10 +38,10 @@ class TeamMember extends Model
     /**
      * Build query to find all of the members of this team
      * 
-     * @param  Illuminate\Database\Query\Builder
+     * @param  Builder
      * @param  integer
      * @param  integer
-     * @return Illuminate\Database\Query\Builder
+     * @return Builder
      */
     public function scopeMember($query, $user_id, $team_id)
     {
@@ -51,19 +51,20 @@ class TeamMember extends Model
     /**
      * Build query to find all of the ghosts on this team
      * 
-     * @param  Illuminate\Database\Query\Builder
+     * @param  Builder
      * @param  integer
-     * @return Illuminate\Database\Query\Builder
+     * @return Builder
      */
     public function scopeGhosts($query, $team_id)
     {
+        dd($query);
         return $query->where('user_id', 0)->where('team_id', $team_id);
     }
 
     /**
      * Returns this member's roles
      * 
-     * @return Illuminate\Support\Collection
+     * @return Collection
      */
     public function roles()
     {
@@ -74,8 +75,8 @@ class TeamMember extends Model
     /**
      * Instantiate a new (ghost) player on this team
      * 
-     * @param string
-     * @return App\TeamMember
+     * @param string $name
+     * @return TeamMember
      */
     public function addNewPlayer($name = '')
     {
@@ -86,8 +87,8 @@ class TeamMember extends Model
     /**
      * Instantiate a new (ghost) coach on this team
      * 
-     * @param string
-     * @return App\TeamMember
+     * @param string $name
+     * @return TeamMember
      */
     public function addNewCoach($name = '')
     {
@@ -99,9 +100,9 @@ class TeamMember extends Model
     /**
      * Setup and instantiate a new ghost member on this team
      * 
-     * @param App\RC\Team\Roles\GhostInterface
-     * @param string
-     * @return App\TeamMember
+     * @param GhostInterface $role
+     * @param string $name
+     * @return TeamMember
      */
     private function addGhost(GhostInterface $role, $name)
     {
@@ -111,7 +112,7 @@ class TeamMember extends Model
         $this->meta = json_encode($role->getDefaultMetaData($name));
         $this->save();
 
-        $this->setRole($role);
+        $this->addRole($role);
 
         return $this;
     }
@@ -303,6 +304,29 @@ class TeamMember extends Model
 
         return ['ok' => true];
     }
+
+
+    /**
+     * Toggle the fan status of this user
+     * 
+     * @return App\TeamMember
+     */
+    public function toggleFan()
+    {
+        if (! $this->exists) {
+            $this->save();
+            return $this->addRole(new Fan);
+        }
+
+        // don't want members also becoming fans
+        else if ($this->isMember()) {
+            throw new ApiException('You are already a member.');
+        }
+
+        return $this->toggleRole(new Fan); 
+    }
+
+
 
 
     // find the ghost associated with an email on this team
