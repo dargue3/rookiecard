@@ -1,17 +1,17 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
-use App\Rookiecard\Team\Roles\RoleInterface;
-use App\Rookiecard\Team\Roles\MemberInterface;
+use App\RC\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\GhostInterface;
 
-class Player implements RoleInterface, MemberInterface
+class GhostPlayer implements RoleInterface, GhostInterface
 {
 	/**
 	 * The ID of this role, stored this way in rc_team_roles table
 	 * 
 	 * @var integer
 	 */
-	private $id = 2;
+	private $id = 3;
 
 
 	/**
@@ -19,7 +19,7 @@ class Player implements RoleInterface, MemberInterface
 	 * 
 	 * @var string
 	 */
-	private $name = 'player';
+	private $name = 'ghost_player';
 
 
 	/**
@@ -49,11 +49,16 @@ class Player implements RoleInterface, MemberInterface
 	/**
 	 * Returns the default meta data associated with this role
 	 * 
+	 * @param  string
 	 * @return array
 	 */
-	public function getDefaultMetaData()
+	public function getDefaultMetaData($name)
 	{
 		return [
+            'ghost' => [
+                'name'  => $name,
+                'email' => '',
+            ],
             'positions' => [],
             'num'       => '',
         ];

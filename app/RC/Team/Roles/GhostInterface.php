@@ -1,5 +1,5 @@
 <?php 
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
 interface GhostInterface
 {

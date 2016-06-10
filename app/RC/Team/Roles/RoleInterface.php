@@ -1,7 +1,5 @@
 <?php 
-namespace App\Rookiecard\Team\Roles;
-
-use App\TeamMember;
+namespace App\RC\Team\Roles;
 
 interface RoleInterface
 {

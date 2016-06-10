@@ -2,18 +2,18 @@
 
 namespace App;
 
-use App\Rookiecard\Team\Roles\ManagesTeamRoles;
-use App\Rookiecard\Team\Roles\RoleInterface;
-use App\Rookiecard\Team\Roles\GhostInterface;
-use App\Rookiecard\Team\Roles\MemberInterface;
-use App\Rookiecard\Team\Roles\Player;
-use App\Rookiecard\Team\Roles\GhostPlayer;
-use App\Rookiecard\Team\Roles\Coach;
-use App\Rookiecard\Team\Roles\GhostCoach;
-use App\Rookiecard\Team\Roles\Fan;
-use App\Rookiecard\Team\Roles\InvitedPlayer;
-use App\Rookiecard\Team\Roles\InvitedCoach;
-use App\Rookiecard\Team\Roles\RequestedToJoin;
+use App\RC\Team\Roles\ManagesTeamRoles;
+use App\RC\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\GhostInterface;
+use App\RC\Team\Roles\MemberInterface;
+use App\RC\Team\Roles\Player;
+use App\RC\Team\Roles\GhostPlayer;
+use App\RC\Team\Roles\Coach;
+use App\RC\Team\Roles\GhostCoach;
+use App\RC\Team\Roles\Fan;
+use App\RC\Team\Roles\InvitedPlayer;
+use App\RC\Team\Roles\InvitedCoach;
+use App\RC\Team\Roles\RequestedToJoin;
 
 use App\Stat;
 use App\TeamInvite;
@@ -99,7 +99,7 @@ class TeamMember extends Model
     /**
      * Setup and instantiate a new ghost member on this team
      * 
-     * @param App\Rookiecard\Team\Roles\GhostInterface
+     * @param App\RC\Team\Roles\GhostInterface
      * @param string
      * @return App\TeamMember
      */

@@ -1,16 +1,16 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
 use App\TeamRole;
-use App\Rookiecard\Team\Roles\RoleInterface;
-use App\Rookiecard\Team\Roles\Player;
-use App\Rookiecard\Team\Roles\Coach;
-use App\Rookiecard\Team\Roles\GhostPlayer;
-use App\Rookiecard\Team\Roles\GhostCoach;
-use App\Rookiecard\Team\Roles\Fan;
-use App\Rookiecard\Team\Roles\InvitedPlayer;
-use App\Rookiecard\Team\Roles\InvitedCoach;
-use App\Rookiecard\Team\Roles\RequestedToJoin;
+use App\RC\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\Player;
+use App\RC\Team\Roles\Coach;
+use App\RC\Team\Roles\GhostPlayer;
+use App\RC\Team\Roles\GhostCoach;
+use App\RC\Team\Roles\Fan;
+use App\RC\Team\Roles\InvitedPlayer;
+use App\RC\Team\Roles\InvitedCoach;
+use App\RC\Team\Roles\RequestedToJoin;
 
 trait ManagesTeamRoles
 {
@@ -42,7 +42,7 @@ trait ManagesTeamRoles
     /**
      * Checks if member has a given role
      * 
-     * @param  App\Rookiecard\Team\Roles\RoleInterface
+     * @param  App\RC\Team\Roles\RoleInterface
      * @return boolean
      */
     private function hasRole(RoleInterface $role)
@@ -59,7 +59,7 @@ trait ManagesTeamRoles
     /**
      * Attaches a given role to this member
      * 
-     * @param App\Rookiecard\Team\Roles\RoleInterface
+     * @param App\RC\Team\Roles\RoleInterface
      * @param boolean
      * @return App\TeamMember
      */
@@ -80,7 +80,7 @@ trait ManagesTeamRoles
     /**
      * Removes a given role from the member
      * 
-     * @param  App\Rookiecard\Team\Roles\RoleInterface
+     * @param  App\RC\Team\Roles\RoleInterface
      * @param  boolean
      * @return App\TeamMember
      */

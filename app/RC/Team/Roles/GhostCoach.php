@@ -1,8 +1,8 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
-use App\Rookiecard\Team\Roles\RoleInterface;
-use App\Rookiecard\Team\Roles\GhostInterface;
+use App\RC\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\GhostInterface;
 
 class GhostCoach implements RoleInterface, GhostInterface
 {

@@ -1,16 +1,17 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
-use App\Rookiecard\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\MemberInterface;
 
-class InvitedCoach implements RoleInterface
+class Coach implements RoleInterface, MemberInterface
 {
 	/**
 	 * The ID of this role, stored this way in rc_team_roles table
 	 * 
 	 * @var integer
 	 */
-	private $id = 8;
+	private $id = 4;
 
 
 	/**
@@ -18,7 +19,7 @@ class InvitedCoach implements RoleInterface
 	 * 
 	 * @var string
 	 */
-	private $name = 'invited_coach';
+	private $name = 'coach';
 
 
 	/**
@@ -42,5 +43,22 @@ class InvitedCoach implements RoleInterface
 	{
 		return $this->name;
 	}
+
+
+
+	/**
+	 * Returns the default meta data associated with this role
+	 * 
+	 * @return array
+	 */
+	public function getDefaultMetaData()
+	{
+		return [
+            'positions' => [],
+            'num'       => '',
+        ];
+	}
+
+
 	
 }

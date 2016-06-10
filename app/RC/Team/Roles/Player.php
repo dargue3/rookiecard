@@ -1,17 +1,17 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
-use App\Rookiecard\Team\Roles\RoleInterface;
-use App\Rookiecard\Team\Roles\MemberInterface;
+use App\RC\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\MemberInterface;
 
-class Coach implements RoleInterface, MemberInterface
+class Player implements RoleInterface, MemberInterface
 {
 	/**
 	 * The ID of this role, stored this way in rc_team_roles table
 	 * 
 	 * @var integer
 	 */
-	private $id = 4;
+	private $id = 2;
 
 
 	/**
@@ -19,7 +19,7 @@ class Coach implements RoleInterface, MemberInterface
 	 * 
 	 * @var string
 	 */
-	private $name = 'coach';
+	private $name = 'player';
 
 
 	/**

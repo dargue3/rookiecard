@@ -1,16 +1,16 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
-use App\Rookiecard\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\RoleInterface;
 
-class InvitedPlayer implements RoleInterface
+class Admin implements RoleInterface
 {
 	/**
 	 * The ID of this role, stored this way in rc_team_roles table
 	 * 
 	 * @var integer
 	 */
-	private $id = 7;
+	private $id = 1;
 
 
 	/**
@@ -18,7 +18,7 @@ class InvitedPlayer implements RoleInterface
 	 * 
 	 * @var string
 	 */
-	private $name = 'invited_player';
+	private $name = 'admin';
 
 
 	/**
