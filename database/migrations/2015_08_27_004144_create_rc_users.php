@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateRcUsersTable extends Migration
+class CreateRcUsers extends Migration
 {
     /**
      * Run the migrations.
@@ -24,6 +24,7 @@ class CreateRcUsersTable extends Migration
             $table->tinyInteger('gender');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

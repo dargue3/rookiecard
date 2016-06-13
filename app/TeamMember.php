@@ -57,7 +57,6 @@ class TeamMember extends Model
      */
     public function scopeGhosts($query, $team_id)
     {
-        dd($query);
         return $query->where('user_id', 0)->where('team_id', $team_id);
     }
 
@@ -73,26 +72,28 @@ class TeamMember extends Model
 
 
     /**
-     * Instantiate a new (ghost) player on this team
+     * Instantiate a new (ghost) coach on this team
      * 
+     * @param  integer $team_id
      * @param string $name
      * @return TeamMember
      */
-    public function addNewPlayer($name = '')
+    public static function newPlayer($team_id, $name = '')
     {
-        return $this->addGhost(new GhostPlayer, $name);
+        return (new static(['team_id' => $team_id]))->addGhost(new GhostPlayer, $name);
     }
 
 
     /**
      * Instantiate a new (ghost) coach on this team
      * 
+     * @param  integer $team_id
      * @param string $name
      * @return TeamMember
      */
-    public function addNewCoach($name = '')
+    public static function newCoach($team_id, $name = '')
     {
-        return $this->addGhost(new GhostCoach, $name);
+        return (new static(['team_id' => $team_id]))->addGhost(new GhostCoach, $name);
     }
 
 
@@ -119,40 +120,64 @@ class TeamMember extends Model
 
 
 
-
-
-
+    /**
+     * Invite a user with this email to the team, otherwise email them an invite to join Rookiecard
+     * 
+     * @param  string $email
+     * @return TeamMember
+    */
     public function invite($email)
     {
+        $this->addEmailToMetaData($email);
 
         // check if that email is already tied to an account
-        $existingUser = User::where('email', $email)->first();
+        $user = User::where('email', $email)->first();
 
-        if ($existingUser) {
-            $attributes = ['user_id' => $existingUser->id, 'team_id' => $this->team_id];
+        if ($user) {
+            $attributes = ['user_id' => $user->id, 'team_id' => $this->team_id];
             $member = TeamMember::firstOrNew($attributes);
 
-            if (!$member->exists) {
-                $member->role = $role;
+            if (! $member->isInvitable()) {
+                throw new ApiException('A user with this email is already a member');
             }
 
-            $member->role = $member->role->invite($role);
+            $role = $this->isPlayer() ? InvitedPlayer::class : InvitedCoach::class; 
             $member->save();
+            $member->addRole(new $role);
 
             // create a notification telling them to check this team out
-            (new Notification)->teamInvite($this->team_id, $existingUser->id);
+            (new Notification)->teamInvite($this->team_id, $user->id);
 
-            return;
+            return $this;
         }
 
         // user isn't in our database yet, send email inviting them to RC
-        $attributes = ['email' => $email, 'team_id' => $this->team_id];
-        TeamInvite::firstOrNew($attributes)->inviteToRookiecard($role);
+        TeamInvite::invite($this);
 
-        return;
+        return $this;
     }
 
 
+    /**
+     * Add this email to the ghost's member data
+     * @param string $email
+     * @return  TeamMember
+     */
+    private function addEmailToMetaData($email)
+    {
+        if (! $this->isGhost()) {
+            throw new Exception("Can't add an email to a non-ghost");
+        }
+
+        $meta = json_decode($this->meta);
+
+        $meta->ghost->email = $email;    
+
+        $this->meta = json_encode($meta);
+        $this->save();
+
+        return $this;
+    }
 
 
 

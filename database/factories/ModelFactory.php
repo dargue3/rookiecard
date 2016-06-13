@@ -16,7 +16,9 @@ $factory->define(App\User::class, function ($faker) {
         'firstname' 		=> $faker->firstname,
         'lastname' 			=> $faker->lastname,
         'username' 			=> $faker->username,
-        'email' 			=> $faker->email,
+        'email'             => $faker->email,
+        'gender'            => $faker->boolean,
+        'birthday' 			=> $faker->date(),
         'password' 			=> str_random(10),
         'remember_token'	=> str_random(10),
     ];
@@ -27,8 +29,8 @@ $factory->define(App\TeamMember::class, function ($faker) {
 	$num = (string) $faker->numberBetween(0, 99);
 	$positions = $faker->randomElements(['pg', 'sg', 'sf', 'pf', 'c'], 2);
     return [
-        'user_id' 	=> $faker->numberBetween(1, 100),
-        'team_id' 	=> $faker->numberBetween(1, 100),
+        'user_id' 	=> $faker->randomNumber,
+        'team_id' 	=> $faker->randomNumber,
         'meta'		=> json_encode(['num' => $num, 'positions' => $positions]),
     ];
 });

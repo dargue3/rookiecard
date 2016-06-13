@@ -2,16 +2,17 @@
 namespace App\RC\Team\Roles;
 
 use App\TeamRole;
+use App\TeamMember;
 use App\Exceptions\ApiException;
 
-use App\RC\Team\Roles\RoleInterface;
-use App\RC\Team\Roles\Player;
-use App\RC\Team\Roles\Coach;
-use App\RC\Team\Roles\GhostPlayer;
-use App\RC\Team\Roles\GhostCoach;
 use App\RC\Team\Roles\Fan;
-use App\RC\Team\Roles\InvitedPlayer;
+use App\RC\Team\Roles\Coach;
+use App\RC\Team\Roles\Player;
+use App\RC\Team\Roles\GhostCoach;
+use App\RC\Team\Roles\GhostPlayer;
 use App\RC\Team\Roles\InvitedCoach;
+use App\RC\Team\Roles\InvitedPlayer;
+use App\RC\Team\Roles\RoleInterface;
 use App\RC\Team\Roles\RequestedToJoin;
 
 trait ManagesTeamRoles
@@ -23,6 +24,7 @@ trait ManagesTeamRoles
      */
 	public $roleArray = null;
 	
+
 
     /**
      * Fetches the roles associated with user and stores them
@@ -37,6 +39,7 @@ trait ManagesTeamRoles
 
         return $this;
     }
+
 
 
     /**
@@ -81,6 +84,7 @@ trait ManagesTeamRoles
     }
 
 
+
     /**
      * Removes a given role from the member
      * 
@@ -91,10 +95,11 @@ trait ManagesTeamRoles
     {
         $this->roles()->detach($role->id());
 
-        unset($this->roleArray[$role->name()]);
+        $this->roleArray = array_diff($this->roleArray, [$role->name()]);
 
         return $this;
     }
+
 
 
     /**
@@ -129,8 +134,9 @@ trait ManagesTeamRoles
             return $this->removeRole($role);
         }
 
-        return $this->setRole($role);
+        return $this->addRole($role);
     }
+
 
 
 
@@ -149,12 +155,13 @@ trait ManagesTeamRoles
     }
 
 
+
     /**
      * If there are no roles associated with this member, delete them
      * 
      * @return mixed
      */
-    public function deleteIfNecessary()
+    public function deleteIfTheyHaveNoRoles()
     {
         if (is_array($this->roleArray) and empty($this->roleArray)) {
             $this->delete();
@@ -163,7 +170,6 @@ trait ManagesTeamRoles
 
         return $this;
     }
-
 
 
     /**
@@ -249,6 +255,18 @@ trait ManagesTeamRoles
     public function hasRequestedToJoin()
     {
         return $this->hasRole(new RequestedToJoin);
+    }
+
+
+
+    /**
+     * Is this user able to be invited to this team?
+     * 
+     * @return boolean
+     */
+    public function isInvitable()
+    {
+        return !$this->isMember() and !$this->hasBeenInvited();
     }
 
 

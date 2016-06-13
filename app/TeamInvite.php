@@ -24,18 +24,18 @@ class TeamInvite extends Model
     protected $fillable = ['email', 'team_id', 'ghost_id', 'role'];
 
 
-    //add a user to the table (they don't have a rookiecard account yet)
-    public function inviteToRookiecard($role) {
+    /**
+     * Send an email inviting a non-user to join Rookiecard, and more specifically, their team
+     * @param  TeamMember $ghost 
+     * @return void        
+     */
+    public static function invite($ghost) {
 
-        if($this->exists) {
-            //this email has already been invited to this team, skip
-            return;
-        }
+        $email = json_decode($ghost->meta)->ghost->email;
+        $instance = new static(['team_id' => $ghost->team_id, 'email' => $email, 'ghost_id' => $ghost->id]);
+        $instance->save();
 
-        $this->role = $role;
-        $this->save();
-      
-    	return;
+        // SEND THE MAIL HERE
     }
 
 

@@ -36,6 +36,6 @@ class CreateRcTeamRoles extends Migration
     public function down()
     {
         Schema::drop('rc_team_roles');
-        Schema::drop('member_role');
+        Schema::drop('rc_member_role');
     }
 }

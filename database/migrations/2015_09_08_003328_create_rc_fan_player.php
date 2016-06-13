@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class RcStatColumnsTable extends Migration
+class CreateRcFanPlayer extends Migration
 {
     /**
      * Run the migrations.
@@ -12,10 +12,10 @@ class RcStatColumnsTable extends Migration
      */
     public function up()
     {
-        Schema::create('rc_stat_columns', function (Blueprint $table) {
-            $table->increments('id');
-            $table->tinyInteger('sport');
-            $table->text('stats');
+        Schema::create('rc_player_fan', function (Blueprint $table) {
+            $table->integer('player_id')   ->unsigned();
+            $table->integer('fan_id')->unsigned();
+            $table->timestamps();
         });
     }
 
@@ -26,6 +26,6 @@ class RcStatColumnsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('rc_stat_columns');
+        Schema::drop('rc_player_fan');
     }
 }

@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class UpdateRcFanPlayerTable extends Migration
+class CreateRcStatColumns extends Migration
 {
     /**
      * Run the migrations.
@@ -12,8 +12,10 @@ class UpdateRcFanPlayerTable extends Migration
      */
     public function up()
     {
-        Schema::table('rc_player_fan', function (Blueprint $table) {
-            $table->index('player_id');
+        Schema::create('rc_stat_columns', function (Blueprint $table) {
+            $table->increments('id');
+            $table->tinyInteger('sport');
+            $table->text('stats');
         });
     }
 
@@ -24,8 +26,6 @@ class UpdateRcFanPlayerTable extends Migration
      */
     public function down()
     {
-        Schema::table('rc_player_fan', function (Blueprint $table) {
-            $table->dropIndex('player_id');
-        });
+        Schema::drop('rc_stat_columns');
     }
 }

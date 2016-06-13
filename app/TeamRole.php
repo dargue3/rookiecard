@@ -8,4 +8,6 @@ class TeamRole extends Model
     protected $table = 'rc_team_roles';
 
     public $timestamps = false;
+
+    public $fillable = ['id', 'name'];
 }

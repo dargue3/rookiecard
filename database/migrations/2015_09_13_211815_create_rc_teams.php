@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class UpdateRcTeams extends Migration
+class CreateRcTeams extends Migration
 {
     /**
      * Run the migrations.
@@ -12,8 +12,10 @@ class UpdateRcTeams extends Migration
      */
     public function up()
     {
-        Schema::table('rc_teams', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::create('rc_teams', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('teamname')->unique();
+            $table->string('name');
             $table->integer('season');
             $table->integer('sport');
             $table->tinyInteger('gender');
@@ -22,6 +24,8 @@ class UpdateRcTeams extends Migration
             $table->string('pic');
             $table->string('backdrop');
             $table->integer('creator_id')->unsigned();
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -32,13 +36,6 @@ class UpdateRcTeams extends Migration
      */
     public function down()
     {
-        Schema::table('rc_teams', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-            $table->dropColumn('season');
-            $table->dropColumn('sport');
-            $table->dropColumn('gender');
-            $table->dropColumn('long');
-            $table->dropColumn('lat');
-        });
+        Schema::drop('rc_teams');
     }
 }

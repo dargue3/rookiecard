@@ -15,9 +15,8 @@ class CreateRcTeamInvites extends Migration
         Schema::create('rc_team_invites', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('team_id')->unsigned();
-            $table->string('email');
-            $table->index('email');
-            $table->tinyInteger('role');
+            $table->string('email')->index();
+            $table->integer('ghost_id')->unsigned()->index();
             $table->timestamps();
         });
     }

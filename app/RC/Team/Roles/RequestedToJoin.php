@@ -1,7 +1,7 @@
 <?php
-namespace App\Rookiecard\Team\Roles;
+namespace App\RC\Team\Roles;
 
-use App\Rookiecard\Team\Roles\RoleInterface;
+use App\RC\Team\Roles\RoleInterface;
 
 class RequestedToJoin implements RoleInterface
 {
