@@ -33,8 +33,6 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     }
 
 
-
-
     //for searching User class last names
     public function scopeSearchByLastName($query, $search)
     {
@@ -47,6 +45,12 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function scopeSearchByUsername($query, $search)
     {
         return $query->where('username', 'LIKE', "%$search%");
+    }
+
+
+    public function fullName()
+    {
+        return "$this->firstname $this->lastname"; 
     }
 
     //returns all the teams this user is associated with
@@ -71,17 +75,23 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
 
 
-    //checks if this user is an admin of the given team
+    /**
+     * Check whether or not this user is an admin of a given team
+     * 
+     * @param  string  $teamname
+     * @return boolean          
+     */
     public function isTeamAdmin($teamname)
     {
         $team = Team::name($teamname)->firstOrFail();
+
         $member = TeamMember::member($this->id, $team->id)->first();
 
-        //check if they're an admin or they're the team creator
-        if($member->admin || $this->id == $team->creator_id)
-            return true;
+        if (! $member or ! $member->isAdmin()) {
+            return false;
+        }
 
-        return false;
+        return true;
     }
 
 

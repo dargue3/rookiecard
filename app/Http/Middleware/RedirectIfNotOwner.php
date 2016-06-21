@@ -15,10 +15,9 @@ class RedirectIfNotOwner
      */
     public function handle($request, Closure $next)
     {
-
         $username = $request->username;
 
-        if(!$request->user()->isProfileOwner($username)) {
+        if(! $request->user()->isProfileOwner($username)) {
             //user isn't owner, redirect
             return redirect("/$username")->with('bad', 'You are not authorized to view that page');
         }

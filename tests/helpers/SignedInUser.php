@@ -23,6 +23,6 @@ trait SignedInUser
 
 		$this->actingAs($this->user);
 
-		return $this;
+		return $this->user;
 	}
 }

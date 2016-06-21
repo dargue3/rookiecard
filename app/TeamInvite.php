@@ -31,6 +31,10 @@ class TeamInvite extends Model
      */
     public static function invite($ghost) {
 
+        if (! $ghost->isGhost()) {
+            throw new Exception("Cannot invite someone to replace a non-ghost");
+        }
+
         $email = json_decode($ghost->meta)->ghost->email;
         $instance = new static(['team_id' => $ghost->team_id, 'email' => $email, 'ghost_id' => $ghost->id]);
         $instance->save();
@@ -42,7 +46,7 @@ class TeamInvite extends Model
     //a new user has joined, if this email matches any in table, add them as 'invited' in TeamMember table
     public function inviteNewUserToTeams($user) {
 
-    	$teams = $this->where('email', $user->email)->get();
+    	$teams = self::where('email', $user->email)->get();
 
     	//for each team, create a TeamMember row and list them as an invited member
     	foreach($teams as $team) {

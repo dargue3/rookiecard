@@ -5,8 +5,10 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Team;
+use App\Event;
+use App\TeamMember;
 use App\Notification;
-use App\StatusUpdate;
 
 class Stat extends Model
 {
@@ -16,17 +18,7 @@ class Stat extends Model
 
     protected $dates = ['deleted_at'];
 
-    protected $fillable = [
-	    'owner_id',
-	    'team_id',
-	    'sport',
-	    'type',
-	    'season',
-	    'event_id',
-        'event_date',
-	    'stats',
-        'meta'
-    ];
+    protected $guarded = [];
 
     /**
     * current supported stat types (stored as int):
@@ -40,29 +32,40 @@ class Stat extends Model
     */
 
 
-    protected $basketballPlayerKeys = ['name', 'gs', 'gp', 'min', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
-            'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
-
-    protected $basketballTeamKeys = ['date', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
-            'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf'];   
-
-
-
-    //find stats for this member on this team
-    public function scopeFindByTeamMember($query, $team_id, $member_id) {
-
+    /**
+     * Returns all stats for a given member on a given team
+     * 
+     * @param  Builder $query     
+     * @param  int $team_id   
+     * @param  int $member_id 
+     * @return Builder            
+     */
+    public function scopeTeamMember($query, $team_id, $member_id)
+    {
         return $query->where('team_id', $team_id)->where('member_id', $member_id);
-
     }
 
 
+    /**
+     * Swaps stat ownership from one member instance to another
+     * 
+     * @param  TeamMember $currentOwner_id
+     * @param  TeamMember $newOwner_id    
+     * @return void           
+     */
+    public static function switchOwners($currentOwner, $newOwner)
+    {
+        if ($currentOwner->team_id != $newOwner->team_id) {
+            throw new Exception;
+        }
 
+        $stats = self::teamMember($currentOwner->team_id, $currentOwner->id)->get();
 
-    //returns all stats associated with a given team
-    public function getTeamStats($team) {
-
-        return $this->where('team_id', $team->id)->get();
-        
+        foreach ($stats as $stat) {        
+            $stat->member_id = $newOwner->id;
+            $stat->owner_id = $newOwner->user_id;
+            $stat->save();
+        }
     }
 
 
@@ -250,19 +253,17 @@ class Stat extends Model
 
 
     //deletes all stats associated with this event
-    public function deleteByEvent($team, $event) {
-
-        Stat::where('team_id', $team->id)->where('event_id', $event->id)->delete();
-
+    public static function deleteByEvent(Team $team, Event $event)
+    {
+        self::where('team_id', $team->id)->where('event_id', $event->id)->delete();
     }
 
 
 
     //deletes all stats associated with this team member
-    public function deleteByMember($member) {
-
-        Stat::where('member_id', $member->id)->delete();
-
+    public static function deleteByMember(TeamMember $member)
+    {
+        self::where('member_id', $member->id)->delete();
     }
 
 

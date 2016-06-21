@@ -15,7 +15,7 @@ class NewsFeed extends Model
      *
      * team_event (0) - when a new event is added to the calendar
      * team_event_update (1) - when an event is updated
-     * team_event_delete (2) - when an event is "cancelled"
+     * team_event_delete (2) - when an event is "canceled"
      * team_post (3) - when someone posts to the team feed
      * team_stats (4) - when stats are posted for a previous event
      *
@@ -24,12 +24,11 @@ class NewsFeed extends Model
      */
 
     protected $table = 'rc_news_feed';
+    protected $guarded = [];
 
-
-    protected $fillable = ['id', 'owner_id', 'creator_id', 'type', 'meta'];
 
     //see above for descriptions
-    protected $typeLookup = [
+    private $typeLookup = [
         'team_event'            => 0,
         'team_event_update'     => 1,
         'team_event_delete'     => 2,
@@ -39,28 +38,25 @@ class NewsFeed extends Model
         'user_stats'            => 21,
     ];
 
-    protected $stringType = '';
+    private $stringType = '';
 
 
-    //returns the news feed for a team
-    public function getTeamFeed($team) {
+    /**
+     * A user has submitted a post to this team's news feed
+     * 
+     * @param  Team $team [description]
+     * @param  string $post [description]
+     * @return NewsFeed
+     */
+    public static function teamNewsFeedPost(Team $team, $post) {
 
-        return $this->where('owner_id', $team->id)->where('type', '<', 10)->orderBy('created_at', 'desc')->get();
-
-    }
-
-
-    //someone has posted to the team feed
-    public function teamNewsFeedPost($team, $meta) {
-
-        //notify the team about it
+        // notify the team about it
         (new Notification)->teamNewsFeedPost($team);
 
         $this->stringType = 'team_post';
         $this->owner_id = $team->id;
 
-        //add the entry to team feed
-        return $this->createEntry($meta);
+        return $this->createEntry(['msg' => $post]);
     }
 
 
@@ -74,7 +70,7 @@ class NewsFeed extends Model
         $this->stringType = 'team_event';
         $this->owner_id = $team->id;
 
-        //add the entry to team feed
+        // add the entry to team feed
         return $this->createEntry($meta);
     }
 

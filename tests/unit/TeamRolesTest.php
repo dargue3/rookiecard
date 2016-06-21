@@ -119,7 +119,7 @@ class TeamRolesTest extends TestCase
 
     	$member->removeAllRoles();
 
-    	$this->assertCount(0, $member->roleArray);
+    	$this->assertCount(0, $member->roleArray());
     }
 
 
@@ -148,10 +148,9 @@ class TeamRolesTest extends TestCase
         $member = $this->seedWithMember();
         $this->seedRolesTable();
 
-        $member->addRole(new Player);
-        
-        $this->assertCount(1, $member->roles()->get());
         $this->assertFalse($member->trashed());
+
+        $member->addRole(new Player);
 
         $member->removeRole(new Player)->deleteIfTheyHaveNoRoles();
 
@@ -327,28 +326,24 @@ class TeamRolesTest extends TestCase
 
 
     /** @test */
-    public function a_member_is_invitable()
+    public function role_methods_can_be_chained_together()
     {
         $member = $this->seedWithMember();
         $this->seedRolesTable();
 
-        $member->addRole(new Fan);
-        $this->assertTrue($member->isInvitable());
+        $member->addRole(new Fan)
+                ->setRole(new Admin, true)
+                ->removeRole(new Admin)
+                ->toggleRole(new GhostPlayer);
 
-        $member->addRole(new RequestedToJoin, true);
-        $this->assertTrue($member->isInvitable());
+        $this->assertTrue($member->hasRole(new Fan) and $member->hasRole(new GhostPlayer));
 
-        $member->addRole(new Player, true);
-        $this->assertFalse($member->isInvitable());
+        $member->setRole(new GhostPlayer, false)
+                ->removeRole(new Fan)
+                ->deleteIfTheyHaveNoRoles();
 
-        $member->addRole(new Coach, true);
-        $this->assertFalse($member->isInvitable());
-
-        $member->addRole(new InvitedPlayer, true);
-        $this->assertFalse($member->isInvitable());
-
-        $member->addRole(new InvitedCoach, true);
-        $this->assertFalse($member->isInvitable());
+        $this->assertFalse($member->hasRole(new GhostPlayer) or $member->hasRole(new Fan));
+        $this->assertTrue($member->trashed());
     }
 
 }

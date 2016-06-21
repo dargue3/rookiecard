@@ -2,9 +2,8 @@
 namespace App\RC\Team\Roles;
 
 use App\RC\Team\Roles\RoleInterface;
-use App\RC\Team\Roles\MemberInterface;
 
-class Player implements RoleInterface, MemberInterface
+class Player implements RoleInterface
 {
 	/**
 	 * The ID of this role, stored this way in rc_team_roles table
@@ -42,21 +41,6 @@ class Player implements RoleInterface, MemberInterface
 	public function name()
 	{
 		return $this->name;
-	}
-
-
-
-	/**
-	 * Returns the default meta data associated with this role
-	 * 
-	 * @return array
-	 */
-	public function getDefaultMetaData()
-	{
-		return [
-            'positions' => [],
-            'num'       => '',
-        ];
 	}
 
 

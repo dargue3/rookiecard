@@ -13,6 +13,11 @@ use App\RC\Team\Roles\RequestedToJoin;
 trait TeamRoleHelpers
 {
 
+    /**
+     * List of roles that fulfill the RoleInterface contract
+     * 
+     * @var array
+     */
 	public $roles = [
         Admin::class,
         Player::class,

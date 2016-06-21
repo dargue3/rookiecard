@@ -53,3 +53,22 @@ $factory->define(App\Event::class, function ($faker) {
     	'details'		=> $faker->sentences(2),
     ];
 });
+
+
+$factory->define(App\Stat::class, function ($faker) {
+    return [
+        'owner_id' => 0,
+        'member_id' => 1,
+        'team_id' => 2,
+        'type' => 0,
+        'sport' => 0,
+        'season' => 1,
+        'stats' => json_encode(['test' => 123]),
+        'meta' => json_encode(['test' => 123]),
+        'event_date' => 1460239200,
+        'event_id' => 1,
+    ];
+});
+
+
+

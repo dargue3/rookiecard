@@ -29,8 +29,8 @@ class AuthController extends Controller
 
     protected $maxLoginAttempts = 5;
 
-    protected function authenticated() {
-        //when the user is logged in via ajax
+    protected function authenticated()
+    {
         return redirect('/home');
     }
 

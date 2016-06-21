@@ -2,9 +2,8 @@
 namespace App\RC\Team\Roles;
 
 use App\RC\Team\Roles\RoleInterface;
-use App\RC\Team\Roles\GhostInterface;
 
-class GhostCoach implements RoleInterface, GhostInterface
+class GhostCoach implements RoleInterface
 {
 	/**
 	 * The ID of this role, stored this way in rc_team_roles table
@@ -42,26 +41,6 @@ class GhostCoach implements RoleInterface, GhostInterface
 	public function name()
 	{
 		return $this->name;
-	}
-
-
-
-	/**
-	 * Returns the default meta data associated with this role
-	 * 
-	 * @param  string
-	 * @return array
-	 */
-	public function getDefaultMetaData($name)
-	{
-		return [
-            'ghost' => [
-                'name'  => $name,
-                'email' => '',
-            ],
-            'positions' => [],
-            'num'       => '',
-        ];
 	}
 
 

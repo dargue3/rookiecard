@@ -18,24 +18,37 @@ use App\RC\Team\Roles\RequestedToJoin;
 trait ManagesTeamRoles
 {
     /**
-     * Array of this member's roles
+     * Array acting as a cache of this member's roles
      * 
      * @var array
      */
-	public $roleArray = null;
+	private $roleArray = null;
+
+
+    /**
+     * Returns roleArray
+     * 
+     * @return array
+     */
+    public function roleArray()
+    {
+       return $this->roleArray; 
+    }
 	
 
 
     /**
-     * Fetches the roles associated with user and stores them
+     * Fetches the roles associated with user and stores them locally
      * 
      * @return App\TeamMember
      */
     private function fetchRoles()
     {
-        $this->roleArray = $this->roles()->get()->map(function($role) {
-            return $role->name;
-        })->all();
+        $this->roleArray = [];
+
+        foreach ($this->roles()->get() as $role) {
+            $this->roleArray[] = $role->name;
+        }
 
         return $this;
     }
@@ -54,7 +67,7 @@ trait ManagesTeamRoles
             $this->fetchRoles();
         }
 
-        return (boolean) in_array($role->name(), $this->roleArray);
+        return in_array($role->name(), $this->roleArray);
     }
 
 
@@ -63,21 +76,22 @@ trait ManagesTeamRoles
      * Attaches a given role to this member
      * 
      * @param App\RC\Team\Roles\RoleInterface $role
-     * @param boolean $detachOthers
+     * @param boolean $deleteOtherRoles
      * @return App\TeamMember
      */
-    public function addRole(RoleInterface $role, $detachOthers = false)
+    public function addRole(RoleInterface $role, $deleteOtherRoles = false)
     {   
         if($this->hasRole($role)) {
             throw new ApiException("User is already a " . $role->name());
         }
 
-        if ($detachOthers) {
+        if ($deleteOtherRoles) {
             $this->removeAllRoles();
         }
 
         $this->roles()->attach($role->id());
 
+        // cache locally
         array_push($this->roleArray, $role->name());
 
         return $this;
@@ -95,6 +109,7 @@ trait ManagesTeamRoles
     {
         $this->roles()->detach($role->id());
 
+        // remove from local cache
         $this->roleArray = array_diff($this->roleArray, [$role->name()]);
 
         return $this;
@@ -106,7 +121,7 @@ trait ManagesTeamRoles
      * Attach or remove a role according to boolean input
      * 
      * @param RoleInterface $role   
-     * @param boolean        $status
+     * @param boolean $status
      * @return TeamMember
      */
     public function setRole(RoleInterface $role, $status)
@@ -157,6 +172,21 @@ trait ManagesTeamRoles
 
 
     /**
+     * Removes Invited roles from member
+     * 
+     * @return  App\TeamMember
+     */
+    public function removeInviteRoles()
+    {
+        $this->removeRole(new InvitedPlayer);
+        $this->removeRole(new InvitedCoach);
+
+        return $this;
+    }
+
+
+
+    /**
      * If there are no roles associated with this member, delete them
      * 
      * @return mixed
@@ -170,6 +200,7 @@ trait ManagesTeamRoles
 
         return $this;
     }
+
 
 
     /**
@@ -255,18 +286,6 @@ trait ManagesTeamRoles
     public function hasRequestedToJoin()
     {
         return $this->hasRole(new RequestedToJoin);
-    }
-
-
-
-    /**
-     * Is this user able to be invited to this team?
-     * 
-     * @return boolean
-     */
-    public function isInvitable()
-    {
-        return !$this->isMember() and !$this->hasBeenInvited();
     }
 
 
