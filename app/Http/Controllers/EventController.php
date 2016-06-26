@@ -5,26 +5,30 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Team;
+use Validator;
 use App\Http\Requests;
+use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
-use App\Repositories\EventRepository;
-use App\Repositories\TeamRepository;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\NewEventRequest;
+use App\RC\Team\TeamRepository;
+use App\RC\Events\EventRepository;
 
 class EventController extends Controller
 {
     /**
-     * An instance of a event repository
+     * Event repository instance
+     * 
      * @var EventRepository
      */
-    private $event;
+    protected $event;
 
     /**
-     * An instance of a team repository
+     * Team repository instance
+     * 
      * @var TeamRepository
      */
-    private $team;
-
+    protected $team;
 
     public function __construct(EventRepository $event, TeamRepository $team)
     {
@@ -37,7 +41,7 @@ class EventController extends Controller
 
 
     /**
-     * Store a newly created resource in storage.
+     * Store an event with the given request data
      *
      * @param  App\Http\Requests\NewEventRequest  $request
      * @param  Team  $team
@@ -45,35 +49,57 @@ class EventController extends Controller
      */
     public function store(NewEventRequest $request, Team $team)
     {
-        $feed = $this->event->create($request, $team);
+        // fetch the request data to send to the repo
+        $data = $request->all();
+        $data['tz'] = $request->session()->get('timezone');
 
-        $events = $this->team->events($team);
+        $feed = $this->event->store($data, $team);
 
-        return ['ok' => true, 'feed' => $feed, 'events' => $events];
+        return ['ok' => true, 'feed' => $feed, 'events' => $this->team->events($team)];
     }
 
 
     /**
-     * Update the specified resource in storage.
+     * Updated the given event with info from request data
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  Team  $team
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(NewEventRequest $request, Team $team, $id)
+    public function update(Request $request, Team $team, $id)
     {
         if (Auth::user()->cannot('edit-events', [$team, $id])) {
-            throw new \Exception;
+            throw new ApiException("Unauthorized Request");
         }
 
-        $feed = $this->event->update($team, $request, $id);
+        $rules = [
+            'title'             => 'required|max:50',
+            'type'              => 'required|size:1',
+            'start'             => 'required|integer',
+            'end'               => 'required|integer',
+            'details'           => 'max:5000',
+        ];
 
-        return ['ok' => true, 'feed' => $feed];
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return ['ok' => false, 'errors' => $validator->errors()];
+        }
+
+        // fetch the request data to send to the repo
+        $data = $request->all();
+        $data['tz'] = $request->session()->get('timezone');
+
+        $feed = $this->event->update($data, $team, $id);
+
+        return ['ok' => true, 'feed' => $feed, 'events' => $this->team->events($team)];
     }
 
+
+
     /**
-     * Remove the specified resource from storage.
+     * Delete the given event
      *
      * @param  Team  $team
      * @param  int  $id
@@ -82,11 +108,11 @@ class EventController extends Controller
     public function destroy(Team $team, $id)
     {
         if (Auth::user()->cannot('edit-events', [$team, $id])) {
-            throw new \Exception;
+            throw new ApiException("Unauthorized Request");
         }
 
-        $feed = $this->event->delete($id);
+        $feed = $this->event->delete($team, $id);
 
-        return ['ok' => true, 'feed' => $feed];
+        return ['ok' => true, 'feed' => $feed, 'events' => $this->team->events($team)];
     }
 }

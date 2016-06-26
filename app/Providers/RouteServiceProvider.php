@@ -27,7 +27,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         parent::boot($router);
 
-        $router->model('teamname', Team::class);
+        $router->model('team', Team::class);
     }
 
     /**

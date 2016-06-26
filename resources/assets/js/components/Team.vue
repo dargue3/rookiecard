@@ -67,13 +67,13 @@
 										<div class="arrow-right --white"></div>
 									</div>
 
-									<div class="fan-icon" @click="toggleFan">
+									<div v-show="!isFan" class="fan-icon" @click="toggleFan">
 										<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
 									</div>
-									<div class="fan-icon" @click="toggleFan">
+									<div v-show="isFan && !isMember" class="fan-icon" @click="toggleFan">
 										<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
 									</div>
-									<div v-show="false" class="fan-icon --member">
+									<div v-show="isMember" class="fan-icon --member">
 										<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
 									</div>
 								</div> <!-- end  Team__fans -->
@@ -102,7 +102,7 @@
 		        				<i class="material-icons">group</i>ROSTER
 			            </a>	
 								</div>
-								<div v-show="admin" class="tab" :class="{'--active' : tab === 'settings'}"
+								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}"
 											@click="tab = 'settings'">
 									<div class="tab-box"></div>
 									<a id="settingsTab">
@@ -124,7 +124,7 @@
 			      <div class="col-xs-12 Team__calendar"
 			      			v-show="tab === 'calendar'">
 
-		        	<rc-calendar :admin="admin" :events="events"></rc-calendar>
+		        	<rc-calendar :admin="isAdmin" :events="events"></rc-calendar>
 
 			      </div>
 			    </div>
@@ -172,7 +172,7 @@
 
 			        <rc-roster :players="players" :coaches="coaches" 
 			        						:fans="fans" :edit-user.sync="editUser" 
-			        						:admin="admin">
+			        						:admin="isAdmin">
 			        </rc-roster>		
 
 			      </div>
@@ -229,7 +229,7 @@
 
 	    <!-- inside here is complex logic handling what happens when an event is 
 	    			clicked on from calendar or news feed -->
-			<rc-view-event :admin="admin" :events="events" 
+			<rc-view-event :admin="isAdmin" :events="events" 
 											:stats="stats" :team="team" 
 											:auth="auth" :players="players"
 											:team-cols="teamStatCols" :player-cols="playerStatCols">
@@ -322,7 +322,7 @@ export default  {
 	},
 
 	route: {
-		//reload everything if new route but same component
+		// reload everything if new route but same component
 		canReuse: false,
 	},
 
@@ -331,7 +331,7 @@ export default  {
 		var prefix = this.$parent.prefix + 'team/';
 		var teamname = this.$route.params.name;
 
-		//set new title
+		// set new title
 		document.title = teamname;
 
 		return {
@@ -341,7 +341,7 @@ export default  {
 			team: {
 				meta: {},
 			},
-			admin: false,
+			isAdmin: false,
 			auth: {},
 			isFan: false,
 			isMember: false,
@@ -387,7 +387,7 @@ export default  {
 			self.$root.errorMsg(error);
 		})
 
-		//didn't put a catch here because the 'team does not exist' header pretty much covers it
+		// didn't put a catch here because the 'team does not exist' header pretty much covers it
 	},
 
 	computed: {
@@ -396,7 +396,7 @@ export default  {
 			return this.fans.length;
 		},
 
-		//makes fan counter div wider with larger numFans
+		// makes fan counter div wider with larger numFans
 		numFansClass() {
 			if(this.fans.length >= 1000)
 				return '--thousandsOfFans';
@@ -411,20 +411,20 @@ export default  {
 				return '';
 		},
 
-		//the following three functions pick which of the fan icons to display
+		// the following three functions pick which of the fan icons to display
 		showRemoveFan() {
 			return !this.isFan && !this.isMember;
 		},
 		showBecomeFan() {
-			return this.isFan && !this.admin;
+			return this.isFan && !this.isAdmin;
 		},
 		showIsFan() {
-			//this icon is unclickable
-			return this.isMember || (this.isFan && this.admin)
+			// this icon is unclickable
+			return this.isMember || (this.isFan && this.isAdmin)
 		},
 
 
-		//the following four functions pick which of the membership buttons to display
+		// the following four functions pick which of the membership buttons to display
 		showYoureAMember() {
 			return this.isMember || this.isCreator;
 		},
@@ -440,26 +440,24 @@ export default  {
 
 
 
-		//create list of players from users
-		//0 = user player, 1 = ghost player
+		// create list of players from users
 		players() {
 			return this.users.filter(function(user) {
-				return user.role === 0 || user.role === 1;
+				return user.isPlayer;
 			})
 		},
 
-		//create list of coaches from users
-		//2 = user coach, 3 = ghost coach
+		// create list of coaches from users
 		coaches() {
 			return this.users.filter(function(user) {
-				return user.role === 2 || user.role === 3;
+				return user.isCoach;
 			})
 		},
 
-		//create list of fans from users
+		// create list of fans from users
 		fans() {
 			return this.users.filter(function(user) {
-				return user.role === 4 || (user.role >= 45 && user.role <= 47);
+				return user.isFan;
 			})
 		},
 
@@ -467,7 +465,7 @@ export default  {
 
 	events: {
 
-		//new stats have been posted from ViewEvent
+		// new stats have been posted from ViewEvent
 		newStats(data, entry) {
 
 			var self = this;
@@ -478,33 +476,33 @@ export default  {
 			this.$broadcast('updateFeed', entry);
 		},
 
-		//updated stats have been posted from ViewEvent
+		// updated stats have been posted from ViewEvent
 		updateStats(data, event) {
 
-			//first erase all stats for this event
+			// first erase all stats for this event
 			this.stats = this.stats.filter(function(stat) {
 				return stat.event_id !== event.id;
 			});
 
 			if(data.length) {
-				//there were new stats to add
+				// there were new stats to add
 				data.forEach(function(val) {
 					this.stats.push(val);
 				}.bind(this));
 			}
 
-			//tell Stats.vue to re-compile the stats
+			// tell Stats.vue to re-compile the stats
 			this.$broadcast('updateStats', this.stats);
 		},
 
-		//stats have been deleted from ViewEvent
+		// stats have been deleted from ViewEvent
 		deleteStats(event) {
-			//iterate through all stats, keep the ones not associated with this event
+			// iterate through all stats, keep the ones not associated with this event
 			this.stats = this.stats.filter(function(stat) {
 				return stat.event_id !== event.id;
 			});
 
-			//tell Stats.vue to re-compile
+			// tell Stats.vue to re-compile
 			this.$broadcast('updateStats', this.stats);
 		},
 
@@ -512,65 +510,64 @@ export default  {
 
 
 		newEvent(events, entry) {
+
 			this.events = events;
 
 			this.$broadcast('updateFeed', entry);
 		},
 
-		updateEvent(updatedEvent, entry) {
-			this.events = this.events.filter(function(event) {
-				return event.id !== updatedEvent.id;
-			}.bind(this));
+		updateEvent(events, entry) {
 
-			this.events.push(updatedEvent);
+			this.events = events;
 
-			if(entry)
+			if(entry) {
 				this.$broadcast('updateFeed', entry);
+			}
 		},
 
-		deleteEvent(deletedEvent, entry) {
-			this.events = this.events.filter(function(event) {
-				return event.id !== deletedEvent.id;
-			}.bind(this));
+		deleteEvent(events, entry) {
+			
+			this.events = events;
 
-			if(entry)
+			if(entry) {
 				this.$broadcast('updateFeed', entry);
+			}
 		},
 
 		
 
 
-		//new user was created from EditUser
+		// new user was created from EditUser
 		newUser(user) {
 
-			//format raw data and add to array of users
+			// format raw data and add to array of users
 			this.formatUsers(user);
 
 		},
 
-		//user was updated from EditUser
+		// user was updated from EditUser
 		updateUser(editedUser) {
 	
-			//remove current version of this user
+			// remove current version of this user
 			this.users = this.users.filter(function(user) {
 				return user.member_id !== editedUser.member_id
 			});
 
-			//format raw data and add to array of users
+			// format raw data and add to array of users
 			this.formatUsers(editedUser);
 		},
 
 
-		//user was kicked from team from EditUser
+		// user was kicked from team from EditUser
 		deleteUser(editedUser) {	
 
-			//remove current version of user from users
+			// remove current version of user from users
 			this.users = this.users.filter(function(user) {
 				return user.member_id !== editedUser.member_id
 			});
 
 			if(!editedUser.deleted) {
-				//if there's a ghost remaining, format raw data and add to array of users
+				// if there's a ghost remaining, format raw data and add to array of users
 				this.formatUsers(editedUser);
 			}
 		}
@@ -579,17 +576,17 @@ export default  {
 
 	methods: {
 
-		//method for assigning data after ajax call finishes
+		// method for assigning data after ajax call finishes
 		compile(data) {
 		
 			this.auth = data.auth;
 			this.team = data.team;
 
-			//loop through all the users, create user objects
+			// loop through all the users, create user objects
 			this.users = [];
 			this.formatUsers(data.members);
 			
-			//store meta data about team
+			// store meta data about team
 			var meta = JSON.parse(data.team.meta);		
 			this.teamStatCols = meta.stats.teamCols;
 			this.playerStatCols = meta.stats.playerCols;
@@ -597,60 +594,57 @@ export default  {
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
 
-			//format the backdrop image as a style tag 
+			// format the backdrop image as a style tag 
 			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
 
-			//note whether or not this user is the creator
+			// note whether or not this user is the creator
 			if(this.team.creator_id == this.auth.id) {
 				this.isCreator = true;
-				this.admin = true;
+				this.isAdmin = true;
 			}
 
-			//now that all team data is ready, set these variables
-			//components are listening, will format the data as needed
+			// now that all team data is ready, set these variables
+			// components are listening, will format the data as needed
 			this.events = data.events;
 			this.stats = data.stats;
 			this.feed = data.feed;
 			this.positions = data.positions;
 
-			//tell App.vue to clear any notifications the logged in user may have
+			// tell App.vue to clear any notifications the logged in user may have
 			this.$dispatch('clearNotifications', this.team.id);
 
 			this.dataReady = true;
 
 		},
 
-		//compile meta data for users and push into this.users
-		formatUsers(users) {
-
-			if(!users) {
-				//its possible there is a 'null' here 
+		// compile meta data for users and push into this.users
+		formatUsers(users)
+		{
+			if (! users) {
+				// its possible there is a 'null' here 
 				return;
 			}
 
-			if(!Array.isArray(users))
+			if(!Array.isArray(users)) {
 				users = [users];
+			}
 
-			for(var x = 0; x < users.length; x++) {
-				
+			for (var x = 0; x < users.length; x++) {
 				var user = users[x];
 
-				if(user.meta)
+				if(user.meta) {
 					user.meta = JSON.parse(user.meta);
-				else
+				}
+				else {
 					user.meta = {};
-
-				if(user.admin === 1)
-					user.admin = true;
-				else
-					user.admin = false;
-
-				//mark which user is the creator
-				if(this.team.creator_id === user.id)
-					user.creator = true;
+				}
+				// mark which user is the creator
+				if(this.team.creator_id === user.id) {
+					user.isCreator = true;
+				}
 
 				if(user.meta.ghost) {
-					//user is a ghost player, move their data around to be consistent with real players
+					// user is a ghost player, move their data around to be consistent with real players
 					var split = user.meta.ghost.name.split(' ');
 					user.firstname = split[0];
 					user.lastname = split[1];
@@ -658,37 +652,10 @@ export default  {
 					user.ghost = true;
 					user.pic = '/images/ghost.png';
 				}
-				else
-					user.ghost = false;
 
-				//if logged in user is on list, save some other data about them too
+				//  is the logged in user an admin?
 				if(user.id === this.auth.id) {
-					this.admin = user.admin;
-					this.auth.role = user.role;
-
-					if(user.role <= 3) {
-						this.isMember = true;
-					}
-
-					//they're a fan if role is 4
-					if(user.role === 4)
-						this.isFan = true;
-
-					//they've been invited to join if a 5 or 6
-					if(user.role === 5 || user.role === 6)
-						this.hasBeenInvited = true;			
-					else if(user.role === 45 || user.role === 46) {
-						this.hasBeenInvited = true;
-						this.isFan = true;
-					}
-
-					//they've requested to join team if role is 7 or 47
-					if(user.role === 7)
-						this.hasRequestedToJoin = true;
-					else if(user.role === 47) {
-						this.hasRequestedToJoin = true;
-						this.isFan = true;
-					}
+					this.isAdmin = user.isAdmin;
 				}
 
 				this.users.push(user);
@@ -697,7 +664,7 @@ export default  {
 
 
 
-		//user hit fan button
+		// user hit fan button
 		toggleFan() {
 
 			var self = this;
@@ -716,41 +683,41 @@ export default  {
 
 
 
-		//successful request, change fan status
+		// successful request, change fan status
 		updateFanStatus() {
 			var self = this;
 
 			if(this.isFan) {
-				//use decrement animation on counter
+				// use decrement animation on counter
 				this.numFansTransition = 'number-tick-down'
 			}
 			else {
-				//increment
+				// increment
 				this.numFansTransition = 'number-tick-up'
 			}
 
-			//swap the fan status
+			// swap the fan status
 			this.isFan = !this.isFan;
 			this.fansChanged = !this.fansChanged;
 
 			if(this.isFan) {
-				//is now a fan of this team
+				// is now a fan of this team
 				this.auth.role = 4;
 				this.auth.meta = {};
 				this.auth.admin = false;
-				this.admin = false;
+				this.isAdmin = false;
 				this.users.push(this.auth);
 
-				//tell App.vue to add this team to the nav dropdown
+				// tell App.vue to add this team to the nav dropdown
 				this.$dispatch('becameAFanOfTeam', this.team);
 				this.$root.banner('good', "You're now a fan");
 			}
 
 
 			else {
-				//is no longer a fan
+				// is no longer a fan
 				this.auth.role = null;
-				this.admin = false;
+				this.isAdmin = false;
 				this.users = this.users.filter(function(user) {
 					return user.id !== self.auth.id;
 				});
@@ -762,7 +729,7 @@ export default  {
 
 
 
-		//the player wants to send a request to join this team
+		// the player wants to send a request to join this team
 		requestToJoin(action) {
 			var self = this;
 			var url = this.prefix + '/join';
@@ -788,11 +755,11 @@ export default  {
 
 
 
-		//they were invited, make them a for-real member now
+		// they were invited, make them a for-real member now
 		respondToInv(outcome) {
 			var self = this;
-			//first they should confirm whether they want to accept the invite or not
-			//only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
+			// first they should confirm whether they want to accept the invite or not
+			// only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
 			if(typeof outcome !== 'boolean') {
 				if(this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
 				if(this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
@@ -808,7 +775,7 @@ export default  {
 					cancelButtonText: 'NO THANKS',
 					closeOnConfirm: true
 				}, function(confirm) {
-					//call this function with boolean response
+					// call this function with boolean response
 					if(confirm) {
 						self.respondToInv(true);
 					}
@@ -817,7 +784,7 @@ export default  {
 					}
 				});
 
-				//they will be back after confirming
+				// they will be back after confirming
 				return;
 			}
 
@@ -825,7 +792,7 @@ export default  {
 			data = { accept: outcome };
 			this.$http.post(url, data)
 				.then(function(response) {
-					//check there were no authorization errors
+					// check there were no authorization errors
 					if(!response.data.ok) {
 						throw response.data.error;
 					}
@@ -833,7 +800,7 @@ export default  {
 					self.hasBeenInvited = false;
 
 					if(outcome) {
-						//add them to the team
+						// add them to the team
 						self.formatUsers(response.data.users);
 						self.$root.banner('good', "You've joined this team");
 						self.isFan = false;
@@ -847,7 +814,7 @@ export default  {
 				});
 
 		},
-	}, //end methods
+	}, // end methods
 
 	ready() {
 
@@ -896,7 +863,6 @@ export default  {
 	padding 110px 0 0 0px 
 	background-size cover
 	background-attachment fixed
-	//background-image url()
 
 .Team__pic
 	flex 1

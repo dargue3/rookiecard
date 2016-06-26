@@ -26140,11 +26140,9 @@ exports.default = {
 
 
 	methods: {
-
 		//submit post request
 
 		createEvent: function createEvent() {
-
 			var errors = this.errorCheck();
 
 			if (errors) {
@@ -26152,11 +26150,11 @@ exports.default = {
 				return;
 			}
 
+			//if no error, send the post request
+
 			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			var momentUntil = moment(this.until, 'MMM D, YYYY');
-
-			//if no error, send the post request
 
 			var newEvent = {
 				title: this.title,
@@ -26174,16 +26172,22 @@ exports.default = {
 			}
 
 			var self = this;
-			var url = this.$parent.prefix + '/events';
+			var url = this.$parent.prefix + '/event';
 			this.$http.post(url, newEvent).then(function (response) {
-				if (!response.data.ok) throw response.data.error;
+				if (!response.data.ok) {
+					throw response.data.error;
+				}
 
 				self.$dispatch('newEvent', response.data.events, response.data.feed);
 
 				$('#addEventModal').modal('hide');
 
-				if (self.repeats) //plural
-					var msg = "Events saved";else var msg = "Event saved";
+				if (self.repeats) {
+					//plural
+					var msg = "Events saved";
+				} else {
+					var msg = "Event saved";
+				}
 
 				self.$root.banner('good', msg);
 
@@ -28488,13 +28492,13 @@ exports.default = {
 
 	watch: {
 		event: function event(val, old) {
-			//wait for an new event to be clicked
+			// wait for an new event to be clicked
 			if (this.event.id) this.initialize();else return;
 		}
 	},
 
 	computed: {
-		//figure out if this event is a game
+		// figure out if this event is a game
 
 		isGame: function isGame() {
 			return this.event.type === 1 || this.event.type === 2;
@@ -28503,33 +28507,29 @@ exports.default = {
 
 	methods: {
 
-		//save button was hit
+		// save button was hit
 
 		updateEvent: function updateEvent() {
 
-			this.fromDate = $('.edit-picker-from input[name="from"]').val();
-			this.toDate = $('.edit-picker-to input[name="to"]').val();
+			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 
-			//make new date strings
-			this.backup.start = this.fromDate + " " + this.fromTime;
-			this.backup.end = this.toDate + " " + this.toTime;
+			this.event.start = momentFrom.unix();
+			this.event.end = momentTo.unix();
 
 			var self = this;
-			var url = this.$parent.prefix + '/events';
-			this.$http.put(url, this.backup).then(function (response) {
-				//if good post, update events with this new edit
+			var url = this.$parent.prefix + "/event/" + this.event.id;
+			this.$http.put(url, this.event).then(function (response) {
 
-				//turn date back into UTC timestamp
-				self.backup.start = parseInt(moment(self.backup.start, 'MMM D, YYYY h:mm a').format('X'));
-				self.backup.end = parseInt(moment(self.backup.end, 'MMM D, YYYY h:mm a').format('X'));
+				var events = response.data.events;
+				var feed = response.data.feed;
 
-				if (response.data.feed) var data = response.data.feed;else var data = null;
-				self.$dispatch('updateEvent', self.backup, data);
+				self.$dispatch('updateEvent', events, feed);
 
-				//hide the modal
+				// hide the modal
 				$('#viewEventModal').modal('hide');
 
-				//show success banner
+				// show success banner
 				self.$root.banner('good', "Event saved");
 			}).catch(function (response) {
 				self.$root.errorMsg();
@@ -28537,33 +28537,39 @@ exports.default = {
 		},
 
 
-		//delete button was hit
+		// delete button was hit
 		deleteEvent: function deleteEvent(confirmed) {
 
 			if (this.editEvent && !confirmed) {
-				//prompt user 'are you sure?' because there may be attached stats
+				// prompt user 'are you sure?' because there may be attached stats
 				this.promptForDelete();
 				return;
 			}
 
 			var self = this;
-			var url = this.$parent.prefix + '/events';
+			var url = this.$parent.prefix + "/event/" + this.backup.id;
 			this.$http.delete(url).then(function (response) {
-				if (!response.data.ok) throw response.data.error;
+				if (!response.data.ok) {
+					throw response.data.error;
+				}
 
-				self.$dispatch('deleteEvent', self.event, data);
+				var events = response.data.events;
+				var feed = response.data.feed;
+
+				self.$dispatch('deleteEvent', events, feed);
+
 				$('#viewEventModal').modal('hide');
 
-				//show success banner
+				// show success banner
 				self.$root.banner('good', "Event deleted");
 			}).catch(function (response) {
-				//show error
+				// show error
 				self.$root.errorMsg();
 			});
 		},
 
 
-		//display a popup with a yes or no for deleting this event
+		// display a popup with a yes or no for deleting this event
 		promptForDelete: function promptForDelete() {
 			swal({
 				title: 'Delete Event?',
@@ -28578,13 +28584,13 @@ exports.default = {
 				closeOnConfirm: true
 			}, function (confirm) {
 				if (confirm)
-					//confirm delete
+					// confirm delete
 					this.deleteEvent(true);
 			}.bind(this));
 		},
 
 
-		//cancel button was hit
+		// cancel button was hit
 		cancel: function cancel() {
 			this.event = this.backup;
 			this.editEvent = false;
@@ -28593,26 +28599,26 @@ exports.default = {
 		},
 
 
-		//initialize data and get date/time pickers ready
+		// initialize data and get date/time pickers ready
 		initialize: function initialize() {
 
-			//make a backup of event so changes aren't reflected in rest of app unless saved
+			// make a backup of event so changes aren't reflected in rest of app unless saved
 			this.backup = JSON.parse((0, _stringify2.default)(this.event));
 
-			//init moment instances, milliseconds
+			// init moment instances, milliseconds
 			this.fromDate = moment(this.event.start * 1000);
 			this.fromTime = moment(this.event.start * 1000);
 			this.toDate = moment(this.event.end * 1000);
 			this.toTime = moment(this.event.end * 1000);
 
-			//initialize the jquery and event data
+			// initialize the jquery and event data
 			$(function () {
 
-				//init selectpicker, set to correct type
+				// init selectpicker, set to correct type
 				$('.selectpicker[EditEvent]').selectpicker();
 				$('.selectpicker[EditEvent]').selectpicker('val', this.event.type);
 
-				//datepickers for adding events
+				// datepickers for adding events
 				var fromPicker = $('[EditEvent="fromDate"]');
 				var toPicker = $('[EditEvent="toDate"]');
 				var fromPickerTime = $('[EditEvent="fromTime"]');
@@ -28629,13 +28635,13 @@ exports.default = {
 						return;
 					}
 
-					//when 'from' changes, save this new date into the state
-					//set 'to' and 'until' minimum dates so they don't end before it starts
+					// when 'from' changes, save this new date into the state
+					// set 'to' date so it doesn't end before it starts
 					this.fromDate = e.date.format('MMM D, YYYY');
 					toPicker.data('DateTimePicker').minDate(e.date);
 
 					if (!this.toPickerChange) {
-						//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
+						// if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
 						toPicker.data('DateTimePicker').date(e.date);
 					}
 				}.bind(this));
@@ -28683,22 +28689,26 @@ exports.default = {
 				}.bind(this));
 
 				this.toPickerChange = false;
+				this.fromDate = moment(this.event.start * 1000).format('MMM D, YYYY');
+				this.fromTime = moment(this.event.start * 1000).format('h:mm a');
+				this.toDate = moment(this.event.end * 1000).format('MMM D, YYYY');
+				this.toTime = moment(this.event.end * 1000).format('h:mm a');
 			}.bind(this));
 		},
 
 
-		//make sure there are no errors before saving data
+		// make sure there are no errors before saving data
 		errorCheck: function errorCheck() {
 			var errors = 0;
 
-			if (!this.backup.title.length) {
+			if (!this.event.title.length) {
 				errors++;
 				this.errors.title = 'Enter a title';
 			} else {
 				this.errors.title = '';
 			}
 
-			if (!this.backup.toDate.length || !this.backup.toTime.length) {
+			if (!this.toDate.length || !this.toTime.length) {
 				errors++;
 				this.errors.end = 'Choose an end date and time';
 			} else {
@@ -28728,12 +28738,12 @@ exports.default = {
 			}
 
 			if (errors) {
-				//if any of these failed, solve those issues first
+				// if any of these failed, solve those issues first
 				return errors;
 			}
 
-			//check for end dates < start dates
-			//until dates < end dates
+			// check for end dates < start dates
+			// until dates < end dates
 			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			var momentUntil = moment(this.until, 'MMM D, YYYY');
@@ -29670,7 +29680,7 @@ exports.default = {
 	},
 
 	route: {
-		//reload everything if new route but same component
+		// reload everything if new route but same component
 		canReuse: false
 	},
 
@@ -29679,7 +29689,7 @@ exports.default = {
 		var prefix = this.$parent.prefix + 'team/';
 		var teamname = this.$route.params.name;
 
-		//set new title
+		// set new title
 		document.title = teamname;
 
 		return {
@@ -29689,7 +29699,7 @@ exports.default = {
 			team: {
 				meta: {}
 			},
-			admin: false,
+			isAdmin: false,
 			auth: {},
 			isFan: false,
 			isMember: false,
@@ -29730,7 +29740,7 @@ exports.default = {
 			self.$root.errorMsg(error);
 		});
 
-		//didn't put a catch here because the 'team does not exist' header pretty much covers it
+		// didn't put a catch here because the 'team does not exist' header pretty much covers it
 	},
 
 
@@ -29740,26 +29750,26 @@ exports.default = {
 		},
 
 
-		//makes fan counter div wider with larger numFans
+		// makes fan counter div wider with larger numFans
 		numFansClass: function numFansClass() {
 			if (this.fans.length >= 1000) return '--thousandsOfFans';else if (this.fans.length >= 100) return '--hundredsOfFans';else if (this.fans.length >= 10) return '--tensOfFans';else return '';
 		},
 
 
-		//the following three functions pick which of the fan icons to display
+		// the following three functions pick which of the fan icons to display
 		showRemoveFan: function showRemoveFan() {
 			return !this.isFan && !this.isMember;
 		},
 		showBecomeFan: function showBecomeFan() {
-			return this.isFan && !this.admin;
+			return this.isFan && !this.isAdmin;
 		},
 		showIsFan: function showIsFan() {
-			//this icon is unclickable
-			return this.isMember || this.isFan && this.admin;
+			// this icon is unclickable
+			return this.isMember || this.isFan && this.isAdmin;
 		},
 
 
-		//the following four functions pick which of the membership buttons to display
+		// the following four functions pick which of the membership buttons to display
 		showYoureAMember: function showYoureAMember() {
 			return this.isMember || this.isCreator;
 		},
@@ -29774,35 +29784,33 @@ exports.default = {
 		},
 
 
-		//create list of players from users
-		//0 = user player, 1 = ghost player
+		// create list of players from users
 		players: function players() {
 			return this.users.filter(function (user) {
-				return user.role === 0 || user.role === 1;
+				return user.isPlayer;
 			});
 		},
 
 
-		//create list of coaches from users
-		//2 = user coach, 3 = ghost coach
+		// create list of coaches from users
 		coaches: function coaches() {
 			return this.users.filter(function (user) {
-				return user.role === 2 || user.role === 3;
+				return user.isCoach;
 			});
 		},
 
 
-		//create list of fans from users
+		// create list of fans from users
 		fans: function fans() {
 			return this.users.filter(function (user) {
-				return user.role === 4 || user.role >= 45 && user.role <= 47;
+				return user.isFan;
 			});
 		}
 	},
 
 	events: {
 
-		//new stats have been posted from ViewEvent
+		// new stats have been posted from ViewEvent
 
 		newStats: function newStats(data, entry) {
 
@@ -29815,90 +29823,91 @@ exports.default = {
 		},
 
 
-		//updated stats have been posted from ViewEvent
+		// updated stats have been posted from ViewEvent
 		updateStats: function updateStats(data, event) {
 
-			//first erase all stats for this event
+			// first erase all stats for this event
 			this.stats = this.stats.filter(function (stat) {
 				return stat.event_id !== event.id;
 			});
 
 			if (data.length) {
-				//there were new stats to add
+				// there were new stats to add
 				data.forEach(function (val) {
 					this.stats.push(val);
 				}.bind(this));
 			}
 
-			//tell Stats.vue to re-compile the stats
+			// tell Stats.vue to re-compile the stats
 			this.$broadcast('updateStats', this.stats);
 		},
 
 
-		//stats have been deleted from ViewEvent
+		// stats have been deleted from ViewEvent
 		deleteStats: function deleteStats(event) {
-			//iterate through all stats, keep the ones not associated with this event
+			// iterate through all stats, keep the ones not associated with this event
 			this.stats = this.stats.filter(function (stat) {
 				return stat.event_id !== event.id;
 			});
 
-			//tell Stats.vue to re-compile
+			// tell Stats.vue to re-compile
 			this.$broadcast('updateStats', this.stats);
 		},
 		newEvent: function newEvent(events, entry) {
+
 			this.events = events;
 
 			this.$broadcast('updateFeed', entry);
 		},
-		updateEvent: function updateEvent(updatedEvent, entry) {
-			this.events = this.events.filter(function (event) {
-				return event.id !== updatedEvent.id;
-			}.bind(this));
+		updateEvent: function updateEvent(events, entry) {
 
-			this.events.push(updatedEvent);
+			this.events = events;
 
-			if (entry) this.$broadcast('updateFeed', entry);
+			if (entry) {
+				this.$broadcast('updateFeed', entry);
+			}
 		},
-		deleteEvent: function deleteEvent(deletedEvent, entry) {
-			this.events = this.events.filter(function (event) {
-				return event.id !== deletedEvent.id;
-			}.bind(this));
+		deleteEvent: function deleteEvent(events, entry) {
 
-			if (entry) this.$broadcast('updateFeed', entry);
+			this.events = events;
+
+			if (entry) {
+				this.$broadcast('updateFeed', entry);
+			}
 		},
 
 
-		//new user was created from EditUser
+		// new user was created from EditUser
 		newUser: function newUser(user) {
 
-			//format raw data and add to array of users
+			// format raw data and add to array of users
 			this.formatUsers(user);
 		},
 
 
-		//user was updated from EditUser
+		// user was updated from EditUser
 		updateUser: function updateUser(editedUser) {
 
-			//remove current version of this user
+			// remove current version of this user
 			this.users = this.users.filter(function (user) {
 				return user.member_id !== editedUser.member_id;
 			});
 
-			//format raw data and add to array of users
+			// format raw data and add to array of users
 			this.formatUsers(editedUser);
 		},
 
 
-		//user was kicked from team from EditUser
+		// user was kicked from team from EditUser
 		deleteUser: function deleteUser(editedUser) {
 
-			//remove current version of user from users
+			// remove current version of user from users
 			this.users = this.users.filter(function (user) {
 				return user.member_id !== editedUser.member_id;
 			});
 
 			if (!editedUser.deleted) {
-				//if there's a ghost remaining, format raw data and add to array of users
+				// if there's a ghost remaining, format raw data and add to array of users
 				this.formatUsers(editedUser);
 			}
 		}
@@ -29906,18 +29915,18 @@ exports.default = {
 
 	methods: {
 
-		//method for assigning data after ajax call finishes
+		// method for assigning data after ajax call finishes
 
 		compile: function compile(data) {
 
 			this.auth = data.auth;
 			this.team = data.team;
 
-			//loop through all the users, create user objects
+			// loop through all the users, create user objects
 			this.users = [];
 			this.formatUsers(data.members);
 
-			//store meta data about team
+			// store meta data about team
 			var meta = JSON.parse(data.team.meta);
 			this.teamStatCols = meta.stats.teamCols;
 			this.playerStatCols = meta.stats.playerCols;
@@ -29925,83 +29934,66 @@ exports.default = {
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
 
-			//format the backdrop image as a style tag
+			// format the backdrop image as a style tag
 			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
 
-			//note whether or not this user is the creator
+			// note whether or not this user is the creator
 			if (this.team.creator_id == this.auth.id) {
 				this.isCreator = true;
-				this.admin = true;
+				this.isAdmin = true;
 			}
 
-			//now that all team data is ready, set these variables
-			//components are listening, will format the data as needed
+			// now that all team data is ready, set these variables
+			// components are listening, will format the data as needed
 			this.events = data.events;
 			this.stats = data.stats;
 			this.feed = data.feed;
 			this.positions = data.positions;
 
-			//tell App.vue to clear any notifications the logged in user may have
+			// tell App.vue to clear any notifications the logged in user may have
 			this.$dispatch('clearNotifications', this.team.id);
 
 			this.dataReady = true;
 		},
 
 
-		//compile meta data for users and push into this.users
+		// compile meta data for users and push into this.users
 		formatUsers: function formatUsers(users) {
-
 			if (!users) {
-				//its possible there is a 'null' here
+				// its possible there is a 'null' here
 				return;
 			}
 
-			if (!Array.isArray(users)) users = [users];
+			if (!Array.isArray(users)) {
+				users = [users];
+			}
 
 			for (var x = 0; x < users.length; x++) {
-
 				var user = users[x];
 
-				if (user.meta) user.meta = JSON.parse(user.meta);else user.meta = {};
-
-				if (user.admin === 1) user.admin = true;else user.admin = false;
-
-				//mark which user is the creator
-				if (this.team.creator_id === user.id) user.creator = true;
+				if (user.meta) {
+					user.meta = JSON.parse(user.meta);
+				} else {
+					user.meta = {};
+				}
+				// mark which user is the creator
+				if (this.team.creator_id === user.id) {
+					user.isCreator = true;
+				}
 
 				if (user.meta.ghost) {
-					//user is a ghost player, move their data around to be consistent with real players
+					// user is a ghost player, move their data around to be consistent with real players
 					var split = user.meta.ghost.name.split(' ');
 					user.firstname = split[0];
 					user.lastname = split[1];
 					user.id = 0;
 					user.ghost = true;
 					user.pic = '/images/ghost.png';
-				} else user.ghost = false;
+				}
 
-				//if logged in user is on list, save some other data about them too
+				//  is the logged in user an admin?
 				if (user.id === this.auth.id) {
-					this.admin = user.admin;
-					this.auth.role = user.role;
-
-					if (user.role <= 3) {
-						this.isMember = true;
-					}
-
-					//they're a fan if role is 4
-					if (user.role === 4) this.isFan = true;
-
-					//they've been invited to join if a 5 or 6
-					if (user.role === 5 || user.role === 6) this.hasBeenInvited = true;else if (user.role === 45 || user.role === 46) {
-						this.hasBeenInvited = true;
-						this.isFan = true;
-					}
-
-					//they've requested to join team if role is 7 or 47
-					if (user.role === 7) this.hasRequestedToJoin = true;else if (user.role === 47) {
-						this.hasRequestedToJoin = true;
-						this.isFan = true;
-					}
+					this.isAdmin = user.isAdmin;
 				}
 
 				this.users.push(user);
@@ -30009,7 +30001,7 @@ exports.default = {
 		},
 
 
-		//user hit fan button
+		// user hit fan button
 		toggleFan: function toggleFan() {
 
 			var self = this;
@@ -30022,37 +30014,37 @@ exports.default = {
 		},
 
 
-		//successful request, change fan status
+		// successful request, change fan status
 		updateFanStatus: function updateFanStatus() {
 			var self = this;
 
 			if (this.isFan) {
-				//use decrement animation on counter
+				// use decrement animation on counter
 				this.numFansTransition = 'number-tick-down';
 			} else {
-				//increment
+				// increment
 				this.numFansTransition = 'number-tick-up';
 			}
 
-			//swap the fan status
+			// swap the fan status
 			this.isFan = !this.isFan;
 			this.fansChanged = !this.fansChanged;
 
 			if (this.isFan) {
-				//is now a fan of this team
+				// is now a fan of this team
 				this.auth.role = 4;
 				this.auth.meta = {};
 				this.auth.admin = false;
-				this.admin = false;
+				this.isAdmin = false;
 				this.users.push(this.auth);
 
-				//tell App.vue to add this team to the nav dropdown
+				// tell App.vue to add this team to the nav dropdown
 				this.$dispatch('becameAFanOfTeam', this.team);
 				this.$root.banner('good', "You're now a fan");
 			} else {
-				//is no longer a fan
+				// is no longer a fan
 				this.auth.role = null;
-				this.admin = false;
+				this.isAdmin = false;
 				this.users = this.users.filter(function (user) {
 					return user.id !== self.auth.id;
 				});
@@ -30063,7 +30055,7 @@ exports.default = {
 		},
 
 
-		//the player wants to send a request to join this team
+		// the player wants to send a request to join this team
 		requestToJoin: function requestToJoin(action) {
 			var self = this;
 			var url = this.prefix + '/join';
@@ -30083,11 +30075,11 @@ exports.default = {
 		},
 
 
-		//they were invited, make them a for-real member now
+		// they were invited, make them a for-real member now
 		respondToInv: function respondToInv(outcome) {
 			var self = this;
-			//first they should confirm whether they want to accept the invite or not
-			//only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
+			// first they should confirm whether they want to accept the invite or not
+			// only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
 			if (typeof outcome !== 'boolean') {
 				if (this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
 				if (this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
@@ -30103,7 +30095,7 @@ exports.default = {
 					cancelButtonText: 'NO THANKS',
 					closeOnConfirm: true
 				}, function (confirm) {
-					//call this function with boolean response
+					// call this function with boolean response
 					if (confirm) {
 						self.respondToInv(true);
 					} else {
@@ -30111,14 +30103,14 @@ exports.default = {
 					}
 				});
 
-				//they will be back after confirming
+				// they will be back after confirming
 				return;
 			}
 
 			var url = this.prefix + '/join';
 			data = { accept: outcome };
 			this.$http.post(url, data).then(function (response) {
-				//check there were no authorization errors
+				// check there were no authorization errors
 				if (!response.data.ok) {
 					throw response.data.error;
 				}
@@ -30126,7 +30118,7 @@ exports.default = {
 				self.hasBeenInvited = false;
 
 				if (outcome) {
-					//add them to the team
+					// add them to the team
 					self.formatUsers(response.data.users);
 					self.$root.banner('good', "You've joined this team");
 					self.isFan = false;
@@ -30137,7 +30129,7 @@ exports.default = {
 				self.$root.errorMsg(error);
 			});
 		}
-	}, //end methods
+	}, // end methods
 
 	ready: function ready() {
 
@@ -30165,7 +30157,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div v-show=\"requestFinished\">\n\t\t<!-- container for template -->\n\n\t\t\t<!-- no results for team, show message -->\n\t\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"!team.id\" class=\"f-el-fill text-center\">\n\t\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t\t<br>\n\t\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t\t</div>\n\n\t\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t\t<div v-cloak=\"\" v-show=\"team.id\" class=\"Team for-blurring\">\n\t\t\t\n\n\t    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t\t{{ team.homefield + ', ' + team.city }}\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class=\"Team__fans\">\n\t\t\t\t\t\t\t\t\t<div class=\"Team__join_buttons\">\n\t\t\t\t\t\t\t\t\t\t<!-- buttons for joining team, accepting invitation -->\n\t\t\t\t\t\t\t\t\t\t<div class=\"Team__invite\">\n\t\t\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"requestToJoin('join')\">REQUEST TO JOIN</a>\n\n\t\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-delete\" @click=\"requestToJoin('cancel')\">CANCEL REQUEST</a>\n\n\t\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success\" @click=\"respondToInv()\">RESPOND TO INVITATION</a>\n\n\t\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success --member\">YOU'RE A MEMBER</a>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"num-fans\">\n\t\t\t\t\t\t\t\t\t\t<div class=\"fan-count\" :class=\"numFansClass\">\n\t\t\t\t\t\t\t\t\t\t\t<!-- for animating a new fan counter, show numFans +- 1 -->\n\t\t\t\t\t\t\t\t\t\t\t<span v-if=\"!fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-if=\"fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class=\"arrow-right --white\"></div>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t<div class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t<img src=\"/images/becomeFan.png\" width=\"35\" height=\"47\" alt=\"Become a fan\" id=\"becomeFan\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a fan\" id=\"isFan\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div v-show=\"false\" class=\"fan-icon --member\">\n\t\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a member\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div> <!-- end  Team__fans -->\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" @click=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"calendarTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">date_range</i>CALENDAR\n\t\t\t            </a>\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" @click=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"statsTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">trending_up</i>STATS\n\t\t\t            </a>\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" @click=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"rosterTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">group</i>ROSTER\n\t\t\t            </a>\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"admin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" @click=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"settingsTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">settings</i>SETTINGS\n\t\t\t            </a>\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\t\n\t\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t\t  <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t\t        \t<rc-calendar :admin=\"admin\" :events=\"events\"></rc-calendar>\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t    </ul>\n\t\t\t\t\t\t\t</div>\n\n\t\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t        \t\t</rc-stats>\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"admin\">\n\t\t\t        </rc-roster>\t\t\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\t\t\t     <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t\t        \t<h3>Settings</h3>\n\t\t        \t\n\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\t\t    </div>\n\n\t\t\t\t\n\t\t\t\t<div class=\"row\">\n\t\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t\t<rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<!-- include the footer at bottom -->\n\t\t\t\t<div class=\"Footer\">\n\t\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t  <!--  end of blurring wrapper --> \n\t\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n\t    <!-- inside here is complex logic handling what happens when an event is \n\t    \t\t\tclicked on from calendar or news feed -->\n\t\t\t<rc-view-event :admin=\"admin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t\t</rc-view-event>\n\n\n\n\t    <!-- modal window for adding events -->\n\t    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 class=\"modal-title\">Add an Event</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t            <div class=\"row\">\n\t                 \n\t\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n\t            </div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\t    <!-- modal for editing a player in the roster -->\n\t\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 v-show=\"(editUser.id || editUser.ghost) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n\t            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 1\" class=\"modal-title\">Add a Player</h3>\n\t            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 3\" class=\"modal-title\">Add a Coach</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t          \t<div class=\"row\">\n\t            \n\t\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.id || editUser.new || editUser.ghost\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t\t</div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\n\t <!-- end container for template -->\n\t  </div>  \n\t</div>\n\n\t\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div v-show=\"requestFinished\">\n\t\t<!-- container for template -->\n\n\t\t\t<!-- no results for team, show message -->\n\t\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"!team.id\" class=\"f-el-fill text-center\">\n\t\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t\t<br>\n\t\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t\t</div>\n\n\t\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t\t<div v-cloak=\"\" v-show=\"team.id\" class=\"Team for-blurring\">\n\t\t\t\n\n\t    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t\t{{ team.homefield + ', ' + team.city }}\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class=\"Team__fans\">\n\t\t\t\t\t\t\t\t\t<div class=\"Team__join_buttons\">\n\t\t\t\t\t\t\t\t\t\t<!-- buttons for joining team, accepting invitation -->\n\t\t\t\t\t\t\t\t\t\t<div class=\"Team__invite\">\n\t\t\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"requestToJoin('join')\">REQUEST TO JOIN</a>\n\n\t\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-delete\" @click=\"requestToJoin('cancel')\">CANCEL REQUEST</a>\n\n\t\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success\" @click=\"respondToInv()\">RESPOND TO INVITATION</a>\n\n\t\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success --member\">YOU'RE A MEMBER</a>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"num-fans\">\n\t\t\t\t\t\t\t\t\t\t<div class=\"fan-count\" :class=\"numFansClass\">\n\t\t\t\t\t\t\t\t\t\t\t<!-- for animating a new fan counter, show numFans +- 1 -->\n\t\t\t\t\t\t\t\t\t\t\t<span v-if=\"!fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-if=\"fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class=\"arrow-right --white\"></div>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t<div v-show=\"!isFan\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t<img src=\"/images/becomeFan.png\" width=\"35\" height=\"47\" alt=\"Become a fan\" id=\"becomeFan\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div v-show=\"isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a fan\" id=\"isFan\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div v-show=\"isMember\" class=\"fan-icon --member\">\n\t\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a member\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div> <!-- end  Team__fans -->\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" @click=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"calendarTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">date_range</i>CALENDAR\n\t\t\t            </a>\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" @click=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"statsTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">trending_up</i>STATS\n\t\t\t            </a>\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" @click=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"rosterTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">group</i>ROSTER\n\t\t\t            </a>\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" @click=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t\t<a id=\"settingsTab\">\n\t\t        \t\t\t\t<i class=\"material-icons\">settings</i>SETTINGS\n\t\t\t            </a>\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\t\n\t\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t\t  <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t\t        \t<rc-calendar :admin=\"isAdmin\" :events=\"events\"></rc-calendar>\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t      <li>\n\t\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t\t        </a>\n\t\t\t\t\t\t      </li>\n\t\t\t\t\t\t    </ul>\n\t\t\t\t\t\t\t</div>\n\n\t\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t        \t\t</rc-stats>\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\n\t\t\t    <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"isAdmin\">\n\t\t\t        </rc-roster>\t\t\n\n\t\t\t      </div>\n\t\t\t    </div>\n\n\n\t\t\t     <div class=\"row\">\n\t\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t\t        \t<h3>Settings</h3>\n\t\t        \t\n\n\t\t\t        \t\n\t\t\t      </div>\n\t\t\t    </div>\n\t\t    </div>\n\n\t\t\t\t\n\t\t\t\t<div class=\"row\">\n\t\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t\t<rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<!-- include the footer at bottom -->\n\t\t\t\t<div class=\"Footer\">\n\t\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t  <!--  end of blurring wrapper --> \n\t\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n\t    <!-- inside here is complex logic handling what happens when an event is \n\t    \t\t\tclicked on from calendar or news feed -->\n\t\t\t<rc-view-event :admin=\"isAdmin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t\t</rc-view-event>\n\n\n\n\t    <!-- modal window for adding events -->\n\t    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 class=\"modal-title\">Add an Event</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t            <div class=\"row\">\n\t                 \n\t\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n\t            </div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\t    <!-- modal for editing a player in the roster -->\n\t\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n\t      <div class=\"modal-dialog\">\n\t        <div class=\"modal-content\">\n\t          <div class=\"modal-header\">\n\t            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n\t            <h3 v-show=\"(editUser.id || editUser.ghost) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n\t            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 1\" class=\"modal-title\">Add a Player</h3>\n\t            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 3\" class=\"modal-title\">Add a Coach</h3>\n\t          </div>\n\t          <div class=\"modal-body\">\n\t          \t<div class=\"row\">\n\t            \n\t\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.id || editUser.new || editUser.ghost\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t\t</div>\n\t          </div>\n\t        </div>\n\t      </div>\n\t    </div>\n\n\n\n\n\t <!-- end container for template -->\n\t  </div>  \n\t</div>\n\n\t\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -30877,7 +30869,7 @@ router.start(_App2.default, '#app');
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/StatsSelection.js":{"index":190,"hash":"xUsbCivkOhskRsGPVyzU","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/some.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/map.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/collection/some.js","node_modules/lodash/internal/equalArrays.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":189,"hash":"oevnwx0F0ZIb39KpCZbK","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/collection/forEach.js","node_modules/lodash/internal/baseMap.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/some.js","node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"rEoxvh4LiXIl+p+0BT/T","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"vx2bUAM4CszlcCmDLbLm","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"ju/Oil6eHzUb86qE9u4/","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"ZVMVgUIbbUUFAVFY+xuu","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"ZIqPcQ+UmlY3x1lzyuV2","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"hO3KzsYMFVBHI9axAKGi","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"Y/6C6cNL63kNIJMSS7Dy","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"/jrBqp6xshgHzSgAsThm","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/getLength.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"ArVLmm/e9l6YlFqTKRtb","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"EJKfCbIhUFHcncoWiHp9","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"4N+/2xSdjlBlh4n9Vn+M","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"9g6cnaMOQcDv0DbdAxdR","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":191,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/StatsSelection.js":{"index":190,"hash":"xUsbCivkOhskRsGPVyzU","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":189,"hash":"oevnwx0F0ZIb39KpCZbK","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"Y/6C6cNL63kNIJMSS7Dy","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"/jrBqp6xshgHzSgAsThm","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"rEoxvh4LiXIl+p+0BT/T","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"yGKnSWRfBw/E8ZIS7LJB","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"ju/Oil6eHzUb86qE9u4/","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"ZVMVgUIbbUUFAVFY+xuu","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"ZIqPcQ+UmlY3x1lzyuV2","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"hO3KzsYMFVBHI9axAKGi","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"akT4gtDdjuuCr8Vgl4KO","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"EJKfCbIhUFHcncoWiHp9","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"4N+/2xSdjlBlh4n9Vn+M","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"aDh8eefltlXsTYAiMl/D","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":191,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";

@@ -16,17 +16,18 @@ class TransformsData
      */
     public function transformMembers($members, Team $team)
     {
-        $admin = Auth::user()->isTeamAdmin($team->teamname);
-
-        $members = $members->toArray();
+        $admin = Auth::user()->isTeamAdmin($team);
         $formatted = [];
 
         foreach ($members as $member) {
-       
 	        $user = User::find($member->user_id);
-	        $user['role'] = $member->role;
-	        $user['admin'] = $member->admin;
-	        $user['member_id'] = $member->id;
+	        $user['isCoach'] = $member->isCoach();
+	        $user['isPlayer'] = $member->isPlayer();
+	        $user['isFan'] = $member->isFan();
+	        $user['isAdmin'] = $member->isAdmin();
+	        $user['hasBeenInvited'] = $member->hasBeenInvited();
+	        $user['hasRequestedToJoin'] = $member->hasRequestedToJoin();
+	        $user['member_id'] 	= $member->id;
 
 	        if (! $admin) {
 	            // hide some sensitive data if they're not an admin

@@ -173,13 +173,9 @@ export default  {
 
 
 	methods: {
-
-
 		//submit post request
-		createEvent() {
-
-
-
+		createEvent()
+		{
 			var errors = this.errorCheck();
 
 			if(errors) {
@@ -187,12 +183,12 @@ export default  {
 				return;
 			}
 
+			//if no error, send the post request
+
 			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			var momentUntil = moment(this.until, 'MMM D, YYYY');
 
-			//if no error, send the post request
-	
 			var newEvent = {
 				title: this.title,
 				type: this.type,
@@ -209,31 +205,34 @@ export default  {
 			}
 
 			var self = this;
-			var url = this.$parent.prefix + '/events'; 
+			var url = this.$parent.prefix + '/event'; 
 			this.$http.post(url, newEvent)
-			.then(function(response) {
-				if(!response.data.ok) 
-					throw response.data.error;
+				.then(function(response) {
+					if(! response.data.ok) {
+						throw response.data.error;
+					}
 
-				self.$dispatch('newEvent', response.data.events, response.data.feed);
+					self.$dispatch('newEvent', response.data.events, response.data.feed);
 
-				$('#addEventModal').modal('hide');
+					$('#addEventModal').modal('hide');
 
-				if(self.repeats) //plural
-					var msg = "Events saved";
-				else
-					var msg = "Event saved";
+					if(self.repeats) {
+						//plural
+						var msg = "Events saved";
+					}
+					else {
+						var msg = "Event saved";
+					}
 
-				self.$root.banner('good', msg);
+					self.$root.banner('good', msg);
 
-				self.reinitializeData();
-				self.resetPickers();
-
-			})
-			.catch(function(response) {
-				//with a validated request, an error is thrown but laravel let's us supply an error message
-				self.$root.errorMsg(response.data.error);
-			});
+					self.reinitializeData();
+					self.resetPickers();
+				})
+				.catch(function(response) {
+					//with a validated request, an error is thrown but laravel let's us supply an error message
+					self.$root.errorMsg(response.data.error);
+				});
 		
 		},
 

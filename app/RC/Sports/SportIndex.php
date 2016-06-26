@@ -19,7 +19,7 @@ class SportIndex
 	/**
 	 * Fetch an instance of the sport given by its ID
 	 * 
-	 * @param  int $id [description]
+	 * @param  int $id 
 	 * @return App\RC\Sports\Sport
 	 */
 	public static function getSportById($id)
@@ -32,6 +32,7 @@ class SportIndex
 
 	/**
 	 * Uses type-hinting to ensure this sport implements the Sport interface
+	 * 
 	 * @return SportInterface
 	 */
 	public function ensureContract(Sport $sport)

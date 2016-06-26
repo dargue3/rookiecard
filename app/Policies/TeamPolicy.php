@@ -24,7 +24,7 @@ class TeamPolicy
 
 
 
-    //make sure the logged in user is allowed to edit this event
+    //make sure the event belongs to this team
     public function editEvents(User $user, Team $team, $event_id)
     {
         return $team->id == Event::findOrFail($event_id)->owner_id;

@@ -78,13 +78,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     /**
      * Check whether or not this user is an admin of a given team
      * 
-     * @param  string  $teamname
+     * @param  Team  $team
      * @return boolean          
      */
-    public function isTeamAdmin($teamname)
+    public function isTeamAdmin(Team $team)
     {
-        $team = Team::name($teamname)->firstOrFail();
-
         $member = TeamMember::member($this->id, $team->id)->first();
 
         if (! $member or ! $member->isAdmin()) {

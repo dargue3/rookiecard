@@ -25,6 +25,22 @@ $factory->define(App\User::class, function ($faker) {
 });
 
 
+$factory->define(App\Team::class, function ($faker) {
+    return [
+        'name'              => $faker->words(2, true),
+        'teamname'          => $faker->username,
+        'season'            => 1,
+        'creator_id'        => 1,
+        'sport'             => 0,
+        'gender'            => 0,
+        'long'              => -70.8389219,
+        'lat'               => 42.9375932,
+        'pic'               => '',
+        'backdrop'          => '',
+    ];
+});
+
+
 $factory->define(App\TeamMember::class, function ($faker) {
 	$num = (string) $faker->numberBetween(0, 99);
 	$positions = $faker->randomElements(['pg', 'sg', 'sf', 'pf', 'c'], 2);
@@ -50,7 +66,7 @@ $factory->define(App\Event::class, function ($faker) {
     	'type'			=> $faker->numberBetween(0, 3),
         'owner_id' 		=> $faker->numberBetween(1, 100),
         'creator_id' 	=> $faker->numberBetween(1, 100),
-    	'details'		=> $faker->sentences(2),
+    	'details'		=> $faker->sentences(2, true),
     ];
 });
 

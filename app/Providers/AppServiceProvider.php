@@ -27,6 +27,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(
+            'App\RC\Events\EventRepository',
+            'App\RC\Events\EloquentEvent'
+        );
 
+        $this->app->bind(
+            'App\RC\Team\TeamRepository',
+            'App\RC\Team\EloquentTeam'
+        );
     }
 }

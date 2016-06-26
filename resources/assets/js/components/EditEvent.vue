@@ -131,7 +131,7 @@ export default  {
 
 	watch: {
 		event(val, old) {
-			//wait for an new event to be clicked
+			// wait for an new event to be clicked
 			if(this.event.id)
 				this.initialize();
 			else
@@ -140,7 +140,7 @@ export default  {
 	},
 
 	computed: {
-		//figure out if this event is a game
+		// figure out if this event is a game
 		isGame() {
 			return this.event.type === 1 || this.event.type === 2;
 		}
@@ -148,72 +148,71 @@ export default  {
 
 	methods: {
 
-		//save button was hit
+		// save button was hit
 		updateEvent() {
-		
-    	this.fromDate = $('.edit-picker-from input[name="from"]').val();
-			this.toDate = $('.edit-picker-to input[name="to"]').val();
 
-    	//make new date strings 
-    	this.backup.start = this.fromDate + " " + this.fromTime;
-    	this.backup.end = this.toDate + " " + this.toTime;
+			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+    	var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 
-    	var self = this;
-    	var url = this.$parent.prefix + '/events';
-			this.$http.put(url, this.backup).then(function(response) {
-				//if good post, update events with this new edit
+			this.event.start = momentFrom.unix();
+			this.event.end = momentTo.unix();
 
-				//turn date back into UTC timestamp
-				self.backup.start = parseInt(moment(self.backup.start, 'MMM D, YYYY h:mm a').format('X'));
-				self.backup.end = parseInt(moment(self.backup.end, 'MMM D, YYYY h:mm a').format('X'));
+			var self = this;
+    	var url = this.$parent.prefix + "/event/" + this.event.id;
+			this.$http.put(url, this.event)
+				.then(function(response) {
 
-				if(response.data.feed)
-					var data = response.data.feed;
-				else
-					var data = null;
-				self.$dispatch('updateEvent', self.backup, data);
-	
-				//hide the modal
-				$('#viewEventModal').modal('hide');
+					var events = response.data.events;
+					var feed = response.data.feed;
+					
+					self.$dispatch('updateEvent', events, feed);
 
-				//show success banner
-				self.$root.banner('good', "Event saved");
+					// hide the modal
+					$('#viewEventModal').modal('hide');
 
-			})
-			.catch(function(response) {
-				self.$root.errorMsg();
-			});
+					// show success banner
+					self.$root.banner('good', "Event saved");
+
+				})
+				.catch(function(response) {
+					self.$root.errorMsg();
+				});
 		},
 
-		//delete button was hit
+		// delete button was hit
 		deleteEvent(confirmed) {
 
 			if(this.editEvent && !confirmed) {
-				//prompt user 'are you sure?' because there may be attached stats
+				// prompt user 'are you sure?' because there may be attached stats
 				this.promptForDelete();
 				return;
 			}
 
 			var self = this;
-    	var url = this.$parent.prefix + '/events';
-    	this.$http.delete(url).then(function(response) {
-    		if(!response.data.ok)
-    			throw response.data.error;
+    	var url = this.$parent.prefix + "/event/" + this.backup.id;
+    	this.$http.delete(url)
+    		.then(function(response) {
+	    		if(!response.data.ok) {
+	    			throw response.data.error;
+	    		}
 
+	    		var events = response.data.events;
+					var feed = response.data.feed;
+					
+					self.$dispatch('deleteEvent', events, feed);
 
-				self.$dispatch('deleteEvent', self.event, data);
-				$('#viewEventModal').modal('hide');
+					$('#viewEventModal').modal('hide');
 
-				//show success banner
-				self.$root.banner('good', "Event deleted");
-			})
-			.catch(function(response) {
-				//show error
-				self.$root.errorMsg();
-			});
+					// show success banner
+					self.$root.banner('good', "Event deleted");
+				})
+				.catch(function(response) {
+					// show error
+					self.$root.errorMsg();
+				});
 		},
 
-		//display a popup with a yes or no for deleting this event
+		// display a popup with a yes or no for deleting this event
 		promptForDelete() {
 			swal({   
 				title: 'Delete Event?',
@@ -228,12 +227,12 @@ export default  {
 				closeOnConfirm: true
 			}, function(confirm) {
 				if(confirm)
-					//confirm delete
+					// confirm delete
 					this.deleteEvent(true);
 			}.bind(this));
 		},
 
-		//cancel button was hit
+		// cancel button was hit
 		cancel() {
 			this.event = this.backup;
 			this.editEvent = false;
@@ -242,26 +241,26 @@ export default  {
 		},
 
 
-		//initialize data and get date/time pickers ready
+		// initialize data and get date/time pickers ready
 		initialize() {
 
-			//make a backup of event so changes aren't reflected in rest of app unless saved
+			// make a backup of event so changes aren't reflected in rest of app unless saved
 			this.backup = JSON.parse(JSON.stringify(this.event));
 
-			//init moment instances, milliseconds
+			// init moment instances, milliseconds
 			this.fromDate = moment(this.event.start * 1000);
 			this.fromTime = moment(this.event.start * 1000);
 			this.toDate 	= moment(this.event.end * 1000);
 			this.toTime 	= moment(this.event.end * 1000);
 
-			//initialize the jquery and event data
+			// initialize the jquery and event data
 			$(function() {
 
-				//init selectpicker, set to correct type
+				// init selectpicker, set to correct type
 			  $('.selectpicker[EditEvent]').selectpicker();
 			  $('.selectpicker[EditEvent]').selectpicker('val', this.event.type);
 			 
-			  //datepickers for adding events
+			  // datepickers for adding events
 			  var fromPicker  		= $('[EditEvent="fromDate"]');
 			  var toPicker    		= $('[EditEvent="toDate"]');
 			  var fromPickerTime  = $('[EditEvent="fromTime"]');
@@ -274,18 +273,18 @@ export default  {
 			    defaultDate: this.fromDate,
 			  })
 			  .on('dp.change', function(e) { 
-			  	if(!e.date) {
+			  	if (! e.date) {
 			  		this.fromDate = '';
 			  		return;
 			  	}
 
-			  	//when 'from' changes, save this new date into the state
-			  	//set 'to' and 'until' minimum dates so they don't end before it starts
+			  	// when 'from' changes, save this new date into the state
+			  	// set 'to' date so it doesn't end before it starts
 			  	this.fromDate = e.date.format('MMM D, YYYY');
 			  	toPicker.data('DateTimePicker').minDate(e.date);
 
-			  	if(!this.toPickerChange) {
-			  		//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
+			  	if (! this.toPickerChange) {
+			  		// if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
 			  		toPicker.data('DateTimePicker').date(e.date);
 			  	}
 
@@ -337,16 +336,20 @@ export default  {
 			  }.bind(this));
 
 			  this.toPickerChange = false;
+			  this.fromDate = moment(this.event.start * 1000).format('MMM D, YYYY');
+				this.fromTime = moment(this.event.start * 1000).format('h:mm a');
+				this.toDate 	= moment(this.event.end * 1000).format('MMM D, YYYY');
+				this.toTime 	= moment(this.event.end * 1000).format('h:mm a');
 
 			}.bind(this));
 		},	
 
 
-		//make sure there are no errors before saving data
+		// make sure there are no errors before saving data
 		errorCheck() {
 			var errors = 0;
 
-			if(!this.backup.title.length) {
+			if(!this.event.title.length) {
 				errors++;
 				this.errors.title = 'Enter a title';
 			}
@@ -354,7 +357,7 @@ export default  {
 				this.errors.title = '';
 			}
 
-			if(!this.backup.toDate.length || !this.backup.toTime.length)  {
+			if(!this.toDate.length || !this.toTime.length)  {
 				errors++;
 				this.errors.end = 'Choose an end date and time';
 			}
@@ -388,13 +391,13 @@ export default  {
 			}
 
 			if(errors) {
-				//if any of these failed, solve those issues first
+				// if any of these failed, solve those issues first
 				return errors;
 			}
 
 
-			//check for end dates < start dates
-			//until dates < end dates
+			// check for end dates < start dates
+			// until dates < end dates
 			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			var momentUntil = moment(this.until, 'MMM D, YYYY');

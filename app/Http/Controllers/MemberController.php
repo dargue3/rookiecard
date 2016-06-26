@@ -6,6 +6,7 @@ use App\Team;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Validation\Validator;
 
 
 class MemberController extends Controller

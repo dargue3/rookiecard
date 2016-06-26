@@ -9,8 +9,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
 use App\Team;
-use App\Repositories\TeamRepository;
 use App\Http\Requests\NewEventRequest;
+use App\RC\Team\TeamRepositoryInterface;
 use App\Http\Requests\CreateTeamRequest;
 
 
@@ -19,19 +19,21 @@ class TeamController extends Controller
     /**
      * Instance of team repository
      * 
-     * @var TeamRepository
+     * @var TeamRepositoryInterface
      */
-    private $team;
+    protected $team;
 
     /**
-     * Assign controller middleware
+     * Assign controller middleware and dependencies
+     * 
+     * @param  TeamRepositoryInterface $team
      */
-    public function __construct(TeamRepository $repository)
+    public function __construct(TeamRepositoryInterface $team)
     {
         $this->middleware('auth');
         $this->middleware('admin', ['only' => 'uploadPic']);
 
-        $this->team = $repository;
+        $this->team = $team;
     }
 
 

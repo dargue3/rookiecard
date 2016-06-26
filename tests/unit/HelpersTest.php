@@ -1,11 +1,10 @@
 <?php
 use App\User;
+use App\Team;
 use App\TeamRole;
 
 class HelpersTest extends TestCase
 {
-    use SignedInUser;
-    use TeamRoleHelpers;
 
     /** @test */
     public function a_random_user_gets_logged_in_when_no_arguments_to_sign_in_method()
@@ -25,6 +24,16 @@ class HelpersTest extends TestCase
 
         $this->assertEquals($user->id, Auth::id());
         $this->assertEquals($user->id, $this->user->id);
+    }
+
+
+    /** @test */
+    public function a_signed_in_user_can_be_made_into_an_admin_of_a_given_team()
+    {
+        $team = factory(Team::class)->create();
+        $this->signIn()->makeAdminOfTeam($team);
+
+        $this->assertTrue($this->user->isTeamAdmin($team));
     }
 
 
