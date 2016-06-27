@@ -12,19 +12,60 @@ use Illuminate\Support\Facades\Auth;
 class HandlesEventLogic
 {
     /**
-     * Given data about this event, made public for testability
-     * @var mixed
+     * @var string
      */
-	public $team;
 	public $title;
+
+    /**
+     * @var int
+     */
 	public $type;
+
+    /**
+     * @var Carbon
+     */
 	public $start;
+
+    /**
+     * @var Carbon
+     */
 	public $end;
+
+    /**
+     * @var string
+     */
 	public $details;
+
+    /**
+     * The logged-in user's timezone
+     * 
+     * @var string
+     */
 	public $tz;
+
+    /**
+     * @var boolean
+     */
 	public $repeats = false;
+
+    /**
+     * Array of days that the event repeats on, like: ['Monday', 'Wednesday']
+     * 
+     * @var array
+     */
 	public $days;
+
+    /**
+     * @var Carbon
+     */
 	public $until;
+
+    /**
+     * The team that is creating this event
+     * 
+     * @var Team
+     */
+    public $team;
 
     /**
      * Event repository instance
@@ -34,66 +75,46 @@ class HandlesEventLogic
     protected $event;
 
     /**
-     * NewsFeed repository instance
-     * @var NewsFeedRepository
-     */
-    protected $feed;
-
-    /**
-     * The maximum number of events you can create at once
+     * The maximum number of events user can create at once
      * 
      * @var integer
      */
     protected $maximumEvents = 500;
 
+    /**
+     * The current supported event types as passed in by front-end
+     * 
+     * @var array
+     */
+    protected $typeLookup = [
+        'practice'      => 0,
+        'home_game'     => 1,
+        'away_game'     => 2,
+        'other'         => 3,
+    ];
 
-	public function __construct(array $data,
-                                Team $team, 
-                                EventRepository $event, 
-                                NewsFeedRepository $feed)
+
+	public function __construct(array $data, Team $team, EventRepository $event)
 	{
         $this->event = $event;
-        $this->feed = $feed ?: new NewsFeed;
-
-        $data = $this->transformData($data);
+		$this->team = $team;
 
         // save all of the event data as attributes for easier access later
-		$this->team         = $team;
         $this->title        = $data['title'];
-        $this->type         = $data['type'];
-        $this->start        = Carbon::createFromTimestamp($data['start'], $data['tz']);
-        $this->end          = Carbon::createFromTimestamp($data['end'], $data['tz']);
-        $this->details      = $data['details'];
+        $this->type         = $this->typeLookup[$data['type']];
         $this->tz           = $data['tz'];
-        $this->repeats      = $data['repeats'];
+        $this->start        = Carbon::createFromTimestamp($data['start'], $this->tz);
+        $this->end          = Carbon::createFromTimestamp($data['end'], $this->tz);
+        $this->details      = $data['details'];
 
-        if ($this->repeats) {
-            $this->days         = $data['days'];
-            $this->until        = Carbon::createFromTimestamp($data['until'], $data['tz']);
+        if (isset($data['repeats'])) {
+            $this->repeats = true;
+            $this->days = $data['days'];
+            $this->until = Carbon::createFromTimestamp($data['until'], $this->tz)->startOfDay();
         }
 
         $this->makeSureTheDatesAreReasonable();
 	}
-
-
-    /**
-     * Massage the data a bit
-     * 
-     * @param  NewEventRequest $request 
-     * @return array
-     */
-    public function transformData(array $data)
-    {
-        $data['type'] = intval($data['type']);
-
-        if (! isset($data['repeats'])) {
-            $data['repeats'] = false;
-            $data['days'] = [];
-            $data['until'] = null;
-        }
-
-        return $data;
-    }
 
 
     /**
@@ -138,7 +159,7 @@ class HandlesEventLogic
     }
 
     /**
-     * Use some approximations to see if this request creates too many events at once
+     * Use some approximations to see if this request will create too many events at once
      * 
      * @return void
      */
@@ -146,8 +167,8 @@ class HandlesEventLogic
     {
         $estimate = $this->until->diffInWeeks($this->start) * count($this->days);
 
-        if ($estimate > 250) {
-            throw new ApiException("We limit you to 250 repeating events per request");
+        if ($estimate > $this->maximumEvents) {
+            throw new ApiException("We limit you to $this->maximumEvents repeating events per request");
         }
     }
 
@@ -159,19 +180,16 @@ class HandlesEventLogic
 	 */
     public function create()
     {
-    	if ($this->event->teamHasCreatedTooManyEvents($this->team)) {
+    	if ($this->event->teamHasCreatedTooManyEvents($this->team->id)) {
     		throw new ApiException("Your team has already created too many events");
     	}   
 
         if($this->repeats) {
-        	$meta = $this->thisEventRepeats();
+        	return $this->thisEventRepeats();
         }
 
-        else {
-            $meta = $this->theresJustOne();     
-        }
-
-        return $this->createNewsFeedEntry($meta);
+    
+        return $this->theresJustOne();     
     }
 
 
@@ -196,22 +214,22 @@ class HandlesEventLogic
     }
 
 
-    /**
-     * Creates a news feed entry given some meta data
-     * 
-     * @param  array $meta
-     * @return int     
-     */
-    public function createNewsFeedEntry($meta)
-    {
-        return $this->feed->newTeamEvents($this->team, $meta);
-    }
+    // /**
+    //  * Creates a news feed entry given some meta data
+    //  * 
+    //  * @param  array $meta
+    //  * @return int     
+    //  */
+    // public function createNewsFeedEntry($meta)
+    // {
+    //     return $this->feed->teamCreatedAnEvent($this->team, $meta);
+    // }
 
 
     /**
      * Create just one event
      * 
-     * @return array The meta data that will be inserted into the news feed
+     * @return array
      */
     public function theresJustOne()
     {
@@ -220,7 +238,7 @@ class HandlesEventLogic
             $this->end->timezone('UTC')->timestamp
         );
 
-        return ['event' => $event];
+        return array($event);
     }
 
 
@@ -238,7 +256,7 @@ class HandlesEventLogic
 
 
         // create the first event
-        $firstEvent = $this->createEvent(
+        $events[] = $this->createEvent(
             $today->hour($hour)->minute($minute)->timezone('UTC')->timestamp,
             $today->addMinutes($lapse)->timestamp
         );
@@ -255,11 +273,11 @@ class HandlesEventLogic
             $today = $this->setToNextRepeatingDay($today);
 
             // already past the last repeating day, quit
-            if ($today > $this->until->startOfDay()) {
+            if ($today > $this->until) {
                 break;
             }
 
-            $event = $this->createEvent(
+            $events[] = $this->createEvent(
                 $today->hour($hour)->minute($minute)->timezone('UTC')->timestamp,
                 $today->addMinutes($lapse)->timestamp
             );
@@ -267,7 +285,7 @@ class HandlesEventLogic
             $count++;
         }
 
-        return ['event' => $firstEvent, 'repeats' => true, 'count' => $count];
+        return $events;
     }
 
     /**
@@ -300,7 +318,7 @@ class HandlesEventLogic
 
 
     /**
-     * Calculates an array of number of days between given and next repeating day
+     * Calculates an array of number of days between $today and next repeating day
      * 
      * @param  Carbon $today
      * @return array      
@@ -308,7 +326,7 @@ class HandlesEventLogic
     public function calculateDifferencesFromToday(Carbon $today)
     {
         $differences = [];
-
+        
         // loop through the array of repeating days calculating the difference between $today and that day
         foreach ($this->days as $day) {
             $difference = $today->diffInDays(Carbon::parse('this ' . $day));

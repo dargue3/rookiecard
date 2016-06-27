@@ -7,25 +7,26 @@ use App\Http\Requests\Request;
 class NewEventRequest extends Request
 {
 
-    //middleware already ensures a team admin is sending this
+    // middleware already ensures a team admin is sending this
     public function authorize()
     {
         return true;
     }
 
     
-    //define the rules applied to the inputs 
+    // define the rules applied to the inputs 
     public function rules()
     {
         return [
             'title'             => 'required|max:50',
-            'type'              => 'required|size:1',
+            'type'              => 'required|string|in:practice,home_game,away_game,other',
             'start'             => 'required|integer',
             'end'               => 'required|integer',
-            'repeats'           => 'boolean',
-            'until'             => 'required_with:repeats|integer',
-            'repeatDays'        => 'required_with:repeats|array',
             'details'           => 'max:5000',
+            'repeats'           => 'boolean',
+            'days'              => 'required_with:repeats|array',
+            'days.*'            => 'required_with:repeats|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
+            'until'             => 'required_with:repeats|integer',
         ];
     }
 }

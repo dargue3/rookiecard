@@ -7,24 +7,24 @@ use Illuminate\Http\Request;
 use App\Team;
 use Validator;
 use App\Http\Requests;
-use App\Exceptions\ApiException;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\NewEventRequest;
 use App\RC\Team\TeamRepository;
+use App\Exceptions\ApiException;
 use App\RC\Events\EventRepository;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\NewEventRequest;
 
 class EventController extends Controller
 {
     /**
-     * Event repository instance
+     * An instance of event repository
      * 
      * @var EventRepository
      */
     protected $event;
 
     /**
-     * Team repository instance
+     * An instance of team repository
      * 
      * @var TeamRepository
      */
@@ -55,7 +55,7 @@ class EventController extends Controller
 
         $feed = $this->event->store($data, $team);
 
-        return ['ok' => true, 'feed' => $feed, 'events' => $this->team->events($team)];
+        return ['ok' => true, 'events' => $this->team->events($team)];
     }
 
 

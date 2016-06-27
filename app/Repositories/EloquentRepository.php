@@ -1,56 +1,58 @@
 <?php
 namespace App\Repositories;
 
+use Exception;
+
 /**
- * Provides default implementations that are used across all repositories by
+ * Provides default implementations that are used across all Eloquent repositories by
  * leveraging dynamic function calls. These simply delegate static function calls
- * to the right Eloquent model
+ * to the right model
  */
 abstract class EloquentRepository implements RepositoryInterface
 {
 	/**
-	 * A class path to choose which Model class to call
+	 * A path to choose which Model class to call
 	 * 
 	 * @var string
 	 */
-	protected $modelClassPath;
+	protected $modelPath;
 
 
 	public function __construct()
 	{
-		// ensure the modelClassPath attribute is set
-		if (! isset($this->modelClassPath)) {
-			throw new Exception(get_class($this) . ' must have a $modelClassPath');
+		// ensure the modelPath attribute is set
+		if (! isset($this->modelPath)) {
+			throw new Exception(get_class($this) . ' must have a $modelPath');
 		}
 	}
 
 
 	public function create(array $attributes)
 	{
-		return call_user_func_array("{$this->modelClassPath}::create", array($attributes));
+		return call_user_func_array("{$this->modelPath}::create", array($attributes));
 	}
 
 
 	public function all()
 	{
-		return call_user_func("{$this->modelClassPath}::all");
+		return call_user_func("{$this->modelPath}::all");
 	}
 
 
 	public function find($id)
 	{
-		return call_user_func_array("{$this->modelClassPath}::find", array($id));
+		return call_user_func_array("{$this->modelPath}::find", array($id));
 	}
 
 
 	public function findOrFail($id)
 	{
-		return call_user_func_array("{$this->modelClassPath}::findOrFail", array($id));
+		return call_user_func_array("{$this->modelPath}::findOrFail", array($id));
 	}
 
 	
 	public function delete($id)
 	{
-		return call_user_func_array("{$this->modelClassPath}::delete", array($id));
+		return call_user_func_array("{$this->modelPath}::delete", array($id));
 	}
 }

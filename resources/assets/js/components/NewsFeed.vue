@@ -107,9 +107,9 @@
 <script>
 
 
-//NewsFeed handles some of its own state without notifying parent. this 
-//is mostly due to the fact that there are transitions and for the most
-//part, the data here is inconsequential to the rest of the page
+// NewsFeed handles some of its own state without notifying parent. this 
+// is mostly due to the fact that there are transitions and for the most
+// part, the data here is inconsequential to the rest of the page
 
 export default  {
 	
@@ -135,29 +135,29 @@ export default  {
 
 
 	events: {
-		//new feed entry from Team has been sent
+		// new feed entry from Team has been sent
 		updateFeed(entry) {
-			//add to the feed, 'true' means this is a brand new post
+			// add to the feed, 'true' means this is a brand new post
 			this.format(entry, true);
 		}
 	},
 
 	methods: {
 
-		//iterate through all raw feed data, format and add to the news feed
+		// iterate through all raw feed data, format and add to the news feed
 		compile() {
 			
 			var self = this;
 			this.feed.forEach(function(entry) {
-				//the 'false' means these aren't brand new posts
+				// the 'false' means these aren't brand new posts
 				self.format(entry, false);		
 			})
 
-			this.entries.splice(0, 1); //remove empty placeholder spot in feed array
+			this.entries.splice(0, 1); // remove empty placeholder spot in feed array
 		},
 
-		//for deciding whether or not to show the 'delete' icon in feed
-		//show if owner of entry or if team admin
+		// for deciding whether or not to show the 'delete' icon in feed
+		// show if owner of entry or if team admin
 		showDelete(creator) {
 			var admin = this.$parent.admin;
 			var auth = this.$parent.auth.id;
@@ -172,10 +172,10 @@ export default  {
 				return false;
 		},
 
-		//delete an entry in the news feed
+		// delete an entry in the news feed
 		deletePost(entry, index) {
 
-			//remove from the news feed array
+			// remove from the news feed array
 			this.entries[index].$remove(entry);
 
 			var self = this;
@@ -183,16 +183,16 @@ export default  {
 			var data = { id: entry.id };
 			this.$http.delete(url, data)
 			.then(function(response) {
-				//successful ajax request
+				// successful ajax request
 				self.$root.banner('good', 'This post has been deleted');
 			})
 			.catch(function() {
-				//failed ajax request
+				// failed ajax request
 				self.$root.banner('bad', "There was a problem deleting this post, try refreshing the page.");
 			})
 		}, 
 
-		//when a fan/coach/player writes to the team wall
+		// when a fan/coach/player writes to the team wall
 		postNewPost() {
 
 			var entry = {};
@@ -200,8 +200,8 @@ export default  {
 	
 			entry.date = 'Today';
 			entry.creator = this.$parent.auth.id;
-			entry.timestamp = createdDate.format('h:mm a'); //timestamp on post
-			entry.hoverDate = createdDate.format('M/D/YYYY h:mm:ss a'); //hover text on timestamp
+			entry.timestamp = createdDate.format('h:mm a'); // timestamp on post
+			entry.hoverDate = createdDate.format('M/D/YYYY h:mm:ss a'); // hover text on timestamp
 			entry.icon = 'textsms';
 			entry.iconClass = 'Feed__thumbnail--write';
 			entry.type = 3;
@@ -216,35 +216,35 @@ export default  {
 			var data = { post: entry.details };
 			this.$http.post(url, data)
 			.then(function(response) {
-				//successful ajax post, dynamically add post to the feed
+				// successful ajax post, dynamically add post to the feed
 				self.$root.banner('good', 'Your post has been added to the team feed');
 
-				//attach the correct id now that we have the response back (in case they need to delete their post)
+				// attach the correct id now that we have the response back (in case they need to delete their post)
 				self.entries[0][0].id = response.data.id;
 			})
 			.catch(function() {
-				//failed ajax request
+				// failed ajax request
 				self.$root.banner('bad', "There was a problem with your post, try refreshing the page.")
 			})
 		},
 
 
-		//format raw data into news feed
+		// format raw data into news feed
 		format(feed, isNewPost) {
 
-			//for each object in news feed, group into which day it was formed on
+			// for each object in news feed, group into which day it was formed on
 			var entry = {};
 			var meta = JSON.parse(feed.meta);
 			var createdDate = moment.utc(feed.created_at, 'YYYY-MM-DD HH:mm:ss').local();
 
-			//create a datestamp for sorting days that have feed entries
+			// create a datestamp for sorting days that have feed entries
 			var date = createdDate.format('ddd. MMMM Do');
 
-			//if last year, include year in datestamp
+			// if last year, include year in datestamp
 			if(createdDate.isBefore(moment().startOf('year')))
 				date = createdDate.format('ddd. MMMM Do, YYYY');
 
-			//for readability, if the date is closeby, use human format
+			// for readability, if the date is closeby, use human format
 			if(moment().subtract(1, 'day').isSame(createdDate, 'day'))
 				date = 'Yesterday';
 
@@ -255,19 +255,19 @@ export default  {
 			entry.date = date;
 			entry.creator = feed.creator_id;
 			entry.id = feed.id;
-			entry.timestamp = createdDate.format('h:mm a'); //timestamp on post
-			entry.hoverDate = createdDate.format('M/D/YYYY h:mm a'); //hover text on timestamp
+			entry.timestamp = createdDate.format('h:mm a'); // timestamp on post
+			entry.hoverDate = createdDate.format('M/D/YYYY h:mm a'); // hover text on timestamp
 			entry.type = feed.type;
 
 			if(entry.type <= 2) {
-				//event-type feed entries
+				// event-type feed entries
 				entry.title = meta.event.title;
 				entry.event_id = meta.event.id;
 				entry.start = meta.event.start;
 				entry.end = meta.event.end;
 				if(entry.type != 2) entry.details = meta.event.details;
 
-				//choose the right icon depending on type
+				// choose the right icon depending on type
 				switch(entry.type) {
 					case 0:
 						entry.icon = 'add';
@@ -283,14 +283,15 @@ export default  {
 						break;
 				}
 
-				if(meta.repeats)
-					//if this is a repeating event, display which days and until when
+				if (meta.repeats) {
+					// if this is a repeating event, display which days and until when
 					entry.repeats = meta.repeats;
+				}
 
 			}
 
 			if(entry.type === 3) {
-				//user written post to the team feed
+				// user written post to the team feed
 				entry.details = meta.details;
 				entry.icon = 'textsms';
 				entry.iconClass = 'Feed__thumbnail--write';
@@ -298,7 +299,7 @@ export default  {
 			}
 
 			if(entry.type === 4) {
-				//stats for an event have been posted
+				// stats for an event have been posted
 				entry.title = meta.event.title;
 				entry.event_id = meta.event.id;
 				entry.icon = 'trending_up';
@@ -307,24 +308,24 @@ export default  {
 				entry = this.formatGameOutcome(entry, meta);
 			}
 
-			//add this entry to the entries array
+			// add this entry to the entries array
 			this.addToFeed(entry, isNewPost);
 
 		},
 
 
-		//turn raw data into an array that can be iterated on by Vue
-		//first layer of array are days in which something happened on the team page
-		//inside those arrays are arrays of this data we just set up above
-		//if isNewPost is true, add to top of array (to maintain chronological order)
+		// turn raw data into an array that can be iterated on by Vue
+		// first layer of array are days in which something happened on the team page
+		// inside those arrays are arrays of this data we just set up above
+		// if isNewPost is true, add to top of array (to maintain chronological order)
 		addToFeed(entry, isNewPost) {
 
 			for(var x = 0; x < this.entries.length; x++) {
 			
 				if(this.entries[x].length) {
-					//there's an entry on this date already, check if correct date
+					// there's an entry on this date already, check if correct date
 					if(this.entries[x][0].date === entry.date) {
-						//this is the correct spot in the array, push new entry
+						// this is the correct spot in the array, push new entry
 						if(isNewPost) {
 							this.entries[x].unshift(entry);
 							break;
@@ -337,14 +338,14 @@ export default  {
 				}
 
 				if(isNewPost) {
-					//brand new post, and the date 'Today' doesn't exist (would've stopped in above conditional)
-					//add this entry to top of news feed
+					// brand new post, and the date 'Today' doesn't exist (would've stopped in above conditional)
+					// add this entry to top of news feed
 					this.entries.unshift([entry]);
 					break;
 				}
 
 				if(x === (this.entries.length - 1)) {
-					//couldn't find a suitable spot, push new date onto array
+					// couldn't find a suitable spot, push new date onto array
 					this.entries.push([entry]);
 					break;
 				}
@@ -353,37 +354,37 @@ export default  {
 
 		},
 
-		//returns name of player/coach 
+		// returns name of player/coach 
 		lookupPlayer(id) {
-			//returns the name of the player when given an id
+			// returns the name of the player when given an id
 			var match = {};
 			match = this.users.filter(function(user) {
 				return user.id === id;
 			});
 
 			if(match.length) {
-				//if there is at least one match, take the first (and only) match
 				return {
 					name: match[0].firstname + " " + match[0].lastname,
 					username: match[0].username,
 				}
 			}
-			else
+			else {
 				return "ERROR";
+			}
 		},
 
-		//choose css classes for who won, which was home/away
-    formatGameOutcome(entry, meta) {
+		// choose css classes for who won, which was home/away
+    	formatGameOutcome(entry, meta) {
 
 			if(meta.event.class === 1) {
-				//home game
+				// home game
 				entry.homeScore = meta.teamScore;
 				entry.awayScore = meta.oppScore;
 				entry.homeName = meta.team;
 				entry.awayName = meta.opp;
 			}
 			else {
-				//home game
+				// home game
 				entry.homeScore = meta.oppScore;
 				entry.awayScore = meta.teamScore;
 				entry.homeName = meta.opp;
@@ -391,23 +392,23 @@ export default  {
 			}
 
 			if(entry.awayScore > entry.homeScore) {
-				//team won
+				// team won
 				entry.awayClass = 'win';
 				entry.homeClass = 'loss';
 			}
 			if(entry.awayScore < entry.homeScore) {
-				//team won
+				// team won
 				entry.awayClass = 'loss';
 				entry.homeClass = 'win';
 			}
 			if(entry.awayScore === entry.homeScore) {
-				//team won
+				// team won
 				entry.awayClass = 'win';
 				entry.homeClass = 'win';
 			}
 
 			return entry;
-    }
+    	}
 	},
 
 	
@@ -419,7 +420,7 @@ export default  {
 
 <style lang="stylus">
 
-//we need the colors here
+// we need the colors here
 @import '/resources/assets/stylus/variables.styl'
 
 .Feed

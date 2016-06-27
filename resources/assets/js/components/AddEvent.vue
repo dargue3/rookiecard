@@ -17,10 +17,10 @@
             <label>Type</label>
             <select v-model="type" data-style="btn-select btn-lg"
                     class="selectpicker form-control show-tick" AddEvent>
-              <option value="0" class="practice">Practice</option>    
-              <option value="1" class="homeGame">Home Game</option>
-              <option value="2" class="awayGame">Away Game</option>
-              <option value="3" class="other">Other</option>
+              <option value="practice" class="practice">Practice</option>    
+              <option value="home_game" class="homeGame">Home Game</option>
+              <option value="away_game" class="awayGame">Away Game</option>
+              <option value="other" class="other">Other</option>
             </select>
           </div>
         </div>
@@ -78,10 +78,10 @@
 	    </div>
 	    <div id="repeatDaysDiv" class="row" v-show="repeats" transition="slide-sm" >
         <div class="form-group">
-          <div class="col-xs-12 col-sm-6" :class="{'form-error' : errors.repeatDays }">
-            <label for="repeatDays">Every</label>
-            <select name="repeatDays[]" class="selectpicker form-control show-tick" data-style="btn-select btn-lg"
-                    data-selected-text-format="count>2" title="" multiple v-model="repeatDays">
+          <div class="col-xs-12 col-sm-6" :class="{'form-error' : errors.days }">
+            <label for="days">Every</label>
+            <select name="days[]" class="selectpicker form-control show-tick" data-style="btn-select btn-lg"
+                    data-selected-text-format="count>2" title="" multiple v-model="days">
                 <option>Sunday</option>
                 <option>Monday</option>
                 <option>Tuesday</option>
@@ -90,7 +90,7 @@
                 <option>Friday</option>
                 <option>Saturday</option>
             </select>
-            <span v-show="errors.repeatDays" class="form-error">{{ errors.repeatDays }}</span>
+            <span v-show="errors.days" class="form-error">{{ errors.days }}</span>
           </div>
           <div class="col-xs-12 col-sm-6">
             <label for="until">Until</label>
@@ -145,14 +145,14 @@ export default  {
 
 		return {
 			title: '',
-			type: '0',
+			type: 'practice',
 			fromDate: '',
 			fromTime: '',
 			toDate: '',
 			toTime: '',
 			toPickerChange: false,
 			repeats: false,
-			repeatDays: [],
+			days: [],
 			untilPickerChange: false,
 			until: '',
 			details: '',
@@ -163,7 +163,7 @@ export default  {
 				start: '',
 				end: '',
 				until: '',
-				repeatDays: '',
+				days: '',
 			},
 			switchInit: false,
 		}
@@ -201,7 +201,7 @@ export default  {
 				//if the event repeats, add this extra data with the request	
 				newEvent.until = momentUntil.unix();
 				newEvent.repeats = true;
-				newEvent.repeatDays = this.repeatDays;
+				newEvent.days = this.days;
 			}
 
 			var self = this;
@@ -266,12 +266,12 @@ export default  {
 			}
 
 			if(this.repeats) {
-				if(!this.repeatDays.length) {
+				if(!this.days.length) {
 					errors++;
-					this.errors.repeatDays = 'Which days does it repeat?';
+					this.errors.days = 'Which days does it repeat?';
 				}
 				else {
-					this.errors.repeatDays = '';
+					this.errors.days = '';
 				}
 				if(!this.until.length) {
 					errors++;
@@ -353,7 +353,7 @@ export default  {
 			this.until =  untilDate.format('MMM D, YYYY');
 			this.toPickerChange =  false;
 			this.repeats =  false;
-			this.repeatDays =  [];
+			this.days =  [];
 			this.untilPickerChange =  false;
 			this.details =  '';
 			this.momentFrom =  fromDate;

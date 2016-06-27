@@ -7,18 +7,20 @@ use App\Event;
 use App\NewsFeed;
 use Carbon\Carbon;
 use App\Exceptions\ApiException;
+use App\Events\TeamCreatedAnEvent;
 use App\RC\Events\HandlesEventLogic;
+use App\RC\NewsFeed\NewsFeedRepository;
 use App\Repositories\EloquentRepository;
 
 class EloquentEvent extends EloquentRepository implements EventRepository
 {
 
 	/**
-	 * The path of this class, to be used in EloquentRepository
+	 * The path of this model, to be used in EloquentRepository
 	 * 
 	 * @var string
 	 */
-	protected $modelClassPath = 'App\Event';
+	protected $modelPath = 'App\Event';
 
 
 	/**
@@ -29,16 +31,15 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	protected $maxEvents = 5000;
 
 
-
 	/**
 	 * Checks if a given team has reached their maximum
 	 * 
-	 * @param  Team   $team 
+	 * @param  int   $team_id
 	 * @return boolean
 	 */
-	public function teamHasCreatedTooManyEvents(Team $team)
+	public function teamHasCreatedTooManyEvents($team_id)
 	{
-		return Event::where('team_id', $team->id)->count() > $this->maxEvents;
+		return Event::where('owner_id', $team_id)->count() > $this->maxEvents;
 	}
 
 
@@ -51,9 +52,12 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	 */
 	public function store(array $requestData, Team $team)
 	{
-		$feed = (new HandlesEventLogic($requestData, $team))->create();
+		$handler = new HandlesEventLogic($requestData, $team, $this);
+		$events = $handler->create();
+		
+		event(new TeamCreatedAnEvent($team->id, $events));
 
-		return $feed;
+		return $events;
 	}
 
 
@@ -94,7 +98,7 @@ class EloquentEvent extends EloquentRepository implements EventRepository
         // only tell the team and create news feed entry if the event hasn't happened yet
         if(Carbon::createFromTimestampUTC($event->end)->isFuture()) {
             $meta = ['event' => $event, 'oldEvent' => $oldEvent];
-            $feed = (new NewsFeed)->updateTeamEvent($team, $meta);
+            //$feed = (new NewsFeed)->updateTeamEvent($team, $meta);
         }
         else {
             $feed = null;

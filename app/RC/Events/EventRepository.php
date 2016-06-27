@@ -8,5 +8,5 @@ interface EventRepository extends RepositoryInterface
 {
 	public function store(array $data, Team $team);
 	public function update(array $data, Team $team, $id);
-	public function teamHasCreatedTooManyEvents(Team $team);
+	public function teamHasCreatedTooManyEvents($team_id);
 }

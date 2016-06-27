@@ -6,7 +6,6 @@ use App\NewsFeed;
 use Carbon\Carbon;
 use App\RC\Events\EloquentEvent;
 use App\RC\Events\HandlesEventLogic;
-use App\RC\NewsFeed\EloquentNewsFeed;
 
 class EloquentEventTest extends TestCase
 {
@@ -33,7 +32,6 @@ class EloquentEventTest extends TestCase
 		$this->signIn();
 
 		$this->event = new EloquentEvent;
-        $this->feed = new EloquentNewsFeed;
 	}
 
 
@@ -58,11 +56,11 @@ class EloquentEventTest extends TestCase
 	{
 		$start 	= Carbon::parse($this->date, 'America/New_York');
 		$end 	= Carbon::instance($start)->addHours(2);
-		$stop 	= Carbon::instance($end)->addWeeks(2);
+		$until 	= Carbon::instance($end)->addWeeks(2);
 
 		$data = [
 			'title' 	=> 'This is a test event!',
-			'type' 		=> '0',
+			'type' 		=> 'practice',
 			'details' 	=> 'Boy, I sure do hope this test will pass!',
 			'tz' 		=> 'America/New_York',
 			'start' 	=> $start->timestamp,
@@ -72,12 +70,7 @@ class EloquentEventTest extends TestCase
 		if ($repeats) {
 			$data['repeats'] = true;
 			$data['days'] = ['Monday', 'Wednesday', 'Friday'];
-			$data['until'] = $stop->timestamp;
-		}
-		else {
-			$data['repeats'] = false;
-			$data['days'] = [];
-			$data['until'] = null;
+			$data['until'] = $until->timestamp;
 		}
 
 		return $data;
@@ -90,7 +83,7 @@ class EloquentEventTest extends TestCase
     	$team = factory(Team::class)->create();
     	$data = $this->getRawEventData();
     	
-    	(new HandlesEventLogic($data, $team, $this->event, $this->feed))->create();
+    	(new HandlesEventLogic($data, $team, $this->event))->create();
 
     	$event = Event::first();
     	$start 	= Carbon::parse($this->date, 'America/New_York')->timezone('UTC');
@@ -110,7 +103,9 @@ class EloquentEventTest extends TestCase
     	$data = $this->getRawEventData(true);
     	$team = $this->getTeam();
 
-    	(new HandlesEventLogic($data, $team, new EloquentEvent, $this->feed))->create();
+        $this->event->store($data, $team);
+
+    	//(new HandlesEventLogic($data, $team, $this->event))->create();
 
     	// how the seeded data is set up, first day is a Monday
     	// event repeats every Mon, Wed, Fri for two weeks and stops repeating on that Monday
@@ -148,23 +143,23 @@ class EloquentEventTest extends TestCase
     }
 
 
-    /** @test */
-    public function it_generates_a_news_feed_entry_for_the_team()
-    {
-    	$data = $this->getRawEventData();
-    	$team = $this->getTeam();
+    // /** @test */
+    // public function it_generates_a_news_feed_entry_for_the_team()
+    // {
+    // 	$data = $this->getRawEventData();
+    // 	$team = $this->getTeam();
 
-    	(new HandlesEventLogic($data, $team, new EloquentEvent, $this->feed))->create();
+    // 	(new HandlesEventLogic($data, $team, $this->event))->create();
 
-    	$event = Event::first();
-    	$feed = NewsFeed::first();
-    	$meta = json_decode($feed->meta);
+    // 	$event = Event::first();
+    // 	$feed = NewsFeed::first();
+    // 	$meta = json_decode($feed->meta);
 
-    	$this->assertEquals($this->user->id, $feed->creator_id);
-    	$this->assertEquals($team->id, $feed->owner_id);
-    	$this->assertEquals(0, $feed->type);
-    	$this->assertEquals($event->id, $meta->event->id);
-    }
+    // 	$this->assertEquals($this->user->id, $feed->creator_id);
+    // 	$this->assertEquals($team->id, $feed->owner_id);
+    // 	$this->assertEquals(0, $feed->type);
+    // 	$this->assertEquals($event->id, $meta->event->id);
+    // }
 
 
     /** @test */
@@ -173,7 +168,7 @@ class EloquentEventTest extends TestCase
     // 	$data = $this->getRawEventData(true);
     // 	$team = $this->getTeam();
 
-    // 	(new HandlesEventLogic($data, $team, new EloquentEvent, $this->feed))->create();
+    // 	(new HandlesEventLogic($data, $team, $this->event))->create();
 
     // 	$firstEvent = Event::find(1);
     // 	$lastEvent  = Event::find(7);

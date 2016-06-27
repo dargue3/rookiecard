@@ -209,7 +209,7 @@
 						<div class="row">
 							<div class="col-xs-12">
 
-								<rc-news-feed type="team" :feed="feed" :users="users"></rc-news-feed>
+								<!-- <rc-news-feed type="team" :feed="feed" :users="users"></rc-news-feed> -->
 
 							</div>
 						</div>

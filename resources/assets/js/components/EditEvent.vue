@@ -24,10 +24,10 @@
             <label for="class">Type</label>
             <select data-style="btn-select btn-lg" name="class"
             				class="selectpicker form-control show-tick" EditEvent v-model="event.type" number>
-              <option value='0' class="practice">Practice</option>    
-              <option value='1' class="homeGame">Home Game</option>
-              <option value='2' class="awayGame">Away Game</option>
-              <option value='3' class="other">Other</option>
+              <option value="practice" class="practice">Practice</option>    
+              <option value="home_game" class="homeGame">Home Game</option>
+              <option value="away_game" class="awayGame">Away Game</option>
+              <option value="other" class="other">Other</option>
             </select>
           </div>
         </div>

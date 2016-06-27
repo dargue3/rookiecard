@@ -36,5 +36,10 @@ class AppServiceProvider extends ServiceProvider
             'App\RC\Team\TeamRepository',
             'App\RC\Team\EloquentTeam'
         );
+
+        $this->app->bind(
+            'App\RC\NewsFeed\NewsFeedRepository',
+            'App\RC\NewsFeed\EloquentNewsFeed'
+        );
     }
 }

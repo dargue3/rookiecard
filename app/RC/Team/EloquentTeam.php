@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\Auth;
 class EloquentTeam implements TeamRepository
 {
     /**
-     * The path of this class, to be used in EloquentRepository
+     * The path of this model, to be used in EloquentRepository
      * 
      * @var string
      */
-    protected $modelClassPath = 'App\Team';
+    protected $modelPath = 'App\Team';
 
     /**
      * Instance of EventRepository
