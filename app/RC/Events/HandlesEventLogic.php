@@ -1,13 +1,11 @@
 <?php
 namespace App\RC\Events;
 
-use App\Team;
-use App\NewsFeed;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\RC\NewsFeed\NewsFeedRepository;
 use Illuminate\Support\Facades\Auth;
+use App\RC\NewsFeed\NewsFeedRepository;
 
 class HandlesEventLogic
 {
@@ -61,11 +59,11 @@ class HandlesEventLogic
 	public $until;
 
     /**
-     * The team that is creating this event
+     * The id of the team that is creating this event
      * 
-     * @var Team
+     * @var int
      */
-    public $team;
+    public $team_id;
 
     /**
      * Event repository instance
@@ -79,7 +77,7 @@ class HandlesEventLogic
      * 
      * @var integer
      */
-    protected $maximumEvents;
+    protected $limitPerRequest;
 
     /**
      * The current supported event types as passed in by front-end
@@ -94,12 +92,12 @@ class HandlesEventLogic
     ];
 
 
-	public function __construct(array $data, Team $team, EventRepository $event)
+	public function __construct(array $data, $team_id, EventRepository $event)
 	{
         $this->event = $event;
-		$this->team = $team;
+		$this->team_id = $team_id;
 
-        $this->maximumEvents = config('rookiecard.events.atOnce');
+        $this->limitPerRequest = config('rookiecard.events.limitPerRequest');
 
         // save all of the event data as attributes for easier access later
         $this->title        = $data['title'];
@@ -169,8 +167,8 @@ class HandlesEventLogic
     {
         $estimate = $this->until->diffInWeeks($this->start) * count($this->days);
 
-        if ($estimate > $this->maximumEvents) {
-            throw new ApiException("We limit you to $this->maximumEvents repeating events per request");
+        if ($estimate > $this->limitPerRequest) {
+            throw new ApiException("We limit you to $this->limitPerRequest repeating events per request");
         }
     }
 
@@ -182,7 +180,7 @@ class HandlesEventLogic
 	 */
     public function create()
     {
-    	if ($this->event->teamHasCreatedTooManyEvents($this->team->id)) {
+    	if ($this->event->teamHasCreatedTooManyEvents($this->team_id)) {
     		throw new ApiException("Your team has already created too many events");
     	}   
 
@@ -209,7 +207,7 @@ class HandlesEventLogic
             'type'        => $this->type,
             'start'       => $start,
             'end'         => $end,
-            'owner_id'    => $this->team->id,
+            'owner_id'    => $this->team_id,
             'creator_id'  => Auth::user()->id,
             'details'     => $this->details,
         ]);
@@ -267,7 +265,7 @@ class HandlesEventLogic
         $count = 1;
 
         // goes until past the stop date or $count exceeds its limit
-        while ($count < $this->maximumEvents) {
+        while ($count < $this->limitPerRequest) {
 
             // undo the changes from last iteration
             $today->timezone($this->tz)->startOfDay();

@@ -12,7 +12,7 @@ class RedirectIfNotTeamAdmin
     //redirects user to team's page with error message if not admin
     public function handle($request, Closure $next)
     {
-        if (! $request->user()->isTeamAdmin($request->team)) {
+        if (! $request->user()->isTeamAdmin($request->team->id)) {
             //user isn't admin of that team, abort
             abort(403, 'You must be a Team Admin to perform this action.');       
         }

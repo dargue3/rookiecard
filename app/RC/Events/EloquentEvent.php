@@ -28,12 +28,12 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	 * 
 	 * @var integer
 	 */
-	protected $maxEvents;
+	public $limitPerTeam;
 
 
 	public function __construct()
 	{
-		$this->maxEvents = config('rookiecard.events.maximum');
+		$this->limitPerTeam = config('rookiecard.events.limitPerTeam');
 	}
 
 
@@ -45,7 +45,7 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	 */
 	public function teamHasCreatedTooManyEvents($team_id)
 	{
-		return Event::where('owner_id', $team_id)->count() > $this->maxEvents;
+		return Event::where('owner_id', $team_id)->count() > $this->limitPerTeam;
 	}
 
 
@@ -53,29 +53,40 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	 * Kickoff the process of creating an event given the input data
 	 * 
 	 * @param  array 	$requestData 
-	 * @param  Team 	$team
+	 * @param  int 	$team_id
 	 * @return void      
 	 */
-	public function store(array $requestData, Team $team)
+	public function store(array $requestData, $team_id)
 	{
-		$handler = new HandlesEventLogic($requestData, $team, $this);
+		$handler = new HandlesEventLogic($requestData, $team_id, $this);
 		$events = $handler->create();
 
-		event(new TeamCreatedAnEvent($team->id, $events));
+		event(new TeamCreatedAnEvent($team_id, $events));
 
 		return $events;
 	}
 
 
+	/**
+	 * Fetch all of the events associated with the given team
+	 * @param  int $team_Id
+	 * @return Collection
+	 */
+	public function allEventsForTeam($team_id)
+	{
+		return Event::where('owner_id', $team_id)->orderBy('start')->get();
+	}
+
+
+
 	/**		
 	 * Update the event to match given request data
 	 * 
-	 * @param  Team    	$team    
 	 * @param  array 	$requestData 
 	 * @param  int     	$id      
 	 * @return Event           
 	 */
-	public function update(array $requestData, Team $team, $id)
+	public function update(array $requestData, $id)
 	{
 		$event = Event::findOrFail($id);
 

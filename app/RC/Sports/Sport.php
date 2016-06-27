@@ -5,9 +5,15 @@ use Exception;
 
 class Sport
 {
+	/**
+	 * Array of current supported sport classes
+	 * 
+	 * @var array
+	 */
 	protected $sports = [
 		'0' => Basketball::class,
 	];
+	
 
 	/**
 	 * Fetch an instance of the desired sport by its id

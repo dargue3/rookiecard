@@ -81,9 +81,9 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      * @param  Team  $team
      * @return boolean          
      */
-    public function isTeamAdmin(Team $team)
+    public function isTeamAdmin($team_id)
     {
-        $member = TeamMember::member($this->id, $team->id)->first();
+        $member = TeamMember::member($this->id, $team_id)->first();
 
         if (! $member or ! $member->isAdmin()) {
             return false;

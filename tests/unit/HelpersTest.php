@@ -33,7 +33,7 @@ class HelpersTest extends TestCase
         $team = factory(Team::class)->create();
         $this->signIn()->makeAdminOfTeam($team);
 
-        $this->assertTrue($this->user->isTeamAdmin($team));
+        $this->assertTrue($this->user->isTeamAdmin($team->id));
     }
 
 

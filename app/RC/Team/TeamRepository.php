@@ -1,14 +1,12 @@
 <?php
 namespace App\RC\Team;
 
-use App\Team;
-
 interface TeamRepository
 {
-	public function stats(Team $team);
-	public function events(Team $team);
-	public function members(Team $team);
-	public function feed(Team $team);
-	public function positions(Team $team);
-	public function getAllData(Team $team);
+	public function stats($team_id);
+	public function events($team_id);
+	public function members($team_id);
+	public function feed($team_id);
+	public function positions($team_id);
+	public function getAllData($team_id);
 }

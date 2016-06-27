@@ -2,15 +2,13 @@
 
 use App\Team;
 use App\Event;
-use App\TeamMember;
 use Carbon\Carbon;
-use App\Http\Requests\NewEventRequest;
+use App\TeamMember;
 use App\RC\Events\EventRepository;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
+use App\Http\Requests\NewEventRequest;
 
 class EventControllerTest extends TestCase
 {
-
 	/**
 	 * The URL extension of all requests in this class
 	 * 
@@ -70,7 +68,8 @@ class EventControllerTest extends TestCase
     {
     	$requestData = $this->getRawEventData();
     	
-    	$this->repo->shouldReceive('store')->once();
+        $this->repo->shouldReceive('store')->once();
+    	$this->repo->shouldReceive('allEventsForTeam')->once();
 
     	$this->call('POST', $this->url, $requestData);
 

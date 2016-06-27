@@ -10,8 +10,8 @@ return [
 	 * Teams' event creation limits
 	 */
 	'events' => [
-		'maximum'	=> 5000,
-		'atOnce' 	=> 500
+		'limitPerTeam'		=> 5000,
+		'limitPerRequest' 	=> 500,
 	],
 
 

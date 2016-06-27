@@ -83,9 +83,9 @@ class EloquentEventTest extends TestCase
     	$team = factory(Team::class)->create();
     	$data = $this->getRawEventData();
     	
-    	(new HandlesEventLogic($data, $team, $this->event))->create();
+    	(new HandlesEventLogic($data, $team->id, $this->event))->create();
 
-    	$event = Event::first();
+    	$event  = Event::first();
     	$start 	= Carbon::parse($this->date, 'America/New_York')->timezone('UTC');
     	$end 	= Carbon::instance($start)->addHours(2);
 
@@ -103,7 +103,7 @@ class EloquentEventTest extends TestCase
     	$data = $this->getRawEventData(true);
     	$team = $this->getTeam();
 
-        $this->event->store($data, $team);
+        $this->event->store($data, $team->id);
 
     	//(new HandlesEventLogic($data, $team, $this->event))->create();
 

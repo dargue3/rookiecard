@@ -43,19 +43,18 @@ class EventController extends Controller
     /**
      * Store an event with the given request data
      *
-     * @param  App\Http\Requests\NewEventRequest  $request
+     * @param  NewEventRequest  $request
      * @param  Team  $team
-     * @return \Illuminate\Http\Response
+     * @return Illuminate\Http\Response
      */
     public function store(NewEventRequest $request, Team $team)
     {
-        // fetch the request data to send to the repo
         $data = $request->all();
         $data['tz'] = $request->session()->get('timezone');
 
-        $feed = $this->event->store($data, $team);
+        $this->event->store($data, $team->id);
 
-        return ['ok' => true, 'events' => $this->team->events($team)];
+        return ['ok' => true, 'events' => $this->event->allEventsForTeam($team->id)];
     }
 
 

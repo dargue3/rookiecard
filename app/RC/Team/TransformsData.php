@@ -12,11 +12,12 @@ class TransformsData
      * Format members' data for front-end consumption
      * 
      * @param  Collection $members 
+     * @param  int $team_id 
      * @return array
      */
-    public function transformMembers($members, Team $team)
+    public function transformMembers($members, $team_id)
     {
-        $admin = Auth::user()->isTeamAdmin($team);
+        $admin = Auth::user()->isTeamAdmin($team_id);
         $formatted = [];
 
         foreach ($members as $member) {

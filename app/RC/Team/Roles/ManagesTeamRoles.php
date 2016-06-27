@@ -1,19 +1,7 @@
 <?php
 namespace App\RC\Team\Roles;
 
-use App\TeamRole;
-use App\TeamMember;
 use App\Exceptions\ApiException;
-
-use App\RC\Team\Roles\Fan;
-use App\RC\Team\Roles\Coach;
-use App\RC\Team\Roles\Player;
-use App\RC\Team\Roles\GhostCoach;
-use App\RC\Team\Roles\GhostPlayer;
-use App\RC\Team\Roles\InvitedCoach;
-use App\RC\Team\Roles\InvitedPlayer;
-use App\RC\Team\Roles\RoleInterface;
-use App\RC\Team\Roles\RequestedToJoin;
 
 trait ManagesTeamRoles
 {

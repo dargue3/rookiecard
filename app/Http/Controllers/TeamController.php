@@ -41,7 +41,7 @@ class TeamController extends Controller
      */
     public function getTeamData(Team $team)
     {
-        $data = $this->team->getAllData($team);
+        $data = $this->team->getAllData($team->id);
 
         return ['ok' => true, 'data' => $data];
     }

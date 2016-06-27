@@ -2,14 +2,13 @@
 namespace App\RC\Team;
 
 use App\Stat;
-use App\Team;
 use App\Event;
+use App\Team;
 use App\NewsFeed;
 use App\TeamRole;
 use App\TeamMember;
 use App\Notification;
 use App\RC\Sports\Sport;
-use App\RC\Team\TransformsData;
 use App\RC\Events\EventRepository;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\EloquentRepository;
@@ -24,11 +23,12 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     protected $modelPath = 'App\Team';
 
     /**
-     * Instance of EventRepository
+     * Instance of an event repository
+     * 
      * @var EventRepository
      */
     protected $event;
-    
+
 
     public function __construct(EventRepository $event)
     {
@@ -38,48 +38,48 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 
 
 	/**
-	 * Fetch the stats associated with this team
+	 * Fetch the stats for a given team
 	 * 
 	 * @return array
 	 */
-	public function stats(Team $team)
+	public function stats($team_id)
 	{
-		return Stat::where('team_id', $team->id)->get();
+		return Stat::where('team_id', $team_id)->get();
 	}
 
 
 	/**
-	 * Fetch the events associated with this team
+	 * Fetch the events for a given team
 	 * 
 	 * @return array
 	 */
-	public function events(Team $team)
+	public function events($team_id)
     {
-        return Event::where('owner_id', $team->id)->orderBy('start')->get();
+        return $this->event->allEventsForTeam($team_id);
     }
 
 
     /**
-	 * Fetch the members associated with this team
+	 * Fetch the members of a given team
 	 * 
 	 * @return array
 	 */
-	public function members(Team $team)
+	public function members($team_id)
 	{
-		$members = TeamMember::where('team_id', $team->id)->get();
+		$members = TeamMember::where('team_id', $team_id)->get();
 
-        return (new TransformsData)->transformMembers($members, $team);
+        return (new TransformsData)->transformMembers($members, $team_id);
 	}
 
 
 	/**
-	 * Fetch the news feed associated with this team
+	 * Fetch the news feed for a given team
 	 * 
 	 * @return array
 	 */
-	public function feed(Team $team)
+	public function feed($team_id)
     {
-        return NewsFeed::where('owner_id', $team->id)->where('type', '<', 10)->orderBy('created_at', 'desc')->get();
+        return NewsFeed::where('owner_id', $team_id)->where('type', '<', 10)->orderBy('created_at', 'desc')->get();
     }
 
 
@@ -88,9 +88,21 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 * 
 	 * @return array
 	 */
-    public function positions(Team $team)
+    public function positions($team_id)
     {
-        return Sport::find($team->sport)->positions();
+        return $this->sport($team_id)->positions();
+    }
+
+
+    /**
+     * Fetch the sport played by a given team
+     * 
+     * @param  int $team_id
+     * @return SportInterface
+     */
+    public function sport($team_id)
+    {
+        return Sport::find(Team::findOrFail($team_id)->sport);
     }
 
 
@@ -99,16 +111,16 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
      * 
      * @return array
      */
-    public function getAllData(Team $team) {
+    public function getAllData($team_id) {
 
     	$data = [
             'auth'      => Auth::user(),
-            'team'      => $team,
-            'members'   => $this->members($team),
-            'feed'      => $this->feed($team),
-            'events'    => $this->events($team),
-            'stats'     => $this->stats($team),
-            'positions' => $this->positions($team),
+            'team'      => $this->findOrFail($team_id),
+            'members'   => $this->members($team_id),
+            'feed'      => $this->feed($team_id),
+            'events'    => $this->events($team_id),
+            'stats'     => $this->stats($team_id),
+            'positions' => $this->positions($team_id),
         ];
 
         return $data;

@@ -86,7 +86,7 @@ class HandlesEventLogicTest extends TestCase
     	$data = $this->getRawEventData(true);
     	$team = $this->getTeam();
 
-    	$handler = new HandlesEventLogic($data, $team, new EloquentEvent);
+    	$handler = new HandlesEventLogic($data, $team->id, new EloquentEvent);
 
         $this->assertEquals('This is a test event!', $handler->title);
         $this->assertEquals(0, $handler->type);
@@ -111,7 +111,7 @@ class HandlesEventLogicTest extends TestCase
 
         $this->setExpectedException('App\Exceptions\ApiException');
 
-        new HandlesEventLogic($data, $team, new EloquentEvent);
+        new HandlesEventLogic($data, $team->id, new EloquentEvent);
     }
 
 
@@ -125,7 +125,7 @@ class HandlesEventLogicTest extends TestCase
 
         $this->setExpectedException('App\Exceptions\ApiException');
 
-        new HandlesEventLogic($data, $team, new EloquentEvent);
+        new HandlesEventLogic($data, $team->id, new EloquentEvent);
     }
 
 
@@ -139,7 +139,7 @@ class HandlesEventLogicTest extends TestCase
 
         $this->setExpectedException('App\Exceptions\ApiException');
 
-        new HandlesEventLogic($data, $team, new EloquentEvent);
+        new HandlesEventLogic($data, $team->id, new EloquentEvent);
     }
 
 
@@ -153,7 +153,7 @@ class HandlesEventLogicTest extends TestCase
 
         $this->setExpectedException('App\Exceptions\ApiException');
 
-        new HandlesEventLogic($data, $team, new EloquentEvent);
+        new HandlesEventLogic($data, $team->id, new EloquentEvent);
     }
 
 
@@ -167,7 +167,7 @@ class HandlesEventLogicTest extends TestCase
 
         $this->setExpectedException('App\Exceptions\ApiException');
 
-        new HandlesEventLogic($data, $team, new EloquentEvent);
+        new HandlesEventLogic($data, $team->id, new EloquentEvent);
     }
 
 
@@ -182,7 +182,7 @@ class HandlesEventLogicTest extends TestCase
 
         $this->setExpectedException('App\Exceptions\ApiException');
 
-        new HandlesEventLogic($data, $team, new EloquentEvent);
+        new HandlesEventLogic($data, $team->id, new EloquentEvent);
     }
 
 
@@ -207,7 +207,7 @@ class HandlesEventLogicTest extends TestCase
             ->with(Mockery::contains(1466460000, 1466467200))
             ->andReturn($createdEvent);
 
-        $handler = new HandlesEventLogic($data, $team, $this->repo);
+        $handler = new HandlesEventLogic($data, $team->id, $this->repo);
 
         $handler->create();
     }
@@ -261,7 +261,7 @@ class HandlesEventLogicTest extends TestCase
                 ->with(Mockery::contains(1466632800, 1466640000))
                 ->andReturn($wednesday);        
 
-        $handler = new HandlesEventLogic($data, $team, $this->repo);
+        $handler = new HandlesEventLogic($data, $team->id, $this->repo);
         $handler->create();
     }
 
@@ -273,7 +273,7 @@ class HandlesEventLogicTest extends TestCase
         $team = $this->getTeam();
         $today = Carbon::parse($this->date)->startOfDay();
 
-        $handler = new HandlesEventLogic($data, $team, new EloquentEvent);
+        $handler = new HandlesEventLogic($data, $team->id, new EloquentEvent);
 
         $today = $handler->setToNextRepeatingDay($today);
         $this->assertEquals('June 22 2016', $today->format('F j o'));
@@ -298,7 +298,7 @@ class HandlesEventLogicTest extends TestCase
 
         $today = Carbon::parse($this->date)->startOfDay();
 
-        $handler = new HandlesEventLogic($data, $team, new EloquentEvent);
+        $handler = new HandlesEventLogic($data, $team->id, new EloquentEvent);
 
         $today = $handler->setToNextRepeatingDay($today);
         $this->assertEquals('June 21 2016', $today->format('F j o'));
@@ -317,7 +317,7 @@ class HandlesEventLogicTest extends TestCase
 
         $today = Carbon::parse($this->date)->startOfDay();
 
-        $handler = new HandlesEventLogic($data, $team, new EloquentEvent);
+        $handler = new HandlesEventLogic($data, $team->id, new EloquentEvent);
 
         $today = $handler->setToNextRepeatingDay($today);
         $this->assertEquals('June 27 2016', $today->format('F j o'));
@@ -336,7 +336,7 @@ class HandlesEventLogicTest extends TestCase
     //     $mock = $this->mock(EloquentNewsFeed::class);
     //     $mock->shouldReceive('newTeamEvents')->once();
 
-    //     $handler = new HandlesEventLogic($data, $team, new EloquentEvent, $mock);
+    //     $handler = new HandlesEventLogic($data, $team->id, new EloquentEvent, $mock);
     //     $handler->create();
     // }
 
