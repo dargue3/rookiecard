@@ -8,12 +8,13 @@ use App\NewsFeed;
 use App\TeamRole;
 use App\TeamMember;
 use App\Notification;
-use App\RC\Sports\SportIndex;
+use App\RC\Sports\Sport;
 use App\RC\Team\TransformsData;
 use App\RC\Events\EventRepository;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\EloquentRepository;
 
-class EloquentTeam implements TeamRepository
+class EloquentTeam extends EloquentRepository implements TeamRepository
 {
     /**
      * The path of this model, to be used in EloquentRepository
@@ -89,7 +90,7 @@ class EloquentTeam implements TeamRepository
 	 */
     public function positions(Team $team)
     {
-        return SportIndex::getSportById($team->sport)->positions();
+        return Sport::find($team->sport)->positions();
     }
 
 

@@ -1,9 +1,7 @@
 <?php
 namespace App\RC\Sports;
 
-use App\RC\Sports\Sport;
-
-class Basketball implements Sport
+class Basketball implements SportInterface
 {
 
 	public function positions()

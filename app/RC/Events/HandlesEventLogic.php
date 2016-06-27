@@ -79,7 +79,7 @@ class HandlesEventLogic
      * 
      * @var integer
      */
-    protected $maximumEvents = 500;
+    protected $maximumEvents;
 
     /**
      * The current supported event types as passed in by front-end
@@ -98,6 +98,8 @@ class HandlesEventLogic
 	{
         $this->event = $event;
 		$this->team = $team;
+
+        $this->maximumEvents = config('rookiecard.events.atOnce');
 
         // save all of the event data as attributes for easier access later
         $this->title        = $data['title'];

@@ -11,6 +11,4 @@ interface TeamRepository
 	public function feed(Team $team);
 	public function positions(Team $team);
 	public function getAllData(Team $team);
-
-	public function create(array $data);
 }

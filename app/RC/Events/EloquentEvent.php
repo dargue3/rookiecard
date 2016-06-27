@@ -28,7 +28,13 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	 * 
 	 * @var integer
 	 */
-	protected $maxEvents = 5000;
+	protected $maxEvents;
+
+
+	public function __construct()
+	{
+		$this->maxEvents = config('rookiecard.events.maximum');
+	}
 
 
 	/**
@@ -54,7 +60,7 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	{
 		$handler = new HandlesEventLogic($requestData, $team, $this);
 		$events = $handler->create();
-		
+
 		event(new TeamCreatedAnEvent($team->id, $events));
 
 		return $events;

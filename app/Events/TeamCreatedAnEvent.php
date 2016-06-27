@@ -2,6 +2,7 @@
 namespace App\Events;
 
 use App\Events\Event;
+use App\RC\Team\TeamRepository;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Queue\SerializesModels;
 use App\Events\Contracts\NotifiesUsers;
@@ -80,7 +81,7 @@ class TeamCreatedAnEvent extends Event implements CreatesNewsFeedEntries, Notifi
      */
     public function users(TeamRepository $team)
     {
-        return $team->users('id');
+        return $team->users(array('id'));
     }
 
 
