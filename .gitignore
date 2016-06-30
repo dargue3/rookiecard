@@ -5,5 +5,3 @@ config/database.php
 node_modules/
 vendor/
 .env
-.DS_Store
-pushGitMacro.sh

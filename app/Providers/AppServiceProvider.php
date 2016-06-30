@@ -15,31 +15,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
+        //
     }
 
     /**
-     *
-     *
      * Register any application services.
      *
      * @return void
      */
     public function register()
     {
-        $this->app->bind(
-            'App\RC\Events\EventRepository',
-            'App\RC\Events\EloquentEvent'
-        );
-
-        $this->app->bind(
-            'App\RC\Team\TeamRepository',
-            'App\RC\Team\EloquentTeam'
-        );
-
-        $this->app->bind(
-            'App\RC\NewsFeed\NewsFeedRepository',
-            'App\RC\NewsFeed\EloquentNewsFeed'
-        );
+        //
     }
 }

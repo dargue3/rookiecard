@@ -39,20 +39,6 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
     protected $meta;
 
 
-    /**
-     * An instance of the NewsFeedTypes service class
-     * 
-     * @var NewsFeedTypes
-     */
-    protected $supportedTypes;
-
-
-    public function __construct(NewsFeedTypes $supportedTypes)
-    {
-        $this->supportedTypes = $supportedTypes;
-    }
-
-
 	/**
 	 * An event has fired that creates news feed entry
 	 * 
@@ -63,7 +49,7 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
 	 */
     public function add($owner_id, $type, array $meta = [])
     {
-        $this->type = $this->supportedTypes->verifyAndTransform($type);
+        $this->type = $type;
 
         $this->owner_id = $owner_id;
         $this->meta = $meta;

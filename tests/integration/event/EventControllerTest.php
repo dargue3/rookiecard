@@ -4,7 +4,7 @@ use App\Team;
 use App\Event;
 use Carbon\Carbon;
 use App\TeamMember;
-use App\RC\Events\EventRepository;
+use App\RC\Event\EventRepository;
 use App\Http\Requests\NewEventRequest;
 
 class EventControllerTest extends TestCase
@@ -69,7 +69,7 @@ class EventControllerTest extends TestCase
     	$requestData = $this->getRawEventData();
     	
         $this->repo->shouldReceive('store')->once();
-    	$this->repo->shouldReceive('allEventsForTeam')->once();
+    	$this->repo->shouldReceive('getTeamEvents')->once();
 
     	$this->call('POST', $this->url, $requestData);
 
@@ -78,31 +78,33 @@ class EventControllerTest extends TestCase
 
 
     /** @test */
-    // public function it_has_an_update_method_for_put_requests()
-    // {
-    // 	$requestData = $this->getRawEventData();
+    public function it_has_an_update_method_for_put_requests()
+    {
+    	$requestData = $this->getRawEventData();
 
-    // 	$event = factory(Event::class)->create(['owner_id' => $this->team->id]);
-    	
-    // 	$this->repo->shouldReceive('update')->once();
+    	$event = factory(Event::class)->create(['owner_id' => $this->team->id]);
 
-    // 	$this->call('PUT', $this->url . $event->id, $requestData);
+        $this->repo->shouldReceive('update')->once();
+    	$this->repo->shouldReceive('getTeamEvents')->once();
 
-    // 	$this->assertResponseOk();
-    // }
+    	$this->call('PUT', $this->url . $event->id, $requestData);
+
+    	$this->assertResponseOk();
+    }
 
 
     /** @test */
-    // public function it_has_a_delete_method_for_delete_requests()
-    // {
-    // 	$requestData = ['_token' => csrf_token()];
+    public function it_has_a_delete_method_for_delete_requests()
+    {
+    	$requestData = ['_token' => csrf_token()];
     	
-    // 	$event = factory(Event::class)->create(['owner_id' => $this->team->id]);
+    	$event = factory(Event::class)->create(['owner_id' => $this->team->id]);
 
-    // 	$this->repo->shouldReceive('delete')->once();
+        $this->repo->shouldReceive('delete')->once();
+    	$this->repo->shouldReceive('getTeamEvents')->once();
 
-    // 	$this->call('DELETE', $this->url . $event->id, $requestData);
+    	$this->call('DELETE', $this->url . $event->id, $requestData);
     	
-    // 	$this->assertResponseOk();
-    // }
+    	$this->assertResponseOk();
+    }
 }

@@ -1,7 +1,7 @@
 <?php
 namespace App\RC\Team\Roles;
 
-use App\Exceptions\ApiException;
+use Exception;
 
 trait ManagesTeamRoles
 {
@@ -28,13 +28,15 @@ trait ManagesTeamRoles
     /**
      * Fetches the roles associated with user and stores them locally
      * 
-     * @return App\TeamMember
+     * @return parent
      */
     private function fetchRoles()
     {
         $this->roleArray = [];
 
-        foreach ($this->roles()->get() as $role) {
+        $this->checkForMember();
+
+        foreach ($this->member->roles()->get() as $role) {
             $this->roleArray[] = $role->name;
         }
 
@@ -65,19 +67,23 @@ trait ManagesTeamRoles
      * 
      * @param App\RC\Team\Roles\RoleInterface $role
      * @param boolean $deleteOtherRoles
-     * @return App\TeamMember
+     * @return parent
      */
     public function addRole(RoleInterface $role, $deleteOtherRoles = false)
     {   
-        if($this->hasRole($role)) {
-            throw new ApiException("User is already a " . $role->name());
-        }
+        $this->checkForMember();
 
         if ($deleteOtherRoles) {
             $this->removeAllRoles();
         }
 
-        $this->roles()->attach($role->id());
+        if ($this->hasRole($role)) {
+            $role = $role->name();
+            throw new Exception("This member already has a role of '$role'");
+        }
+
+        $this->member->roles()->attach($role->id());
+        $this->member->save();
 
         // cache locally
         array_push($this->roleArray, $role->name());
@@ -91,11 +97,14 @@ trait ManagesTeamRoles
      * Removes a given role from the member
      * 
      * @param  RoleInterface $role
-     * @return TeamMember
+     * @return parent
      */
     public function removeRole(RoleInterface $role)
     {
-        $this->roles()->detach($role->id());
+        $this->checkForMember();
+
+        $this->member->roles()->detach($role->id());
+        $this->member->save();
 
         // remove from local cache
         $this->roleArray = array_diff($this->roleArray, [$role->name()]);
@@ -110,7 +119,7 @@ trait ManagesTeamRoles
      * 
      * @param RoleInterface $role   
      * @param boolean $status
-     * @return TeamMember
+     * @return parent
      */
     public function setRole(RoleInterface $role, $status)
     {
@@ -125,11 +134,10 @@ trait ManagesTeamRoles
 
 
     /**
-     * Toggle whether the member has this role
+     * Toggle whether the member has given role
      * 
-     * @param RoleInterface $role   
-     * @param boolean        $status
-     * @return TeamMember
+     * @param RoleInterface $role 
+     * @return parent
      */
     public function toggleRole(RoleInterface $role)
     {
@@ -141,16 +149,41 @@ trait ManagesTeamRoles
     }
 
 
+    /**
+     * Toggle the member from coach -> player or vice versa
+     * 
+     * @return parent
+     */
+    public function switchMemberRole()
+    {
+        if ($this->isGhost()) { 
+            if ($this->hasRole(new GhostPlayer)) {
+                return $this->addRole(new GhostCoach, true);
+            }
+
+            return $this->addRole(new GhostPlayer, true);
+        }
+
+        if ($this->hasRole(new Player)) {
+            return $this->addRole(new Coach, true);
+        }
+
+        return $this->addRole(new Player, true);
+    }
+
 
 
     /**
      * Removes all roles associated with this member
      * 
-     * @return  App\TeamMember
+     * @return  parent
      */
     public function removeAllRoles()
     {
-        $this->roles()->detach();
+        $this->checkForMember();
+
+        $this->member->roles()->detach();
+        $this->member->save();
 
         $this->roleArray = [];
 
@@ -162,7 +195,7 @@ trait ManagesTeamRoles
     /**
      * Removes Invited roles from member
      * 
-     * @return  App\TeamMember
+     * @return  parent
      */
     public function removeInviteRoles()
     {
@@ -177,13 +210,13 @@ trait ManagesTeamRoles
     /**
      * If there are no roles associated with this member, delete them
      * 
-     * @return mixed
+     * @return parent
      */
     public function deleteIfTheyHaveNoRoles()
     {
         if (is_array($this->roleArray) and empty($this->roleArray)) {
-            $this->delete();
-            return null;
+            $this->destroy($this->member->id);
+            $this->member = null;
         }
 
         return $this;
@@ -275,18 +308,4 @@ trait ManagesTeamRoles
     {
         return $this->hasRole(new RequestedToJoin);
     }
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-

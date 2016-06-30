@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Request;
 
-class NewEventRequest extends Request
+class EventRequest extends Request
 {
 
     // middleware already ensures a team admin is sending this

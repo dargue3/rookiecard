@@ -16,6 +16,17 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\TeamCreatedAnEvent' => [
             'App\Listeners\CreateNewsFeedEntry'
         ],
+
+        'App\Events\TeamUpdatedAnEvent' => [
+            'App\Listeners\CreateNewsFeedEntry'
+        ],
+
+        'App\Events\TeamDeletedAnEvent' => [
+            'App\Listeners\CreateNewsFeedEntry'
+        ],
+
+        'App\Events\TeamInvitedUserToJoin' => [
+        ],
     ];
 
     /**

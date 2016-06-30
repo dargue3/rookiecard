@@ -1,15 +1,15 @@
 <?php
 namespace App\RC\Team;
 
-use App\Stat;
-use App\Event;
 use App\Team;
+use App\Event;
 use App\NewsFeed;
 use App\TeamRole;
 use App\TeamMember;
 use App\Notification;
 use App\RC\Sports\Sport;
-use App\RC\Events\EventRepository;
+use App\RC\Stat\StatRepository;
+use App\RC\Event\EventRepository;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\EloquentRepository;
 
@@ -22,19 +22,28 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
      */
     protected $modelPath = 'App\Team';
 
+
     /**
-     * Instance of an event repository
+     * An instance of an event repository
      * 
      * @var EventRepository
      */
     protected $event;
 
 
-    public function __construct(EventRepository $event)
+    /**
+     * An instance of a stat repository
+     * 
+     * @var StatRepository
+     */
+    protected $stat;
+
+
+    public function __construct(EventRepository $event, StatRepository $stat)
     {
         $this->event = $event;
+        $this->stat = $stat;
     }
-
 
 
 	/**
@@ -44,7 +53,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 */
 	public function stats($team_id)
 	{
-		return Stat::where('team_id', $team_id)->get();
+		return $this->stat->getTeamStats($team_id);
 	}
 
 
@@ -55,7 +64,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 */
 	public function events($team_id)
     {
-        return $this->event->allEventsForTeam($team_id);
+        return $this->event->getTeamEvents($team_id);
     }
 
 

@@ -2,61 +2,100 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Team;
+use Validator;
 use App\Http\Requests;
 use Illuminate\Http\Request;
+use App\RC\Team\TeamRepository;
 use App\Http\Controllers\Controller;
-use Illuminate\Contracts\Validation\Validator;
-
+use App\RC\Team\TeamMemberRepository;
 
 class MemberController extends Controller
 {
+    /**
+     * An instance of a team member repository
+     * 
+     * @var TeamMemberRepository
+     */
+    protected $member;
+
+    /**
+     * An instance of a team repository
+     * 
+     * @var TeamRepository
+     */
+    protected $team;
 
     /**
      * Assign controller middleware
      */
-    public function __construct()
+    public function __construct(TeamRepository $team, TeamMemberRepository $member)
     {
         $this->middleware('auth');
         $this->middleware('admin');
+
+        $this->member = $member;
+        $this->team = $team;
     }
 
 
-
     /**
-     * Display a listing of the resource.
+     * Admin wants to create a new ghost member
      *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Illuminate\Http\Request  $request
      * @param  Team  $team
-     * @return \Illuminate\Http\Response
+     * @return Illuminate\Http\Response
      */
     public function store(Request $request, Team $team)
     {
-        //do a little bit of validation first
+        // do a little bit of validation first
         $rules = [
-            'user.meta.ghost.email'     => 'email',
-            'user.meta.ghost.name'      => 'required|max:100',
-            'user.role'                 => 'required|numeric'
+            'email' => 'email',
+            'name'  => 'required|string|max:100',
+            'role'  => 'required|string|in:ghost_player,ghost_coach'
+        ];
+
+        $this->validate($request, $rules);
+
+        if ($request->role == 'ghost_player') {
+            $this->member->newPlayer($request->name);
+        }
+        else {
+            $this->member->newCoach($request->name);
+        }
+
+        if ($request->has('email')) {
+            $this->member->invite($request->email);
+        }
+
+        return ['ok' => true, 'members' => $this->team->members($team->id)];
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Illuminate\Http\Request  $request
+     * @param  Team  $team
+     * @param  int  $id
+     * @return Illuminate\Http\Response
+     */
+    public function update(Request $request, Team $team, $id)
+    {
+        if (Auth::user()->cannot('edit-member', [$team, $id])) {
+            return ['ok' => false, 'error' => 'Unauthorized request'];
+        }
+
+        // do a little bit of validation first
+        $rules = [
+            'meta.name'         => 'required|string|max:100',
+            'meta.email'        => 'email',
+            'meta.num'          => 'string|max:2',
+            'meta.positions'    => 'array|max:2',
+            'meta.name'         => 'required|string|max:100',
+            'role'              => 'required|boolean',
+            'admin'             => 'required|boolean'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -65,52 +104,10 @@ class MemberController extends Controller
             return ['ok' => false, 'errors' => $validator->errors()];
         }
 
-        return $team->newMember($request);
+        $this->member->editMember($request->meta, $request->role, $request->admin);
+
+        return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  Team  $team
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Team $team, $id)
-    {
-        if (Auth::user()->cannot('edit-member', [$team, $id])) {
-            return ['ok' => false, 'error' => 'Unauthorized request'];
-        }
-
-        return $team->editMember($request);
-    }
-
 
 
     /**
@@ -118,7 +115,7 @@ class MemberController extends Controller
      *
      * @param  Team $team
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Illuminate\Http\Response
      */
     public function destroy(Team $team, $id)
     {
@@ -126,6 +123,8 @@ class MemberController extends Controller
             return ['ok' => false, 'error' => 'Unauthorized request'];
         }
         
-        return $team->deleteMember($request);
+        $this->member->deleteMember($id);
+
+        return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
 }

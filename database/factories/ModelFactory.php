@@ -58,12 +58,14 @@ $factory->define(App\Event::class, function ($faker) {
 	$start = Carbon\Carbon::createFromTimestamp($faker->dateTimeBetween('-30 days', '+30 days')->getTimestamp());
 	$start = $start->minute(0)->second(0);
 	$end = Carbon\Carbon::instance($start)->addHours(3);
+    $type = $faker->randomElement(['practice', 'home_game', 'away_game', 'other']);
+
 
     return [
     	'title' 		=> $faker->words(3, true),
     	'start' 		=> $start->timestamp,
     	'end' 			=> $end->timestamp,
-    	'type'			=> $faker->numberBetween(0, 3),
+    	'type'			=> $type,
         'owner_id' 		=> $faker->numberBetween(1, 100),
         'creator_id' 	=> $faker->numberBetween(1, 100),
     	'details'		=> $faker->sentences(2, true),

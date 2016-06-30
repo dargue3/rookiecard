@@ -21,20 +21,20 @@ Route::group(['prefix' => '/api/v1'], function() {
 	Route::post('team/create', 'TeamController@createTeam');
 	Route::post('team/create/{name}', 'TeamController@checkAvailability');
 
-	Route::get('team/{team}/data', 'TeamController@getTeamData');
-	Route::post('team/{team}/join', 'TeamController@requestToJoin');
-	Route::post('team/{team}/invite', 'TeamController@respondToInvitation');
-	Route::post('team/{team}/pic', 'TeamController@uploadPic');
+	Route::get('team/{teamname}/data', 'TeamController@getTeamData');
+	Route::post('team/{teamname}/join', 'TeamController@requestToJoin');
+	Route::post('team/{teamname}/invite', 'TeamController@respondToInvitation');
+	Route::post('team/{teamname}/pic', 'TeamController@uploadPic');
+	Route::post('team/{teamname}/fan', 'TeamController@toggleFan');
 
-	Route::resource('team/{team}/feed', 'TeamFeedController');
+	Route::resource('team/{teamname}/feed', 'TeamFeedController');
 
-	Route::resource('team/{team}/stats', 'StatController');
+	Route::resource('team/{teamname}/stats', 'StatController');
 
-	Route::resource('team/{team}/member', 'MemberController');
+	Route::resource('team/{teamname}/member', 'MemberController');
 	
-	Route::resource  ('team/{team}/event', 	'EventController');
+	Route::resource  ('team/{teamname}/event', 	'EventController');
 	
-	Route::post('team/{team}/fan', 'TeamFanController@toggleFan');
 
 	Route::get ('user/auth/data', 'UserController@getUserData');
 	Route::post('user/auth/team/{id}', 'UserController@clearNotifications');

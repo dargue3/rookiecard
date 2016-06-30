@@ -46,27 +46,7 @@ class Stat extends Model
     }
 
 
-    /**
-     * Swaps stat ownership from one member instance to another
-     * 
-     * @param  TeamMember $currentOwner_id
-     * @param  TeamMember $newOwner_id    
-     * @return void           
-     */
-    public static function switchOwners($currentOwner, $newOwner)
-    {
-        if ($currentOwner->team_id != $newOwner->team_id) {
-            throw new Exception;
-        }
-
-        $stats = self::teamMember($currentOwner->team_id, $currentOwner->id)->get();
-
-        foreach ($stats as $stat) {        
-            $stat->member_id = $newOwner->id;
-            $stat->owner_id = $newOwner->user_id;
-            $stat->save();
-        }
-    }
+    
 
 
     //create team stats based on ajax request inputs

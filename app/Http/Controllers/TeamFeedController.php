@@ -5,8 +5,8 @@ use App\Team;
 use App\NewsFeed;
 use App\Http\Requests;
 use Illuminate\Http\Request;
+use App\RC\Team\TeamRepository;
 use App\Http\Controllers\Controller;
-
 
 class TeamFeedController extends Controller
 {

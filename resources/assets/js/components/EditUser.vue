@@ -25,10 +25,10 @@
 	        <label>Is a...</label>
 	        <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
 	        				data-max-options="1" v-model="user.role" number>
-	        	<option v-if="user.ghost" value="1">Player</option>    
-	          <option v-else 						value="0">Player</option>    
-	          <option v-if="user.ghost" value="3">Coach</option>    
-	          <option v-else 						value="2">Coach</option>    
+	        	<option v-if="user.ghost" value="ghost_player">Player</option>    
+	          <option v-else value="player">Player</option>    
+	          <option v-if="user.ghost" value="ghost_coach">Coach</option>    
+	          <option v-else value="coach">Coach</option>    
 	        </select>
 	      </div>
 	    </div>
@@ -199,19 +199,25 @@ export default  {
 			if(errors)
 				return;
 
-			if(this.user.new)
+			if(this.user.new) {
 				this.newUser();
-			else
+			}
+			else {
 				this.updateUser();
+			}
 		},
 
 
 		//send post request to server to save new user
 		newUser() {
-
 			var self = this;
-			var url = this.$parent.prefix + '/user'; 
-			var data = { user: this.user };
+			var url = this.$parent.prefix + '/member'; 
+			var data = { 
+				name: this.user.meta.ghost.name,
+				email: this.user.meta.ghost.email,
+				role: this.user.role
+			};
+
 			this.$http.post(url, data)
 				.then(function(response) {
 					if(!response.data.ok)

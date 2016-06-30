@@ -10,26 +10,22 @@ use Exception;
  */
 abstract class EloquentRepository implements RepositoryInterface
 {
-	/**
-	 * A path to choose which Model class to call
-	 * 
-	 * @var string
-	 */
-	protected $modelPath;
 
-
-	public function __construct()
+	public function modelPath()
 	{
-		// ensure the modelPath attribute is set
-		if (! isset($this->modelPath)) {
-			throw new Exception(get_class($this) . ' must have a $modelPath');
-		}
+		return $this->modelPath;
 	}
 
 
 	public function create(array $attributes)
 	{
 		return call_user_func_array("{$this->modelPath}::create", array($attributes));
+	}
+
+
+	public function firstOrNew(array $attributes)
+	{
+		return call_user_func_array("{$this->modelPath}::firstOrNew", array($attributes));
 	}
 
 
@@ -51,8 +47,8 @@ abstract class EloquentRepository implements RepositoryInterface
 	}
 
 	
-	public function delete($id)
+	public function destroy($id)
 	{
-		return call_user_func_array("{$this->modelPath}::delete", array($id));
+		return call_user_func_array("{$this->modelPath}::destroy", array($id));
 	}
 }

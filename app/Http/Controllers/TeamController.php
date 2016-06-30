@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Team;
 use Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-
-use App\Team;
-use App\Http\Requests\NewEventRequest;
 use App\RC\Team\TeamRepository;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\NewEventRequest;
 use App\Http\Requests\CreateTeamRequest;
-
 
 class TeamController extends Controller
 {
     /**
-     * Instance of team repository
+     * An instance of team repository
      * 
      * @var TeamRepository
      */

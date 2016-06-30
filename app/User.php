@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Team;
-use App\TeamMember;
+use App\RC\Team\TeamMemberRepository;
 
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract, AuthorizableContract
 {
@@ -24,6 +25,22 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     protected $dates = ['deleted_at'];
     protected $fillable = ['firstname', 'lastname', 'username',  'email', 'password'];
     protected $hidden = ['password', 'remember_token', 'email', 'birthday', 'created_at', 'updated_at', 'deleted_at'];
+
+
+    /**
+     * An instance of a team member repository
+     * 
+     * @var TeamMemberRepository
+     */
+    protected $member;
+
+
+    public function __construct(array $attributes = array())
+    {
+        parent::__construct($attributes);
+
+        $this->member = App::make(TeamMemberRepository::class);
+    }
 
 
     //for searching User class first names
@@ -85,11 +102,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     {
         $member = TeamMember::member($this->id, $team_id)->first();
 
-        if (! $member or ! $member->isAdmin()) {
+        if (! $member) {
             return false;
         }
 
-        return true;
+        return $this->member->using($member)->isAdmin();
     }
 
 

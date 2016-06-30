@@ -7,8 +7,9 @@ namespace App\Repositories;
 interface RepositoryInterface
 {
 	public function create(array $attributes);
+	public function firstOrNew(array $attributes);
 	public function all();
 	public function find($id);
 	public function findOrFail($id);
-	public function delete($id);
+	public function destroy($id);
 }

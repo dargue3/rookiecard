@@ -31,11 +31,7 @@ class TeamInvite extends Model
      */
     public static function invite($ghost) {
 
-        if (! $ghost->isGhost()) {
-            throw new Exception("Cannot invite someone to replace a non-ghost");
-        }
-
-        $email = json_decode($ghost->meta)->ghost->email;
+        $email = json_decode($ghost->meta)->email;
         $instance = new static(['team_id' => $ghost->team_id, 'email' => $email, 'ghost_id' => $ghost->id]);
         $instance->save();
 

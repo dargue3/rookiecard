@@ -146,19 +146,19 @@ export default  {
         temp.title = this.formatEventTitle(event.title, temp.start, temp.end);
 
         switch(event.type) {
-          case 0:
+          case 'practice':
             //practice event
             temp.class = 'event-practice';
             break;
-          case 1:
+          case 'home_game':
             //game event
             temp.class = 'event-homeGame';
             break;
-          case 2:
+          case 'away_game':
             //game event
             temp.class = 'event-awayGame';
             break;  
-          case 3:
+          case 'other':
             //other event
             temp.class = 'event-other';
             break;    

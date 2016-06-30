@@ -1,5 +1,5 @@
 <?php
-namespace App\RC\Events;
+namespace App\RC\Event;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -79,18 +79,6 @@ class HandlesEventLogic
      */
     protected $limitPerRequest;
 
-    /**
-     * The current supported event types as passed in by front-end
-     * 
-     * @var array
-     */
-    protected $typeLookup = [
-        'practice'      => 0,
-        'home_game'     => 1,
-        'away_game'     => 2,
-        'other'         => 3,
-    ];
-
 
 	public function __construct(array $data, $team_id, EventRepository $event)
 	{
@@ -101,7 +89,7 @@ class HandlesEventLogic
 
         // save all of the event data as attributes for easier access later
         $this->title        = $data['title'];
-        $this->type         = $this->typeLookup[$data['type']];
+        $this->type         = $data['type'];
         $this->tz           = $data['tz'];
         $this->start        = Carbon::createFromTimestamp($data['start'], $this->tz);
         $this->end          = Carbon::createFromTimestamp($data['end'], $this->tz);

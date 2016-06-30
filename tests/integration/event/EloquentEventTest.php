@@ -4,46 +4,48 @@ use App\Team;
 use App\Event;
 use App\NewsFeed;
 use Carbon\Carbon;
-use App\RC\Events\EloquentEvent;
-use App\RC\Events\HandlesEventLogic;
+use App\RC\Stat\StatRepository;
+use App\RC\Event\EloquentEvent;
+use App\Events\TeamCreatedAnEvent;
+use App\Events\TeamUpdatedAnEvent;
+use App\Events\TeamDeletedAnEvent;
+use App\RC\Event\HandlesEventLogic;
 
 class EloquentEventTest extends TestCase
 {
-	/**
-	 * The date string used for generating the beginning date strings
-	 * 
-	 * @var string
-	 */
-	protected $date = 'June 20, 2016 18:00:00';
-
-
 	/**
 	 * The instance of the event repository under test
 	 * 
 	 * @var EloquentEvent
 	 */
-	protected $event;
+	protected $repo;
+
+    /**
+     * The example team being used in these tests
+     * 
+     * @var Team
+     */
+    protected $team;
 
 
 	public function setUp()
 	{
 		parent::setUp();
-		
-		$this->signIn();
 
-		$this->event = new EloquentEvent;
+        $this->team = factory(Team::class)->create();
+
+        $this->signIn()->makeAdminOfTeam($this->team);
+
+		$this->repo = new EloquentEvent($this->app->make(StatRepository::class));
 	}
 
 
     /**
-     * Generate a random team
+     * The date string used for generating the beginning date strings
      * 
-     * @return Team
+     * @var string
      */
-    public function getTeam()
-    {
-        return factory(Team::class)->create();
-    }
+    protected $date = 'June 20, 2016 18:00:00';
 
 
 	/**
@@ -78,107 +80,90 @@ class EloquentEventTest extends TestCase
 
 
     /** @test */
+    public function it_has_a_correct_model_path_attribute()
+    {
+        $this->assertEquals('App\Event', $this->repo->modelPath());
+    }
+
+
+    /** @test */
     public function it_has_a_store_method_that_creates_events()
     {
-    	$team = factory(Team::class)->create();
     	$data = $this->getRawEventData();
-    	
-    	(new HandlesEventLogic($data, $team->id, $this->event))->create();
 
-    	$event  = Event::first();
-    	$start 	= Carbon::parse($this->date, 'America/New_York')->timezone('UTC');
-    	$end 	= Carbon::instance($start)->addHours(2);
+        $mock = $this->mock(HandlesEventLogic::class);
 
-    	$this->assertEquals($start->timestamp, $event->start);
-    	$this->assertEquals($end->timestamp, $event->end);
-    	$this->assertTrue(! empty($event->title));
-    	$this->assertTrue(! empty($event->details));
-    	$this->assertEquals($this->user->id, $event->creator_id);
-    	$this->assertEquals($team->id, $event->owner_id);
+        $mock->shouldReceive('create')->with($data, $this->team->id);
+
+        $this->repo->store($data, $this->team->id);
     }
 
+
     /** @test */
-    public function it_generates_multiple_events()
+    public function it_fires_an_event_saying_that_a_team_has_created_a_new_event()
     {
-    	$data = $this->getRawEventData(true);
-    	$team = $this->getTeam();
+    	$data = $this->getRawEventData();
 
-        $this->event->store($data, $team->id);
+        $this->expectsEvents(TeamCreatedAnEvent::class);
 
-    	//(new HandlesEventLogic($data, $team, $this->event))->create();
-
-    	// how the seeded data is set up, first day is a Monday
-    	// event repeats every Mon, Wed, Fri for two weeks and stops repeating on that Monday
-    	// Week 1: M W F
-    	// Week 2: M W F
-    	// Week 3: M
-    	// Total = 7 events
-    	$this->assertCount(7, Event::all());
-
-    	// the first event is on $this->date
-    	$event  = Event::find(1);
-    	$start 	= Carbon::parse($this->date, 'America/New_York')->timezone('UTC');
-    	$end 	= Carbon::instance($start)->addHours(2);
-
-    	$this->assertEquals($start->timestamp, $event->start);
-    	$this->assertEquals($end->timestamp, $event->end);
-
-    	// the second event is on $this->date plus 2 days later
-    	$event  = Event::find(2);
-    	$start 	= Carbon::parse($this->date, 'America/New_York')->timezone('UTC')->addDays(2);
-    	$end 	= Carbon::instance($start)->addHours(2);
-
-    	$this->assertEquals($start->timestamp, $event->start);
-    	$this->assertEquals($end->timestamp, $event->end);
-
-    	// the fourth event is the following Monday
-    	$event  = Event::find(4);
-    	$start 	= Carbon::parse($this->date, 'America/New_York')->timezone('UTC')->addWeeks(1);
-    	$end 	= Carbon::instance($start)->addHours(2);
-
-    	$this->assertEquals($start->timestamp, $event->start);
-    	$this->assertEquals($end->timestamp, $event->end);
-
-    	// and so on and so forth
+    	$this->repo->store($data, $this->team->id);
     }
 
 
-    // /** @test */
-    // public function it_generates_a_news_feed_entry_for_the_team()
-    // {
-    // 	$data = $this->getRawEventData();
-    // 	$team = $this->getTeam();
+    /** @test */
+    public function it_has_an_update_method_that_applies_given_data_to_a_given_event()
+    {
+        $event = factory(Event::class)->create();
+        $data = $this->getRawEventData();
 
-    // 	(new HandlesEventLogic($data, $team, $this->event))->create();
+        $this->repo->update($data, $this->team->id, $event->id);
 
-    // 	$event = Event::first();
-    // 	$feed = NewsFeed::first();
-    // 	$meta = json_decode($feed->meta);
+        $event = Event::findOrFail($event->id);
 
-    // 	$this->assertEquals($this->user->id, $feed->creator_id);
-    // 	$this->assertEquals($team->id, $feed->owner_id);
-    // 	$this->assertEquals(0, $feed->type);
-    // 	$this->assertEquals($event->id, $meta->event->id);
-    // }
+        $this->assertEquals('This is a test event!', $event->title);
+        $this->assertEquals('practice', $event->type);
+        $this->assertEquals('Boy, I sure do hope this test will pass!', $event->details);
+        $this->assertEquals($this->user->id, $event->creator_id);
+        $this->assertEquals($data['start'], $event->start);
+        $this->assertEquals($data['end'], $event->end);
+    }
 
 
     /** @test */
-    // public function the_generated_news_feed_has_special_repeating_meta_data_if_event_was_repeating()
-    // {
-    // 	$data = $this->getRawEventData(true);
-    // 	$team = $this->getTeam();
+    public function it_fires_an_event_saying_that_a_team_has_updated_an_event()
+    {
+        $start = Carbon::now()->addDays(1);
+        $end = Carbon::instance($start)->addHours(2);
 
-    // 	(new HandlesEventLogic($data, $team, $this->event))->create();
+        $event = factory(Event::class)->create(['start' => $start->timestamp, 'end' => $end->timestamp]);
+        $data = $this->getRawEventData();
 
-    // 	$firstEvent = Event::find(1);
-    // 	$lastEvent  = Event::find(7);
-    // 	$feed = NewsFeed::first();
-    // 	$meta = json_decode($feed->meta);
-    // 	$string = "$firstEvent->start:$lastEvent->start:M,W,F";
+        $this->expectsEvents(TeamUpdatedAnEvent::class);
 
-    // 	$this->assertEquals($string, $meta->repeats);
-    // }
+        $this->repo->update($data, $this->team->id, $event->id);
+    }
 
+
+    /** @test */
+    public function it_has_a_delete_method_that_deletes_a_given_event()
+    {
+        $event = factory(Event::class)->create();
+
+        $this->repo->delete($this->team->id, $event->id);
+
+        $this->assertCount(0, Event::all());
+    }
+
+
+    /** @test */
+    public function it_fires_an_event_saying_that_a_team_has_deleted_an_event()
+    {
+        $event = factory(Event::class)->create();
+
+        $this->expectsEvents(TeamDeletedAnEvent::class);
+
+        $this->repo->delete($this->team->id, $event->id);
+    }
 
 
 

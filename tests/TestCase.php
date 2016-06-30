@@ -3,6 +3,8 @@
 use App\User;
 use App\Team;
 use App\TeamMember;
+use App\RC\Team\Roles\Admin;
+use App\RC\Team\EloquentTeamMember;
 use Illuminate\Support\Facades\Artisan;
 
 class TestCase extends Illuminate\Foundation\Testing\TestCase
@@ -22,6 +24,14 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
      */
     protected $user;
 
+
+    /**
+     * The global mocked class
+     * 
+     * @var Mockery
+     */
+    protected $mock;
+
     /**
      * Mock a given class
      * @param  mixed $class
@@ -31,6 +41,8 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
     {
         $mock = Mockery::mock($class);
         $this->app->instance($class, $mock);
+
+        $this->mock = $mock;
 
         return $mock;
     }
@@ -68,7 +80,9 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
             'team_id' => $team->id,
         ]);
 
-        $member->editMember(['test' => 123], true);
+        $repo = new EloquentTeamMember;
+        $repo->using($member);
+        $repo->addRole(new Admin);
 
         return $this;
     }
