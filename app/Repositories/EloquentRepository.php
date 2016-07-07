@@ -35,15 +35,15 @@ abstract class EloquentRepository implements RepositoryInterface
 	}
 
 
-	public function find($id)
+	public function find($id, array $columns = array('*'))
 	{
-		return call_user_func_array("{$this->modelPath}::find", array($id));
+		return call_user_func_array("{$this->modelPath}::find", array($id, $columns));
 	}
 
 
-	public function findOrFail($id)
+	public function findOrFail($id, array $columns = array('*'))
 	{
-		return call_user_func_array("{$this->modelPath}::findOrFail", array($id));
+		return call_user_func_array("{$this->modelPath}::findOrFail", array($id, $columns));
 	}
 
 	

@@ -8,12 +8,12 @@ use Faker\Factory;
 use App\TeamInvite;
 use App\TeamMember;
 use App\RC\Stat\StatRepository;
+use App\RC\Team\TeamRepository;
 use Illuminate\Support\Facades\Auth;
 use App\RC\Team\Roles\RoleInterface;
 use App\Events\TeamInvitedUserToJoin;
 use App\RC\Team\Roles\ManagesTeamRoles;
 use App\Repositories\EloquentRepository;
-
 use App\RC\Team\Roles\Admin;
 use App\RC\Team\Roles\Player;
 use App\RC\Team\Roles\GhostPlayer;
@@ -83,6 +83,74 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
         if (! isset($this->member)) {
             throw new Exception("Make sure to call using() first to tell the repo which member it's using");
         }
+    }
+
+
+    /**
+     * Fetch all of the members of a given team including ghosts
+     * 
+     * @param  int $team_id 
+     * @return array          
+     */
+    public function members($team_id)
+    {
+        return TeamMember::where('team_id', $team_id)->get();
+    }
+
+
+    /**
+     * Fetch all teams that a given user is a part of
+     * 
+     * @param  int $user_id 
+     * @return array  An array of Team instances with roles
+     */
+    public function teams($user_id)
+    {
+        $memberOf = TeamMember::where('user_id', $user_id)->get();
+
+        $repo = App::make(TeamRepository::class);
+
+        $teams = [];
+        foreach ($memberOf as $member) {
+            $this->using($member);
+            $teams[] = [
+                'team'  => $repo->findOrFail($member->team_id),
+                'roles' => [
+                    'isMember'              => $this->isMember(),
+                    'isFan'                 => $this->isFan(),
+                    'hasBeenInvited'        => $this->hasBeenInvited(),
+                ],
+            ];
+        }
+
+        return $teams;
+    }
+
+
+
+    /**
+     * Return an instance of TeamMember with these parameters
+     * 
+     * @param  int $user_id 
+     * @param  int $team_id 
+     * @return TeamMember|null          
+     */
+    public function teamMember($user_id, $team_id)
+    {
+        return TeamMember::member($user_id, $team_id)->first();
+    }
+
+
+
+    /**
+     * Fetch all of the human users on a given team
+     * 
+     * @param  int $team_id 
+     * @return array          
+     */
+    public function users($team_id)
+    {
+        return TeamMember::where('team_id', $team_id)->where('user_id', '!=', 0)->get(['user_id']);
     }
 
 

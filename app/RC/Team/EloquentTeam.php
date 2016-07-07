@@ -1,6 +1,7 @@
 <?php
 namespace App\RC\Team;
 
+use App;
 use App\Team;
 use App\Event;
 use App\NewsFeed;
@@ -11,6 +12,8 @@ use App\RC\Sports\Sport;
 use App\RC\Stat\StatRepository;
 use App\RC\Event\EventRepository;
 use Illuminate\Support\Facades\Auth;
+use App\RC\Team\TeamMemberRepository;
+use App\RC\NewsFeed\NewsFeedRepository;
 use App\Repositories\EloquentRepository;
 
 class EloquentTeam extends EloquentRepository implements TeamRepository
@@ -23,27 +26,20 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     protected $modelPath = 'App\Team';
 
 
-    /**
-     * An instance of an event repository
-     * 
-     * @var EventRepository
-     */
-    protected $event;
-
 
     /**
-     * An instance of a stat repository
+     * An instance of a data transformer for teams
      * 
-     * @var StatRepository
+     * @var TransformsTeamData
      */
-    protected $stat;
+    protected $transformer;
 
 
-    public function __construct(EventRepository $event, StatRepository $stat)
+    public function __construct()
     {
-        $this->event = $event;
-        $this->stat = $stat;
+        $this->transformer = new TransformsTeamData;
     }
+
 
 
 	/**
@@ -53,7 +49,9 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 */
 	public function stats($team_id)
 	{
-		return $this->stat->getTeamStats($team_id);
+        $repo = App::make(StatRepository::class);
+
+		return $repo->getTeamStats($team_id);
 	}
 
 
@@ -64,7 +62,11 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 */
 	public function events($team_id)
     {
-        return $this->event->getTeamEvents($team_id);
+        $repo = App::make(EventRepository::class);
+
+        $events = $repo->getTeamEvents($team_id);
+
+        return $this->transformer->events($events);
     }
 
 
@@ -75,10 +77,28 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 */
 	public function members($team_id)
 	{
-		$members = TeamMember::where('team_id', $team_id)->get();
+        $repo = App::make(TeamMemberRepository::class);
 
-        return (new TransformsData)->transformMembers($members, $team_id);
+		$members = $repo->members($team_id);
+
+        return $this->transformer->members($members, $team_id);
 	}
+
+
+    /**
+     * Return the ids of all users associated with this team
+     * 
+     * @param  int $team_id 
+     * @return array 
+     */
+    public function users($team_id)
+    {
+        $repo = App::make(TeamMemberRepository::class);
+
+        $users = $repo->users($team_id);
+
+        return $this->transformer->users($users);
+    }
 
 
 	/**
@@ -88,7 +108,11 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	 */
 	public function feed($team_id)
     {
-        return NewsFeed::where('owner_id', $team_id)->where('type', '<', 10)->orderBy('created_at', 'desc')->get();
+        $repo = App::make(NewsFeedRepository::class);
+
+        $feed = $repo->getTeamFeed($team_id);
+
+        return  $this->transformer->feed($feed);
     }
 
 
@@ -123,8 +147,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     public function getAllData($team_id) {
 
     	$data = [
-            'auth'      => Auth::user(),
-            'team'      => $this->findOrFail($team_id),
+            'team'      => $this->transformer->team(Team::findOrFail($team_id)),
             'members'   => $this->members($team_id),
             'feed'      => $this->feed($team_id),
             'events'    => $this->events($team_id),

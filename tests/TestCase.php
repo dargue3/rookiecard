@@ -18,6 +18,7 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
      */
     protected $baseUrl = 'http://localhost/api/v1';
 
+
     /**
      * The logged in user instance
      * @var User
@@ -96,6 +97,8 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
      */
     public function createApplication()
     {
+        //ini_set('memory_limit', '256M');
+
         putenv('DB_DEFAULT=sqlite_testing');
         
         $app = require __DIR__.'/../bootstrap/app.php';

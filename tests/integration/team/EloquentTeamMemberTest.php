@@ -3,6 +3,7 @@
 use App\RC\Team\EloquentTeamMember;
 use App\TeamMember;
 use App\TeamInvite;
+use App\Team;
 use App\User;
 use App\RC\Stat\StatRepository;
 
@@ -441,6 +442,44 @@ class EloquentTeamMemberTest extends TestCase
 
         $this->assertCount(0, TeamMember::all());
         $this->assertCount(0, TeamInvite::all()); // pending invite is deleted
+    }
+
+
+    /** @test */
+    public function it_returns_a_team_member_object_if_a_given_user_belongs_to_a_given_team()
+    {
+        $team = factory(Team::class)->create();
+        factory(TeamMember::class)->create(['team_id' => $team->id, 'user_id' => $this->user->id]);
+
+        $member = $this->repo->teamMember($this->user->id, $team->id);
+
+        $this->assertEquals($member->user_id, $this->user->id);
+        $this->assertEquals($member->team_id, $team->id);
+    }
+
+
+    /** @test */
+    public function it_returns_an_array_of_all_the_teams_that_a_given_user_belongs_to_with_their_respective_roles()
+    {
+        $team1 = factory(Team::class)->create();
+        $team2 = factory(Team::class)->create();
+
+        $this->repo->newPlayer($team1->id)->invite($this->user->email)->acceptInvitation($team1->id);
+        $this->repo->newCoach($team2->id)->invite($this->user->email);
+
+        $teams = $this->repo->teams($this->user->id);
+
+        $this->assertCount(2, $teams);
+        $this->assertEquals($team1->id, $teams[0]['team']->id);
+        $this->assertEquals($team2->id, $teams[1]['team']->id);
+
+        $this->assertTrue($teams[0]['roles']['isMember']);
+        $this->assertFalse($teams[0]['roles']['hasBeenInvited']);
+        $this->assertFalse($teams[0]['roles']['isFan']);
+
+        $this->assertFalse($teams[1]['roles']['isMember']);
+        $this->assertFalse($teams[1]['roles']['isFan']);
+        $this->assertTrue($teams[1]['roles']['hasBeenInvited']);
     }
 
 }

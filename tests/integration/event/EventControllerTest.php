@@ -84,6 +84,7 @@ class EventControllerTest extends TestCase
 
     	$event = factory(Event::class)->create(['owner_id' => $this->team->id]);
 
+        $this->repo->shouldReceive('findOrFail')->once()->andReturn($event);
         $this->repo->shouldReceive('update')->once();
     	$this->repo->shouldReceive('getTeamEvents')->once();
 
@@ -100,6 +101,7 @@ class EventControllerTest extends TestCase
     	
     	$event = factory(Event::class)->create(['owner_id' => $this->team->id]);
 
+        $this->repo->shouldReceive('findOrFail')->once()->andReturn($event);
         $this->repo->shouldReceive('delete')->once();
     	$this->repo->shouldReceive('getTeamEvents')->once();
 

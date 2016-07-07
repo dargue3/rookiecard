@@ -73,6 +73,7 @@ class MemberControllerTest extends TestCase
     		'role' => 'ghost_player',
     	];
     	
+        $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
     	$this->memberRepo->shouldReceive('newPlayer')->once();
    		$this->memberRepo->shouldReceive('invite')->once();
 
@@ -102,6 +103,8 @@ class MemberControllerTest extends TestCase
     		'admin'	=> false,
     	];
 
+        $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
+        $this->memberRepo->shouldReceive('findOrFail')->once()->andReturn($member); // policy check
     	$this->memberRepo->shouldReceive('editMember')->once();
 
     	// annoying amount of mocks here, this is for fetching team's members
@@ -120,6 +123,8 @@ class MemberControllerTest extends TestCase
     {
     	$member = factory(TeamMember::class)->create(['team_id' => $this->team->id]);
 
+        $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
+        $this->memberRepo->shouldReceive('findOrFail')->once()->andReturn($member); // policy check
     	$this->memberRepo->shouldReceive('deleteMember')->once();
 
     	// annoying amount of mocks here, this is for fetching team's members

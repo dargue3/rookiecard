@@ -2,19 +2,17 @@
 
 namespace App;
 
-use App;
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
-use Illuminate\Foundation\Auth\Access\Authorizable;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use App\Team;
+use Illuminate\Auth\Authenticatable;
 use App\RC\Team\TeamMemberRepository;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+
 
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract, AuthorizableContract
 {
@@ -23,109 +21,68 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     protected $table = 'rc_users';
     protected $dates = ['deleted_at'];
-    protected $fillable = ['firstname', 'lastname', 'username',  'email', 'password'];
-    protected $hidden = ['password', 'remember_token', 'email', 'birthday', 'created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = ['*'];
+    protected $hidden = ['password', 'remember_token', 'email', 'birthday', 'created_at', 'settings', 'updated_at', 'deleted_at'];
 
 
     /**
-     * An instance of a team member repository
+     * Find a user model with a given username
      * 
-     * @var TeamMemberRepository
+     * @param  Builder $query    
+     * @param  string $username 
+     * @return User
      */
-    protected $member;
-
-
-    public function __construct(array $attributes = array())
+    public function scopeUsername($query, $username)
     {
-        parent::__construct($attributes);
-
-        $this->member = App::make(TeamMemberRepository::class);
-    }
-
-
-    //for searching User class first names
-    public function scopeSearchByFirstName($query, $search)
-    {
-        return $query->where('firstname', 'LIKE', "%$search%");
-    }
-
-
-    //for searching User class last names
-    public function scopeSearchByLastName($query, $search)
-    {
-        return $query->where('lastname', 'LIKE', "%$search%");
+        return $query->where('username', $username)->firstOrFail();
     }
 
 
 
-    //for searching User class usernames
-    public function scopeSearchByUsername($query, $search)
+    /**
+     * Convert the gender to a string before giving to front-end
+     * 
+     * @param  int $gender 
+     * @return string       
+     */
+    public function getGenderAttribute($gender)
     {
-        return $query->where('username', 'LIKE', "%$search%");
+        if ($gender == 0) return 'male';
+        if ($gender == 1) return 'female';
     }
 
 
+
+    /**
+     * Convert the gender to an int before storing in db
+     * 
+     * @param  string $gender 
+     * @return void       
+     */
+    public function setGenderAttribute($gender)
+    {
+        if ($gender == 'male') $this->attributes['gender'] = 0;
+        if ($gender == 'female') $this->attributes['gender'] = 1;
+    }
+
+
+
+    /**
+     * Return this user's full name
+     * 
+     * @return string 
+     */
     public function fullName()
     {
         return "$this->firstname $this->lastname"; 
     }
 
-    //returns all the teams this user is associated with
-    public function teams()
-    {
-        $teams = TeamMember::where('user_id', $this->id)->get();
-
-        foreach ($teams as $team) {
-            $role = 99;
-            $team = Team::find($team->team_id);
-            if (! $team) {
-                continue;
-            }
-            $team = $team->brief();
-            $team['notifications'] = Notification::teamUser($this->id, $team['id'])->count();
-            $team['role'] = $role;
-
-            $teams[] = $team;
-        }
-        return $teams;
-    }
-
-
 
     /**
-     * Check whether or not this user is an admin of a given team
+     * Return a small amount of this user's data for front-end
      * 
-     * @param  Team  $team
-     * @return boolean          
+     * @return array 
      */
-    public function isTeamAdmin($team_id)
-    {
-        $member = TeamMember::member($this->id, $team_id)->first();
-
-        if (! $member) {
-            return false;
-        }
-
-        return $this->member->using($member)->isAdmin();
-    }
-
-
-
-    //checks if this user is a member/creator of this team
-    public function isTeamMember(Team $team)
-    {
-        // $member = TeamMember::member($this->id, $team->id)->first();
-
-        // if(!$member)
-        //     return false;
-        // else if($member->isMember())
-        //     return true;
-
-        return false;
-    }
-
-
-    //return a minimal amount of info about the user
     public function brief()
     {
         return [
@@ -135,7 +92,5 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
             'username'      => $this->username,
         ];
     }
-
-
 
 }

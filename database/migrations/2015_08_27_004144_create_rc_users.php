@@ -20,8 +20,10 @@ class CreateRcUsers extends Migration
             $table->string('email')->unique();
             $table->index('email');
             $table->string('password', 60);
-            $table->date('birthday');
+            $table->integer('birthday')->unsigned();
             $table->tinyInteger('gender');
+            $table->text('meta')->nullable();
+            $table->text('settings')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

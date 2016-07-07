@@ -1,5 +1,5 @@
-//set up detection on stats tables for whether or not there is more data hidden and needs to be scrolled
-//jQuery listeners wait for scroll, update overflow object in parent
+// set up detection on stats tables for whether or not there is more data hidden and needs to be scrolled
+// jQuery listeners wait for scroll, update overflow object in parent
 export default {
 
 	data() {
@@ -12,7 +12,7 @@ export default {
 
 	methods: {
 
-		//checks to see if that element is visible on screen or not
+		// checks to see if that element is visible on screen or not
 		isHidden(element) {
 	    element = element[0];
 	    var rect = element.getBoundingClientRect();
@@ -25,7 +25,7 @@ export default {
 		},
 
 
-		//set up listeners to constantly check visibility on scroll
+		// set up listeners to constantly check visibility on scroll
 		attachScrollListener(element, overflowIndex) {
 			var firstElement = $(element +  ' th:first-child');
 			var lastElement = $(element +  ' th:last-child');
@@ -36,7 +36,7 @@ export default {
 			this.overflowed[overflowIndex].last = this.isHidden(lastElement);
 
 			var self = this;
-			//listen for scroll, update the flag if now in view
+			// listen for scroll, update the flag if now in view
 			parent.on('scroll', function() {
 				self.overflowed[overflowIndex].first = self.isHidden(firstElement);
 				self.overflowed[overflowIndex].last = self.isHidden(lastElement);

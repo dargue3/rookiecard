@@ -2,6 +2,7 @@
 namespace App\RC\NewsFeed;
 
 use Exception;
+use App\NewsFeed;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\EloquentRepository;
 
@@ -20,7 +21,7 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
      * 
      * @var string
      */
-    protected $type;
+    public $type;
 
 
     /**
@@ -28,7 +29,7 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
      * 
      * @var int
      */
-    protected $owner_id;
+    public $owner_id;
 
 
     /**
@@ -36,7 +37,7 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
      * 
      * @var array
      */
-    protected $meta;
+    public $meta;
 
 
 	/**
@@ -65,11 +66,23 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
      */
     private function store()
     {
-       return $this->create([
-            'type'       => $this->type,
+        return $this->create([
             'meta'       => json_encode($this->meta),
             'owner_id'   => $this->owner_id,
-            'creator_id' => Auth::user()->id
+            'type'       => $this->type,
+            'creator_id' => Auth::id()
         ]);
+    }
+
+
+    /**
+     * Fetch all feed entries for a given team
+     * 
+     * @param  int $team_id 
+     * @return Illuminate\Support\Collection          
+     */
+    public function getTeamFeed($team_id)
+    {
+        return NewsFeed::teamEntries($team_id)->orderBy('created_at', 'desc')->get();
     }
 }

@@ -1,46 +1,58 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Http\Requests;
+use Illuminate\Http\Request;
+use App\RC\User\UserRepository;
 use App\Http\Controllers\Controller;
-
 use Illuminate\Support\Facades\Auth;
-use App\User;
-use App\Team;
-use App\TeamPlayer;
-use App\TeamFan;
-use App\Notification;
-use App\Fan;
 
 class UserController extends Controller
 {
 
-    //for ajax requests from App.vue
-    //returns logged in user data
-    public function getUserData()
+    /**
+     * An instance of a user repository
+     * 
+     * @var UserRepository
+     */
+    protected $user;
+        
+    public function __construct(UserRepository $user)
     {
-        $user = Auth::user();
+        $this->user = $user;
+    }
 
-        //User model by default hides emails
-        $user->mail = Auth::user()->email;
-        $teams = $user->teams();
 
+    /**
+     * Return the logged-in user's data
+     * 
+     * @return array
+     */
+    public function auth()
+    {
         return [
-            'auth'  => $user,
-            'teams' => $teams,
+            'ok'    => true,
+            'user'  => $this->user->data(),
+            'teams' => $this->user->teams()
         ];
-
     }
 
-    //for clearing notifications when a Team page is visited this user belongs to
-    public function clearNotifications($id)
+
+
+    /**
+     * Return the data associated with a given username
+     * 
+     * @param string $username 
+     * @return array
+     */
+    public function data($username)
     {
-        Notification::where('user_id', Auth::user()->id)->where('creator_id', $id)->delete();
+        return [
+            'ok'    => true,
+            'user'  => $this->user->data($username),
+            'teams' => $this->user->teams($username)
+        ];
     }
-
 
 
 }

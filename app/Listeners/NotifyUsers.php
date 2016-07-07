@@ -46,7 +46,6 @@ class NotifyUsers
      */
     public function handle(NotifiesUsers $event)
     {
-        // NOTE: THIS ISN'T REGISTERED IN THE EVENTSERVICEPROVIDER
-        $this->notification->notify($event->owner(), $event->type(), $event->data(), $event->users());
+        $this->notification->send($event->owner(), $event->users($this->team), $event->type(), $event->data());
     }
 }

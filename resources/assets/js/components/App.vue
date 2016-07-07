@@ -106,12 +106,15 @@
 <script>
 
 import Alert from './Alert.vue'
+import Requests from '../mixins/Requests.js'
 
 export default  {
 
 	name: 'App',
 
 	props: [],
+
+	mixins: [Requests],
 
 	components: {
 		'rc-alert' : Alert,
@@ -130,25 +133,36 @@ export default  {
 		}
 	},
 
-	created() {
+	created()
+	{
+		// get logged-in user data
+		var url = this.prefix + 'user/auth';
 
 		var self = this;
-		//get logged-in user data
-		var url = this.prefix + 'user/auth/data';
-
 		this.$http.get(url)
-		.then(function(response) {	
-			self.user = response.data.auth;
-			self.teams = response.data.teams;
-		})
-	
-		.catch(function() {
-			self.banner('bad', "Problem fetching auth data");
-		});		
+			.then(function(response) {
+				if (! response.data.ok) {
+					throw response.data.error;
+				}
+
+				self.$emit('App_data', response);
+				
+			})
+			.catch(function(error) {
+				self.errorMsg(error);
+			});
 	},
 
 	events: {
-		//event from Team.vue telling App to clear notifications for that team
+
+		App_data(response)
+		{
+			this.user = response.data.user;
+			this.teams = response.data.teams;
+		},
+
+
+		// event from Team.vue telling App to clear notifications for that team
 		clearNotifications(id) {
 			var updated = false;
 			var self = this;
@@ -162,13 +176,13 @@ export default  {
 			});
 
 			if(updated) {
-				//notifications were cleared for this team, send ajax request to save to server
+				// notifications were cleared for this team, send ajax request to save to server
 				var url = this.prefix + 'user/auth/team/' + id;
 				this.$http.post(url);
 			}
 		},
 
-		//if user became a member/fan of a team, add that team to their nav dropdown
+		// if user became a member/fan of a team, add that team to their nav dropdown
 		becameAFanOfTeam(team) {
 
 			var newTeam = {
@@ -183,7 +197,7 @@ export default  {
 			this.teams.push(newTeam);
 		},
 
-		//the opposite of above
+		// the opposite of above
 		removedAsFanOfTeam(teamname) {
 			this.teams = this.teams.filter(function(team) {
 				return team.teamname !== teamname;
@@ -195,50 +209,36 @@ export default  {
 
 	computed:
 	{
-		//the total notifications this user has
-		totalCount()
-		{
-			var totalCount = 0;
-			this.teams.forEach(function(team) {
-				totalCount = totalCount + team.notifications;
-			});
-
-			if(totalCount === 0)
-				return '';
-
-			return totalCount;
-		},
-
-		//which teams they are a member of
+		// which teams they are a member of
 		memberOf()
 		{
 			return this.teams.filter(function(team) {
-				return team.role <= 2;
+				return team.isMember;
 			});
 		},
 
-		//which teams they are a fan of
+		// which teams they are a fan of
 		fanOf()
 		{
 			return this.teams.filter(function(team) {
-				return team.role === 4 || (team.role >= 45 && team.role <= 47);
+				return team.isFan;
 			});
 		},
 
-		//which teams an admin has invited them to join
-		//5 = invited to be a player, 6 = a coach
+		// which teams an admin has invited them to join
 		invitedTo()
 		{
 			return this.teams.filter(function(team) {
-				return team.role === 5 || team.role === 6 || team.role === 45 || team.role === 46;
+				return team.hasBeenInvited;
 			});
 		}
 	},
 
 	methods:
 	{
-		//show popup message (for more attention)
-		//uses sweetalert.js
+		
+		// show popup message (for more attention)
+		// uses sweetalert.js
 		popup(type, title, msg)
 		{
 			switch(type) {
@@ -253,16 +253,15 @@ export default  {
 					break;
 					
 			}
-			
 		},
 
-		//show banner message, triggers Alert.vue
+		// show banner message, triggers Alert.vue
 		banner(type, msg)
 		{
-			//always hide any existing alerts
+			// always hide any existing alerts
 			this.showAlert = false;
 
-			//give some timeout so there's a noticeable gap between old and new alerts
+			// give some timeout so there's a noticeable gap between old and new alerts
 			var self = this;
 			setTimeout(function() {
 				self.showAlert = true;
@@ -271,7 +270,7 @@ export default  {
 		},
 
 
-		//the default msg when erroring during ajax requests
+		// the default msg when erroring during ajax requests
 		errorMsg(msg = null)
 		{
 			if(typeof msg === 'string')
@@ -316,26 +315,26 @@ export default  {
 				return true;
 		},
 
-	}, //end methods
+	}, // end methods
 
 	ready()
 	{
 		
 		/*
-		//job offer
+		// job offer
 		console.log("%cI like your style! email me and I might hire you...  dan@rookiecard.com", "color: black; font-size: large;")
 		*/
 		$(function() {
 
 
-			//remove blurring
-			//if user had a modal open then clicked 'back' on browser, blur persists
+			// remove blurring
+			// if user had a modal open then clicked 'back' on browser, blur persists
 			$('div.modal').modal('hide');
 			$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 	    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
 
 
-			//$("nav.navbar-fixed-top").autoHidingNavbar();
+			// $("nav.navbar-fixed-top").autoHidingNavbar();
 
 
 			$('div.modal').on('hide.bs.modal', function() {
@@ -382,7 +381,7 @@ nav.navbar.navbar-default
 	border 0
 	height 53px 
 				
-//holy navbar styling batman
+// holy navbar styling batman
 ul.nav.navbar-nav.navbar-right
 	li
 		a
@@ -458,7 +457,7 @@ ul.nav.navbar-nav.navbar-right
 	background-color rc_dark_red
 	font-size 15px
 
-//for changing the color of searchBar input text
+// for changing the color of searchBar input text
 input#searchBar::-webkit-input-placeholder
 	color white !important
 input#searchBar:-moz-placeholder /* Firefox 18- */
@@ -494,7 +493,7 @@ textarea[placeholder]:-ms-input-placeholder
 	top 15px
 	font-size 1.3em
 
-//for keeping logo centered
+// for keeping logo centered
 #navLogo
 	position absolute
 	height 53px
@@ -506,7 +505,7 @@ textarea[placeholder]:-ms-input-placeholder
 
 	
 				
-//nav differences for phone screens	
+// nav differences for phone screens	
 @media only screen and (max-width xs_max_width) and (min-width 10px)
 	.divider
 		background #D9D9D9 !important
@@ -519,7 +518,7 @@ textarea[placeholder]:-ms-input-placeholder
 	#navSearchDiv
 		left 5px !important
 
-//nav differences for tablet screens
+// nav differences for tablet screens
 @media only screen and (max-width sm_max_width) and (min-width xs_max_width + 1px)
 	#searchBar
 		width 220px
@@ -529,7 +528,7 @@ textarea[placeholder]:-ms-input-placeholder
 	display inline-block
 	left 25px
 		
-//absolutely position tab icons above TEXT
+// absolutely position tab icons above TEXT
 #profileAboutIcon
 	font-size 24px
 	position absolute

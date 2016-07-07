@@ -14,18 +14,27 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         'App\Events\TeamCreatedAnEvent' => [
-            'App\Listeners\CreateNewsFeedEntry'
+            'App\Listeners\CreateNewsFeedEntry',
+            'App\Listeners\NotifyUsers'
         ],
 
         'App\Events\TeamUpdatedAnEvent' => [
-            'App\Listeners\CreateNewsFeedEntry'
+            'App\Listeners\CreateNewsFeedEntry',
+            'App\Listeners\NotifyUsers'
         ],
 
         'App\Events\TeamDeletedAnEvent' => [
-            'App\Listeners\CreateNewsFeedEntry'
+            'App\Listeners\CreateNewsFeedEntry',
+            'App\Listeners\NotifyUsers'
         ],
 
         'App\Events\TeamInvitedUserToJoin' => [
+            'App\Listeners\NotifyUsers'
+        ],
+
+        'App\Events\UserPostedToTeamFeed' => [
+            'App\Listeners\CreateNewsFeedEntry',
+            'App\Listeners\NotifyUsers'
         ],
     ];
 

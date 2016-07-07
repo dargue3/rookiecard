@@ -21,7 +21,7 @@ Route::group(['prefix' => '/api/v1'], function() {
 	Route::post('team/create', 'TeamController@createTeam');
 	Route::post('team/create/{name}', 'TeamController@checkAvailability');
 
-	Route::get('team/{teamname}/data', 'TeamController@getTeamData');
+	Route::get('team/{teamname}', 'TeamController@getTeamData');
 	Route::post('team/{teamname}/join', 'TeamController@requestToJoin');
 	Route::post('team/{teamname}/invite', 'TeamController@respondToInvitation');
 	Route::post('team/{teamname}/pic', 'TeamController@uploadPic');
@@ -36,8 +36,7 @@ Route::group(['prefix' => '/api/v1'], function() {
 	Route::resource  ('team/{teamname}/event', 	'EventController');
 	
 
-	Route::get ('user/auth/data', 'UserController@getUserData');
-	Route::post('user/auth/team/{id}', 'UserController@clearNotifications');
+	Route::get ('user/auth', 'UserController@auth');
 
 	Route::post('settings', function () {
 	    // Save the user's timezone

@@ -40,14 +40,14 @@
           <span v-show="errors.num" class="form-error">{{ errors.num }}</span>
         </div>
         <div class="col-xs-6 col-sm-4">
-          <label>Position</label>
+          <label>Primary</label>
           <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
           				multiple data-max-options="1" v-model="user.meta.positions[0]">
             <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
           </select>
         </div>
         <div class="col-xs-6 col-sm-4">
-          <label>Position</label>
+          <label>Secondary</label>
           <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
           				multiple data-max-options="1" v-model="user.meta.positions[1]">
             <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    

@@ -1,0 +1,116 @@
+export default
+{
+	methods:
+	{
+		// send a GET request with the given parameters
+		// execute the given event string when finished
+		get(url, data = [], successEvent = null, failEvent = null)
+		{
+			var self = this;
+			this.$http.get(url, data)
+				.then(function(response)
+				{
+					if (! response.data.ok) {
+						throw response.data.error
+					}
+
+					if (successEvent) {
+						self.$broadcast(successEvent, response);
+					}
+				})
+				.catch(function(response)
+				{
+					if (failEvent) {
+						self.$broadcast(failEvent, response);
+					}
+					else {
+						self.errorMsg(response);
+					}
+				});
+		},
+
+
+		// send a POST request with the given parameters
+		// execute the given event string when finished
+		post(url, data = [], successEvent = null, failEvent = null)
+		{
+			var self = this;
+			this.$http.post(url, data)
+				.then(function(response)
+				{
+					if (! response.data.ok) {
+						throw response.data.error
+					}
+
+					if (successEvent) {
+						self.$broadcast(successEvent, response);
+					}
+				})
+				.catch(function(response)
+				{
+					if (failEvent) {
+						self.$broadcast(failEvent, response);
+					}
+					else {
+						self.errorMsg(response);
+					}
+				});
+		},
+
+
+		// send a PUT request with the given parameters
+		// execute the given event string when finished
+		put(url, data = [], successEvent = null, failEvent = null)
+		{
+			var self = this;
+			this.$http.put(url, data)
+				.then(function(response)
+				{
+					if (! response.data.ok) {
+						throw response.data.error
+					}
+
+					if (successEvent) {
+						self.$broadcast(successEvent, response);
+					}
+				})
+				.catch(function(response)
+				{
+					if (failEvent) {
+						self.$broadcast(failEvent, response);
+					}
+					else {
+						self.errorMsg(response);
+					}
+				});
+		},
+
+
+		// send a DELETE request with the given parameters
+		// execute the given event string when finished
+		delete(url, data = [], successEvent = null, failEvent = null)
+		{
+			var self = this;
+			this.$http.delete(url, data)
+				.then(function(response)
+				{
+					if (! response.data.ok) {
+						throw response.data.error
+					}
+
+					if (successEvent) {
+						self.$broadcast(successEvent, response);
+					}
+				})
+				.catch(function(response)
+				{
+					if (failEvent) {
+						self.$broadcast(failEvent, response);
+					}
+					else {
+						self.errorMsg(response);
+					}
+				});
+		},
+	},
+}

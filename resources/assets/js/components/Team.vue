@@ -5,14 +5,14 @@
 		<!-- container for template -->
 
 			<!-- no results for team, show message -->
-			<div id="noTeam" v-cloak v-show="!team.id" class="f-el-fill text-center">
+			<div id="noTeam" v-cloak v-show="notFound" class="f-el-fill text-center">
 				<h3>This team doesn't exist, you could create it <a v-link="{name: 'team', params: {name: 'create'}}">here</a></h3>
 				<br>
 				<h4>If you think this is an error, try refreshing the page.</h4>
 			</div>
 
 			<!-- wrapper div around non-modal content for blurring -->
-			<div v-cloak v-show="team.id" class="Team for-blurring">
+			<div v-cloak v-else class="Team for-blurring">
 			
 
 	    	<div class="Team__details" :style="team.backdrop">
@@ -309,8 +309,8 @@ export default  {
 
 	props: [],
 
-	components: {
-
+	components:
+	{
 		'rc-calendar'		: Calendar,
 		'rc-stats'			: Stats,
 		'rc-add-event'	: AddEvent,
@@ -318,16 +318,15 @@ export default  {
 		'rc-roster'			: Roster,	
 		'rc-news-feed'	: NewsFeed,	
 		'rc-edit-user'	: EditUser,	
-
 	},
 
-	route: {
-		// reload everything if new route but same component
+	route:
+	{
 		canReuse: false,
 	},
 
-	data() {
-
+	data()
+	{
 		var prefix = this.$parent.prefix + 'team/';
 		var teamname = this.$route.params.name;
 
@@ -336,8 +335,8 @@ export default  {
 
 		return {
 			prefix: prefix + teamname,
-			dataReady: false,
 			requestFinished: false,
+			notFound: false,
 			team: {
 				meta: {},
 			},
@@ -367,44 +366,29 @@ export default  {
 		}
 	},
 
-	created() {
-
-		var self = this;
-		var url = this.prefix + '/data';
-		this.$http.get(url)
-		.then(function(response) {
-			if(response.data.ok) {
-				self.compile(response.data.data);	
-				setTimeout(function() {
-					self.requestFinished = true;
-				}, 100);
-			}
-			else
-				throw response.data.error
-		})
-		.catch(function(error) {
-			console.log(error);
-			self.$root.errorMsg(error);
-		})
-
-		// didn't put a catch here because the 'team does not exist' header pretty much covers it
+	created()
+	{
+		var url = this.makeUrl('');
+		this.$root.get(url, [], 'Team_requestSuccess', 'Team_requestFail');
 	},
 
 	computed: {
 
-		numFans() {
+		numFans()
+		{
 			return this.fans.length;
 		},
 
 		// makes fan counter div wider with larger numFans
-		numFansClass() {
-			if(this.fans.length >= 1000)
+		numFansClass()
+		{
+			if (this.fans.length >= 1000)
 				return '--thousandsOfFans';
 
-			else if(this.fans.length >= 100)
+			else if (this.fans.length >= 100)
 				return '--hundredsOfFans';
 
-			else if(this.fans.length >= 10)
+			else if (this.fans.length >= 10)
 				return '--tensOfFans';
 
 			else
@@ -412,50 +396,60 @@ export default  {
 		},
 
 		// the following three functions pick which of the fan icons to display
-		showRemoveFan() {
+		showRemoveFan()
+		{
 			return !this.isFan && !this.isMember;
 		},
-		showBecomeFan() {
+		showBecomeFan()
+		{
 			return this.isFan && !this.isAdmin;
 		},
-		showIsFan() {
+		showIsFan()
+		{
 			// this icon is unclickable
 			return this.isMember || (this.isFan && this.isAdmin)
 		},
 
 
 		// the following four functions pick which of the membership buttons to display
-		showYoureAMember() {
+		showYoureAMember()
+		{
 			return this.isMember || this.isCreator;
 		},
-		showRequestToJoin() {
+		showRequestToJoin()
+		{
 			return !this.hasRequestedToJoin && !this.hasBeenInvited && !this.isMember && !this.isCreator;
 		},
-		showCancelRequest() {
+		showCancelRequest()
+		{
 			return this.hasRequestedToJoin;
 		},
-		showRespondToInvitation() {
+		showRespondToInvitation()
+		{
 			return this.hasBeenInvited;
 		},
 
 
 
 		// create list of players from users
-		players() {
+		players()
+		{
 			return this.users.filter(function(user) {
 				return user.isPlayer;
 			})
 		},
 
 		// create list of coaches from users
-		coaches() {
+		coaches()
+		{
 			return this.users.filter(function(user) {
 				return user.isCoach;
 			})
 		},
 
 		// create list of fans from users
-		fans() {
+		fans()
+		{
 			return this.users.filter(function(user) {
 				return user.isFan;
 			})
@@ -463,11 +457,31 @@ export default  {
 
 	},
 
-	events: {
+	events:
+	{
+
+		// team data has arrived from the back-end
+		Team_requestSuccess(response)
+		{
+			this.compile(response.data.data);	
+
+			setTimeout(function() {
+				this.requestFinished = true;
+			}.bind(this), 100);
+		},
+
+
+		// team data has arrived from the back-end
+		Team_requestFail(response)
+		{
+			this.requestFinished = true;
+			this.notFound = true;
+		},
+
 
 		// new stats have been posted from ViewEvent
-		newStats(data, entry) {
-
+		newStats(data, entry)
+		{
 			var self = this;
 			data.forEach(function(val) {
 				self.stats.push(val);
@@ -477,14 +491,14 @@ export default  {
 		},
 
 		// updated stats have been posted from ViewEvent
-		updateStats(data, event) {
-
+		updateStats(data, event)
+		{
 			// first erase all stats for this event
 			this.stats = this.stats.filter(function(stat) {
 				return stat.event_id !== event.id;
 			});
 
-			if(data.length) {
+			if (data.length) {
 				// there were new stats to add
 				data.forEach(function(val) {
 					this.stats.push(val);
@@ -496,7 +510,8 @@ export default  {
 		},
 
 		// stats have been deleted from ViewEvent
-		deleteStats(event) {
+		deleteStats(event)
+		{
 			// iterate through all stats, keep the ones not associated with this event
 			this.stats = this.stats.filter(function(stat) {
 				return stat.event_id !== event.id;
@@ -509,27 +524,27 @@ export default  {
 
 
 
-		newEvent(events, entry) {
-
+		newEvent(events, entry)
+		{
 			this.events = events;
 
 			this.$broadcast('updateFeed', entry);
 		},
 
-		updateEvent(events, entry) {
-
+		updateEvent(events, entry)
+		{
 			this.events = events;
 
-			if(entry) {
+			if (entry) {
 				this.$broadcast('updateFeed', entry);
 			}
 		},
 
-		deleteEvent(events, entry) {
-			
+		deleteEvent(events, entry)
+		{
 			this.events = events;
 
-			if(entry) {
+			if (entry) {
 				this.$broadcast('updateFeed', entry);
 			}
 		},
@@ -538,16 +553,15 @@ export default  {
 
 
 		// new user was created from EditUser
-		newUser(user) {
-
+		newUser(user)
+		{
 			// format raw data and add to array of users
 			this.formatUsers(user);
-
 		},
 
 		// user was updated from EditUser
-		updateUser(editedUser) {
-	
+		updateUser(editedUser)
+		{
 			// remove current version of this user
 			this.users = this.users.filter(function(user) {
 				return user.member_id !== editedUser.member_id
@@ -559,14 +573,14 @@ export default  {
 
 
 		// user was kicked from team from EditUser
-		deleteUser(editedUser) {	
-
+		deleteUser(editedUser)
+		{	
 			// remove current version of user from users
 			this.users = this.users.filter(function(user) {
 				return user.member_id !== editedUser.member_id
 			});
 
-			if(!editedUser.deleted) {
+			if (!editedUser.deleted) {
 				// if there's a ghost remaining, format raw data and add to array of users
 				this.formatUsers(editedUser);
 			}
@@ -576,10 +590,15 @@ export default  {
 
 	methods: {
 
+		makeUrl(extension)
+		{
+			return this.prefix + extension;
+		},
+
 		// method for assigning data after ajax call finishes
 		compile(data) {
 		
-			this.auth = data.auth;
+			this.auth = this.$root.user;
 			this.team = data.team;
 
 			// loop through all the users, create user objects
@@ -598,7 +617,7 @@ export default  {
 			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
 
 			// note whether or not this user is the creator
-			if(this.team.creator_id == this.auth.id) {
+			if (this.team.creator_id === this.auth.id) {
 				this.isCreator = true;
 				this.isAdmin = true;
 			}
@@ -611,10 +630,7 @@ export default  {
 			this.positions = data.positions;
 
 			// tell App.vue to clear any notifications the logged in user may have
-			this.$dispatch('clearNotifications', this.team.id);
-
-			this.dataReady = true;
-
+			//this.$dispatch('clearNotifications', this.team.id);
 		},
 
 		// compile meta data for users and push into this.users
@@ -625,37 +641,23 @@ export default  {
 				return;
 			}
 
-			if(!Array.isArray(users)) {
+			if (! Array.isArray(users)) {
 				users = [users];
 			}
 
 			for (var x = 0; x < users.length; x++) {
 				var user = users[x];
 
-				if(user.meta) {
+				if (user.meta) {
 					user.meta = JSON.parse(user.meta);
 				}
 				else {
 					user.meta = {};
 				}
+
 				// mark which user is the creator
-				if(this.team.creator_id === user.id) {
+				if (this.team.creator_id === user.id) {
 					user.isCreator = true;
-				}
-
-				if(user.meta.ghost) {
-					// user is a ghost player, move their data around to be consistent with real players
-					var split = user.meta.ghost.name.split(' ');
-					user.firstname = split[0];
-					user.lastname = split[1];
-					user.id = 0;
-					user.ghost = true;
-					user.pic = '/images/ghost.png';
-				}
-
-				//  is the logged in user an admin?
-				if(user.id === this.auth.id) {
-					this.isAdmin = user.isAdmin;
 				}
 
 				this.users.push(user);
@@ -671,7 +673,7 @@ export default  {
 			var url = this.prefix + '/fan';
 			this.$http.post(url)
 				.then(function(response) {
-					if(response.data.ok) 
+					if (response.data.ok) 
 						self.updateFanStatus();
 					else
 						throw response.data.error
@@ -687,7 +689,7 @@ export default  {
 		updateFanStatus() {
 			var self = this;
 
-			if(this.isFan) {
+			if (this.isFan) {
 				// use decrement animation on counter
 				this.numFansTransition = 'number-tick-down'
 			}
@@ -700,7 +702,7 @@ export default  {
 			this.isFan = !this.isFan;
 			this.fansChanged = !this.fansChanged;
 
-			if(this.isFan) {
+			if (this.isFan) {
 				// is now a fan of this team
 				this.auth.role = 4;
 				this.auth.meta = {};
@@ -735,14 +737,14 @@ export default  {
 			var url = this.prefix + '/join';
 			this.$http.post(url)
 				.then(function(response) {
-					if(!response.data.ok)
+					if (!response.data.ok)
 						throw response.data.error;
 
-					if(action === 'join') {
+					if (action === 'join') {
 						self.hasRequestedToJoin = true;
 						self.$root.banner('good', "Request sent to team admin");
 					}
-					else if(action === 'cancel') {
+					else if (action === 'cancel') {
 						self.hasRequestedToJoin = false
 						self.$root.banner('good', "Request cancelled");
 					}
@@ -760,9 +762,9 @@ export default  {
 			var self = this;
 			// first they should confirm whether they want to accept the invite or not
 			// only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
-			if(typeof outcome !== 'boolean') {
-				if(this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
-				if(this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
+			if (typeof outcome !== 'boolean') {
+				if (this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
+				if (this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
 				var text = "You've been invited to join this team as a " + role;
 				swal({   
 					title: 'Respond to Invitation',
@@ -776,7 +778,7 @@ export default  {
 					closeOnConfirm: true
 				}, function(confirm) {
 					// call this function with boolean response
-					if(confirm) {
+					if (confirm) {
 						self.respondToInv(true);
 					}
 					else {
@@ -793,13 +795,13 @@ export default  {
 			this.$http.post(url, data)
 				.then(function(response) {
 					// check there were no authorization errors
-					if(!response.data.ok) {
+					if (!response.data.ok) {
 						throw response.data.error;
 					}
 
 					self.hasBeenInvited = false;
 
-					if(outcome) {
+					if (outcome) {
 						// add them to the team
 						self.formatUsers(response.data.users);
 						self.$root.banner('good', "You've joined this team");

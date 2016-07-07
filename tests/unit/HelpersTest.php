@@ -1,7 +1,9 @@
 <?php
+
 use App\User;
 use App\Team;
 use App\TeamRole;
+use App\RC\User\UserRepository;
 
 class HelpersTest extends TestCase
 {
@@ -33,7 +35,9 @@ class HelpersTest extends TestCase
         $team = factory(Team::class)->create();
         $this->signIn()->makeAdminOfTeam($team);
 
-        $this->assertTrue($this->user->isTeamAdmin($team->id));
+        $repo = App::make(UserRepository::class);
+
+        $this->assertTrue($repo->isTeamAdmin($team->id));
     }
 
 

@@ -34,6 +34,18 @@ class NewsFeed extends Model
     {
     	$this->attributes['type'] = $this->convertTypeToInt($type);
     }
+
+
+    /**
+     * Find all the entries for a given team
+     * @param  Builder $query  
+     * @param  int $team_id 
+     * @return Builder          
+     */
+    public function scopeTeamEntries($query, $team_id)
+    {
+        return $query->where('owner_id', $team_id)->where('type', '<', 10);
+    }
 }
 
 

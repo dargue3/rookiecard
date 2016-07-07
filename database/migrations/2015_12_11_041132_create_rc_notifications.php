@@ -18,6 +18,7 @@ class CreateRcNotifications extends Migration
             $table->index('user_id');
             $table->integer('creator_id')->unsigned();
             $table->tinyInteger('type');
+            $table->text('meta')->nullable();
             $table->timestamps();
         });
     }
