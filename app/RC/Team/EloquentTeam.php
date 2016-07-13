@@ -51,7 +51,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 	{
         $repo = App::make(StatRepository::class);
 
-		return $repo->getTeamStats($team_id);
+		return $repo->findByTeam($team_id);
 	}
 
 

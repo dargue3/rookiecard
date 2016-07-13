@@ -22,8 +22,7 @@ Route::group(['prefix' => '/api/v1'], function() {
 	Route::post('team/create/{name}', 'TeamController@checkAvailability');
 
 	Route::get('team/{teamname}', 'TeamController@getTeamData');
-	Route::post('team/{teamname}/join', 'TeamController@requestToJoin');
-	Route::post('team/{teamname}/invite', 'TeamController@respondToInvitation');
+	Route::post('team/{teamname}/join', 'TeamController@joinTeam');
 	Route::post('team/{teamname}/pic', 'TeamController@uploadPic');
 	Route::post('team/{teamname}/fan', 'TeamController@toggleFan');
 
@@ -33,12 +32,12 @@ Route::group(['prefix' => '/api/v1'], function() {
 
 	Route::resource('team/{teamname}/member', 'MemberController');
 	
-	Route::resource  ('team/{teamname}/event', 	'EventController');
+	Route::resource('team/{teamname}/event', 'EventController');
 	
 
-	Route::get ('user/auth', 'UserController@auth');
+	Route::get('user/auth', 'UserController@auth');
 
-	Route::post('settings', function () {
+	Route::post('settings/auth', function () {
 	    // Save the user's timezone
 	    if (Request::has('timezone')) {
 	        Session::put('timezone', Request::get('timezone'));
@@ -49,7 +48,6 @@ Route::group(['prefix' => '/api/v1'], function() {
 	    }
 	});
 	Route::post  ('settings/stats/{sport}', 'StatController@addStatColumns');
-	Route::get  ('stats/{sport}', 'StatController@getStatColumns');
 });
 	
 

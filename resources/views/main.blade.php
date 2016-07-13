@@ -86,7 +86,7 @@
                 if (!$.isEmptyObject(data)) {
                     $.ajax({
                         type: "POST",
-                        url: "{{ url('/api/v1/settings') }}",
+                        url: "{{ url('/api/v1/settings/auth') }}",
                         beforeSend: function (request) {
                             request.setRequestHeader("X-CSRF-TOKEN", "{{ csrf_token() }}");
                         },

@@ -33,7 +33,7 @@ $factory->define(App\Team::class, function ($faker) {
         'teamname'          => $faker->username,
         'season'            => 1,
         'creator_id'        => 1,
-        'sport'             => 0,
+        'sport'             => 'basketball',
         'gender'            => 0,
         'long'              => -70.8389219,
         'lat'               => 42.9375932,
@@ -116,16 +116,18 @@ $factory->define(App\Notification::class, function ($faker) {
 
 
 $factory->define(App\Stat::class, function ($faker) {
+
+    $sport = $faker->randomElement(['basketball']);
+
     return [
         'owner_id'      => $faker->numberBetween(1, 100),
         'member_id'     => $faker->numberBetween(1, 100),
         'team_id'       => $faker->numberBetween(1, 100),
         'type'          => 0,
-        'sport'         => 0,
+        'sport'         => $sport,
         'season'        => 1,
         'stats'         => json_encode(['test' => 123]),
-        'meta'          => json_encode(['test' => 123]),
-        'event_date'    => 1460239200,
+        'meta'          => json_encode(['test' => 456]),
         'event_id'      => 1,
     ];
 });

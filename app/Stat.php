@@ -1,35 +1,17 @@
 <?php
-
 namespace App;
 
+use App\RC\Sports\Sport;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-use App\Team;
-use App\Event;
-use App\TeamMember;
-use App\Notification;
 
 class Stat extends Model
 {
     use SoftDeletes;
 
     protected $table = 'rc_stats';
-
     protected $dates = ['deleted_at'];
-
-    protected $guarded = [];
-
-    /**
-    * current supported stat types (stored as int):
-    * 0 = user stats
-    * 1 = team stats
-    *
-    * current supported sports (stored as int):
-    * 0 = basketball
-	*
-	* stats are stored as a json string
-    */
+    protected $fillable = ['owner_id', 'team_id', 'member_id', 'meta', 'stats', 'event_id', 'sport', 'type', 'season'];
 
 
     /**
@@ -43,6 +25,57 @@ class Stat extends Model
     public function scopeTeamMember($query, $team_id, $member_id)
     {
         return $query->where('team_id', $team_id)->where('member_id', $member_id);
+    }
+
+
+
+    /**
+     * Convert the sport to a string before giving to front-end
+     * 
+     * @param  int $sport 
+     * @return string       
+     */
+    public function getSportAttribute($sport)
+    {
+        return Sport::convertSportToString($sport);
+    }
+
+
+    /**
+     * Convert the sport to an int before storing in db
+     * 
+     * @param  string $sport 
+     * @return void       
+     */
+    public function setSportAttribute($sport)
+    {
+        $this->attributes['sport'] = Sport::convertSportToInt($sport);
+    }
+
+
+    /**
+     * Convert the type to a string before giving to front-end
+     * 
+     * @param  int $type 
+     * @return string       
+     */
+    public function getTypeAttribute($type)
+    {
+        if ($type == 0) return 'player';
+        if ($type == 1) return 'team';
+    }
+
+
+    /**
+     * Convert the type to an int before storing in db
+     * 
+     * @param  string $type 
+     * @return void       
+     */
+    public function setTypeAttribute($type)
+    {
+        if ($type == 'player') $this->attributes['type'] = 0;
+        if ($type == 'team')   $this->attributes['type'] = 1;
     }
 
 
@@ -70,17 +103,6 @@ class Stat extends Model
     		'stats' 	  => json_encode($stats),
             'meta'        => $meta,
   		]);
-
-        //alert team users of new stats
-        $status = new StatusUpdate;
-        $notification = new Notification;
-
-        //recreate meta data for news feed consumption
-
-        $update = $status->createStatusUpdate($team->id, $event['id'], 'team_stats', $meta);
-        $notification->createNotifications($team->members(), $team->id, 'team_stats', $newStats->id);
-
-    	return ['stats' => $newStats, 'feed' => $update];
     }
 
 

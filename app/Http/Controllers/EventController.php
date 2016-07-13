@@ -3,10 +3,10 @@ namespace App\Http\Controllers;
 
 use App\Team;
 use Validator;
+use Exception;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
-use App\Exceptions\ApiException;
 use App\RC\Event\EventRepository;
 use App\Http\Requests\EventRequest;
 use Illuminate\Support\Facades\Auth;
@@ -69,7 +69,7 @@ class EventController extends Controller
     public function update(EventRequest $request, Team $team, $id)
     {
         if (Auth::user()->cannot('edit-events', [$team, $id])) {
-            throw new ApiException("Unauthorized Request");
+            throw new Exception("Unauthorized Request");
         }
 
         // fetch the request data to send to the repo
@@ -93,7 +93,7 @@ class EventController extends Controller
     public function destroy(Team $team, $id)
     {
         if (Auth::user()->cannot('edit-events', [$team, $id])) {
-            throw new ApiException("Unauthorized Request");
+            throw new Exception("Unauthorized Request");
         }
 
         $this->event->delete($team->id, $id);

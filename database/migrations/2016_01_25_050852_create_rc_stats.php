@@ -15,13 +15,12 @@ class CreateRcStats extends Migration
         Schema::create('rc_stats', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('owner_id')->unsigned()->index();
-            $table->integer('member_id')->unsigned()->index();
+            $table->integer('member_id')->unsigned()->index()->nullable();
             $table->integer('team_id')->unsigned()->index();
             $table->tinyInteger('sport');
             $table->tinyInteger('type');
             $table->integer('season');
             $table->integer('event_id')->unsigned();
-            $table->integer('event_date')->unsigned();
             $table->text('stats');
             $table->text('meta')->nullable();
             $table->timestamps();

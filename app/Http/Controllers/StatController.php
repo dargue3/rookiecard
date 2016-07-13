@@ -1,142 +1,103 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Gate;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-
-use App\Stat;
-use App\StatColumn;
+use Auth;
 use App\Team;
+use Exception;
+use Illuminate\Http\Request;
+use App\RC\Stat\StatRepository;
+use App\RC\Event\EventRepository;
+use App\RC\Stat\HandlesStatLogic;
+use App\Http\Controllers\Controller;
 
 class StatController extends Controller
 {
+    /**
+     * An instance of a stat repository
+     * 
+     * @var StatRepository
+     */
+    protected $stat;
 
-    //logged in user, team admin for adding/editing/deleting
-    public function __construct() {
 
+    /**
+     * An instance of an event repository
+     * 
+     * @var EventRepository
+     */
+    protected $event;
+
+
+    public function __construct(StatRepository $stat, EventRepository $event)
+    {
         $this->middleware('auth');
+        $this->middleware('admin');
 
-        $this->middleware('admin', ['except' => ['index', 'addStatColumns', 'getStatColumns']]);
-
+        $this->stat = $stat;
+        $this->event = $event;
     }
 
 
-    //return the stats for this team
-    public function index($teamname) {
 
-        $team = Team::name($teamname)->firstOrFail();
-
-        $stats = Stat::where('team_id', $team->id)->get()->toArray();
-        
-        return $stats;
-   
-    }
-
-
-    //stores stats sent from ajax request from team page
-    public function store(Request $request, $teamname) {
-
-        $team = Team::name($teamname)->firstOrFail();
-
-        if(Auth::user()->cannot('edit-stats', [$team, $request])) {
-            return ['ok' => false, 'error' => 'Unauthorized Request'];
-        }
-        else
-            return ['ok' => true];
-
-
-        $playerStats = $request->playerStats;
-        $teamStats = $request->teamStats;
-        $updated = $request->updated;
-        $event = $request->event;
-        $team = $request->team;
-        $meta = $request->meta;
-
-
-        $stats = new Stat;
-
-        $newStats = [];
-
-
-        $playerStats = $stats->createUserStats($team, $playerStats, $event, $meta);
-
-        if(empty($playerStats)) {
-            //no stats were added to the db, don't add team stats either
-            return;
-        }
-
-        $teamStats = $stats->createTeamStats($team, $teamStats, $event, $meta);
-
-        $newFeedEntry = $teamStats['feed'];
-        $newStats[] = $teamStats['stats'];
-
-        
-        //make all results into just one array
-        foreach($playerStats as $newStat) 
-            $newStats[] = $newStat;
-    
-
-        return ['stats' => $newStats, 'feed' => $newFeedEntry];
-    }
-
-
-    //adds the given json data as stat columns in rc_stat_columns
-    //only used by rc admins when adding new sports to the database
-    public function addStatColumns(Request $request, $sport) {
-        $cols = new StatColumn;
-        $stats = [
-            'user'          => $request->get('user'),
-            'rc'            => $request->get('rc'),
-            'userSelected'  => $request->get('userSelected'),
-            'rcSelected'    => $request->get('rcSelected'),
+    /**
+     * Store the given stats for a given team
+     * 
+     * @param  Request $request  
+     * @param  Team  $team
+     * @return array           
+     */
+    public function store(Request $request, Team $team)
+    {
+        $data = [
+            'event'         => $this->event->findOrFail($request->event_id),
+            'meta'          => $request->meta,
+            'teamStats'     => $request->teamStats,
+            'playerStats'   => $request->playerStats,
         ];
-       
-        $cols->add($sport, $stats);
+
+        (new HandlesStatLogic($data, $team))->create();
+
+        return ['ok' => true, 'stats' => $this->stat->getTeamStats($team->id)];
     }
 
 
-    //returns the stat columns associated with this sport
-    public function getStatColumns($sport) {
-        $cols = new StatColumn;
+    /**
+     * Update the stats for a given team and event
+     * 
+     * @param  Request $request  
+     * @param  Team  $team 
+     * @return array            
+     */
+    public function update(Request $request, Team $team)
+    {
+        $data = [
+            'event'         => $this->event->findOrFail($request->event_id),
+            'meta'          => $request->meta,
+            'teamStats'     => $request->teamStats,
+            'playerStats'   => $request->playerStats,
+        ];
 
-        return $cols->getStatColumns($sport);
-    }
+        (new HandlesStatLogic($data, $team))->update();
 
-
-    //stats were updated by admin
-    //id is ignored, stats passed in with data
-    public function update(Request $request, $teamname, $id) {
-        $team = Team::name($teamname)->firstOrFail();
-
-        //stat policies
-        //$this->authorize($team);
-
-        $playerStats = $request->playerStats;
-        $teamStats = $request->teamStats;
-        $event = $request->event;
-        $meta = $request->meta;
-        $team = $request->team;
-
-
-        $stats = new Stat;
-
-        return $stats->updateStats($team, $teamStats, $playerStats, $event, $meta);
-
+        return ['ok' => true, 'stats' => $this->stat->getTeamStats($team->id)];
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param Team $team
+     * @param  int  $id  The id of the event that these stats are associated with
      * @return \Illuminate\Http\Response
      */
-    public function destroy($teamname, $id)
+    public function destroy(Team $team, $id)
     {
-        $team = Team::name($teamname)->firstOrFail();
+        // check that this team owns this event
+        if (Auth::user()->cannot('edit-events', [$team, $id])) {
+            throw new Exception("Unauthorized Request");
+        }
 
-        Stat::where('team_id', $team->id)->where('event_id', $id)->delete();
+        $this->stat->deleteByEvent($team->id, $id);
+
+        return ['ok' => true, 'stats' => $this->stat->getTeamStats($team->id)];
     }
 }

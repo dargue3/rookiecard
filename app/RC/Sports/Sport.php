@@ -11,14 +11,34 @@ class Sport
 	 * @var array
 	 */
 	protected $sports = [
-		'0' => Basketball::class,
+		'basketball' => Basketball::class,
+	];
+
+
+	/**
+	 * The sports' integer values lookup array
+	 * 
+	 * @var array
+	 */
+	protected $stringToInt = [
+		'basketball'	=> 0,
+	];
+
+
+	/**
+	 * The sports' string names lookup array
+	 * 
+	 * @var array
+	 */
+	protected $intToString = [
+		'0'		=> 'basketball',
 	];
 	
 
 	/**
 	 * Fetch an instance of the desired sport by its id
 	 * 
-	 * @param  int $id 
+	 * @param  string $id 
 	 * @return Sport
 	 */
 	public static function find($id)
@@ -44,4 +64,38 @@ class Sport
 	{
 		return $sport;
 	}
+
+
+	/**
+	 * Convert the given sport string to its integer counterpart
+	 * 
+	 * @param  string $sport 
+	 * @return int        
+	 */
+	public static function convertSportToInt($sport)
+	{
+		$self = new static;
+		if (isset($self->stringToInt[$sport])) {
+            return $self->stringToInt[$sport];
+        }
+
+        throw new Exception("'$sport' is an unsupported sport"); 
+	}
+
+
+	/**
+     * Converts a given sport integer to its string counterpart
+     * 
+     * @param  int $sport
+     * @return string
+     */
+    public static function convertSportToString($sport)
+    {
+    	$self = new static;
+        if (isset($self->intToString[$sport])) {
+            return $self->intToString[intval($sport)];
+        }
+
+        throw new Exception("'$sport' is an unsupported sport"); 
+    }
 }

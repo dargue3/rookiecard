@@ -20,9 +20,22 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 * @param  int $team_id
 	 * @return Collection 
 	 */
-	public function getTeamStats($team_id)
+	public function findByTeam($team_id)
 	{
 		return Stat::where('team_id', $team_id)->get();
+	}
+
+
+	/**
+	 * Fetch all the stats associated with a given event
+	 * 
+	 * @param  int $team_id 
+	 * @param  int $event_id 
+	 * @return Illuminate\Support\Collection          
+	 */
+	public function findByEvent($team_id, $event_id)
+	{
+		return Stat::where('team_id', $team_id)->where('event_id', $event_id)->get();
 	}
 
 
@@ -35,9 +48,8 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 */
 	public function deleteByEvent($team_id, $event_id)
 	{
-		Stat::where('team_id', $team_id)->where('event_id', $event_id)->delete();
+		return Stat::where('team_id', $team_id)->where('event_id', $event_id)->delete();
 	}
-
 
 
 	/**
@@ -47,11 +59,10 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 * @param  int $team_id 
 	 * @return void           
 	 */
-	public function deleteByMember($team_id, $event_id)
+	public function deleteByMember($team_id, $member_id)
 	{
 		Stat::where('team_id', $team_id)->where('member_id', $member_id)->delete();
 	}
-
 
 
 	/**

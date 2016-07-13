@@ -1,11 +1,5 @@
 <?php
-
 namespace App;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Stat;
 use App\Event;
@@ -13,7 +7,12 @@ use App\NewsFeed;
 use App\TeamRole;
 use App\TeamMember;
 use App\Notification;
+use App\RC\Sports\Sport;
+use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Team extends Model
 {
@@ -38,6 +37,30 @@ class Team extends Model
     public function getRouteKeyName()
     {
         return 'teamname';
+    }
+
+
+    /**
+     * Convert the sport to a string before giving to front-end
+     * 
+     * @param  int $sport 
+     * @return string       
+     */
+    public function getSportAttribute($sport)
+    {
+        return Sport::convertSportToString($sport);
+    }
+
+
+    /**
+     * Convert the sport to an int before storing in db
+     * 
+     * @param  string $sport 
+     * @return void       
+     */
+    public function setSportAttribute($sport)
+    {
+        $this->attributes['sport'] = Sport::convertSportToInt($sport);
     }
 
 

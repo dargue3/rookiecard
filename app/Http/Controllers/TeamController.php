@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Team;
 use Validator;
 use Carbon\Carbon;
+use App\RC\Team\JoinTeam;
 use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\RC\Team\TeamMemberRepository;
 use App\Http\Requests\NewEventRequest;
 use App\Http\Requests\CreateTeamRequest;
 
@@ -22,19 +24,20 @@ class TeamController extends Controller
     protected $team;
 
     
-    public function __construct(TeamRepository $team)
+    public function __construct(TeamRepository $team, TeamMemberRepository $member)
     {
         $this->middleware('auth');
         $this->middleware('admin', ['only' => 'uploadPic']);
 
         $this->team = $team;
+        $this->member = $member;
     }
 
 
     /**
      * Returns JSON object of all this team's data
      * 
-     * @param  Team   $team [description]
+     * @param  Team   $team
      * @return Illuminate\Http\Response
      */
     public function getTeamData(Team $team)
@@ -47,42 +50,22 @@ class TeamController extends Controller
 
 
     /**
-     * A user has either accepted or declined an admin's invitation to join this team
+     * A user is either:
+     * Accepting/declining an admin's invitation to join the team
+     * (Un)requesting to join the team
      * 
      * @param  Request $request 
      * @param  Team    $team    
      * @return Illuminate\Http\Response
      */
-    public function respondToInvitation(Request $request, Team $team)
+    public function joinTeam(Request $request, Team $team)
     {
-        if ($request->accept == true) {
-            (new JoinTeam)->userHasAcceptedInvitation($team);
-        }
-        else if ($request->accept == false) {
-            (new JoinTeam)->userHasDeclinedInvitation($team);
-        }
+        // pass action to service class, it will handle the logic
+        (new JoinTeam($request->action, $team->id))->handle();
 
-        return ['ok' => true, 'members' => $this->team->members($team)];
+        return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
 
-
-    /**
-     * A user has requested to join this team
-     * 
-     * @param  Request $request 
-     * @param  Team    $team    
-     * @return Illuminate\Http\Response
-     */
-    public function requestToJoin(Request $request, Team $team)
-    {
-        if ($request->action == 'request') {
-            return $this->team->userHasAskedToJoin($team);
-        }
-
-        else if ($request->action == 'cancel') {
-            return $this->team->userHasCanceledRequestToJoin($team);
-        }
-    }
 
 
     /**
@@ -93,26 +76,26 @@ class TeamController extends Controller
      */
     public function toggleFan(Team $team)
     {
-        if (Auth::user()->isTeamMember($team)) {
-            return ['ok' => false, 'error' => "You're already a member of this team"];
-        }
+        $this->member->toggleFan($team->id);
 
-        $auth = $this->team->toggleFan();
-
-        return ['ok' => true, 'auth' => $auth];
+        return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
 
 
-    //check if a teamname is taken yet or not (used in CreateTeam.vue)
+
+    /**
+     * While creating a team, check the availability of a teamname
+     * 
+     * @param  string $teamname 
+     * @return Illuminate\Http\Response           
+     */
     public function checkAvailability($teamname)
     {
         if (Team::name($teamname)->first()) {
             return ['ok' => true, 'available' => false];
         }
 
-        else {
-            return ['ok' => true, 'available' => true];
-        }
+        return ['ok' => true, 'available' => true];
     }
 
 
@@ -120,7 +103,7 @@ class TeamController extends Controller
     //admin has uploaded a new team profile picture
     public function uploadPic(Request $request, Team $team)
     {
-        return $team->uploadPic($request);
+        return $this->team->uploadPic($request);
     }
 
 

@@ -416,7 +416,7 @@ export default  {
 				var data = {
 					playerStats: this.newStats,
 					teamStats: this.teamStats,
-					event: this.event,
+					event: this.event.id,
 					team: this.team,
 					meta: this.meta,
 				};

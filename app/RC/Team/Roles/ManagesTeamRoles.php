@@ -92,7 +92,6 @@ trait ManagesTeamRoles
     }
 
 
-
     /**
      * Removes a given role from the member
      * 
@@ -113,7 +112,6 @@ trait ManagesTeamRoles
     }
 
 
-
     /**
      * Attach or remove a role according to boolean input
      * 
@@ -129,8 +127,6 @@ trait ManagesTeamRoles
 
         return $this->removeRole($role);
     }
-
-
 
 
     /**

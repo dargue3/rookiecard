@@ -72,48 +72,6 @@ class TeamPolicy
 
 
 
-    /**
-     * Make sure the stats are being set to members of this team
-     * 
-     * @param  User    $user    
-     * @param  Team    $team    
-     * @param  Request $request 
-     * @return boolean           
-     */
-    public function editStats(User $user, Team $team, Request $request)
-    {
-        //loop through all the uploaded stats, check that the
-        //member_id, id, & team all correspond to eachother
-        foreach ($request->playerStats as $stats)    {
-            $member = $this->member->find($stats['member_id']);
-
-            if (!$member) {
-                //this person isn't even in the database
-                return false;
-            }
-
-            if ($member->team_id != $team->id) {
-                //this person isn't on this team
-                return false;
-            }
-
-            if ($stats['id'] != $member->user_id) {
-                //the stat's user_id doesn't match TeamMember's user_id, tampered with
-                return false;
-            }
-        }
-
-        if ($request->team['id'] != $team->id) {
-            //wrong team
-            return false;
-        }
-
-        return true;
-    }
-
-
-
-
 
 
 

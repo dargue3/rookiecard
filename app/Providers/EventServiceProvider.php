@@ -28,6 +28,11 @@ class EventServiceProvider extends ServiceProvider
             'App\Listeners\NotifyUsers'
         ],
 
+        'App\Events\TeamPostedStats' => [
+            'App\Listeners\CreateNewsFeedEntry',
+            'App\Listeners\NotifyUsers'
+        ],
+
         'App\Events\TeamInvitedUserToJoin' => [
             'App\Listeners\NotifyUsers'
         ],

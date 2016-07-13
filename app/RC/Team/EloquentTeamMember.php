@@ -421,8 +421,6 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     }
 
 
-
-
     /**
      * Toggle the fan status of this user
      * 
@@ -439,7 +437,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     		throw new Exception("Logged-in user cannot become a fan because they're already a member");
     	}
 
-        return $this->toggleRole(new Fan); 
+        return $this->toggleRole(new Fan)->deleteIfTheyHaveNoRoles(); 
     }
 
 
