@@ -1,6 +1,7 @@
 <?php
 namespace App\RC\Stat;
 
+use App\Team;
 use App\Stat;
 use App\Repositories\EloquentRepository;
 
@@ -63,6 +64,33 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	{
 		Stat::where('team_id', $team_id)->where('member_id', $member_id)->delete();
 	}
+
+
+	/**
+	 * Persist the stats given to the database
+	 * 
+	 * @param  array  $data 
+	 * @param  Team   $team 
+	 * @return void    
+	 */
+	public function store(array $data, Team $team)
+	{
+		(new HandlesStatLogic($data, $team))->create();
+	}
+
+
+	/**
+	 * Update stats with the given information to match new inputs
+	 * 
+	 * @param  array  $data 
+	 * @param  Team   $team 
+	 * @return void    
+	 */
+	public function update(array $data, Team $team)
+	{
+		(new HandlesStatLogic($data, $team))->update();
+	}
+
 
 
 	/**

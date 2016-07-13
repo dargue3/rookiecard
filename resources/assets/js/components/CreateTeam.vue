@@ -65,9 +65,9 @@
 							<label>Gender</label>
 							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
 											CreateTeam="gender" v-model="gender">
-								<option value="0">Men</option>
-								<option value="1">Women</option>
-								<option value="2">Coed</option>
+								<option value="male">Men</option>
+								<option value="female">Women</option>
+								<option value="coed">Coed</option>
 							</select>
 							<span v-show="errors.gender" class="form-error">{{ errors.gender }}</span>
 						</div>
@@ -366,7 +366,7 @@ export default  {
 				long: -70.8389219,
 				lat: 42.9375932
 			},
-			sport: '0',
+			sport: 'basketball',
 			userIsA: 'fan',
 			numPlayers: 2,
 			numCoaches: 1,

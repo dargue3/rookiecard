@@ -56,8 +56,6 @@ class StatControllerTest extends TestCase
 
 		$this->event = factory(Event::class)->create(['owner_id' => $this->team->id]);
 
-		$this->repo = $this->mock(StatRepository::class);
-
 		$this->data = [
 			'event_id'		=> $this->event->id,
 			'meta'			=> ['test' => 123],
@@ -75,8 +73,8 @@ class StatControllerTest extends TestCase
     /** @test */
     public function it_has_a_store_method_for_persisting_new_stats()
     {
-    	$this->repo->shouldReceive('create')->times(3); // twice for members, once for team
-    	$this->repo->shouldReceive('getTeamStats')->once();
+    	$mock = $this->mock(HandlesStatLogic::class);
+    	$mock->shouldReceive('create');
 
     	$this->call('POST', $this->url, $this->data);
 
@@ -88,9 +86,8 @@ class StatControllerTest extends TestCase
     /** @test */
     public function it_has_an_update_method_for_updating_stats_for_a_given_event()
     {
-    	$this->repo->shouldReceive('deleteByEvent')->once();
-    	$this->repo->shouldReceive('create')->times(3); // twice for members, once for team
-    	$this->repo->shouldReceive('getTeamStats')->once();
+    	$mock = $this->mock(HandlesStatLogic::class);
+    	$mock->shouldReceive('update');
 
     	$this->call('PUT', $this->url . $this->event->id, $this->data);
 
@@ -101,8 +98,9 @@ class StatControllerTest extends TestCase
     /** @test */
     public function it_has_a_delete_method_for_deleting_stats_for_a_given_event()
     {
-    	$this->repo->shouldReceive('deleteByEvent')->once();
-    	$this->repo->shouldReceive('getTeamStats')->once();
+    	$mock = $this->mock(StatRepository::class);
+    	$mock->shouldReceive('deleteByEvent');
+    	$mock->shouldReceive('findByTeam');
 
     	$this->call('DELETE', $this->url . $this->event->id);
 

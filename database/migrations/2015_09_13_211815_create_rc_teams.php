@@ -17,8 +17,9 @@ class CreateRcTeams extends Migration
             $table->string('teamname')->unique();
             $table->string('name');
             $table->integer('season');
-            $table->integer('sport');
+            $table->tinyInteger('sport');
             $table->tinyInteger('gender');
+            $table->text('meta');
             $table->float('long');
             $table->float('lat');
             $table->string('pic');

@@ -7,7 +7,6 @@ use Exception;
 use Illuminate\Http\Request;
 use App\RC\Stat\StatRepository;
 use App\RC\Event\EventRepository;
-use App\RC\Stat\HandlesStatLogic;
 use App\Http\Controllers\Controller;
 
 class StatController extends Controller
@@ -55,9 +54,9 @@ class StatController extends Controller
             'playerStats'   => $request->playerStats,
         ];
 
-        (new HandlesStatLogic($data, $team))->create();
+        $this->stat->store($data, $team);
 
-        return ['ok' => true, 'stats' => $this->stat->getTeamStats($team->id)];
+        return ['ok' => true, 'stats' => $this->stat->findByTeam($team->id)];
     }
 
 
@@ -77,9 +76,9 @@ class StatController extends Controller
             'playerStats'   => $request->playerStats,
         ];
 
-        (new HandlesStatLogic($data, $team))->update();
+        $this->stat->update($data, $team);
 
-        return ['ok' => true, 'stats' => $this->stat->getTeamStats($team->id)];
+        return ['ok' => true, 'stats' => $this->stat->findByTeam($team->id)];
     }
 
     /**
@@ -98,6 +97,6 @@ class StatController extends Controller
 
         $this->stat->deleteByEvent($team->id, $id);
 
-        return ['ok' => true, 'stats' => $this->stat->getTeamStats($team->id)];
+        return ['ok' => true, 'stats' => $this->stat->findByTeam($team->id)];
     }
 }

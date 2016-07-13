@@ -18,9 +18,12 @@ Route::post ('/newPass',     'Auth\PasswordController@postReset');
 // all of the URIs in this group are API end points prefixed with /api/v1/
 Route::group(['prefix' => '/api/v1'], function() {
 
-	Route::post('team/create', 'TeamController@createTeam');
+	// team creation
+	Route::post('team/create', 'TeamController@create');
 	Route::post('team/create/{name}', 'TeamController@checkAvailability');
+	Route::get('stats/{sport}', 'TeamController@getStatKeys');
 
+	// day-to-day team api
 	Route::get('team/{teamname}', 'TeamController@getTeamData');
 	Route::post('team/{teamname}/join', 'TeamController@joinTeam');
 	Route::post('team/{teamname}/pic', 'TeamController@uploadPic');
@@ -34,9 +37,10 @@ Route::group(['prefix' => '/api/v1'], function() {
 	
 	Route::resource('team/{teamname}/event', 'EventController');
 	
-
+	// day-to-day user api
 	Route::get('user/auth', 'UserController@auth');
 
+	// logged-in user settings
 	Route::post('settings/auth', function () {
 	    // Save the user's timezone
 	    if (Request::has('timezone')) {
@@ -47,7 +51,6 @@ Route::group(['prefix' => '/api/v1'], function() {
 	        Session::put('locale', Request::get('locale'));
 	    }
 	});
-	Route::post  ('settings/stats/{sport}', 'StatController@addStatColumns');
 });
 	
 

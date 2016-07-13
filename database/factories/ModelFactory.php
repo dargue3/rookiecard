@@ -35,6 +35,7 @@ $factory->define(App\Team::class, function ($faker) {
         'creator_id'        => 1,
         'sport'             => 'basketball',
         'gender'            => 0,
+        'meta'              => json_encode(['test' => 123]),
         'long'              => -70.8389219,
         'lat'               => 42.9375932,
         'pic'               => 'path\to\pic',
@@ -45,10 +46,12 @@ $factory->define(App\Team::class, function ($faker) {
 
 $factory->define(App\TeamMember::class, function ($faker) {
 	$num = (string) $faker->numberBetween(0, 99);
+    $user_id = $faker->numberBetween();
+    $team_id = $faker->numberBetween();
 	$positions = $faker->randomElements(['pg', 'sg', 'sf', 'pf', 'c'], 2);
     return [
-        'user_id' 	=> $faker->randomNumber,
-        'team_id' 	=> $faker->randomNumber,
+        'user_id' 	=> $user_id,
+        'team_id' 	=> $team_id,
         'meta'		=> json_encode([
             'num'       => $num,
             'positions' => $positions,

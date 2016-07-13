@@ -154,13 +154,34 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     }
 
 
+    /**
+     * Add logged-in user to a given team
+     * Used when a team is being created
+     * 
+     * @param  int $team_id
+     * @param  RoleInterface $role
+     * @return EloquentTeamMember
+     */
+    public function addTeamCreator($team_id, RoleInterface $role)
+    {
+        $this->using(TeamMember::create([
+            'user_id'   => Auth::id(),
+            'team_id'   => $team_id,
+            'meta'      => json_encode($this->getDefaultMetaData())
+        ]));
+
+        $this->addRole($role);
+        $this->addRole(new Admin);
+    }
+
+
 
 	/**
      * Instantiate a new (ghost) coach on this team
      * 
      * @param  integer $team_id
      * @param string $name
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function newPlayer($team_id, $name = '')
     {
@@ -177,7 +198,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * 
      * @param  integer $team_id
      * @param string $name
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function newCoach($team_id, $name = '')
     {
@@ -195,7 +216,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * 
      * @param RoleInterface $role
      * @param string $name
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function addGhost(RoleInterface $role, $name)
     {
@@ -216,10 +237,15 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Invites person with given email to replace this ghost user
      * 
      * @param  string $email
-     * @return TeamMember
+     * @return EloquentTeamMember
     */
     public function invite($email)
     {
+        if (empty($email)) {
+            // there wasn't an email, skip
+            return $this;
+        }
+
     	$this->checkForMember();
 
         if (! $this->isGhost()) {
@@ -316,7 +342,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Logged-in user is accepting an invitation to join this team
      * 
      * @param int $team_id
-     * @return TeamMember       
+     * @return EloquentTeamMember       
      */
     public function acceptInvitation($team_id)
     {
@@ -336,7 +362,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     /**
      * Convert a ghost member instance into a user-controlled member
      * 
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function replaceGhostWithUser()
     {   
@@ -372,7 +398,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Turn this user-controlled member instance into a ghost member
      * 
      * 
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function replaceUserWithGhost()
     {
@@ -405,7 +431,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Logged-in user is declining the invitation to join this team
      * 
      * @param int $team_id
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function thanksButNoThanks($team_id)
     {
@@ -447,7 +473,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Return the ghost on this team that matches a given email
      * 
      * @param  string $email
-     * @return TeamMember|null       
+     * @return EloquentTeamMember|null       
      */
     public function findGhostByEmail($email)
     {
@@ -494,7 +520,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Attaches given array as meta data onto this member
      * 
      * @param  array $data
-     * @return TeamMember       
+     * @return EloquentTeamMember       
      */
     public function attachMetaData(array $data)
     {
@@ -516,11 +542,11 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Set this member's default meta data according to their role
      * 
      * @param  string $name
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function getDefaultMetaData($name = '')
     {
-        if ($this->isGhost()) {
+        if ($this->member and $this->isGhost()) {
             return [
                 'name'  => $name,
                 'email' => '',
@@ -542,7 +568,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * @param  array $data Array of meta data to be attached
      * @param boolean $switchRole Whether to switch from coach -> player or vice versa
      * @param  boolean $admin Their new admin status
-     * @return TeamMember
+     * @return EloquentTeamMember
      */
     public function editMember(array $data, $switchRole, $admin)
     {

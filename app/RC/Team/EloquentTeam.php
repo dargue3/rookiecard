@@ -41,6 +41,17 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     }
 
 
+    /**
+     * Find a team by a given teamname
+     * @param  string $teamname 
+     * @return Team        
+     */
+    public function name($teamname)
+    {
+       return Team::name($teamname)->first(); 
+    }
+
+
 
 	/**
 	 * Fetch the stats for a given team
@@ -159,92 +170,29 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     }
 
 
-
-
-    // create a team with request data from TeamController
-    public function create(array $data)
+    /**
+     * Persist a new team with the given inputs into the database
+     * 
+     * @param  array  $data 
+     * @return Team     
+     */
+    public function store(array $data)
     {
-        // do some quick housekeeping of the inputs
-        $gender = intval($request->gender);
-        if ($gender < 0 || $gender > 2)
-            $gender = 0;
-
-        $sport = intval($request->sport);
-        // look up supported sports in Sports::class
+        return (new CreatesNewTeam($data))->create();
+    }
 
 
-        // put together an array of meta data
-        $stats = new Stat;
-        $statKeys = $stats->getStatKeys($sport, $request->userStats, $request->rcStats);
-
-        $meta = [
-            'stats'     => $statKeys,
-            'homefield' => $request->homefield,
-            'city'      => $request->city,
-            'slogan'    => $request->slogan,
-        ];
-
-        $team = $this->create([
-            'name'          => $request->name,
-            'teamname'      => $request->teamname,
-            'gender'        => $gender,
-            'sport'         => $sport,
-            'pic'           => '/images/proPic_default.jpeg',
-            'long'          => $request->long,
-            'lat'           => $request->lat,
-            'meta'          => json_encode($meta),
-            'season'        => 1,
-            'creator_id'    => Auth::user()->id,
-        ]);
-
-        $role = $request->userIsA;
-        if ($role == 'fan')
-        {
-            $role = TeamRole::FAN;
-        }
-        else if ($role == 'player')
-        {
-            $role = TeamRole::PLAYER;
-        }
-        else if ($role == 'coach')
-        {
-            $role = TeamRole::COACH;
-        }
-
-        // add the user who created the team as their perspective role (and admin)
-        TeamMember::create([
-            'user_id'   => Auth::user()->id,
-            'team_id'   => $team->id,
-            'admin'     => 1,
-            'role'      => $role,
-            'meta'      => json_encode(TeamMember::getDefaultMetaData()),
-        ]);
-
-        $players = $request->players;
-        $coaches = $request->coaches;
-        // remove auth user from array of players or coaches if necessary
-        if ($role == TeamRole::PLAYER)
-        {
-            array_shift($players);
-        }
-        else if ($role == TeamRole::COACH)
-        {
-            array_shift($coaches);
-        }
-
-
-        // loop through the players and coaches to create TeamMember entries 
-        foreach ($players as $player)
-        {
-            TeamMember::addMember($team->id, TeamRole::GHOST_PLAYER, $player);
-        }
-
-        foreach ($coaches as $coach)
-        {
-            TeamMember::addMember($team->id, TeamRole::GHOST_COACH, $coach);
-        }
-
-        return ['ok' => true, 'team' => $team];
+    /**
+     * The logged-in user is taking some sort of action related to joining the given team
+     * Simply passes off the data to a service class
+     * 
+     * @param  string $action  either: accept, decline, request, cancel
+     * @param  int $team_id 
+     * @return void
+     */
+    public function join($action, $team_id)
+    {
+        (new JoinTeam($action, $team_id))->handle();
     }
 
 

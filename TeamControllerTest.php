@@ -46,7 +46,9 @@ class TeamControllerTest extends TestCase
     {
     	$this->memberRepo->newPlayer($this->team->id)->invite($this->user->email); // precondition
 
-    	$mock = $this->mock(HandlesStatLogic::class);
+    	$mock = $this->mock(JoinTeam::class);
+    	$mock->shouldReceive('handle');
+    	$mock->shouldReceive('userHasAcceptedInvitation');
 
     	$this->call('POST', $this->url . 'join/', ['action' => 'accept']);
 
@@ -59,6 +61,10 @@ class TeamControllerTest extends TestCase
     {
     	$this->memberRepo->newPlayer($this->team->id)->invite($this->user->email); // precondition
 
+    	$mock = $this->mock(JoinTeam::class);
+    	$mock->shouldReceive('handle');
+    	$mock->shouldReceive('userHasDeclinedInvitation');
+
     	$this->call('POST', $this->url . 'join/', ['action' => 'decline']);
 
     	$this->assertResponseOk();
@@ -70,6 +76,10 @@ class TeamControllerTest extends TestCase
     {
     	$this->call('POST', $this->url . 'join/', ['action' => 'request']);
 
+    	$mock = $this->mock(JoinTeam::class);
+    	$mock->shouldReceive('handle');
+    	$mock->shouldReceive('userHasRequestedToJoin');
+
     	$this->assertResponseOk();
     }
 
@@ -78,6 +88,10 @@ class TeamControllerTest extends TestCase
     public function it_has_a_method_for_the_logged_in_user_canceling_their_previous_request_to_join()
     {
     	$this->memberRepo->requestToJoin($this->team->id); // precondition
+
+    	$mock = $this->mock(JoinTeam::class);
+    	$mock->shouldReceive('handle');
+    	$mock->shouldReceive('userHasCanceledRequestToJoin');
 
     	$this->call('POST', $this->url . 'join/', ['action' => 'cancel']);
 
@@ -88,6 +102,11 @@ class TeamControllerTest extends TestCase
     /** @test */
     public function it_has_a_method_for_toggling_the_logged_in_users_fan_status_of_a_team()
     {
+    	$mock = $this->mock(TeamMemberRepository::class);
+    	$mock->shouldReceive('toggleFan')->once();
+    	$mock->shouldReceive('members')->once()->andReturn([]);
+    	$mock->shouldReceive('teamMember')->once();
+
     	$this->call('POST', $this->url . 'fan/');
 
     	$this->assertResponseOk();
@@ -109,6 +128,37 @@ class TeamControllerTest extends TestCase
 
     	$this->assertResponseOk();
     	$this->assertFalse($available);
+    }
+
+
+    /** @test */
+    public function it_has_a_method_for_creating_a_new_team()
+    {
+        $data = [
+            'name'          => 'Team Test',
+            'teamname'      => 'testname',
+            'gender'        => 'male',
+            'sport'         => 'basketball',
+            'slogan'        => 'Here goes nothin!',
+            'homefield'     => 'My backyard',
+            'city'          => 'Providence, RI',
+            'lat'           => 69.24828429,
+            'long'          => -72.4824724,
+            'userIsA'       => 'fan',
+            'userStats'     => ['pts', 'fgm', 'fga'],
+            'rcStats'       => ['fg_'],
+            'players'       => [
+                ['name' => 'Testy McGee', 'email' => 'player@rookiecard.com'],
+                ['name' => 'Tester McTestFace', 'email' => ''],
+            ],
+            'coaches'       => [
+                ['name' => 'Coach Test', 'email' => 'coach@rookiecard.com'],
+            ],
+        ];
+
+        $this->call('POST', 'team/create', $data);
+
+        $this->assertResponseOk();
     }
 
 }

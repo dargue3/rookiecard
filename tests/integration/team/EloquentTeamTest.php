@@ -121,4 +121,11 @@ class EloquentTeamTest extends TestCase
     	$this->assertTrue(array_key_exists('positions', $data));
     	$this->assertTrue(array_key_exists('stats', $data));
     }
+
+
+    /** @test */
+    public function it_has_a_name_method_for_searching_for_finding_a_team_by_a_teamname()
+    {
+        $this->assertEquals($this->team->id, $this->repo->name($this->team->teamname)->id);
+    }
 }

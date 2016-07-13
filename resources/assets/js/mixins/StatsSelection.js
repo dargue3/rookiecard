@@ -2,19 +2,19 @@ export default {
 
 	data() {
 		return {
-			//optional stats inputted by user
+			// optional stats inputted by user
 			userStatsList: {},
 
-			//stats calculated by rookiecard
+			// stats calculated by rookiecard
 			rcStatsList: {},
 
-			//the pre-selected ones for user inputs
+			// the pre-selected ones for user inputs
 			userSelected: [],
 
-			//the pre-selected ones for rc calculated
+			// the pre-selected ones for rc calculated
 			rcSelected: [],
 
-			//array of the keys of the objects
+			// array of the keys of the objects
 			userStatKeys: [],
 			rcStatKeys: [],
 		}
@@ -26,21 +26,21 @@ export default {
 			this.getStatsBySport(sport);
 		},
 
-		//calculates which stats are disabled or not
+		// calculates which stats are disabled or not
 		setDependencies() {
 			var stats = this.rcStatsList;
 
-			//loop through all the keys, check their dependencies and enable/disable
+			// loop through all the keys, check their dependencies and enable/disable
 			for(var key in stats) {		
 				var disabled = false;
 				for(var x = 0; x < stats[key].req.length; x++) {
-					//check that the required stats are already checked
+					// check that the required stats are already checked
 					var req = stats[key].req[x];
 					if(this.userSelected.indexOf(req) === -1 && this.rcSelected.indexOf(req) === -1) {
-						//they don't have all the requirements needed for this statistic, disable the option
+						// they don't have all the requirements needed for this statistic, disable the option
 						disabled = true;
 			
-						//uncheck on the picker if it's selected already
+						// uncheck on the picker if it's selected already
 						var index = this.userSelected.indexOf(key);
 						if(index !== -1)
 							this.userSelected.splice(index, 1);
@@ -60,7 +60,7 @@ export default {
 			
 		},
 
-		//request all the stat columns for this sport from the server
+		// request all the stat columns for this sport from the server
 		getStatsBySport(sport) {
 			var url =  this.prefix + 'stats/' + sport;
 			var self = this;

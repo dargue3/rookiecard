@@ -90,6 +90,21 @@ class EloquentTeamMemberTest extends TestCase
     }
 
 
+    /** @test */
+    public function it_can_add_the_logged_in_user_as_a_member_and_admin_when_they_create_a_team()
+    {
+        $this->repo->addTeamCreator(2, new Fan);
+
+        $this->assertCount(1, TeamMember::all());
+        $this->assertTrue($this->repo->isFan());
+        $this->assertTrue($this->repo->isAdmin());
+
+        $this->repo->addTeamCreator(3, new Player);
+
+        $this->assertTrue($this->repo->isPlayer());
+    }
+
+
      /** @test */
     public function it_can_toggle_the_logged_in_users_fan_status()
     {

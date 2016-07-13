@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Team;
 use Validator;
 use Carbon\Carbon;
+use App\RC\Sports\Sport;
 use App\RC\Team\JoinTeam;
 use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
@@ -42,11 +43,20 @@ class TeamController extends Controller
      */
     public function getTeamData(Team $team)
     {
-        $data = $this->team->getAllData($team->id);
-
-        return ['ok' => true, 'data' => $data];
+        return ['ok' => true, 'data' => $this->team->getAllData($team->id)];
     }
 
+
+    /**
+     * Create a new team and persist into the database
+     * 
+     * @param  CreateTeamRequest $request 
+     * @return Illuminate\Http\Response                     
+     */
+    public function create(CreateTeamRequest $request)
+    {
+        return ['ok' => true, 'team' => $this->team->store($request->all())];
+    }
 
 
     /**
@@ -60,12 +70,10 @@ class TeamController extends Controller
      */
     public function joinTeam(Request $request, Team $team)
     {
-        // pass action to service class, it will handle the logic
-        (new JoinTeam($request->action, $team->id))->handle();
+        $this->team->join($request->action, $team->id);
 
         return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
-
 
 
     /**
@@ -82,7 +90,6 @@ class TeamController extends Controller
     }
 
 
-
     /**
      * While creating a team, check the availability of a teamname
      * 
@@ -91,7 +98,7 @@ class TeamController extends Controller
      */
     public function checkAvailability($teamname)
     {
-        if (Team::name($teamname)->first()) {
+        if ($this->team->name($teamname)) {
             return ['ok' => true, 'available' => false];
         }
 
@@ -100,18 +107,29 @@ class TeamController extends Controller
 
 
 
-    //admin has uploaded a new team profile picture
+    /**
+     * Team is uploading a new profile picture
+     * 
+     * @param  Request $request 
+     * @param  Team    $team    
+     * @return Illuminate\Http\Response           
+     */
     public function uploadPic(Request $request, Team $team)
     {
-        return $this->team->uploadPic($request);
+       //
     }
 
 
-
-    //creates a new team, request already validated
-    public function createTeam(CreateTeamRequest $request)
+    /** 
+     * Return all stat keys associated with a given sport 
+     * Used during the team creation process
+     * 
+     * @param  string $sport 
+     * @return Illuminate\Http\Response        
+     */
+    public function getStatKeys($sport)
     {
-        return $this->team->create($request);
+        return Sport::find($sport)->statDetails();
     }
 
 
