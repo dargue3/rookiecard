@@ -106,9 +106,9 @@ span.input-info
 			cursor default
 
 	+variant(inactive)
-		color #1179C9
+		color link_blue
 		&:hover
-			color #38A9F9
+			color link_blue_hover
 			cursor pointer
 			
 .Tab__container
@@ -144,7 +144,7 @@ span.input-info
 			margin-bottom 0
 
 	+has(number)
-		color #C90019	
+		color rc_red
 
 	+has(divider)
 		color darken(whitesmoke, 30%)
@@ -193,7 +193,7 @@ span.input-info
 .modal-header
 	color white
 	margin-bottom 0.5em
-	background #404040
+	background rc_modal_black
 	.close
 		color white
 		margin-top 3px
@@ -313,8 +313,15 @@ textarea
 		&.--lg.--left
 			min-width 175px
 			padding-right 14px	
-			
-				
+
+.btn-chevron
+	position absolute
+	top 7px
+	font-size 30px	
+	&.--right	
+		right 0px
+	&.--left
+		left 4px			
 			
 
 	&.outline.btn-success
@@ -344,26 +351,26 @@ textarea
 		color rc_red
 		&:hover, &:active, &:active:focus, &:focus
 			background none
-			border 2px solid #FC001E
-			color #FC001E		
+			border 2px solid rc_red_hover
+			color rc_red_hover		
 
 	&.outline.btn-cancel
 		background none
 		padding 12px 22px
-		border 2px solid #BDBBBB
-		color #BDBBBB
+		border 2px solid rc_med_gray
+		color rc_med_gray
 		&:hover, &:active, &:active:focus, &:focus
 			background none
-			border 2px solid #969696
-			color #969696			
+			border 2px solid rc_dark_gray
+			color rc_dark_gray			
 
 .btn-cancel
-	background #BDBBBB
+	background rc_med_gray
 	padding 12px 22px
 	color white
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
-		background #969696
+		background rc_dark_gray
 
 .btn-delete
 	background rc_red
@@ -371,7 +378,7 @@ textarea
 	color white
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
-		background #FC001E
+		background rc_red_hover
 
 .btn-primary
 	background link_blue
@@ -396,15 +403,6 @@ textarea
 	background-image none
 	background-color whitesmoke
 	margin-top 0
-	
-.btn-chevron
-	position absolute
-	top 9px
-	font-size 30px	
-	&.--right	
-		right 0px
-	&.--left
-		left 4px	
 	
 
 
@@ -566,12 +564,12 @@ input[type="text"]:focus,
 
 .slide-sm-enter
 	@media only screen and (max-width xs_max_width)
-		animation slide-sm-phone-enter 0.4s ease-in
-	animation slide-sm-enter 0.4s ease-in
+		animation slide-sm-phone-enter 0.3s ease-in
+	animation slide-sm-enter 0.3s ease-in
 .slide-sm-leave
 	@media only screen and (max-width xs_max_width)
-		animation slide-sm-phone-leave 0.4s ease-in
-	animation slide-sm-leave 0.4s ease-out
+		animation slide-sm-phone-leave 0.3s ease-in
+	animation slide-sm-leave 0.3s ease-out
 
 .slide-md-enter
 	@media only screen and (max-width xs_max_width)
@@ -597,6 +595,7 @@ input[type="text"]:focus,
 		opacity 0.2
 		overflow hidden
 		max-height 0
+		margin 0
 	100%
 		opacity 1
 		max-height 100px
@@ -608,6 +607,7 @@ input[type="text"]:focus,
 		max-height 100px
 	100%
 		opacity 0
+		margin 0
 		max-height 0
 		overflow hidden
 
@@ -616,6 +616,7 @@ input[type="text"]:focus,
 		opacity 0.2
 		overflow hidden
 		max-height 0
+		margin 0
 	100%
 		opacity 1
 		max-height 175px
@@ -628,12 +629,14 @@ input[type="text"]:focus,
 	100%
 		opacity 0
 		max-height 0
+		margin 0
 		overflow hidden		
 
 @keyframes slide-md-enter
 	0%
 		opacity 0.2
 		overflow hidden
+		margin 0
 		max-height 0
 	100%
 		opacity 1
@@ -646,6 +649,7 @@ input[type="text"]:focus,
 		max-height 150px
 	100%
 		opacity 0
+		margin 0
 		max-height 0
 		overflow hidden
 
@@ -653,6 +657,7 @@ input[type="text"]:focus,
 	0%
 		opacity 0.2
 		overflow hidden
+		margin 0
 		max-height 0
 	100%
 		opacity 1
@@ -666,6 +671,7 @@ input[type="text"]:focus,
 	100%
 		opacity 0
 		max-height 0
+		margin 0
 		overflow hidden		
 
 @keyframes slide-lg-enter
@@ -673,6 +679,7 @@ input[type="text"]:focus,
 		opacity 0.2
 		overflow hidden
 		max-height 0
+		margin 0
 	100%
 		opacity 1
 		max-height 700px
@@ -685,12 +692,14 @@ input[type="text"]:focus,
 	100%
 		opacity 0
 		max-height 0
+		margin 0
 		overflow hidden		
 
 @keyframes slide-lg-phone-enter
 	0%
 		opacity 0.2
 		overflow hidden
+		margin 0
 		max-height 0
 	100%
 		opacity 1
@@ -704,6 +713,7 @@ input[type="text"]:focus,
 	100%
 		opacity 0
 		max-height 0
+		margin 0
 		overflow hidden			
 		
 

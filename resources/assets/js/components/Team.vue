@@ -369,7 +369,7 @@ export default  {
 	created()
 	{
 		var url = this.makeUrl('');
-		this.$root.get(url, [], 'Team_requestSuccess', 'Team_requestFail');
+		this.$root.get(url, 'Team_requestSuccess', [], 'Team_requestFail');
 	},
 
 	computed: {

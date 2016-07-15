@@ -55,7 +55,8 @@ $factory->define(App\TeamMember::class, function ($faker) {
         'meta'		=> json_encode([
             'num'       => $num,
             'positions' => $positions,
-            'name'      => $faker->name,
+            'firstname' => $faker->firstName,
+            'lastname'  => $faker->lastName,
             'email'     => $faker->email
         ]),
     ];

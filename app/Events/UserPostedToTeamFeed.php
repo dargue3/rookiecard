@@ -79,7 +79,7 @@ class UserPostedToTeamFeed extends Event implements CreatesNewsFeedEntries, Noti
      * 
      * @return array
      */
-    public function users(TeamRepository )
+    public function users(TeamRepository $team)
     {
         return $team->users(array('id'));
     }

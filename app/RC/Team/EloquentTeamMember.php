@@ -180,16 +180,17 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Instantiate a new (ghost) coach on this team
      * 
      * @param  integer $team_id
-     * @param string $name
+     * @param string $firstname
+     * @param string $lastname
      * @return EloquentTeamMember
      */
-    public function newPlayer($team_id, $name = '')
+    public function newPlayer($team_id, $firstname = '', $lastname = '')
     {
     	$member = TeamMember::create(['team_id' => $team_id, 'user_id' => 0]);
 
     	$this->using($member);
 
-        return $this->addGhost(new GhostPlayer, $name);
+        return $this->addGhost(new GhostPlayer, $firstname, $lastname);
     }
 
 
@@ -197,16 +198,17 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Instantiate a new (ghost) coach on this team
      * 
      * @param  integer $team_id
-     * @param string $name
+     * @param string $firstname
+     * @param string $lastname
      * @return EloquentTeamMember
      */
-    public function newCoach($team_id, $name = '')
+    public function newCoach($team_id, $firstname = '', $lastname = '')
     {
         $member = TeamMember::create(['team_id' => $team_id, 'user_id' => 0]);
 
         $this->using($member);
 
-        return $this->addGhost(new GhostCoach, $name);
+        return $this->addGhost(new GhostCoach, $firstname, $lastname);
     }
 
 
@@ -215,17 +217,19 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * Setup and instantiate a new ghost member on this team
      * 
      * @param RoleInterface $role
-     * @param string $name
+     * @param string $firstname
+     * @param string $lastname
      * @return EloquentTeamMember
      */
-    public function addGhost(RoleInterface $role, $name)
+    public function addGhost(RoleInterface $role, $firstname, $lastname)
     {
-        // if no name included, make one up
-        $name = $name ?: Factory::create()->name;
+        // if no names included, make one up
+        $firstname = $firstname ?: Factory::create()->firstName;
+        $lastname = $lastname ?: Factory::create()->lastName;
 
         $this->addRole($role);
 
-        $this->member->meta = json_encode($this->getDefaultMetaData($name));
+        $this->member->meta = json_encode($this->getDefaultMetaData($firstname, $lastname));
         $this->member->save();
 
         return $this;
@@ -541,14 +545,16 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     /**
      * Set this member's default meta data according to their role
      * 
-     * @param  string $name
+     * @param  string $firstname
+     * @param  string $lastname
      * @return EloquentTeamMember
      */
-    public function getDefaultMetaData($name = '')
+    public function getDefaultMetaData($firstname = '', $lastname = '')
     {
         if ($this->member and $this->isGhost()) {
             return [
-                'name'  => $name,
+                'firstname' => $firstname,
+                'lastname'  => $lastname,
                 'email' => '',
                 'positions' => [],
                 'num'       => '',

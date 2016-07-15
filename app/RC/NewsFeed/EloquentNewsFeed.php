@@ -1,9 +1,9 @@
 <?php
 namespace App\RC\NewsFeed;
 
+use Auth;
 use Exception;
 use App\NewsFeed;
-use Illuminate\Support\Facades\Auth;
 use App\Repositories\EloquentRepository;
 
 class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
@@ -51,7 +51,6 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
     public function add($owner_id, $type, array $meta = [])
     {
         $this->type = $type;
-
         $this->owner_id = $owner_id;
         $this->meta = $meta;
 
@@ -66,11 +65,11 @@ class EloquentNewsFeed extends EloquentRepository implements NewsFeedRepository
      */
     private function store()
     {
-        return $this->create([
-            'meta'       => json_encode($this->meta),
+        return NewsFeed::create([
             'owner_id'   => $this->owner_id,
+            'creator_id' => Auth::id(),
             'type'       => $this->type,
-            'creator_id' => Auth::id()
+            'meta'       => json_encode($this->meta),
         ]);
     }
 

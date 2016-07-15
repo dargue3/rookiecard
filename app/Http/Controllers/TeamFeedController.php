@@ -1,30 +1,32 @@
 <?php
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Team;
+use Exception;
 use App\NewsFeed;
-use App\Http\Requests;
 use Illuminate\Http\Request;
-use App\RC\Team\TeamRepository;
+use App\Events\UserPostedToTeamFeed;
 use App\Http\Controllers\Controller;
+use App\RC\NewsFeed\NewsFeedRepository;
 
 class TeamFeedController extends Controller
 {
     /**
-     * An instance of a team repository
+     * An instance of a news feed repository
      * 
-     * @var TeamRepository
+     * @var NewsFeedRepository
      */
-    protected $team;
+    protected $feed;
 
 
-    public function __construct(TeamRepository $team)
+    public function __construct(NewsFeedRepository $feed)
     {
         $this->middleware('auth');
 
         $this->middleware('admin', ['only' => 'destroy']);
 
-        $this->team = $team;
+        $this->feed = $feed;
     }
 
 
@@ -53,10 +55,10 @@ class TeamFeedController extends Controller
     public function destroy(Team $team, $id)
     {
         if (Auth::user()->cannot('edit-posts', [$team, $id])) {
-            return ['ok' => false, 'error' => 'Unauthorized request'];
+            throw new Exception("Unauthorized request");
         }
 
-        NewsFeed::findOrFail($id)->delete();
+        $this->feed->destroy($id);
 
         return ['ok' => true];
     }

@@ -21,7 +21,8 @@ Route::group(['prefix' => '/api/v1'], function() {
 	// team creation
 	Route::post('team/create', 'TeamController@create');
 	Route::post('team/create/{name}', 'TeamController@checkAvailability');
-	Route::get('stats/{sport}', 'TeamController@getStatKeys');
+	Route::get('team/create/dummy/{gender}', 'TeamController@createDummyNames');
+	Route::get('team/create/stats/{sport}', 'TeamController@getStatKeys');
 
 	// day-to-day team api
 	Route::get('team/{teamname}', 'TeamController@getTeamData');

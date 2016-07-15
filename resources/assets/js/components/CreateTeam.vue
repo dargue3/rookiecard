@@ -32,11 +32,11 @@
 							<label>Team Name</label>
 							<input type="text" class="form-control" :class="{'form-error' : errors.name}" 
 										required maxlength="25" placeholder="WHS Varsity Basketball" v-model="name">
-							<span v-show="errors.name" class="form-error">{{ errors.name }}</span>				
+							<span class="form-error">{{ errors.name }}</span>				
 						</div>
 
 						<div>
-							<label>Team Username</label>
+							<label>Team URL</label>
 							<input type="text" class="form-control" :class="{'form-error' : errors.teamname}"
 											maxlength="18" @keyup="availability | debounce 750" placeholder="whsbasketball16" 
 											required v-model="teamname">
@@ -57,19 +57,17 @@
 	              <option value="softball" disabled>Softball</option>    
 	              <option value="football" disabled>Football</option>    
             	</select>
-            	<span v-show="errors.sport" class="form-error">{{ errors.sport }}</span>
-							<span v-else class="input-info">More coming soon!</span>
+							<span class="input-info">More coming soon!</span>
 						</div>
 
 						<div>
-							<label>Gender</label>
+							<label>Sex</label>
 							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
 											CreateTeam="gender" v-model="gender">
 								<option value="male">Men</option>
 								<option value="female">Women</option>
 								<option value="coed">Coed</option>
 							</select>
-							<span v-show="errors.gender" class="form-error">{{ errors.gender }}</span>
 						</div>
 						
 					</div>
@@ -78,14 +76,13 @@
 
 						<div>
 							<label>Home Field</label>
-							<input type="text" class="form-control" maxlength="25" 
-											placeholder="Cowell Stadium" v-model="location.homefield">
-							<span v-show="errors.homefield" class="form-error">{{ errors.homefield }}</span>
+							<input type="text" class="form-control" maxlength="50" 
+											placeholder="Cowell Stadium" v-model="homefield">
 						</div>
 
 
-						<google-autocomplete :city.sync="location.city" :long.sync="location.long"
-																	:lat.sync="location.lat" label="City / Town" :error="errors.location">
+						<google-autocomplete :city.sync="city" :long.sync="long"
+																	:lat.sync="lat" label="City / Town" :error="errors.city">
 						</google-autocomplete>
 
 					</div>
@@ -96,7 +93,7 @@
 							<span class="remaining"><strong>{{ slogan.length }}</strong> / 50</span>
 							<input type="text" class="form-control" maxlength="50" 
 											placeholder="Home of the Warriors" v-model="slogan">
-							<span v-show="errors.slogan" class="form-error">{{ errors.slogan }}</span>
+							<span class="form-error">{{ errors.slogan }}</span>
 						</div>
 					</div>
 
@@ -111,12 +108,12 @@
 
 
 					<div class="CreateTeam__buttons">
-						<div><!-- empty as placeholder for non-existant back button --></div>
+						<div><!-- empty as placeholder for non-existent back button --></div>
 						<div>
 							<a class="btn btn-primary --chevron --sm --right" @click="changePage">NEXT
 								<i class="material-icons btn-chevron --right">chevron_right</i>
 							</a>	
-							<span v-show="errors.totals.info > 0" class="form-error">Correct errors on page before continuing</span>
+							<span class="form-error">{{ errors.page }}</span>
 						</div>
 					</div>	
 
@@ -126,7 +123,6 @@
 
 
 				<div v-show="page === 'stats'">
-					<!-- stats -->
 
 					<div class="CreateTeam__header">
 						<h3>Stats</h3>
@@ -155,8 +151,8 @@
 							<select data-style="btn-select btn-lg" CreateTeam="rcStats" class="selectpicker form-control show-tick"
 											 data-selected-text-format="count" multiple required 
 											 data-size="false" v-model="rcSelected">
-	              <option v-for="stat in rcStatsList" :value="rcStatKeys[$index]" :disabled="stat.disabled"
-	              				:data-subtext="stat.subtext">{{ stat.val }}</option>       
+	              <option v-for="stat in rcStatsList" :value="rcStatKeys[$index]" 
+	              				:disabled="stat.disabled">{{ stat.val }}</option>       
             	</select>
 						</div>
 
@@ -172,7 +168,7 @@
 							<a class="btn btn-primary --chevron --sm --right" @click="changePage">NEXT
 								<i class="material-icons btn-chevron --right">chevron_right</i>
 							</a>	
-							<span v-show="errors.totals.stats > 0" class="form-error">Correct errors on page before continuing</span>
+							<span class="form-error">{{ errors.page }}</span>
 						</div>
 					</div>		
 				</div> <!-- end of stats  -->
@@ -180,24 +176,23 @@
 
 
 				<div v-show="page === 'roster'">
-					<!-- stats -->
 
 					<div class="CreateTeam__header">
 						<h3>Roster</h3>
-						<p>Enter info about the players and coaches that will be apart of this team.</p>
-						<p>If you'd like to invite someone to this team, enter their email.</p>
-						<p>If you leave an email field blank, a "ghost user" will be used instead.</p>
-						<p><strong>Don't worry, you can edit all of these settings at any time!</strong></p>
+						<p>Enter info about the players and coaches that are on this team.</p>
+						<p>Your team will be populated with "ghost" users.</p>
+						<p>If you'd like to invite someone to join, add their email.</p>
+						<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>
 						<div>
 							<span>Step 3 / 3</span>
 						</div>
 						<hr>
 					</div>
 
-					<h4 class="CreateTeam__subheader">Who are you?</h4>
+					<h4 class="CreateTeam__subheader">What's your role?</h4>
 					<div class="CreateTeam__inputs">
-						<div class="--addPlayers">
-							<label>I am a..</label>
+						<div class="--smallSelect">
+							<label>I am a...</label>
 							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
 											required v-model="userIsA">
 								<option value="player">Player</option>
@@ -205,62 +200,100 @@
 								<option value="fan">Fan</option>
 							</select>
 						</div>
-						<hr class="CreateTeam__separator">
 					</div>
 
-					<h4 class="CreateTeam__subheader">Add Players</h4>
-					<div class="CreateTeam__inputs">
-						<div class="--addPlayers">
-							<label>Number of Players</label>
-							<select data-style="btn-select btn-lg" CreateTeam="numPlayers" class="selectpicker form-control show-tick"
-											v-model="numPlayers">
-								<option v-for="n in 50" :value="n + 1">{{ n + 1 }}</option>
-							</select>
-						</div>
-					</div>
-					<div v-for="n in numPlayers" class="CreateTeam__inputs">
+					<hr class="CreateTeam__separator">
+
+					<h4 class="CreateTeam__subheader">Players</h4>
+					<!-- disabled inputs to show logged-in user as a player -->
+					<div v-show="userIsA == 'player'" class="CreateTeam__inputs">
 						<div class="--name">
-							<label>Name</label>
-							<input type="text" class="form-control" v-model="players[$index].name" 
-											:class="{'form-error' : errors.players[$index].name}" placeholder="Leonardo DaVinci"
-											maxlength="100">
-							<span v-show="errors.players[$index]" class="form-error">{{ errors.players[$index].name }}</span>
+							<label>First</label>
+							<input type="text" class="form-control" v-model="$root.user.firstname" disabled>
+						</div>
+						<div class="--name">	
+							<label>Last</label>
+							<input type="text" class="form-control" v-model="$root.user.lastname" disabled>
 						</div>
 						<div class="--email">
 							<label>Email</label>
-							<input type="text" class="form-control" v-model="players[$index].email" 
-											:class="{'form-error' : errors.players[$index].email}" placeholder="leodavinc@gmail.com"
+							<input type="text" class="form-control" v-model="$root.user.email" disabled>
+						</div>
+					</div>
+
+					<div v-for="player in players" class="CreateTeam__inputs" transition="slide-sm">
+						<div class="--name">
+							<label>First Name</label>
+							<input type="text" class="form-control" v-model="player.firstname" 
+											:placeholder="dummy[$index].firstname" maxlength="100">
+						</div>
+						<div class="--name">	
+							<label>Last Name</label>
+							<input type="text" class="form-control" v-model="player.lastname" 
+											:placeholder="dummy[$index].lastname" maxlength="100">
+						</div>
+						<div class="--email">
+							<label>Email</label>
+							<input type="text" class="form-control" v-model="player.email" 
+											:class="{'form-error' : errors.players[$index]}" :placeholder="dummy[$index].email"
 											maxlength="100">
-							<span v-show="errors.players[$index].email" class="form-error">{{ errors.players[$index].email }}</span>
+							<span class="form-error">{{ errors.players[$index] }}</span>
 						</div>	
 					</div>
-					<hr class="CreateTeam__separator">
-					<h4 class="CreateTeam__subheader">Add Coaches</h4>
-					<div class="CreateTeam__inputs">
-
-						<div class="--addPlayers">
-							<label>Number of Coaches</label>
-							<select data-style="btn-select btn-lg" CreateTeam="numCoaches" class="selectpicker form-control show-tick"
-											v-model="numCoaches">
-								<option v-for="n in 10" :value="n + 1">{{ n + 1 }}</option>
-							</select>
-						</div>
+					<div class="add-user">
+            <i @click="addPlayer()"
+            		class="glyphicon glyphicon-plus">
+            </i>
+            <i @click="removePlayer()"
+              	class="glyphicon glyphicon-minus">
+            </i>
 					</div>
-					<div v-for="n in numCoaches" class="CreateTeam__inputs">
+
+					<hr class="CreateTeam__separator">
+
+					<h4 class="CreateTeam__subheader">Coaches</h4>
+					<!-- disabled inputs to show logged-in user as a coach -->
+					<div v-show="userIsA == 'coach'" class="CreateTeam__inputs">
 						<div class="--name">
-							<label>Name</label>
-							<input type="text" class="form-control" v-model="coaches[$index].name" 
-											:class="{'form-error' : errors.coaches[$index].name}" placeholder="Nikola Tesla"
-											maxlength="100">
-							<span v-show="errors.coaches[$index]" class="form-error">{{ errors.coaches[$index].name }}</span>
+							<label>First</label>
+							<input type="text" class="form-control" v-model="$root.user.firstname" disabled>
+						</div>
+						<div class="--name">	
+							<label>Last</label>
+							<input type="text" class="form-control" v-model="$root.user.lastname" disabled>
 						</div>
 						<div class="--email">
 							<label>Email</label>
-							<input type="text" class="form-control" v-model="coaches[$index].email" 
-											:class="{'form-error' : errors.coaches[$index].email}" placeholder="tesla@gmail.com"
-											maxlength="100">
-							<span v-show="errors.coaches[$index].email" class="form-error">{{ errors.coaches[$index].email }}</span>
+							<input type="text" class="form-control" v-model="$root.user.email" disabled>
 						</div>
+					</div>
+
+					<div v-for="coach in coaches" class="CreateTeam__inputs" transition="slide-sm">
+						<div class="--name">
+							<label>First Name</label>
+							<input type="text" class="form-control" v-model="coach.firstname" 
+											:placeholder="dummy[$index].firstname" maxlength="100">
+						</div>
+						<div class="--name">	
+							<label>Last Name</label>
+							<input type="text" class="form-control" v-model="coach.lastname" 
+											:placeholder="dummy[$index].lastname" maxlength="100">
+						</div>
+						<div class="--email">
+							<label>Email</label>
+							<input type="text" class="form-control" v-model="coach.email" 
+											:class="{'form-error' : errors.coaches[$index]}" :placeholder="dummy[$index].email"
+											maxlength="100">
+							<span class="form-error">{{ errors.coaches[$index] }}</span>
+						</div>	
+					</div>
+					<div class="add-user">
+            <i @click="addCoach()"
+            		class="glyphicon glyphicon-plus">
+            </i>
+            <i @click="removeCoach()"
+              	class="glyphicon glyphicon-minus">
+            </i>
 					</div>
 						  
 					
@@ -273,7 +306,7 @@
 						</div>
 						<div>
 							<a class="btn btn-primary save" @click="save">CREATE TEAM</a>
-							<span v-show="errors.totals.roster > 0" class="form-error">Correct errors on page before saving</span>
+							<span class="form-error">{{ errors.page }}</span>
 						</div>
 					</div>		
 				</div> <!-- end of stats  -->
@@ -304,322 +337,239 @@
 
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
 import StatsSelection 	from '../mixins/StatsSelection.js'
+import ErrorChecker 		from '../mixins/ErrorChecker.js'
 import Stats 						from './Stats.vue'
 
 export default  {
 	
 	name: 'CreateTeam',
 
-	mixins: [StatsSelection],
+	mixins: [StatsSelection, ErrorChecker],
 
 	props: [],
 
-	components: {
+	components:
+	{
 		'google-autocomplete' : GoogleTypeahead,
-		'rc-stats'							: Stats,
+		'rc-stats'						: Stats,
 	},
 
-	data() {
+	created()
+	{
+		this.$root.get(this.prefix + 'dummy/' + this.gender, 'CreateTeam_dummy');
 
-		var players = [];
-		var coaches = [];
-		var playerErrors = [];
-		var coachErrors = [];
+		this.attachErrorChecking();
+	},
 
-		//initialize arrays of players/coaches for v-for/v-model
-		for(var x = 1; x <= 50; x++) {
-			players.push({
-				name: 'Kobe Bryant',
-				email: 'kbryant24@gmail.com',
-				role: 1,
-			},
-			{
-				name: 'Chris Paul',
-				email: 'cp3@gmail.com',
-				role: 1,
-			});
-			coaches.push({
-				name: 'Bryan Klapes',
-				email: '',
-				role: 3
-			});
-			playerErrors.push({
-				name: '',
-				email: '',
-			});
-			coachErrors.push({
-				name: '',
-				email: '',
-			});
-		}
-		
+	data()
+	{
 		return {
-			prefix: this.$root.prefix,
+			prefix: this.$root.prefix + 'team/create/',
 			page: 'roster',
 			name: '',
-			teamname: 'whsbasketball',
-			slogan: 'Home of Warriors Basketball',
-			gender: '0',
-			location: {
-				homefield: '',
-				city: 'Hampton, NH',
-				long: -70.8389219,
-				lat: 42.9375932
-			},
+			teamname: '',
+			slogan: '',
+			gender: 'male',
+			homefield: '',
+			city: '',
+			long: '',
+			lat: '',
 			sport: 'basketball',
 			userIsA: 'fan',
-			numPlayers: 2,
-			numCoaches: 1,
-			players: players,
-			coaches: coaches,
-			errors: {
-				totals: {
-					info: 0,
-					stats: 0,
-					roster: 0,
-				},
-				name: '',
-				teamname: '',
-				sport: '',
-				gender: '',
-				location: '',
-				homefield: '',
-				slogan: '',
-				players: playerErrors,
-				coaches: coachErrors,
-			},
+			players: [{firstname: '', lastname: '', email: ''}],
+			coaches: [{firstname: '', lastname: '', email: ''}],
+			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
 		}
 	}, 
 
 	methods: {
 
 		save() {
-			this.errors.totals.roster = this.errorCheck(this.page);
 
-			if(this.errors.totals.roster > 0)
+			this.errorCheck();
+
+			return;
+
+			if (this.errors.totals.roster > 0) {
 				return;
+			}
 
-			//build up object of all the team data
+			// build up object of all the team data
 			var data = {
 				name: 			this.name,
 				teamname: 	this.teamname,
 				slogan: 		this.slogan,
 				gender: 		this.gender,
 				homefield: 	this.location.homefield,
-				city: 			this.location.city,
-				long: 			this.location.long,
-				lat: 				this.location.lat,
+				city: 			this.city,
+				long: 			this.long,
+				lat: 				this.lat,
 				sport: 			this.sport,
-				userIsA: 		this.userIsA, 
+				userIsA: 		this.userIsA,
+				players: 		this.players,
+				coaches: 		this.coaches,
 				numPlayers: this.numPlayers,
 				numCoaches: this.numCoaches,
 				userStats: 	this.userSelected,
 				rcStats: 		this.rcSelected,
 			}
-			var players = [];
-			var coaches = [];
-			for(var x = 0; x < this.numPlayers; x++) {
-				players.push(this.players[x]);
-			}
-			for(var x = 0; x < this.numCoaches; x++) {
-				coaches.push(this.coaches[x]);
-			}
-			data.players = players;
-			data.coaches = coaches;
 
-			//send the post request to the server
-			var self = this;
 			var url = this.prefix + 'team/create';
-			this.$http.post(url, data)
-				.then(function(response) {
-	
-					//felt like this process was *too* quick, add artifical delay
-					setTimeout(function() {
-						//route the user to their newly created team
-						self.$router.go('/team/' + response.data.team.teamname);
-					}, 750);							
-				})
-				.catch(function(response) {
-					self.parseErrors(response.data.error);
-				});
+			this.$root.post(url, 'CreateTeam_submit', data);
+		},
+
+		// add a player to the array of players
+		addPlayer()
+		{
+			this.players.push({firstname: '', lastname: '', email: ''});
+			this.addPlayerErrorChecking();
+		},
+
+		addPlayerErrorChecking()
+		{
+			this.registerErrorCheckingOnField('players', 'email', function(index) {
+				if (typeof index === 'undefined') index = 0;
+				if (this.players[index].email.length) {
+					return this.$root.validateEmail(this.players[index].email);
+				}
+				return true;
+			}, 'Invalid email', true);
+		},
+
+		// remove a player from the array of players
+		removePlayer()
+		{
+			this.players.pop();
+			this.removeManualErrorCheck('players');
+		},
+
+		addCoach()
+		{
+			this.coaches.push({firstname: '', lastname: '', email: ''});
+			this.errors.coaches.push({email: ''});
+		},
+
+		addCoachErrorChecking()
+		{
+			this.registerErrorCheckingOnField('coaches', 'email', function(index) {
+				if (typeof index === 'undefined') index = 0;
+				if (this.coaches[index].length) {
+					return this.$root.validateEmail(this.coaches[index].email);
+				}
+				return true;
+			}, 'Invalid email', true);
+		},
+
+		removeCoach()
+		{
+			this.coaches.pop();
+			this.errors.coaches.pop();
+			this.removeManualErrorCheck('coaches');
 		},
 
 
-		//if there were errors returned from the server when creating the team,
-		//bind them to the inputs and show the correct page
-		parseErrors(errors) {
-			this.$root.banner('bad', "Correct the errors and try again");
-			var changed = false;
+		changePage()
+		{
+			var errors = this.errorCheck();
 
-			//errors is structured like 
-			//errors: { teamname : ['error1', 'error2']}
-			for(var key in errors) {
-
-				if(key === 'lat' || key === 'long' || key === 'city')
-					key = 'location';
-
-				this.errors[key] = errors[key];
-
-				//if there are errors on the first page, jump there
-				if(key === 'name' || key === 'teamname' || key === 'sport' ||
-						key === 'gender' || key === 'location' || key === 'slogan' || key === 'homefield') {
-					this.page = 'info';
-					changed = true;
-				}
-				else if(!changed && (key === 'players' || key === 'coaches')) {
-					this.page = 'roster';
-					changed = true;
-				}
-			}
-
-		},
-
-
-		changePage() {
-			this.errors.totals[this.page] = this.errorCheck(this.page);
-
-			if(!this.errors.totals[this.page]) {
-				if(this.page === 'info')
+			if (! errors) {
+				if (this.page === 'info') {
 					this.page = 'stats';
-				else if(this.page === 'stats')
+				}
+				else if (this.page === 'stats') {
 					this.page = 'roster';
-				else
-					this.$root.banner('bad', "There was an error, try refreshing the page");
+				}
+				this.clearError('page');
+			}
+			else {
+				this.setError('page', 'Correct the errors on the page first');
 			}
 		},
 
-		availability() {
+		availability()
+		{
 			var errors = this.errorCheck('teamname');
-			var self = this;
-			if(!errors) {
-				//ask the server if this teamname is available
-				var url = this.$root.prefix + '/team/create/' + this.teamname;
-				this.$http.post(url)
-					.then(function(response) {
-						if(response.data.available)
-							self.errors.teamname = '';
-						else
-							self.errors.teamname = 'Already taken, try another';
-					})
+
+			if (! errors) {
+				// ask the server if this teamname is available
+				var url = this.$root.prefix + 'team/create/' + this.teamname;
+				this.$root.post(url, 'CreateTeam_available')
 			}
 		}, 
 
-		//checks all the fields for errors
-		//returns number of errors, error === 0 is good
-		errorCheck(field) {
-			var errors = 0;
+		// tell ErrorChecker.js which fields to error check
+		attachErrorChecking()
+		{
+			this.registerErrorCheckingOnField('name', 'filled', function() { return this.name.length > 0 }, 'Enter a name');
+			this.registerErrorCheckingOnField('teamname', 'filled', function() { return this.teamname.length > 0 }, 'Enter a team username');
+			this.registerErrorCheckingOnField('teamname', 'alphaNum', function() { var expression = /^[a-zA-Z0-9]+$/; return this.teamname.match(expression) }, 'Use only letters and numbers');
+			this.registerErrorCheckingOnField('teamname', 'length', function() { return this.teamname.length < 18 }, 'Must be 18 characters or less');
+			this.registerErrorCheckingOnField('city', 'filled', function() { return this.city !== '' }, 'Search for your city');
+			this.registerErrorCheckingOnField('long', 'length', function() { return this.long !== '' }, 'Search for your city');
+			this.registerErrorCheckingOnField('lat', 'length', function() { return this.lat !== '' }, 'Search for your city');
 
-			//check teamname, sometimes checks individually on input debounce
-			if(field === 'teamname' || field === 'info') {
-				//make sure they're only using alphanumerics for teamname
-				var alphaNum = /^[a-zA-Z0-9]+$/;
-				if(!this.teamname.length) {
-					//need at least one character
-					this.errors.teamname = 'Enter a team username';
-					errors++;
-				}
-				else if(this.teamname.length > 18) {
-					//too long
-					this.errors.teamname = 'Must be 18 characters or less';
-					errors++;
-				}
-				else if(!this.teamname.match(alphaNum)) {
-					this.errors.teamname = 'Only use letters and numbers';
-					errors++;
+			this.addPlayerErrorChecking();
+			this.addCoachErrorChecking();
+		},
+
+		// run all the registered error checkers + these homemade ones
+		errorCheckAll()
+		{
+			var errors = this.errorCheck();
+			var tempErrors = {players: []};
+			for (var x = 0; x < this.players.length; x++) {
+				var player = this.players[x];
+				// check that any emails inputted are valid emails
+				if (player.email.length) {
+					if (! this.$root.validateEmail(player.email)) {
+						errors++;
+						this.errors.players[x] = "Not a valid email address";
+					}
+					else {
+						this.errors.players[x] = '';
+					}
 				}
 				else {
-					//if its fine, set error to empty
-					this.errors.teamname = '';
+					this.errors.players[x] = '';
 				}
 			}
-
-			//check all info fields if trying to move to stats section
-			if(field === 'info') {
-				//team name
-				if(!this.name.length) {
-					errors++;
-					this.errors.name = 'Choose a name for your team';
-				}
-				else
-					this.errors.name = '';
-
-				if(!this.sport) {
-					errors++;
-					this.errors.sport = 'Choose a sport';
-				}
-				else
-					this.errors.sport = '';
-
-				//check that the google typeahead has returned data
-				if(!this.location.city || !this.location.lat || !this.location.long) {
-					errors++;
-					this.errors.location = "Enter your team's location";
-				}
-				else
-					this.errors.location = '';
-			}
-
-			//check that the people on the rosters have valid inputs
-			if(field === 'roster') {
-				//loop through players
-				for(var x = 0; x < this.numPlayers; x++) {
-					//check that they've added a name for every player
-					var player = this.players[x];
-					if(!player.name) {
-						errors++;
-						this.errors.players[x].name = "Enter the player's name";
-					}
-					else
-						this.errors.players[x].name = '';
-
-					//check that any emails inputted are valid emails
-					if(player.email.length) {
-						if(!this.$root.validateEmail(player.email)) {
-							errors++;
-							this.errors.players[x].email = "Not a valid email address";
-						}
-						else
-							this.errors.players[x].email = '';
-					}
-					else
-						this.errors.players[x].email = '';
-				}
-
-				//loop through coaches
-				for(var x = 0; x < this.numCoaches; x++) {
-					//check that they've added a name for every coach
-					var coach = this.coaches[x];
-					if(!coach.name) {
-						errors++;
-						this.errors.coaches[x].name = "Enter the coach's name";
-					}
-					else
-						this.errors.coaches[x].name = '';
-
-					//check that any emails inputted are valid emails
-					if(coach.email.length) {
-						if(!this.$root.validateEmail(coach.email)) {
-							errors++;
-							this.errors.coaches[x].email = "Not a valid email address";
-						}
-						else
-							this.errors.coaches[x].email = '';
-					}
-					else
-						this.errors.coaches[x].email = '';
-				}
-			}
-
-
-			return errors;
 		}
+	
 	},
 
-	events: {
-		initSelectPicker() {
+	events:
+	{
+		// store dummy names and emails for placeholders
+		CreateTeam_dummy(response)
+		{
+			this.dummy = response.data.dummy;
+		},
 
-			var userPicker = $('.selectpicker[CreateTeam="userStats"]');
-			var rcPicker = $('.selectpicker[CreateTeam="rcStats"]');
+		// was the teamname available?
+		CreateTeam_available(response)
+		{
+			if (response.data.available) {
+				this.clearError('teamname');
+			}
+			else {
+				this.setError('teamname', 'Already taken, try another');
+			}
+		},
+
+		// route the user to the newly created team
+		CreateTeam_submit(response)
+		{
+			// use a delay because it felt TOO fast without one
+			setTimeout(function() {
+				this.$router.go('/team/' + response.data.team.teamname);
+			}.bind(this), 750);
+		},
+
+		
+		initSelectPicker()
+		{
+			var userPicker = $('[CreateTeam="userStats"]');
+			var rcPicker = $('[CreateTeam="rcStats"]');
 
 			userPicker.selectpicker({});
 			rcPicker.selectpicker({});
@@ -629,7 +579,7 @@ export default  {
 			userPicker.selectpicker('refresh');
 			rcPicker.selectpicker('refresh');
 
-			//set up listeners to tell StatsSelection mixin to update which are disabled 
+			// set up listeners to tell StatsSelection mixin to update on change
 			userPicker.on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
 				this.setDependencies();
 			}.bind(this))
@@ -641,9 +591,10 @@ export default  {
 
 		},
 
-		renderSelectPicker() {
-			var userPicker = $('.selectpicker[CreateTeam="userStats"]');
-			var rcPicker = $('.selectpicker[CreateTeam="rcStats"]');
+		renderSelectPicker()
+		{
+			var userPicker = $('[CreateTeam="userStats"]');
+			var rcPicker = $('[CreateTeam="rcStats"]');
 
 			userPicker.selectpicker('refresh');
 			rcPicker.selectpicker('refresh');
@@ -654,107 +605,32 @@ export default  {
 		},
 	},
 
-	watch: {
-		//if they've changed the sport, update the stats associated with it too
-		sport(val) {
+	watch:
+	{
+		// if they've changed the sport, update the stats associated with it too
+		sport(val)
+		{
 			this.initSelections(this.sport);
-
-			if(this.errors.sport && val.length) {
-				//also if there were any existing errors, remove
-				this.errors.sport = '';
-			}
 		},
 
-		//if they've inputted something in the name field, remove error saying they didn't
-		name(val) {
-			if(val.length) {
-				this.errors.name = '';
-			}
-		},
-
-		teamLocation(val) {
-			if(val.length) {
-				this.errors.location = '';
-			}
-		},
-
-		//add this user to the list of coaches or players depending on how the respond to question
-		userIsA(val, old) {
-			var name = this.$root.user.firstname + ' ' + this.$root.user.lastname;
-			var email = this.$root.user.mail;
-
-			//they're a player, add their details to the top of the players array
-			if(val === 'player') {
-				//add a player, remove a coach if that's what they were before
-				this.numPlayers++;
-				if(old === 'coach') this.numCoaches--;
-
-				this.players = this.players.filter(function(player) {
-					return player.name !== name;
-				})
-				this.coaches = this.coaches.filter(function(coach) {
-					return coach.name !== name;
-				})
-				this.players.unshift({
-					name: name,
-					email: email,
-				});
-			}
-
-			//they're a coach, add their details to the top of the coaches array
-			else if(val === 'coach') {
-				//add a coach, remove a player if that's what they were before
-				this.numCoaches++;
-				if(old === 'player') this.numPlayers--;
-
-				this.players = this.players.filter(function(player) {
-					return player.name !== name;
-				})
-				this.coaches = this.coaches.filter(function(coach) {
-					return coach.name !== name;
-				})
-				this.coaches.unshift({
-					name: name,
-					email: email,
-				});
-			}
-
-			//they're a fan, remove their details from coaches and players arrays
-			else if(val === 'fan') {
-				if(old === 'player') this.numPlayers--;
-				if(old === 'coach') this.numCoaches--;
-
-				this.players = this.players.filter(function(player) {
-					return player.name !== name;
-				})
-				this.coaches = this.coaches.filter(function(coach) {
-					return coach.name !== name;
-				})
-			}
-			//refresh the pickers
-			$('.selectpicker[CreateTeam="numPlayers"]').selectpicker('val', this.numPlayers);
-			$('.selectpicker[CreateTeam="numCoaches"]').selectpicker('val', this.numCoaches);
-		},
-	},
-
-	computed: {
-		teamLocation() {
-			return this.location.city;
+		gender()
+		{
+			this.$root.get(this.prefix + 'dummy/' + this.gender, 'CreateTeam_dummy');
 		}
 	},
 
-	ready() {
-
-		//calling StatsSelection mixin function
+	ready()
+	{
+		// calling StatsSelection mixin function
 		this.initSelections(this.sport);
 
 		$(function() {
 
-			$('.selectpicker[CreateTeam="sport"]').selectpicker({});
-			$('.selectpicker[CreateTeam="numPlayers"]').selectpicker({});
-			$('.selectpicker[CreateTeam="numCoaches"]').selectpicker({});
-			$('.selectpicker[CreateTeam="gender"]').selectpicker({});
-			$('.selectpicker[CreateTeam="userIsA"]').selectpicker({});
+			$('[CreateTeam="sport"]').selectpicker({});
+			$('[CreateTeam="numPlayers"]').selectpicker({});
+			$('[CreateTeam="numCoaches"]').selectpicker({});
+			$('[CreateTeam="gender"]').selectpicker({});
+			$('[CreateTeam="userIsA"]').selectpicker({});
 
 		}.bind(this))
 	}
@@ -772,7 +648,6 @@ export default  {
 	flex-flow row
 	justify-content center
 
-		
 .CreateTeam
 	flex 1
 	display flex
@@ -802,8 +677,6 @@ export default  {
 		font-size 15px
 
 .CreateTeam__subheader 
-	padding-top 25px
-	padding-bottom 25px
 	margin-left 20px
 	&:first-child
 		margin-top 20px		
@@ -820,7 +693,7 @@ export default  {
 	
 .CreateTeam__inputs
 	display flex
-	flex-flow row wrap
+	flex-flow row
 	margin-top 25px
 	@media screen and (max-width 767px)
 		margin-top 50px
@@ -833,8 +706,13 @@ export default  {
 		margin 5px 20px
 		@media screen and (max-width 767px)
 			flex-basis 100%
-	div.--addPlayers
+	div.--smallSelect
 		flex none
+		flex-basis 75px
+	div.--name
+		flex-basis 25%
+	div.--email
+		flex-basis 50%	
 	div.dropdown-menu
 		&.open
 			margin 0px
@@ -846,7 +724,8 @@ export default  {
 				color rc_blue
 		.disabled
 			a
-				color rc_lite_gray		
+				color rc_lite_gray
+
 			
 .CreateTeam__buttons
 	display flex
@@ -871,6 +750,19 @@ export default  {
 .CreateTeam__separator
 	margin-right 20px
 	margin-left 20px		
+	
+.add-user
+	.glyphicon:hover
+		cursor pointer
+	.glyphicon-minus
+		color rc_red_hover
+		margin-left 10px
+	.glyphicon-plus
+		color link_blue
+		margin-right 10px
+	margin 25px	
+	text-align center
+	font-size 20px
 	
 
 </style>

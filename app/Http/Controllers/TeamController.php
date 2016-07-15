@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Team;
 use Validator;
 use Carbon\Carbon;
+use Faker\Factory;
 use App\RC\Sports\Sport;
 use App\RC\Team\JoinTeam;
 use Illuminate\Http\Request;
@@ -103,6 +104,30 @@ class TeamController extends Controller
         }
 
         return ['ok' => true, 'available' => true];
+    }
+
+
+    /**
+     * Return an array of dummy names for placeholders
+     * 
+     * @param string $gender  The gender of the members of this team
+     * @return Illuminate\Http\Response
+     */
+    public function createDummyNames($gender)
+    {
+        if ($gender == 'coed') $gender = null;
+
+        $faker = (new Factory)->create();
+        
+        for ($x = 0; $x < 50; $x++) {
+            $dummy[] = [
+                'firstname' => $faker->firstName($gender),
+                'lastname' => $faker->lastName($gender),
+                'email' => $faker->email
+            ];
+        }
+
+        return ['ok' => true, 'dummy' => $dummy];
     }
 
 

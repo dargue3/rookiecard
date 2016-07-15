@@ -377,7 +377,7 @@ module.exports = function(it){
 },{"./_is-object":21}],11:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js", module);
 (function(){
-var core = module.exports = {version: '2.2.2'};
+var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 }).apply(this, arguments);
 
@@ -11732,7 +11732,8 @@ function restoreState (vm, state, isRoot) {
 }
 
 function format (id) {
-  return id.match(/[^\/]+\.vue$/)[0]
+  var match = id.match(/[^\/]+\.vue$/)
+  return match ? match[0] : id
 }
 
 }).apply(this, arguments);
@@ -16072,7 +16073,7 @@ _hmr["websocket:null"].initModule("node_modules/vue/dist/vue.common.js", module)
 (function(){
 (function (process,global){
 /*!
- * Vue.js v1.0.21
+ * Vue.js v1.0.26
  * (c) 2016 Evan You
  * Released under the MIT License.
  */
@@ -16119,6 +16120,10 @@ function del(obj, key) {
   delete obj[key];
   var ob = obj.__ob__;
   if (!ob) {
+    if (obj._isVue) {
+      delete obj._data[key];
+      obj._digest();
+    }
     return;
   }
   ob.dep.notify();
@@ -16467,8 +16472,15 @@ var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
 
 // UA sniffing for working around browser-specific quirks
 var UA = inBrowser && window.navigator.userAgent.toLowerCase();
+var isIE = UA && UA.indexOf('trident') > 0;
 var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
 var isAndroid = UA && UA.indexOf('android') > 0;
+var isIos = UA && /(iphone|ipad|ipod|ios)/i.test(UA);
+var iosVersionMatch = isIos && UA.match(/os ([\d_]+)/);
+var iosVersion = iosVersionMatch && iosVersionMatch[1].split('_');
+
+// detecting iOS UIWebView by indexedDB
+var hasMutationObserverBug = iosVersion && Number(iosVersion[0]) >= 9 && Number(iosVersion[1]) >= 3 && !window.indexedDB;
 
 var transitionProp = undefined;
 var transitionEndEvent = undefined;
@@ -16509,7 +16521,7 @@ var nextTick = (function () {
   }
 
   /* istanbul ignore if */
-  if (typeof MutationObserver !== 'undefined') {
+  if (typeof MutationObserver !== 'undefined' && !hasMutationObserverBug) {
     var counter = 1;
     var observer = new MutationObserver(nextTickHandler);
     var textNode = document.createTextNode(counter);
@@ -16538,6 +16550,27 @@ var nextTick = (function () {
   };
 })();
 
+var _Set = undefined;
+/* istanbul ignore if */
+if (typeof Set !== 'undefined' && Set.toString().match(/native code/)) {
+  // use native Set when available.
+  _Set = Set;
+} else {
+  // a non-standard Set polyfill that only works with primitive keys.
+  _Set = function () {
+    this.set = Object.create(null);
+  };
+  _Set.prototype.has = function (key) {
+    return this.set[key] !== undefined;
+  };
+  _Set.prototype.add = function (key) {
+    this.set[key] = 1;
+  };
+  _Set.prototype.clear = function () {
+    this.set = Object.create(null);
+  };
+}
+
 function Cache(limit) {
   this.size = 0;
   this.limit = limit;
@@ -16560,12 +16593,12 @@ var p = Cache.prototype;
 
 p.put = function (key, value) {
   var removed;
-  if (this.size === this.limit) {
-    removed = this.shift();
-  }
 
   var entry = this.get(key, true);
   if (!entry) {
+    if (this.size === this.limit) {
+      removed = this.shift();
+    }
     entry = {
       key: key
     };
@@ -16810,7 +16843,7 @@ function compileRegex() {
   var unsafeOpen = escapeRegex(config.unsafeDelimiters[0]);
   var unsafeClose = escapeRegex(config.unsafeDelimiters[1]);
   tagRE = new RegExp(unsafeOpen + '((?:.|\\n)+?)' + unsafeClose + '|' + open + '((?:.|\\n)+?)' + close, 'g');
-  htmlRE = new RegExp('^' + unsafeOpen + '.*' + unsafeClose + '$');
+  htmlRE = new RegExp('^' + unsafeOpen + '((?:.|\\n)+?)' + unsafeClose + '$');
   // reset cache
   cache = new Cache(1000);
 }
@@ -17182,8 +17215,9 @@ function query(el) {
  */
 
 function inDoc(node) {
-  var doc = document.documentElement;
-  var parent = node && node.parentNode;
+  if (!node) return false;
+  var doc = node.ownerDocument.documentElement;
+  var parent = node.parentNode;
   return doc === node || doc === parent || !!(parent && parent.nodeType === 1 && doc.contains(parent));
 }
 
@@ -17596,7 +17630,8 @@ if (process.env.NODE_ENV !== 'production') {
       return (/HTMLUnknownElement/.test(el.toString()) &&
         // Chrome returns unknown for several HTML5 elements.
         // https://code.google.com/p/chromium/issues/detail?id=540526
-        !/^(data|time|rtc|rb)$/.test(tag)
+        // Firefox returns unknown for some "Interactive elements."
+        !/^(data|time|rtc|rb|details|dialog|summary)$/.test(tag)
       );
     }
   };
@@ -17618,7 +17653,7 @@ function checkComponentAttr(el, options) {
     if (resolveAsset(options, 'components', tag)) {
       return { id: tag };
     } else {
-      var is = hasAttrs && getIsBinding(el);
+      var is = hasAttrs && getIsBinding(el, options);
       if (is) {
         return is;
       } else if (process.env.NODE_ENV !== 'production') {
@@ -17631,7 +17666,7 @@ function checkComponentAttr(el, options) {
       }
     }
   } else if (hasAttrs) {
-    return getIsBinding(el);
+    return getIsBinding(el, options);
   }
 }
 
@@ -17639,14 +17674,18 @@ function checkComponentAttr(el, options) {
  * Get "is" binding from an element.
  *
  * @param {Element} el
+ * @param {Object} options
  * @return {Object|undefined}
  */
 
-function getIsBinding(el) {
+function getIsBinding(el, options) {
   // dynamic syntax
-  var exp = getAttr(el, 'is');
+  var exp = el.getAttribute('is');
   if (exp != null) {
-    return { id: exp };
+    if (resolveAsset(options, 'components', exp)) {
+      el.removeAttribute('is');
+      return { id: exp };
+    }
   } else {
     exp = getBindAttr(el, 'is');
     if (exp != null) {
@@ -17757,7 +17796,7 @@ strats.init = strats.created = strats.ready = strats.attached = strats.detached 
  */
 
 function mergeAssets(parentVal, childVal) {
-  var res = Object.create(parentVal);
+  var res = Object.create(parentVal || null);
   return childVal ? extend(res, guardArrayAssets(childVal)) : res;
 }
 
@@ -17916,11 +17955,21 @@ function guardArrayAssets(assets) {
 function mergeOptions(parent, child, vm) {
   guardComponents(child);
   guardProps(child);
+  if (process.env.NODE_ENV !== 'production') {
+    if (child.propsData && !vm) {
+      warn('propsData can only be used as an instantiation option.');
+    }
+  }
   var options = {};
   var key;
+  if (child['extends']) {
+    parent = typeof child['extends'] === 'function' ? mergeOptions(parent, child['extends'].options, vm) : mergeOptions(parent, child['extends'], vm);
+  }
   if (child.mixins) {
     for (var i = 0, l = child.mixins.length; i < l; i++) {
-      parent = mergeOptions(parent, child.mixins[i], vm);
+      var mixin = child.mixins[i];
+      var mixinOptions = mixin.prototype instanceof Vue ? mixin.options : mixin;
+      parent = mergeOptions(parent, mixinOptions, vm);
     }
   }
   for (key in parent) {
@@ -18348,13 +18397,19 @@ var util = Object.freeze({
 	hasProto: hasProto,
 	inBrowser: inBrowser,
 	devtools: devtools,
+	isIE: isIE,
 	isIE9: isIE9,
 	isAndroid: isAndroid,
+	isIos: isIos,
+	iosVersionMatch: iosVersionMatch,
+	iosVersion: iosVersion,
+	hasMutationObserverBug: hasMutationObserverBug,
 	get transitionProp () { return transitionProp; },
 	get transitionEndEvent () { return transitionEndEvent; },
 	get animationProp () { return animationProp; },
 	get animationEndEvent () { return animationEndEvent; },
 	nextTick: nextTick,
+	get _Set () { return _Set; },
 	query: query,
 	inDoc: inDoc,
 	getAttr: getAttr,
@@ -18467,13 +18522,8 @@ function initMixin (Vue) {
     this._updateRef();
 
     // initialize data as empty object.
-    // it will be filled up in _initScope().
+    // it will be filled up in _initData().
     this._data = {};
-
-    // save raw constructor data before merge
-    // so that we know which properties are provided at
-    // instantiation.
-    this._runtimeData = options.data;
 
     // call init hook
     this._callHook('init');
@@ -18841,7 +18891,9 @@ var saveRE = /[\{,]\s*[\w\$_]+\s*:|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\
 var restoreRE = /"(\d+)"/g;
 var pathTestRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['.*?'\]|\[".*?"\]|\[\d+\]|\[[A-Za-z_$][\w$]*\])*$/;
 var identRE = /[^\w$\.](?:[A-Za-z_$][\w$]*)/g;
-var booleanLiteralRE = /^(?:true|false)$/;
+var literalValueRE$1 = /^(?:true|false|null|undefined|Infinity|NaN)$/;
+
+function noop() {}
 
 /**
  * Save / Rewrite / Restore
@@ -18923,7 +18975,7 @@ function compileGetter(exp) {
   // save strings and object literal keys
   var body = exp.replace(saveRE, save).replace(wsRE, '');
   // rewrite all paths
-  // pad 1 space here becaue the regex matches 1 extra char
+  // pad 1 space here because the regex matches 1 extra char
   body = (' ' + body).replace(identRE, rewrite).replace(restoreRE, restore);
   return makeGetterFn(body);
 }
@@ -18944,7 +18996,15 @@ function makeGetterFn(body) {
     return new Function('scope', 'return ' + body + ';');
     /* eslint-enable no-new-func */
   } catch (e) {
-    process.env.NODE_ENV !== 'production' && warn('Invalid expression. ' + 'Generated function body: ' + body);
+    if (process.env.NODE_ENV !== 'production') {
+      /* istanbul ignore if */
+      if (e.toString().match(/unsafe-eval|CSP/)) {
+        warn('It seems you are using the default build of Vue.js in an environment ' + 'with Content Security Policy that prohibits unsafe-eval. ' + 'Use the CSP-compliant build instead: ' + 'http://vuejs.org/guide/installation.html#CSP-compliant-build');
+      } else {
+        warn('Invalid expression. ' + 'Generated function body: ' + body);
+      }
+    }
+    return noop;
   }
 }
 
@@ -19006,8 +19066,8 @@ function parseExpression(exp, needSet) {
 
 function isSimplePath(exp) {
   return pathTestRE.test(exp) &&
-  // don't treat true/false as paths
-  !booleanLiteralRE.test(exp) &&
+  // don't treat literal values as paths
+  !literalValueRE$1.test(exp) &&
   // Math constants e.g. Math.PI, Math.E etc.
   exp.slice(0, 5) !== 'Math.';
 }
@@ -19024,24 +19084,22 @@ var expression = Object.freeze({
 // triggered, the DOM would have already been in updated
 // state.
 
-var queueIndex;
 var queue = [];
 var userQueue = [];
 var has = {};
 var circular = {};
 var waiting = false;
-var internalQueueDepleted = false;
 
 /**
  * Reset the batcher's state.
  */
 
 function resetBatcherState() {
-  queue = [];
-  userQueue = [];
+  queue.length = 0;
+  userQueue.length = 0;
   has = {};
   circular = {};
-  waiting = internalQueueDepleted = false;
+  waiting = false;
 }
 
 /**
@@ -19049,15 +19107,26 @@ function resetBatcherState() {
  */
 
 function flushBatcherQueue() {
-  runBatcherQueue(queue);
-  internalQueueDepleted = true;
-  runBatcherQueue(userQueue);
-  // dev tool hook
-  /* istanbul ignore if */
-  if (devtools && config.devtools) {
-    devtools.emit('flush');
+  var _again = true;
+
+  _function: while (_again) {
+    _again = false;
+
+    runBatcherQueue(queue);
+    runBatcherQueue(userQueue);
+    // user watchers triggered more watchers,
+    // keep flushing until it depletes
+    if (queue.length) {
+      _again = true;
+      continue _function;
+    }
+    // dev tool hook
+    /* istanbul ignore if */
+    if (devtools && config.devtools) {
+      devtools.emit('flush');
+    }
+    resetBatcherState();
   }
-  resetBatcherState();
 }
 
 /**
@@ -19069,8 +19138,8 @@ function flushBatcherQueue() {
 function runBatcherQueue(queue) {
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
-  for (queueIndex = 0; queueIndex < queue.length; queueIndex++) {
-    var watcher = queue[queueIndex];
+  for (var i = 0; i < queue.length; i++) {
+    var watcher = queue[i];
     var id = watcher.id;
     has[id] = null;
     watcher.run();
@@ -19083,6 +19152,7 @@ function runBatcherQueue(queue) {
       }
     }
   }
+  queue.length = 0;
 }
 
 /**
@@ -19099,20 +19169,14 @@ function runBatcherQueue(queue) {
 function pushWatcher(watcher) {
   var id = watcher.id;
   if (has[id] == null) {
-    if (internalQueueDepleted && !watcher.user) {
-      // an internal watcher triggered by a user watcher...
-      // let's run it immediately after current user watcher is done.
-      userQueue.splice(queueIndex + 1, 0, watcher);
-    } else {
-      // push watcher into appropriate queue
-      var q = watcher.user ? userQueue : queue;
-      has[id] = q.length;
-      q.push(watcher);
-      // queue the flush
-      if (!waiting) {
-        waiting = true;
-        nextTick(flushBatcherQueue);
-      }
+    // push watcher into appropriate queue
+    var q = watcher.user ? userQueue : queue;
+    has[id] = q.length;
+    q.push(watcher);
+    // queue the flush
+    if (!waiting) {
+      waiting = true;
+      nextTick(flushBatcherQueue);
     }
   }
 }
@@ -19153,8 +19217,8 @@ function Watcher(vm, expOrFn, cb, options) {
   this.dirty = this.lazy; // for lazy watchers
   this.deps = [];
   this.newDeps = [];
-  this.depIds = Object.create(null);
-  this.newDepIds = null;
+  this.depIds = new _Set();
+  this.newDepIds = new _Set();
   this.prevError = null; // for async error stacks
   // parse expression for getter/setter
   if (isFn) {
@@ -19246,8 +19310,6 @@ Watcher.prototype.set = function (value) {
 
 Watcher.prototype.beforeGet = function () {
   Dep.target = this;
-  this.newDepIds = Object.create(null);
-  this.newDeps.length = 0;
 };
 
 /**
@@ -19258,10 +19320,10 @@ Watcher.prototype.beforeGet = function () {
 
 Watcher.prototype.addDep = function (dep) {
   var id = dep.id;
-  if (!this.newDepIds[id]) {
-    this.newDepIds[id] = true;
+  if (!this.newDepIds.has(id)) {
+    this.newDepIds.add(id);
     this.newDeps.push(dep);
-    if (!this.depIds[id]) {
+    if (!this.depIds.has(id)) {
       dep.addSub(this);
     }
   }
@@ -19276,14 +19338,18 @@ Watcher.prototype.afterGet = function () {
   var i = this.deps.length;
   while (i--) {
     var dep = this.deps[i];
-    if (!this.newDepIds[dep.id]) {
+    if (!this.newDepIds.has(dep.id)) {
       dep.removeSub(this);
     }
   }
+  var tmp = this.depIds;
   this.depIds = this.newDepIds;
-  var tmp = this.deps;
+  this.newDepIds = tmp;
+  this.newDepIds.clear();
+  tmp = this.deps;
   this.deps = this.newDeps;
   this.newDeps = tmp;
+  this.newDeps.length = 0;
 };
 
 /**
@@ -19407,15 +19473,33 @@ Watcher.prototype.teardown = function () {
  * @param {*} val
  */
 
-function traverse(val) {
-  var i, keys;
-  if (isArray(val)) {
-    i = val.length;
-    while (i--) traverse(val[i]);
-  } else if (isObject(val)) {
-    keys = Object.keys(val);
-    i = keys.length;
-    while (i--) traverse(val[keys[i]]);
+var seenObjects = new _Set();
+function traverse(val, seen) {
+  var i = undefined,
+      keys = undefined;
+  if (!seen) {
+    seen = seenObjects;
+    seen.clear();
+  }
+  var isA = isArray(val);
+  var isO = isObject(val);
+  if ((isA || isO) && Object.isExtensible(val)) {
+    if (val.__ob__) {
+      var depId = val.__ob__.dep.id;
+      if (seen.has(depId)) {
+        return;
+      } else {
+        seen.add(depId);
+      }
+    }
+    if (isA) {
+      i = val.length;
+      while (i--) traverse(val[i], seen);
+    } else if (isO) {
+      keys = Object.keys(val);
+      i = keys.length;
+      while (i--) traverse(val[keys[i]], seen);
+    }
   }
 }
 
@@ -19462,6 +19546,7 @@ function isRealTemplate(node) {
 
 var tagRE$1 = /<([\w:-]+)/;
 var entityRE = /&#?\w+?;/;
+var commentRE = /<!--/;
 
 /**
  * Convert a string template to a DocumentFragment.
@@ -19484,8 +19569,9 @@ function stringToFragment(templateString, raw) {
   var frag = document.createDocumentFragment();
   var tagMatch = templateString.match(tagRE$1);
   var entityMatch = entityRE.test(templateString);
+  var commentMatch = commentRE.test(templateString);
 
-  if (!tagMatch && !entityMatch) {
+  if (!tagMatch && !entityMatch && !commentMatch) {
     // text only, return a single text node.
     frag.appendChild(document.createTextNode(templateString));
   } else {
@@ -19524,10 +19610,13 @@ function stringToFragment(templateString, raw) {
 
 function nodeToFragment(node) {
   // if its a template tag and the browser supports it,
-  // its content is already a document fragment.
+  // its content is already a document fragment. However, iOS Safari has
+  // bug when using directly cloned template content with touch
+  // events and can cause crashes when the nodes are removed from DOM, so we
+  // have to treat template elements as string templates. (#2805)
+  /* istanbul ignore if */
   if (isRealTemplate(node)) {
-    trimNode(node.content);
-    return node.content;
+    return stringToFragment(node.innerHTML);
   }
   // script template
   if (node.tagName === 'SCRIPT') {
@@ -19923,7 +20012,7 @@ function FragmentFactory(vm, el) {
   this.vm = vm;
   var template;
   var isString = typeof el === 'string';
-  if (isString || isTemplate(el)) {
+  if (isString || isTemplate(el) && !el.hasAttribute('v-if')) {
     template = parseTemplate(el, true);
   } else {
     template = document.createDocumentFragment();
@@ -20265,7 +20354,15 @@ var vFor = {
       });
       setTimeout(op, staggerAmount);
     } else {
-      frag.before(prevEl.nextSibling);
+      var target = prevEl.nextSibling;
+      /* istanbul ignore if */
+      if (!target) {
+        // reset end anchor position in case the position was messed up
+        // by an external drag-n-drop library.
+        after(this.end, prevEl);
+        target = this.end;
+      }
+      frag.before(target);
     }
   },
 
@@ -20336,7 +20433,7 @@ var vFor = {
     var primitive = !isObject(value);
     var id;
     if (key || trackByKey || primitive) {
-      id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+      id = getTrackByKey(index, key, value, trackByKey);
       if (!cache[id]) {
         cache[id] = frag;
       } else if (trackByKey !== '$index') {
@@ -20350,8 +20447,10 @@ var vFor = {
         } else {
           process.env.NODE_ENV !== 'production' && this.warnDuplicate(value);
         }
-      } else {
+      } else if (Object.isExtensible(value)) {
         def(value, id, frag);
+      } else if (process.env.NODE_ENV !== 'production') {
+        warn('Frozen v-for objects cannot be automatically tracked, make sure to ' + 'provide a track-by key.');
       }
     }
     frag.raw = value;
@@ -20371,7 +20470,7 @@ var vFor = {
     var primitive = !isObject(value);
     var frag;
     if (key || trackByKey || primitive) {
-      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+      var id = getTrackByKey(index, key, value, trackByKey);
       frag = this.cache[id];
     } else {
       frag = value[this.id];
@@ -20398,7 +20497,7 @@ var vFor = {
     var key = hasOwn(scope, '$key') && scope.$key;
     var primitive = !isObject(value);
     if (trackByKey || key || primitive) {
-      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+      var id = getTrackByKey(index, key, value, trackByKey);
       this.cache[id] = null;
     } else {
       value[this.id] = null;
@@ -20439,7 +20538,7 @@ var vFor = {
    * the filters. This is passed to and called by the watcher.
    *
    * It is necessary for this to be called during the
-   * wathcer's dependency collection phase because we want
+   * watcher's dependency collection phase because we want
    * the v-for to update when the source Object is mutated.
    */
 
@@ -20546,6 +20645,19 @@ function range(n) {
     ret[i] = i;
   }
   return ret;
+}
+
+/**
+ * Get the track by key for an item.
+ *
+ * @param {Number} index
+ * @param {String} key
+ * @param {*} value
+ * @param {String} [trackByKey]
+ */
+
+function getTrackByKey(index, key, value, trackByKey) {
+  return trackByKey ? trackByKey === '$index' ? index : trackByKey.charAt(0).match(/\w/) ? getPath(value, trackByKey) : value[trackByKey] : key || value;
 }
 
 if (process.env.NODE_ENV !== 'production') {
@@ -20769,7 +20881,10 @@ var text$2 = {
   },
 
   update: function update(value) {
-    this.el.value = _toString(value);
+    // #3029 only update when the value changes. This prevent
+    // browsers from overwriting values like selectionStart
+    value = _toString(value);
+    if (value !== this.el.value) this.el.value = value;
   },
 
   unbind: function unbind() {
@@ -20818,6 +20933,8 @@ var radio = {
 var select = {
 
   bind: function bind() {
+    var _this = this;
+
     var self = this;
     var el = this.el;
 
@@ -20849,7 +20966,12 @@ var select = {
     // selectedIndex with value -1 to 0 when the element
     // is appended to a new parent, therefore we have to
     // force a DOM update whenever that happens...
-    this.vm.$on('hook:attached', this.forceUpdate);
+    this.vm.$on('hook:attached', function () {
+      nextTick(_this.forceUpdate);
+    });
+    if (!inDoc(el)) {
+      nextTick(this.forceUpdate);
+    }
   },
 
   update: function update(value) {
@@ -21149,7 +21271,7 @@ var on$1 = {
     }
     // key filter
     var keys = Object.keys(this.modifiers).filter(function (key) {
-      return key !== 'stop' && key !== 'prevent' && key !== 'self';
+      return key !== 'stop' && key !== 'prevent' && key !== 'self' && key !== 'capture';
     });
     if (keys.length) {
       handler = keyFilter(handler, keys);
@@ -21278,6 +21400,12 @@ function prefix(prop) {
   }
   var i = prefixes.length;
   var prefixed;
+  if (camel !== 'filter' && camel in testEl.style) {
+    return {
+      kebab: prop,
+      camel: camel
+    };
+  }
   while (i--) {
     prefixed = camelPrefixes[i] + upper;
     if (prefixed in testEl.style) {
@@ -21286,12 +21414,6 @@ function prefix(prop) {
         camel: prefixed
       };
     }
-  }
-  if (camel in testEl.style) {
-    return {
-      kebab: prop,
-      camel: camel
-    };
   }
 }
 
@@ -21381,8 +21503,12 @@ var bind$1 = {
       attr = camelize(attr);
     }
     if (!interp && attrWithPropsRE.test(attr) && attr in el) {
-      el[attr] = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
+      var attrValue = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
       ? '' : value : value;
+
+      if (el[attr] !== attrValue) {
+        el[attr] = attrValue;
+      }
     }
     // set model props
     var modelProp = modelProps[attr];
@@ -21482,66 +21608,66 @@ var vClass = {
   deep: true,
 
   update: function update(value) {
-    if (value && typeof value === 'string') {
-      this.handleObject(stringToObject(value));
-    } else if (isPlainObject(value)) {
-      this.handleObject(value);
-    } else if (isArray(value)) {
-      this.handleArray(value);
-    } else {
+    if (!value) {
       this.cleanup();
+    } else if (typeof value === 'string') {
+      this.setClass(value.trim().split(/\s+/));
+    } else {
+      this.setClass(normalize$1(value));
     }
   },
 
-  handleObject: function handleObject(value) {
-    this.cleanup(value);
-    this.prevKeys = Object.keys(value);
-    setObjectClasses(this.el, value);
-  },
-
-  handleArray: function handleArray(value) {
+  setClass: function setClass(value) {
     this.cleanup(value);
     for (var i = 0, l = value.length; i < l; i++) {
       var val = value[i];
-      if (val && isPlainObject(val)) {
-        setObjectClasses(this.el, val);
-      } else if (val && typeof val === 'string') {
-        addClass(this.el, val);
+      if (val) {
+        apply(this.el, val, addClass);
       }
     }
-    this.prevKeys = value.slice();
+    this.prevKeys = value;
   },
 
   cleanup: function cleanup(value) {
-    if (!this.prevKeys) return;
-
-    var i = this.prevKeys.length;
+    var prevKeys = this.prevKeys;
+    if (!prevKeys) return;
+    var i = prevKeys.length;
     while (i--) {
-      var key = this.prevKeys[i];
-      if (!key) continue;
-
-      var keys = isPlainObject(key) ? Object.keys(key) : [key];
-      for (var j = 0, l = keys.length; j < l; j++) {
-        toggleClasses(this.el, keys[j], removeClass);
+      var key = prevKeys[i];
+      if (!value || value.indexOf(key) < 0) {
+        apply(this.el, key, removeClass);
       }
     }
   }
 };
 
-function setObjectClasses(el, obj) {
-  var keys = Object.keys(obj);
-  for (var i = 0, l = keys.length; i < l; i++) {
-    var key = keys[i];
-    if (!obj[key]) continue;
-    toggleClasses(el, key, addClass);
-  }
-}
+/**
+ * Normalize objects and arrays (potentially containing objects)
+ * into array of strings.
+ *
+ * @param {Object|Array<String|Object>} value
+ * @return {Array<String>}
+ */
 
-function stringToObject(value) {
-  var res = {};
-  var keys = value.trim().split(/\s+/);
-  for (var i = 0, l = keys.length; i < l; i++) {
-    res[keys[i]] = true;
+function normalize$1(value) {
+  var res = [];
+  if (isArray(value)) {
+    for (var i = 0, l = value.length; i < l; i++) {
+      var _key = value[i];
+      if (_key) {
+        if (typeof _key === 'string') {
+          res.push(_key);
+        } else {
+          for (var k in _key) {
+            if (_key[k]) res.push(k);
+          }
+        }
+      }
+    }
+  } else if (isObject(value)) {
+    for (var key in value) {
+      if (value[key]) res.push(key);
+    }
   }
   return res;
 }
@@ -21557,14 +21683,12 @@ function stringToObject(value) {
  * @param {Function} fn
  */
 
-function toggleClasses(el, key, fn) {
+function apply(el, key, fn) {
   key = key.trim();
-
   if (key.indexOf(' ') === -1) {
     fn(el, key);
     return;
   }
-
   // The key contains one or more space characters.
   // Since a class name doesn't accept such characters, we
   // treat it as multiple classes.
@@ -21615,6 +21739,7 @@ var component = {
       // cached, when the component is used elsewhere this attribute
       // will remain at link time.
       this.el.removeAttribute('is');
+      this.el.removeAttribute(':is');
       // remove ref, same as above
       if (this.descriptor.ref) {
         this.el.removeAttribute('v-ref:' + hyphenate(this.descriptor.ref));
@@ -22049,6 +22174,7 @@ function makePropsLinkFn(props) {
   return function propsLinkFn(vm, scope) {
     // store resolved props info
     vm._props = {};
+    var inlineProps = vm.$options.propsData;
     var i = props.length;
     var prop, path, options, value, raw;
     while (i--) {
@@ -22057,7 +22183,9 @@ function makePropsLinkFn(props) {
       path = prop.path;
       options = prop.options;
       vm._props[path] = prop;
-      if (raw === null) {
+      if (inlineProps && hasOwn(inlineProps, path)) {
+        initProp(vm, prop, inlineProps[path]);
+      }if (raw === null) {
         // initialize absent prop
         initProp(vm, prop, undefined);
       } else if (prop.dynamic) {
@@ -22113,7 +22241,7 @@ function processPropValue(vm, prop, rawValue, fn) {
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop);
   }
-  value = coerceProp(prop, value);
+  value = coerceProp(prop, value, vm);
   var coerced = value !== rawValue;
   if (!assertProp(prop, value, vm)) {
     value = undefined;
@@ -22232,13 +22360,17 @@ function assertProp(prop, value, vm) {
  * @return {*}
  */
 
-function coerceProp(prop, value) {
+function coerceProp(prop, value, vm) {
   var coerce = prop.options.coerce;
   if (!coerce) {
     return value;
   }
-  // coerce is a function
-  return coerce(value);
+  if (typeof coerce === 'function') {
+    return coerce(value);
+  } else {
+    process.env.NODE_ENV !== 'production' && warn('Invalid coerce for prop "' + prop.name + '": expected function, got ' + typeof coerce + '.', vm);
+    return value;
+  }
 }
 
 /**
@@ -22770,10 +22902,9 @@ var transition$1 = {
     // resolve on owner vm
     var hooks = resolveAsset(this.vm.$options, 'transitions', id);
     id = id || 'v';
+    oldId = oldId || 'v';
     el.__v_trans = new Transition(el, id, hooks, this.vm);
-    if (oldId) {
-      removeClass(el, oldId + '-transition');
-    }
+    removeClass(el, oldId + '-transition');
     addClass(el, id + '-transition');
   }
 };
@@ -22818,7 +22949,7 @@ function compile(el, options, partial) {
   // link function for the node itself.
   var nodeLinkFn = partial || !options._asComponent ? compileNode(el, options) : null;
   // link function for the childNodes
-  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && el.tagName !== 'SCRIPT' && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
+  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && !isScript(el) && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
 
   /**
    * A composite linker function to be called on a already
@@ -23001,7 +23132,7 @@ function compileRoot(el, options, contextOptions) {
     });
     if (names.length) {
       var plural = names.length > 1;
-      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment_Instance');
+      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment-Instance');
     }
   }
 
@@ -23038,7 +23169,7 @@ function compileRoot(el, options, contextOptions) {
 
 function compileNode(node, options) {
   var type = node.nodeType;
-  if (type === 1 && node.tagName !== 'SCRIPT') {
+  if (type === 1 && !isScript(node)) {
     return compileElement(node, options);
   } else if (type === 3 && node.data.trim()) {
     return compileTextNode(node, options);
@@ -23198,7 +23329,7 @@ function makeTextNodeLinkFn(tokens, frag) {
           if (token.html) {
             replace(node, parseTemplate(value, true));
           } else {
-            node.data = value;
+            node.data = _toString(value);
           }
         } else {
           vm._bindDir(token.descriptor, node, host, scope);
@@ -23333,7 +23464,6 @@ function checkTerminalDirectives(el, attrs, options) {
   var attr, name, value, modifiers, matched, dirName, rawName, arg, def, termDef;
   for (var i = 0, j = attrs.length; i < j; i++) {
     attr = attrs[i];
-    modifiers = parseModifiers(attr.name);
     name = attr.name.replace(modifierRE, '');
     if (matched = name.match(dirAttrRE)) {
       def = resolveAsset(options, 'directives', matched[1]);
@@ -23341,6 +23471,7 @@ function checkTerminalDirectives(el, attrs, options) {
         if (!termDef || (def.priority || DEFAULT_TERMINAL_PRIORITY) > termDef.priority) {
           termDef = def;
           rawName = attr.name;
+          modifiers = parseModifiers(attr.name);
           value = attr.value;
           dirName = matched[1];
           arg = matched[2];
@@ -23561,6 +23692,10 @@ function hasOneTime(tokens) {
   }
 }
 
+function isScript(el) {
+  return el.tagName === 'SCRIPT' && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript');
+}
+
 var specialCharRE = /[^\w\-:\.]/;
 
 /**
@@ -23690,8 +23825,8 @@ function mergeAttrs(from, to) {
     value = attrs[i].value;
     if (!to.hasAttribute(name) && !specialCharRE.test(name)) {
       to.setAttribute(name, value);
-    } else if (name === 'class' && !parseText(value)) {
-      value.trim().split(/\s+/).forEach(function (cls) {
+    } else if (name === 'class' && !parseText(value) && (value = value.trim())) {
+      value.split(/\s+/).forEach(function (cls) {
         addClass(to, cls);
       });
     }
@@ -23730,6 +23865,10 @@ function resolveSlots(vm, content) {
     contents[name] = extractFragment(contents[name], content);
   }
   if (content.hasChildNodes()) {
+    var nodes = content.childNodes;
+    if (nodes.length === 1 && nodes[0].nodeType === 3 && !nodes[0].data.trim()) {
+      return;
+    }
     contents['default'] = extractFragment(content.childNodes, content);
   }
 }
@@ -23748,7 +23887,7 @@ function extractFragment(nodes, parent) {
     var node = nodes[i];
     if (isTemplate(node) && !node.hasAttribute('v-if') && !node.hasAttribute('v-for')) {
       parent.removeChild(node);
-      node = parseTemplate(node);
+      node = parseTemplate(node, true);
     }
     frag.appendChild(node);
   }
@@ -23829,7 +23968,6 @@ function stateMixin (Vue) {
       process.env.NODE_ENV !== 'production' && warn('data functions should return an object.', this);
     }
     var props = this._props;
-    var runtimeData = this._runtimeData ? typeof this._runtimeData === 'function' ? this._runtimeData() : this._runtimeData : null;
     // proxy data on instance
     var keys = Object.keys(data);
     var i, key;
@@ -23840,10 +23978,10 @@ function stateMixin (Vue) {
       // 1. it's not already defined as a prop
       // 2. it's provided via a instantiation option AND there are no
       //    template prop present
-      if (!props || !hasOwn(props, key) || runtimeData && hasOwn(runtimeData, key) && props[key].raw === null) {
+      if (!props || !hasOwn(props, key)) {
         this._proxy(key);
       } else if (process.env.NODE_ENV !== 'production') {
-        warn('Data field "' + key + '" is already defined ' + 'as a prop. Use prop default value instead.', this);
+        warn('Data field "' + key + '" is already defined ' + 'as a prop. To provide default value for a prop, use the "default" ' + 'prop option; if you want to pass prop values to an instantiation ' + 'call, use the "propsData" option.', this);
       }
     }
     // observe data
@@ -24033,18 +24171,21 @@ function eventsMixin (Vue) {
 
   function registerComponentEvents(vm, el) {
     var attrs = el.attributes;
-    var name, handler;
+    var name, value, handler;
     for (var i = 0, l = attrs.length; i < l; i++) {
       name = attrs[i].name;
       if (eventRE.test(name)) {
         name = name.replace(eventRE, '');
-        handler = (vm._scope || vm._context).$eval(attrs[i].value, true);
-        if (typeof handler === 'function') {
-          handler._fromParent = true;
-          vm.$on(name.replace(eventRE), handler);
-        } else if (process.env.NODE_ENV !== 'production') {
-          warn('v-on:' + name + '="' + attrs[i].value + '" ' + 'expects a function value, got ' + handler, vm);
+        // force the expression into a statement so that
+        // it always dynamically resolves the method to call (#2670)
+        // kinda ugly hack, but does the job.
+        value = attrs[i].value;
+        if (isSimplePath(value)) {
+          value += '.apply(this, $arguments)';
         }
+        handler = (vm._scope || vm._context).$eval(value, true);
+        handler._fromParent = true;
+        vm.$on(name.replace(eventRE), handler);
       }
     }
   }
@@ -24172,7 +24313,7 @@ function eventsMixin (Vue) {
   };
 }
 
-function noop() {}
+function noop$1() {}
 
 /**
  * A directive links a DOM element with a piece of data,
@@ -24271,7 +24412,7 @@ Directive.prototype._bind = function () {
         }
       };
     } else {
-      this._update = noop;
+      this._update = noop$1;
     }
     var preProcess = this._preProcess ? bind(this._preProcess, this) : null;
     var postProcess = this._postProcess ? bind(this._postProcess, this) : null;
@@ -24695,7 +24836,7 @@ function lifecycleMixin (Vue) {
     }
     // remove reference from data ob
     // frozen object may not have observer.
-    if (this._data.__ob__) {
+    if (this._data && this._data.__ob__) {
       this._data.__ob__.removeVm(this);
     }
     // Clean up references to private properties and other
@@ -24768,6 +24909,7 @@ function miscMixin (Vue) {
     } else {
       factory = resolveAsset(this.$options, 'components', value, true);
     }
+    /* istanbul ignore if */
     if (!factory) {
       return;
     }
@@ -24817,7 +24959,7 @@ function dataAPI (Vue) {
   Vue.prototype.$get = function (exp, asStatement) {
     var res = parseExpression(exp);
     if (res) {
-      if (asStatement && !isSimplePath(exp)) {
+      if (asStatement) {
         var self = this;
         return function statementHandler() {
           self.$arguments = toArray(arguments);
@@ -25708,7 +25850,7 @@ var filters = {
 
   json: {
     read: function read(value, indent) {
-      return typeof value === 'string' ? value : JSON.stringify(value, null, Number(indent) || 2);
+      return typeof value === 'string' ? value : JSON.stringify(value, null, arguments.length > 1 ? indent : 2);
     },
     write: function write(value) {
       try {
@@ -25749,17 +25891,19 @@ var filters = {
    * 12345 => $12,345.00
    *
    * @param {String} sign
+   * @param {Number} decimals Decimal places
    */
 
-  currency: function currency(value, _currency) {
+  currency: function currency(value, _currency, decimals) {
     value = parseFloat(value);
     if (!isFinite(value) || !value && value !== 0) return '';
     _currency = _currency != null ? _currency : '$';
-    var stringified = Math.abs(value).toFixed(2);
-    var _int = stringified.slice(0, -3);
+    decimals = decimals != null ? decimals : 2;
+    var stringified = Math.abs(value).toFixed(decimals);
+    var _int = decimals ? stringified.slice(0, -1 - decimals) : stringified;
     var i = _int.length % 3;
     var head = i > 0 ? _int.slice(0, i) + (_int.length > 3 ? ',' : '') : '';
-    var _float = stringified.slice(-3);
+    var _float = decimals ? stringified.slice(-1 - decimals) : '';
     var sign = value < 0 ? '-' : '';
     return sign + _currency + head + _int.slice(i).replace(digitsRE, '$1,') + _float;
   },
@@ -25779,7 +25923,13 @@ var filters = {
 
   pluralize: function pluralize(value) {
     var args = toArray(arguments, 1);
-    return args.length > 1 ? args[value % 10 - 1] || args[args.length - 1] : args[0] + (value === 1 ? '' : 's');
+    var length = args.length;
+    if (length > 1) {
+      var index = value % 10 - 1;
+      return index in args ? args[index] : args[length - 1];
+    } else {
+      return args[0] + (value === 1 ? '' : 's');
+    }
   },
 
   /**
@@ -25964,7 +26114,9 @@ function installGlobalAPI (Vue) {
           }
         }
         if (type === 'component' && isPlainObject(definition)) {
-          definition.name = id;
+          if (!definition.name) {
+            definition.name = id;
+          }
           definition = Vue.extend(definition);
         }
         this.options[type + 's'][id] = definition;
@@ -25979,7 +26131,7 @@ function installGlobalAPI (Vue) {
 
 installGlobalAPI(Vue);
 
-Vue.version = '1.0.21';
+Vue.version = '1.0.26';
 
 // devtools global hook
 /* istanbul ignore next */
@@ -26730,7 +26882,11 @@ exports.default = {
 		},
 		validateEmail: function validateEmail(email) {
 			var expression = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i;
-			if (!email.match(expression)) return false;else return true;
+			if (!email.match(expression)) {
+				return false;
+			} else {
+				return true;
+			}
 		},
 		validateJerseyNum: function validateJerseyNum(num) {
 			if (!num.length) return true;
@@ -26781,7 +26937,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/Requests.js":189,"./Alert.vue":171,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],173:[function(require,module,exports){
+},{"../mixins/Requests.js":190,"./Alert.vue":171,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],173:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/BasketballStats.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert(".Stats__title {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 4em;\n}\n.Stats__title div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n              -ms-grid-row-align: center;\n          align-items: center;\n}\n@media screen and (max-width: 767px) {\n  .Stats__title h1 {\n    font-size: 25px;\n  }\n}\n.Stats__title .versus {\n  color: rc_light_gray;\n}\n.Stats__title .win {\n  color: #f3b700;\n}\n.Stats__title .loss {\n  color: rgba(38,51,255,0.72);\n}\n.Stats__header {\n  margin-bottom: 15px;\n}\n@media screen and (max-width: 767px) {\n  .Stats__header {\n    font-size: 20px;\n  }\n}\n")
@@ -27371,7 +27527,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsScrollSpy.js":190,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],174:[function(require,module,exports){
+},{"../mixins/StatsScrollSpy.js":191,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],174:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Calendar.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  margin-top: 15px;\n}\n.Calendar__nav .chevron {\n  font-size: 44px;\n  margin-top: 7px;\n}\n.Calendar__header {\n  margin: 0;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\n#calendarNav {\n  height: 54px;\n}\n#calendarNav div {\n  padding-left: 0;\n}\n@media only screen and (max-width: 767px) {\n  table#calNav {\n    margin: auto;\n  }\n}\n#calNavHeaderTable {\n  padding: 0;\n}\n#addEventContainer {\n  float: right;\n  margin-top: 17px;\n}\n@media only screen and (max-width: 767px) {\n  #addEventContainer {\n    text-align: center;\n    margin: auto;\n    margin-top: 15px;\n    margin-bottom: 15px;\n    float: none;\n  }\n}\n#addEventIcon {\n  margin: 0 auto;\n}\n#addEventText {\n  position: relative;\n  font-size: 16px;\n  left: 3px;\n}\n#addEventIconDiv {\n  margin-top: 4px;\n}\n#addEventIconDiv {\n  width: 100%;\n  text-align: right;\n}\n#addEventDiv {\n  padding-bottom: 15px;\n}\n#chevRight,\n#chevLeft {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\n#chevRight:hover,\n#chevLeft:hover {\n  cursor: pointer;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
@@ -27556,7 +27712,7 @@ if (module.hot) {(function () {  module.hot.accept()
 },{"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],175:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/CreateTeam.vue", module);
 (function(){
-var __vueify_style__ = require("vueify-insert-css").insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  padding-top: 25px;\n  padding-bottom: 25px;\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--addPlayers {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n")
+var __vueify_style__ = require("vueify-insert-css").insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -27571,17 +27727,29 @@ var _StatsSelection = require('../mixins/StatsSelection.js');
 
 var _StatsSelection2 = _interopRequireDefault(_StatsSelection);
 
+var _ErrorChecker = require('../mixins/ErrorChecker.js');
+
+var _ErrorChecker2 = _interopRequireDefault(_ErrorChecker);
+
 var _Stats = require('./Stats.vue');
 
 var _Stats2 = _interopRequireDefault(_Stats);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/*Dropzone.options.createTeamDropzone = {
+	paramName: 'pic',
+	dictDefaultMessage: 'Drag and drop a file or click here',
+	headers: {'X-CSRF-TOKEN': $('#_token').attr('value') },
+	maxFiles: 1,
+	maxFilesize: 10,
+};*/
+
 exports.default = {
 
 	name: 'CreateTeam',
 
-	mixins: [_StatsSelection2.default],
+	mixins: [_StatsSelection2.default, _ErrorChecker2.default],
 
 	props: [],
 
@@ -27590,266 +27758,210 @@ exports.default = {
 		'rc-stats': _Stats2.default
 	},
 
+	created: function created() {
+		this.$root.get(this.prefix + 'dummy/' + this.gender, 'CreateTeam_dummy');
+
+		this.attachErrorChecking();
+	},
 	data: function data() {
-
-		var players = [];
-		var coaches = [];
-		var playerErrors = [];
-		var coachErrors = [];
-
-		//initialize arrays of players/coaches for v-for/v-model
-		for (var x = 1; x <= 50; x++) {
-			players.push({
-				name: 'Kobe Bryant',
-				email: 'kbryant24@gmail.com',
-				role: 1
-			}, {
-				name: 'Chris Paul',
-				email: 'cp3@gmail.com',
-				role: 1
-			});
-			coaches.push({
-				name: 'Bryan Klapes',
-				email: '',
-				role: 3
-			});
-			playerErrors.push({
-				name: '',
-				email: ''
-			});
-			coachErrors.push({
-				name: '',
-				email: ''
-			});
-		}
-
 		return {
-			prefix: this.$root.prefix,
+			prefix: this.$root.prefix + 'team/create/',
 			page: 'roster',
 			name: '',
-			teamname: 'whsbasketball',
-			slogan: 'Home of Warriors Basketball',
-			gender: '0',
-			location: {
-				homefield: '',
-				city: 'Hampton, NH',
-				long: -70.8389219,
-				lat: 42.9375932
-			},
+			teamname: '',
+			slogan: '',
+			gender: 'male',
+			homefield: '',
+			city: '',
+			long: '',
+			lat: '',
 			sport: 'basketball',
 			userIsA: 'fan',
-			numPlayers: 2,
-			numCoaches: 1,
-			players: players,
-			coaches: coaches,
-			errors: {
-				totals: {
-					info: 0,
-					stats: 0,
-					roster: 0
-				},
-				name: '',
-				teamname: '',
-				sport: '',
-				gender: '',
-				location: '',
-				homefield: '',
-				slogan: '',
-				players: playerErrors,
-				coaches: coachErrors
-			}
+			players: [{ firstname: '', lastname: '', email: '' }],
+			coaches: [{ firstname: '', lastname: '', email: '' }],
+			dummy: [{ firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com' }]
 		};
 	},
 
 
 	methods: {
 		save: function save() {
-			this.errors.totals.roster = this.errorCheck(this.page);
 
-			if (this.errors.totals.roster > 0) return;
+			this.errorCheck();
 
-			//build up object of all the team data
+			return;
+
+			if (this.errors.totals.roster > 0) {
+				return;
+			}
+
+			// build up object of all the team data
 			var data = {
 				name: this.name,
 				teamname: this.teamname,
 				slogan: this.slogan,
 				gender: this.gender,
 				homefield: this.location.homefield,
-				city: this.location.city,
-				long: this.location.long,
-				lat: this.location.lat,
+				city: this.city,
+				long: this.long,
+				lat: this.lat,
 				sport: this.sport,
 				userIsA: this.userIsA,
+				players: this.players,
+				coaches: this.coaches,
 				numPlayers: this.numPlayers,
 				numCoaches: this.numCoaches,
 				userStats: this.userSelected,
 				rcStats: this.rcSelected
 			};
-			var players = [];
-			var coaches = [];
-			for (var x = 0; x < this.numPlayers; x++) {
-				players.push(this.players[x]);
-			}
-			for (var x = 0; x < this.numCoaches; x++) {
-				coaches.push(this.coaches[x]);
-			}
-			data.players = players;
-			data.coaches = coaches;
 
-			//send the post request to the server
-			var self = this;
 			var url = this.prefix + 'team/create';
-			this.$http.post(url, data).then(function (response) {
-
-				//felt like this process was *too* quick, add artifical delay
-				setTimeout(function () {
-					//route the user to their newly created team
-					self.$router.go('/team/' + response.data.team.teamname);
-				}, 750);
-			}).catch(function (response) {
-				self.parseErrors(response.data.error);
-			});
+			this.$root.post(url, 'CreateTeam_submit', data);
 		},
 
 
-		//if there were errors returned from the server when creating the team,
-		//bind them to the inputs and show the correct page
-		parseErrors: function parseErrors(errors) {
-			this.$root.banner('bad', "Correct the errors and try again");
-			var changed = false;
-
-			//errors is structured like
-			//errors: { teamname : ['error1', 'error2']}
-			for (var key in errors) {
-
-				if (key === 'lat' || key === 'long' || key === 'city') key = 'location';
-
-				this.errors[key] = errors[key];
-
-				//if there are errors on the first page, jump there
-				if (key === 'name' || key === 'teamname' || key === 'sport' || key === 'gender' || key === 'location' || key === 'slogan' || key === 'homefield') {
-					this.page = 'info';
-					changed = true;
-				} else if (!changed && (key === 'players' || key === 'coaches')) {
-					this.page = 'roster';
-					changed = true;
+		// add a player to the array of players
+		addPlayer: function addPlayer() {
+			this.players.push({ firstname: '', lastname: '', email: '' });
+			this.addPlayerErrorChecking();
+		},
+		addPlayerErrorChecking: function addPlayerErrorChecking() {
+			this.registerErrorCheckingOnField('players', 'email', function (index) {
+				if (typeof index === 'undefined') index = 0;
+				if (this.players[index].email.length) {
+					return this.$root.validateEmail(this.players[index].email);
 				}
-			}
+				return true;
+			}, 'Invalid email', true);
+		},
+
+
+		// remove a player from the array of players
+		removePlayer: function removePlayer() {
+			this.players.pop();
+			this.removeManualErrorCheck('players');
+		},
+		addCoach: function addCoach() {
+			this.coaches.push({ firstname: '', lastname: '', email: '' });
+			this.errors.coaches.push({ email: '' });
+		},
+		addCoachErrorChecking: function addCoachErrorChecking() {
+			this.registerErrorCheckingOnField('coaches', 'email', function (index) {
+				if (typeof index === 'undefined') index = 0;
+				if (this.coaches[index].length) {
+					return this.$root.validateEmail(this.coaches[index].email);
+				}
+				return true;
+			}, 'Invalid email', true);
+		},
+		removeCoach: function removeCoach() {
+			this.coaches.pop();
+			this.errors.coaches.pop();
+			this.removeManualErrorCheck('coaches');
 		},
 		changePage: function changePage() {
-			this.errors.totals[this.page] = this.errorCheck(this.page);
+			var errors = this.errorCheck();
 
-			if (!this.errors.totals[this.page]) {
-				if (this.page === 'info') this.page = 'stats';else if (this.page === 'stats') this.page = 'roster';else this.$root.banner('bad', "There was an error, try refreshing the page");
+			if (!errors) {
+				if (this.page === 'info') {
+					this.page = 'stats';
+				} else if (this.page === 'stats') {
+					this.page = 'roster';
+				}
+				this.clearError('page');
+			} else {
+				this.setError('page', 'Correct the errors on the page first');
 			}
 		},
 		availability: function availability() {
 			var errors = this.errorCheck('teamname');
-			var self = this;
+
 			if (!errors) {
-				//ask the server if this teamname is available
-				var url = this.$root.prefix + '/team/create/' + this.teamname;
-				this.$http.post(url).then(function (response) {
-					if (response.data.available) self.errors.teamname = '';else self.errors.teamname = 'Already taken, try another';
-				});
+				// ask the server if this teamname is available
+				var url = this.$root.prefix + 'team/create/' + this.teamname;
+				this.$root.post(url, 'CreateTeam_available');
 			}
 		},
 
 
-		//checks all the fields for errors
-		//returns number of errors, error === 0 is good
-		errorCheck: function errorCheck(field) {
-			var errors = 0;
+		// tell ErrorChecker.js which fields to error check
+		attachErrorChecking: function attachErrorChecking() {
+			this.registerErrorCheckingOnField('name', 'filled', function () {
+				return this.name.length > 0;
+			}, 'Enter a name');
+			this.registerErrorCheckingOnField('teamname', 'filled', function () {
+				return this.teamname.length > 0;
+			}, 'Enter a team username');
+			this.registerErrorCheckingOnField('teamname', 'alphaNum', function () {
+				var expression = /^[a-zA-Z0-9]+$/;return this.teamname.match(expression);
+			}, 'Use only letters and numbers');
+			this.registerErrorCheckingOnField('teamname', 'length', function () {
+				return this.teamname.length < 18;
+			}, 'Must be 18 characters or less');
+			this.registerErrorCheckingOnField('city', 'filled', function () {
+				return this.city !== '';
+			}, 'Search for your city');
+			this.registerErrorCheckingOnField('long', 'length', function () {
+				return this.long !== '';
+			}, 'Search for your city');
+			this.registerErrorCheckingOnField('lat', 'length', function () {
+				return this.lat !== '';
+			}, 'Search for your city');
 
-			//check teamname, sometimes checks individually on input debounce
-			if (field === 'teamname' || field === 'info') {
-				//make sure they're only using alphanumerics for teamname
-				var alphaNum = /^[a-zA-Z0-9]+$/;
-				if (!this.teamname.length) {
-					//need at least one character
-					this.errors.teamname = 'Enter a team username';
-					errors++;
-				} else if (this.teamname.length > 18) {
-					//too long
-					this.errors.teamname = 'Must be 18 characters or less';
-					errors++;
-				} else if (!this.teamname.match(alphaNum)) {
-					this.errors.teamname = 'Only use letters and numbers';
-					errors++;
+			this.addPlayerErrorChecking();
+			this.addCoachErrorChecking();
+		},
+
+
+		// run all the registered error checkers + these homemade ones
+		errorCheckAll: function errorCheckAll() {
+			var errors = this.errorCheck();
+			var tempErrors = { players: [] };
+			for (var x = 0; x < this.players.length; x++) {
+				var player = this.players[x];
+				// check that any emails inputted are valid emails
+				if (player.email.length) {
+					if (!this.$root.validateEmail(player.email)) {
+						errors++;
+						this.errors.players[x] = "Not a valid email address";
+					} else {
+						this.errors.players[x] = '';
+					}
 				} else {
-					//if its fine, set error to empty
-					this.errors.teamname = '';
+					this.errors.players[x] = '';
 				}
 			}
-
-			//check all info fields if trying to move to stats section
-			if (field === 'info') {
-				//team name
-				if (!this.name.length) {
-					errors++;
-					this.errors.name = 'Choose a name for your team';
-				} else this.errors.name = '';
-
-				if (!this.sport) {
-					errors++;
-					this.errors.sport = 'Choose a sport';
-				} else this.errors.sport = '';
-
-				//check that the google typeahead has returned data
-				if (!this.location.city || !this.location.lat || !this.location.long) {
-					errors++;
-					this.errors.location = "Enter your team's location";
-				} else this.errors.location = '';
-			}
-
-			//check that the people on the rosters have valid inputs
-			if (field === 'roster') {
-				//loop through players
-				for (var x = 0; x < this.numPlayers; x++) {
-					//check that they've added a name for every player
-					var player = this.players[x];
-					if (!player.name) {
-						errors++;
-						this.errors.players[x].name = "Enter the player's name";
-					} else this.errors.players[x].name = '';
-
-					//check that any emails inputted are valid emails
-					if (player.email.length) {
-						if (!this.$root.validateEmail(player.email)) {
-							errors++;
-							this.errors.players[x].email = "Not a valid email address";
-						} else this.errors.players[x].email = '';
-					} else this.errors.players[x].email = '';
-				}
-
-				//loop through coaches
-				for (var x = 0; x < this.numCoaches; x++) {
-					//check that they've added a name for every coach
-					var coach = this.coaches[x];
-					if (!coach.name) {
-						errors++;
-						this.errors.coaches[x].name = "Enter the coach's name";
-					} else this.errors.coaches[x].name = '';
-
-					//check that any emails inputted are valid emails
-					if (coach.email.length) {
-						if (!this.$root.validateEmail(coach.email)) {
-							errors++;
-							this.errors.coaches[x].email = "Not a valid email address";
-						} else this.errors.coaches[x].email = '';
-					} else this.errors.coaches[x].email = '';
-				}
-			}
-
-			return errors;
 		}
 	},
 
 	events: {
-		initSelectPicker: function initSelectPicker() {
+		// store dummy names and emails for placeholders
 
-			var userPicker = $('.selectpicker[CreateTeam="userStats"]');
-			var rcPicker = $('.selectpicker[CreateTeam="rcStats"]');
+		CreateTeam_dummy: function CreateTeam_dummy(response) {
+			this.dummy = response.data.dummy;
+		},
+
+
+		// was the teamname available?
+		CreateTeam_available: function CreateTeam_available(response) {
+			if (response.data.available) {
+				this.clearError('teamname');
+			} else {
+				this.setError('teamname', 'Already taken, try another');
+			}
+		},
+
+
+		// route the user to the newly created team
+		CreateTeam_submit: function CreateTeam_submit(response) {
+			// use a delay because it felt TOO fast without one
+			setTimeout(function () {
+				this.$router.go('/team/' + response.data.team.teamname);
+			}.bind(this), 750);
+		},
+		initSelectPicker: function initSelectPicker() {
+			var userPicker = $('[CreateTeam="userStats"]');
+			var rcPicker = $('[CreateTeam="rcStats"]');
 
 			userPicker.selectpicker({});
 			rcPicker.selectpicker({});
@@ -27859,7 +27971,7 @@ exports.default = {
 			userPicker.selectpicker('refresh');
 			rcPicker.selectpicker('refresh');
 
-			//set up listeners to tell StatsSelection mixin to update which are disabled
+			// set up listeners to tell StatsSelection mixin to update on change
 			userPicker.on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
 				this.setDependencies();
 			}.bind(this));
@@ -27869,8 +27981,8 @@ exports.default = {
 			}.bind(this));
 		},
 		renderSelectPicker: function renderSelectPicker() {
-			var userPicker = $('.selectpicker[CreateTeam="userStats"]');
-			var rcPicker = $('.selectpicker[CreateTeam="rcStats"]');
+			var userPicker = $('[CreateTeam="userStats"]');
+			var rcPicker = $('[CreateTeam="rcStats"]');
 
 			userPicker.selectpicker('refresh');
 			rcPicker.selectpicker('refresh');
@@ -27882,126 +27994,39 @@ exports.default = {
 	},
 
 	watch: {
-		//if they've changed the sport, update the stats associated with it too
+		// if they've changed the sport, update the stats associated with it too
 
 		sport: function sport(val) {
 			this.initSelections(this.sport);
-
-			if (this.errors.sport && val.length) {
-				//also if there were any existing errors, remove
-				this.errors.sport = '';
-			}
 		},
-
-
-		//if they've inputted something in the name field, remove error saying they didn't
-		name: function name(val) {
-			if (val.length) {
-				this.errors.name = '';
-			}
-		},
-		teamLocation: function teamLocation(val) {
-			if (val.length) {
-				this.errors.location = '';
-			}
-		},
-
-
-		//add this user to the list of coaches or players depending on how the respond to question
-		userIsA: function userIsA(val, old) {
-			var name = this.$root.user.firstname + ' ' + this.$root.user.lastname;
-			var email = this.$root.user.mail;
-
-			//they're a player, add their details to the top of the players array
-			if (val === 'player') {
-				//add a player, remove a coach if that's what they were before
-				this.numPlayers++;
-				if (old === 'coach') this.numCoaches--;
-
-				this.players = this.players.filter(function (player) {
-					return player.name !== name;
-				});
-				this.coaches = this.coaches.filter(function (coach) {
-					return coach.name !== name;
-				});
-				this.players.unshift({
-					name: name,
-					email: email
-				});
-			}
-
-			//they're a coach, add their details to the top of the coaches array
-			else if (val === 'coach') {
-					//add a coach, remove a player if that's what they were before
-					this.numCoaches++;
-					if (old === 'player') this.numPlayers--;
-
-					this.players = this.players.filter(function (player) {
-						return player.name !== name;
-					});
-					this.coaches = this.coaches.filter(function (coach) {
-						return coach.name !== name;
-					});
-					this.coaches.unshift({
-						name: name,
-						email: email
-					});
-				}
-
-				//they're a fan, remove their details from coaches and players arrays
-				else if (val === 'fan') {
-						if (old === 'player') this.numPlayers--;
-						if (old === 'coach') this.numCoaches--;
-
-						this.players = this.players.filter(function (player) {
-							return player.name !== name;
-						});
-						this.coaches = this.coaches.filter(function (coach) {
-							return coach.name !== name;
-						});
-					}
-			//refresh the pickers
-			$('.selectpicker[CreateTeam="numPlayers"]').selectpicker('val', this.numPlayers);
-			$('.selectpicker[CreateTeam="numCoaches"]').selectpicker('val', this.numCoaches);
-		}
-	},
-
-	computed: {
-		teamLocation: function teamLocation() {
-			return this.location.city;
+		gender: function gender() {
+			this.$root.get(this.prefix + 'dummy/' + this.gender, 'CreateTeam_dummy');
 		}
 	},
 
 	ready: function ready() {
-
-		//calling StatsSelection mixin function
+		// calling StatsSelection mixin function
 		this.initSelections(this.sport);
 
 		$(function () {
 
-			$('.selectpicker[CreateTeam="sport"]').selectpicker({});
-			$('.selectpicker[CreateTeam="numPlayers"]').selectpicker({});
-			$('.selectpicker[CreateTeam="numCoaches"]').selectpicker({});
-			$('.selectpicker[CreateTeam="gender"]').selectpicker({});
-			$('.selectpicker[CreateTeam="userIsA"]').selectpicker({});
+			$('[CreateTeam="sport"]').selectpicker({});
+			$('[CreateTeam="numPlayers"]').selectpicker({});
+			$('[CreateTeam="numCoaches"]').selectpicker({});
+			$('[CreateTeam="gender"]').selectpicker({});
+			$('[CreateTeam="userIsA"]').selectpicker({});
 		}.bind(this));
 	}
-}; /*Dropzone.options.createTeamDropzone = {
-   	paramName: 'pic',
-   	dictDefaultMessage: 'Drag and drop a file or click here',
-   	headers: {'X-CSRF-TOKEN': $('#_token').attr('value') },
-   	maxFiles: 1,
-   	maxFilesize: 10,
-   };*/
+};
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Username</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" @keyup=\"availability | debounce 750\" placeholder=\"whsbasketball16\" required=\"\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"basketball\">Basketball</option>    \n\t              <option value=\"baseball\" disabled=\"\">Baseball</option>    \n\t              <option value=\"softball\" disabled=\"\">Softball</option>    \n\t              <option value=\"football\" disabled=\"\">Football</option>    \n            \t</select>\n            \t<span v-show=\"errors.sport\" class=\"form-error\">{{ errors.sport }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Gender</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"male\">Men</option>\n\t\t\t\t\t\t\t\t<option value=\"female\">Women</option>\n\t\t\t\t\t\t\t\t<option value=\"coed\">Coed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t<span v-show=\"errors.gender\" class=\"form-error\">{{ errors.gender }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"25\" placeholder=\"Cowell Stadium\" v-model=\"location.homefield\">\n\t\t\t\t\t\t\t<span v-show=\"errors.homefield\" class=\"form-error\">{{ errors.homefield }}</span>\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"location.city\" :long.sync=\"location.long\" :lat.sync=\"location.lat\" label=\"City / Town\" :error=\"errors.location\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span v-show=\"errors.slogan\" class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\n\t\t\t\t\t<!-- <div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<form action=\"/team/create/unhfootball/pic\" class=\"dropzone\" id=\"create-team-dropzone\"></form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div> -->\n\t\t\t\t\t\n\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existant back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span v-show=\"errors.totals.info > 0\" class=\"form-error\">Correct errors on page before continuing</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\t\t\t\t\t<!-- stats -->\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by Admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\" :data-subtext=\"stat.subtext\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span v-show=\"errors.totals.stats > 0\" class=\"form-error\">Correct errors on page before continuing</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\t\t\t\t\t<!-- stats -->\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that will be apart of this team.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to this team, enter their email.</p>\n\t\t\t\t\t\t<p>If you leave an email field blank, a \"ghost user\" will be used instead.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of these settings at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Who are you?</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--addPlayers\">\n\t\t\t\t\t\t\t<label>I am a..</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"player\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"coach\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"fan\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Add Players</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--addPlayers\">\n\t\t\t\t\t\t\t<label>Number of Players</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"numPlayers\" class=\"selectpicker form-control show-tick\" v-model=\"numPlayers\">\n\t\t\t\t\t\t\t\t<option v-for=\"n in 50\" :value=\"n + 1\">{{ n + 1 }}</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-for=\"n in numPlayers\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"players[$index].name\" :class=\"{'form-error' : errors.players[$index].name}\" placeholder=\"Leonardo DaVinci\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.players[$index]\" class=\"form-error\">{{ errors.players[$index].name }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"players[$index].email\" :class=\"{'form-error' : errors.players[$index].email}\" placeholder=\"leodavinc@gmail.com\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.players[$index].email\" class=\"form-error\">{{ errors.players[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Add Coaches</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div class=\"--addPlayers\">\n\t\t\t\t\t\t\t<label>Number of Coaches</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"numCoaches\" class=\"selectpicker form-control show-tick\" v-model=\"numCoaches\">\n\t\t\t\t\t\t\t\t<option v-for=\"n in 10\" :value=\"n + 1\">{{ n + 1 }}</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-for=\"n in numCoaches\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coaches[$index].name\" :class=\"{'form-error' : errors.coaches[$index].name}\" placeholder=\"Nikola Tesla\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.coaches[$index]\" class=\"form-error\">{{ errors.coaches[$index].name }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coaches[$index].email\" :class=\"{'form-error' : errors.coaches[$index].email}\" placeholder=\"tesla@gmail.com\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span v-show=\"errors.coaches[$index].email\" class=\"form-error\">{{ errors.coaches[$index].email }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span v-show=\"errors.totals.roster > 0\" class=\"form-error\">Correct errors on page before saving</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2016 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team URL</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" @keyup=\"availability | debounce 750\" placeholder=\"whsbasketball16\" required=\"\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"basketball\">Basketball</option>    \n\t              <option value=\"baseball\" disabled=\"\">Baseball</option>    \n\t              <option value=\"softball\" disabled=\"\">Softball</option>    \n\t              <option value=\"football\" disabled=\"\">Football</option>    \n            \t</select>\n\t\t\t\t\t\t\t<span class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sex</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"male\">Men</option>\n\t\t\t\t\t\t\t\t<option value=\"female\">Women</option>\n\t\t\t\t\t\t\t\t<option value=\"coed\">Coed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Cowell Stadium\" v-model=\"homefield\">\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"city\" :long.sync=\"long\" :lat.sync=\"lat\" label=\"City / Town\" :error=\"errors.city\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\n\t\t\t\t\t<!-- <div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<form action=\"/team/create/unhfootball/pic\" class=\"dropzone\" id=\"create-team-dropzone\"></form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div> -->\n\t\t\t\t\t\n\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existent back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by Admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that are on this team.</p>\n\t\t\t\t\t\t<p>Your team will be populated with \"ghost\" users.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to join, add their email.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">What's your role?</h4>\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--smallSelect\">\n\t\t\t\t\t\t\t<label>I am a...</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"player\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"coach\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"fan\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Players</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a player -->\n\t\t\t\t\t<div v-show=\"userIsA == 'player'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"player in players\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.firstname\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.lastname\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.email\" :class=\"{'form-error' : errors.players[$index]}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index] }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"addPlayer()\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"removePlayer()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Coaches</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a coach -->\n\t\t\t\t\t<div v-show=\"userIsA == 'coach'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"coach in coaches\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.firstname\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.lastname\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.email\" :class=\"{'form-error' : errors.coaches[$index]}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index] }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"addCoach()\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"removeCoach()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2016 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   var id = "/Applications/MAMP/htdocs/resources/assets/js/components/CreateTeam.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  padding-top: 25px;\n  padding-bottom: 25px;\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--addPlayers {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n"] = false
+    require("vueify-insert-css").cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -28012,7 +28037,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsSelection.js":191,"./GoogleTypeahead.vue":179,"./Stats.vue":182,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],176:[function(require,module,exports){
+},{"../mixins/ErrorChecker.js":189,"../mixins/StatsSelection.js":192,"./GoogleTypeahead.vue":179,"./Stats.vue":182,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],176:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditBasketballStats.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert("#statsWrapper {\n  padding: 1.5em;\n}\n#statsWrapper h3 {\n  margin-top: 2em;\n}\n.stats-radio {\n  padding-left: 3em;\n}\n.stat-notes {\n  margin-bottom: 20px;\n}\n.edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-bottom: 25px;\n  }\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.meta-data {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 2em;\n}\n.meta-data div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-right: 2em;\n}\n.meta-data .opponent {\n  max-width: 300px;\n  min-width: 250px;\n}\n.meta-data .opponent-score {\n  max-width: 120px;\n  min-width: 120px;\n}\ninput.form-control.stats-input {\n  margin: 0 auto;\n  width: 50px;\n  height: 0;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n}\n.form-group .new-stats {\n  vertical-align: middle;\n  min-width: 96px;\n}\n.stats-table tr.no-hover:hover td,\n.stats-table tr.form-group:hover td {\n  background-color: #fff !important;\n  border: 1px solid #cacaca !important;\n}\n")
@@ -28455,7 +28480,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsScrollSpy.js":190,"babel-runtime/core-js/number/is-integer":6,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],177:[function(require,module,exports){
+},{"../mixins/StatsScrollSpy.js":191,"babel-runtime/core-js/number/is-integer":6,"vue":167,"vue-hot-reload-api":141,"vueify-insert-css":168}],177:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditEvent.vue", module);
 (function(){
 var __vueify_style__ = require("vueify-insert-css").insert(".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n")
@@ -29112,11 +29137,9 @@ exports.default = {
 	},
 
 	methods: {
-
 		//format the results into the necessary items
 
 		placeSelected: function placeSelected(place) {
-			console.log(place.address_components);
 			var city = place.address_components[0].long_name;
 			var state = place.address_components[2].short_name;
 			this.city = city + ', ' + state;
@@ -29732,7 +29755,7 @@ exports.default = {
 	},
 	created: function created() {
 		var url = this.makeUrl('');
-		this.$root.get(url, [], 'Team_requestSuccess', 'Team_requestFail');
+		this.$root.get(url, 'Team_requestSuccess', [], 'Team_requestFail');
 	},
 
 
@@ -30610,6 +30633,195 @@ module.exports = function (start, end) {
 }).apply(this, arguments);
 
 },{}],189:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/ErrorChecker.js", module);
+(function(){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
+	data: function data() {
+		return {
+			fields: {},
+			errMsg: {},
+			errors: {}
+		};
+	},
+
+
+	methods: {
+		/**
+   * Check all registered fields for errors
+   *
+   * Essentially it loops through all of the fields to be checked, each of
+   * the requirements within the fields contain a callable function, which is called
+   * to check for errors
+   *
+   * @param {string} key 			The field to error check
+   * @param {string} requirement 	The req. to check
+   */
+
+		errorCheck: function errorCheck() {
+			var key = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+			var requirement = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+			var errors = 0;
+
+			// for each of the registered fields
+			for (var field in this.fields) {
+
+				// if checking this key or none given
+				if (key === field || key === null) {
+
+					// for each of the requirements for this field
+					for (var req in this.fields[field]) {
+
+						// if checking this requirement or none given
+						if (req === requirement || requirement === null) {
+
+							// if this field is an array of values
+							if (Array.isArray(this.fields[field][req])) {
+
+								// loop through each entry and check for errors
+								for (var index = 0; index < this.fields[field][req].length; index++) {
+
+									// if there is an error, set it
+									if (!this.fields[field][req][index].call(this, index)) {
+										errors++;
+										this.setError(field, this.errMsg[field][req], index);
+										break;
+									}
+
+									// otherwise clear errors for this field
+									else {
+											this.clearError(field, index);
+										}
+								}
+							}
+
+							// otherwise check for errors
+							else {
+
+									// if there is an error, set it
+									if (!this.fields[field][req].call(this)) {
+										errors++;
+										this.setError(field, this.errMsg[field][req]);
+										break;
+									}
+
+									// otherwise clear errors for this field
+									else {
+											this.clearError(field);
+										}
+								}
+						}
+					}
+				}
+			}
+
+			return errors;
+		},
+
+
+		/**
+   * Add a field to be error checked
+   * 
+   * To explain this, imagine adding error checking for a 'username' input field.
+   * The value of username should be stored in this.username
+   * Usernames should be under 18 characters but greater than 5. This looks like:
+   * addErrorCheck('username', 'max', function(username) { return username.length < 5 }, 'Use more characters')
+   * addErrorCheck('username', 'min', function(username) { return username.length > 18 }, 'Use less chracters')
+   *
+   * Note the functions should return false if there is an error
+   *
+   * If you add the same field and requirement more than once, it creates an array of errors and
+   * will pass in the index to the closure
+   * 
+   * @param {string} field 	The name of this variable in the parent
+   * @param {string} req 		The name of this check 
+   * @param {closure} closure The function that will run to check for errors (should return boolean)
+   * @param {string} msg 		The error to display
+   */
+		registerErrorCheckingOnField: function registerErrorCheckingOnField(field, req, closure, msg) {
+			var isArray = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+
+			// if this field hasn't been registered
+			if (!(field in this.fields)) {
+				this.fields[field] = {};
+				this.errMsg[field] = {};
+				this.errors[field] = '';
+			}
+
+			var exists = req in this.fields[field];
+
+			// if this requirement doesn't exist for this field yet
+			if (!exists && !isArray) {
+				this.fields[field][req] = closure;
+				this.errMsg[field][req] = msg;
+			}
+
+			// otherwise make it an array, which will signal to check every index of this field
+			else {
+					if (exists) {
+						var index = this.fields[field][req].length;
+						this.errors[field].push('');
+						this.fields[field][req][index] = closure;
+						this.errMsg[field][req] = msg;
+					} else {
+						this.errors[field] = [''];
+						this.fields[field][req] = [closure];
+					}
+
+					this.errMsg[field][req] = msg;
+				}
+
+			// attach a listener, when the variable changes it will check for errors again
+			this.$watch(field, function () {
+				this.errorCheck(field);
+			});
+		},
+		removeErrorCheck: function removeErrorCheck(field) {
+			var req = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+			if (req) {
+				delete this.fields[field][req];
+				delete this.errMsg[field][req];
+			} else {
+				delete this.fields[field];
+				delete this.errMsg[field];
+			}
+		},
+
+
+		/**
+   * Set the error message of a particular field to a given value
+   */
+		setError: function setError(field, error) {
+			var index = arguments.length <= 2 || arguments[2] === undefined ? -1 : arguments[2];
+
+			// have to do this weird copying technique for reactivity
+			var tempErrors = JSON.parse(JSON.stringify(this.errors));
+
+			if (index >= 0) {
+				tempErrors[field][index] = error;
+			} else {
+				tempErrors[field] = error;
+			}
+
+			this.errors = tempErrors;
+		},
+		clearError: function clearError(field) {
+			var index = arguments.length <= 1 || arguments[1] === undefined ? -1 : arguments[1];
+
+			this.setError(field, '', index);
+		}
+	}
+};
+
+}).apply(this, arguments);
+
+},{}],190:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Requests.js", module);
 (function(){
 "use strict";
@@ -30623,8 +30835,8 @@ exports.default = {
 		// execute the given event string when finished
 
 		get: function get(url) {
-			var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-			var successEvent = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+			var successEvent = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+			var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var failEvent = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
 
 			var self = this;
@@ -30649,8 +30861,8 @@ exports.default = {
 		// send a POST request with the given parameters
 		// execute the given event string when finished
 		post: function post(url) {
-			var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-			var successEvent = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+			var successEvent = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+			var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var failEvent = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
 
 			var self = this;
@@ -30675,8 +30887,8 @@ exports.default = {
 		// send a PUT request with the given parameters
 		// execute the given event string when finished
 		put: function put(url) {
-			var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-			var successEvent = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+			var successEvent = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+			var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var failEvent = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
 
 			var self = this;
@@ -30701,8 +30913,8 @@ exports.default = {
 		// send a DELETE request with the given parameters
 		// execute the given event string when finished
 		delete: function _delete(url) {
-			var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-			var successEvent = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+			var successEvent = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+			var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var failEvent = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
 
 			var self = this;
@@ -30727,7 +30939,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],190:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsScrollSpy.js", module);
 (function(){
 'use strict';
@@ -30779,7 +30991,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],191:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsSelection.js", module);
 (function(){
 'use strict';
@@ -30820,23 +31032,34 @@ exports.default = {
 			var stats = this.rcStatsList;
 
 			// loop through all the keys, check their dependencies and enable/disable
+			var count = 0;
 			for (var key in stats) {
 				var disabled = false;
+				var text = '';
 				for (var x = 0; x < stats[key].req.length; x++) {
 					// check that the required stats are already checked
 					var req = stats[key].req[x];
 					if (this.userSelected.indexOf(req) === -1 && this.rcSelected.indexOf(req) === -1) {
 						// they don't have all the requirements needed for this statistic, disable the option
 						disabled = true;
+						text = stats[key].subtext;
 
 						// uncheck on the picker if it's selected already
 						var index = this.userSelected.indexOf(key);
-						if (index !== -1) this.userSelected.splice(index, 1);
+						if (index !== -1) {
+							this.userSelected.splice(index, 1);
+						}
 						var index = this.rcSelected.indexOf(key);
-						if (index !== -1) this.rcSelected.splice(index, 1);
+						if (index !== -1) {
+							this.rcSelected.splice(index, 1);
+						}
 					}
 				}
+				// is this stat option currently disabled?
 				stats[key].disabled = disabled;
+				// add option subtext to explain disabled stat's requirements
+				$('[CreateTeam="rcStats"] > option:eq(' + count + ')').data('subtext', text);
+				count++;
 			}
 			this.rcStatsList = stats;
 
@@ -30870,7 +31093,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],192:[function(require,module,exports){
+},{}],193:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/routes.js", module);
 (function(){
 'use strict';
@@ -30975,7 +31198,7 @@ router.start(_App2.default, '#app');
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/StatsSelection.js":{"index":191,"hash":"9YJvFHaL+MtjQE/YRF1Z","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Requests.js":{"index":189,"hash":"2joMhi7DHVTQ3JRWKdvM","parents":["resources/assets/js/components/App.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":190,"hash":"oD1s4TuUoi2o5Kmr6KQx","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"f1FdC0AX0Gv6zyDU4qOs","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"U+eEEV8CE7fSdjGHXkIb","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"ZIqPcQ+UmlY3x1lzyuV2","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"Y/6C6cNL63kNIJMSS7Dy","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"kM5KbOMVths6pORNW2Q5","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"M1eysOz+jyi1fWZ8r+lX","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"95UKitwSe8AVyGaw8O1D","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"iRdiNNgfPwRb5fbdJC2i","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"kH5sFqIwXEMj4XllRMCQ","parents":["resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/getLength.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"5MRbplc+MEZYEB6u/w98","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"PhDUc4LteTdNtdwHl+G9","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"3lK8gvfZe2L2ZJNtz+OY","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"s6JNh8Xe/9D20Km+Wg4S","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"4N+/2xSdjlBlh4n9Vn+M","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"hvo/ioCsuMlvZ1+JOubW","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":192,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":190,"hash":"HSTRFhYEbsYDiKfsD4Nq","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":192,"hash":"ZCOMlPAweOxGSYPe+9qG","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/ErrorChecker.js":{"index":189,"hash":"hnaG01f+dZeDyAUSPKM+","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":191,"hash":"oD1s4TuUoi2o5Kmr6KQx","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"node_modules/vueify-insert-css/index.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"Y/6C6cNL63kNIJMSS7Dy","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"ParzDLjY0sozbyecpN7H","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"M1eysOz+jyi1fWZ8r+lX","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"95UKitwSe8AVyGaw8O1D","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"iRdiNNgfPwRb5fbdJC2i","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"kH5sFqIwXEMj4XllRMCQ","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"idW5MRlFqUiuLyJwkvlb","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"yXERNRWQqc5/z1o3zcfZ","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"CEGUwJiEgXEGn4ljSsAI","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/getLength.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"jaCNLeMLhc5nLuQ/vSEF","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"PhDUc4LteTdNtdwHl+G9","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"sh7G+V/5bPRTkSNqayfP","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"s6JNh8Xe/9D20Km+Wg4S","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"4N+/2xSdjlBlh4n9Vn+M","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"hjM/VlnFrprYl+r3siPB","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":193,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";
@@ -31019,6 +31242,6 @@ router.start(_App2.default, '#app');
   arguments[3], arguments[4], arguments[5], arguments[6]
 );
 
-},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":128,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":192}]},{},[1]);
+},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":128,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":193}]},{},[1]);
 
 //# sourceMappingURL=routes.js.map

@@ -16,16 +16,19 @@ export default  {
 
 	props: ['city', 'long', 'lat', 'label', 'error'],
 
-	data() {
+	data()
+	{
 		return {
 			location: '',
 			selected: false,
 		}
 	},
 
-	watch: {
+	watch:
+	{
 		//if they have edited something previously selected, reset the data
-		location(val) {
+		location(val)
+		{
 			if(this.selected) {
 				this.selected = false;
 				this.city = '';
@@ -35,11 +38,11 @@ export default  {
 		}
 	},
 
-	methods: {
-
+	methods:
+	{
 		//format the results into the necessary items
-		placeSelected(place) {
-			console.log(place.address_components);
+		placeSelected(place)
+		{
 			var city = place.address_components[0].long_name;
 			var state = place.address_components[2].short_name;
 			this.city = city + ', ' + state;
@@ -49,7 +52,8 @@ export default  {
 		}
 	},
 
-	ready() {
+	ready()
+	{
 		var self = this;
 		$(function() {
 			//when the page is loaded, init google maps api
@@ -65,7 +69,6 @@ export default  {
 				var place = autocomplete.getPlace()
 				self.placeSelected(place);
 			});
-
 		})
 	},
 

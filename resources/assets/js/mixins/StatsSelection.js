@@ -31,25 +31,34 @@ export default {
 			var stats = this.rcStatsList;
 
 			// loop through all the keys, check their dependencies and enable/disable
-			for(var key in stats) {		
+			var count = 0;
+			for (var key in stats) {		
 				var disabled = false;
+				var text = '';
 				for(var x = 0; x < stats[key].req.length; x++) {
 					// check that the required stats are already checked
 					var req = stats[key].req[x];
-					if(this.userSelected.indexOf(req) === -1 && this.rcSelected.indexOf(req) === -1) {
+					if (this.userSelected.indexOf(req) === -1 && this.rcSelected.indexOf(req) === -1) {
 						// they don't have all the requirements needed for this statistic, disable the option
 						disabled = true;
-			
+						text = stats[key].subtext;
+
 						// uncheck on the picker if it's selected already
 						var index = this.userSelected.indexOf(key);
-						if(index !== -1)
+						if (index !== -1) {
 							this.userSelected.splice(index, 1);
+						}
 						var index = this.rcSelected.indexOf(key);
-						if(index !== -1)
+						if (index !== -1) {
 							this.rcSelected.splice(index, 1);
+						}
 					}
 				}
-				stats[key].disabled = disabled;		
+				// is this stat option currently disabled?
+				stats[key].disabled = disabled;
+				// add option subtext to explain disabled stat's requirements
+				$('[CreateTeam="rcStats"] > option:eq(' + count + ')').data('subtext', text);
+				count++;
 			}
 			this.rcStatsList = stats;
 
@@ -61,7 +70,8 @@ export default {
 		},
 
 		// request all the stat columns for this sport from the server
-		getStatsBySport(sport) {
+		getStatsBySport(sport)
+		{
 			var url =  this.prefix + 'stats/' + sport;
 			var self = this;
 			this.$http.get(url)

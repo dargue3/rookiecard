@@ -4,7 +4,7 @@ export default
 	{
 		// send a GET request with the given parameters
 		// execute the given event string when finished
-		get(url, data = [], successEvent = null, failEvent = null)
+		get(url, successEvent = null, data = [], failEvent = null)
 		{
 			var self = this;
 			this.$http.get(url, data)
@@ -32,7 +32,7 @@ export default
 
 		// send a POST request with the given parameters
 		// execute the given event string when finished
-		post(url, data = [], successEvent = null, failEvent = null)
+		post(url, successEvent = null, data = [], failEvent = null)
 		{
 			var self = this;
 			this.$http.post(url, data)
@@ -60,7 +60,7 @@ export default
 
 		// send a PUT request with the given parameters
 		// execute the given event string when finished
-		put(url, data = [], successEvent = null, failEvent = null)
+		put(url, successEvent = null, data = [], failEvent = null)
 		{
 			var self = this;
 			this.$http.put(url, data)
@@ -88,7 +88,7 @@ export default
 
 		// send a DELETE request with the given parameters
 		// execute the given event string when finished
-		delete(url, data = [], successEvent = null, failEvent = null)
+		delete(url, successEvent = null, data = [], failEvent = null)
 		{
 			var self = this;
 			this.$http.delete(url, data)

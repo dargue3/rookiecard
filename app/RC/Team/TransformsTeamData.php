@@ -36,9 +36,8 @@ class TransformsTeamData
                 $user['id'] = 0;
                 $user['username'] = null;
                 $meta = json_decode($member->meta);
-                $name = explode(' ', $meta->name);
-                $user['firstname'] = $name[0];
-                $user['lastname'] = $name[1];
+                $user['firstname'] = $meta->firstname;
+                $user['lastname'] = $meta->lastname;
                 $user['pic'] = '/images/ghost.png';
 
                 if (! $admin) unset($meta->email); // hide sensitive data if not an admin
@@ -51,7 +50,8 @@ class TransformsTeamData
 	        	'id'					=> $user['id'],
                 'username'              => $user['username'],
                 'firstname'             => $user['firstname'],     
-                'lastname'              => $user['lastname'],     
+                'lastname'              => $user['lastname'],  
+                'name'                  => $user['firstname'] . " " . $user['lastname'],
                 'pic'                   => $user['pic'],
 		        'member_id' 			=> $member->id,
                 'isCoach'               => $memberRepo->isCoach(),

@@ -154,11 +154,12 @@ class EloquentTeamMemberTest extends TestCase
     /** @test */
     public function when_a_new_ghost_is_added_they_get_the_given_name()
     {
-    	$this->repo->newPlayer(2, 'Bob');
+    	$this->repo->newPlayer(2, 'Bob', 'Tester');
 
-    	$name = json_decode($this->repo->member->meta)->name;
+    	$meta = json_decode($this->repo->member->meta);
 
-    	$this->assertEquals('Bob', $name);
+        $this->assertEquals('Bob', $meta->firstname);
+    	$this->assertEquals('Tester', $meta->lastname);
     }
 
 
@@ -167,9 +168,10 @@ class EloquentTeamMemberTest extends TestCase
     {
         $this->repo->newPlayer(2);
 
-        $name = json_decode($this->repo->member->meta)->name;
+        $meta = json_decode($this->repo->member->meta);
 
-        $this->assertTrue(! empty($name));
+        $this->assertTrue(! empty($meta->firstname));
+        $this->assertTrue(! empty($meta->lastname));
     }
 
 

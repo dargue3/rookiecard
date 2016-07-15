@@ -161,4 +161,18 @@ class TeamControllerTest extends TestCase
         $this->assertResponseOk();
     }
 
+
+    /** @test */
+    public function it_has_a_method_for_creating_an_array_of_dummy_names_and_emails_while_creating_a_team()
+    {
+        $dummy = json_decode($this->call('GET', 'team/create/dummy/male')->getContent())->dummy;
+
+        $this->assertResponseOk();
+
+        $this->assertCount(50, $dummy);
+        $this->assertTrue(! empty($dummy[0]->firstname));
+        $this->assertTrue(! empty($dummy[0]->lastname));
+        $this->assertTrue(! empty($dummy[0]->email));
+    }
+
 }

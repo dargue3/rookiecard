@@ -52,8 +52,17 @@ class EloquentNewsFeedTest extends TestCase
     	$entry = NewsFeed::first();
 
     	$this->assertCount(1, NewsFeed::all());
-    	$this->assertEquals($entry->owner_id, 5);
-    	$this->assertEquals($entry->creator_id, $this->user->id);
-    	$this->assertEquals($entry->meta, json_encode($this->data));
+    	$this->assertEquals(5, $entry->owner_id);
+    	$this->assertEquals($this->user->id, $entry->creator_id);
+    	$this->assertEquals(json_encode($this->data), $entry->meta);
+    }
+
+
+    /** @test */
+    public function it_deletes_a_given_feed_entry()
+    {
+    	factory(NewsFeed::class)->create(['owner_id' => 1]);
+
+    	
     }
 }

@@ -89,7 +89,7 @@ class CreatesNewTeam
 
 
 	/**
-	 * Start the process of creating a team
+	 * Store this new team in the database
 	 * 
 	 * @return Team  The newly created team
 	 */

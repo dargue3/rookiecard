@@ -13,26 +13,6 @@ class CreateTeamRequest extends Request
         return true;
     }
 
-
-    //pick easier error message for team inputs
-    public function messages() 
-    {
-        return [
-            'name.required'     => 'Give your team a name',
-            'name.max'          => 'Keep it less than 50 characters',
-            'teamname.required' => 'Pick a username for your team',
-            'teamname.alpha_num'=> 'Only use letters and numbers',
-            'teamname.unique'   => 'Already taken, try another',
-            'teamname.max'      => 'Keep it 18 characters or less',
-            'teamname.not_in'   => 'Reserved name, try another',
-            'slogan.max'        => 'Keep it less than 50 characters',
-            'homefield.max'     => 'Keep it less than 50 characters',
-            'city.required'     => "Select your team's hometown",        
-            'lat.required'      => "Select your team's hometown",        
-            'long.required'     => "Select your team's hometown",        
-        ];
-    }
-
     
     //define the rules applied to the inputs 
     public function rules()
@@ -44,7 +24,7 @@ class CreateTeamRequest extends Request
             'sport'             => 'required|in:basketball',
             'slogan'            => 'max:50',
             'homefield'         => 'max:50',
-            'city'              => 'required|max:50',
+            'city'              => 'required|max:100',
             'lat'               => 'required|numeric',
             'long'              => 'required|numeric',
             'userIsA'           => 'required|in:player,coach,fan',
