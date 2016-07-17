@@ -64,8 +64,8 @@
 							<label>Sex</label>
 							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
 											CreateTeam="gender" v-model="gender">
-								<option value="male">Men</option>
-								<option value="female">Women</option>
+								<option value="male">Male</option>
+								<option value="female">Female</option>
 								<option value="coed">Coed</option>
 							</select>
 						</div>
@@ -235,9 +235,9 @@
 						<div class="--email">
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="player.email" 
-											:class="{'form-error' : errors.players[$index]}" :placeholder="dummy[$index].email"
+											:class="{'form-error' : errors.players[$index].email}" :placeholder="dummy[$index].email"
 											maxlength="100">
-							<span class="form-error">{{ errors.players[$index] }}</span>
+							<span class="form-error">{{ errors.players[$index].email }}</span>
 						</div>	
 					</div>
 					<div class="add-user">
@@ -282,9 +282,9 @@
 						<div class="--email">
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="coach.email" 
-											:class="{'form-error' : errors.coaches[$index]}" :placeholder="dummy[$index].email"
+											:class="{'form-error' : errors.coaches[$index].email}" :placeholder="dummy[$index].email"
 											maxlength="100">
-							<span class="form-error">{{ errors.coaches[$index] }}</span>
+							<span class="form-error">{{ errors.coaches[$index].email }}</span>
 						</div>	
 					</div>
 					<div class="add-user">
@@ -337,14 +337,14 @@
 
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
 import StatsSelection 	from '../mixins/StatsSelection.js'
-import ErrorChecker 		from '../mixins/ErrorChecker.js'
+import Validator 				from '../mixins/Validator.js'
 import Stats 						from './Stats.vue'
 
 export default  {
 	
 	name: 'CreateTeam',
 
-	mixins: [StatsSelection, ErrorChecker],
+	mixins: [StatsSelection, Validator],
 
 	props: [],
 
@@ -376,6 +376,7 @@ export default  {
 			lat: '',
 			sport: 'basketball',
 			userIsA: 'fan',
+			location: {city: {zip: '24'}},
 			players: [{firstname: '', lastname: '', email: ''}],
 			coaches: [{firstname: '', lastname: '', email: ''}],
 			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
@@ -386,8 +387,9 @@ export default  {
 
 		save() {
 
-			this.errorCheck();
-
+			console.log(this.errorCheck('location.city.zip'));
+			this.location.city.zip = '03842';
+			console.log(this.errorCheck('location.city.zip'));
 			return;
 
 			if (this.errors.totals.roster > 0) {
@@ -422,49 +424,22 @@ export default  {
 		addPlayer()
 		{
 			this.players.push({firstname: '', lastname: '', email: ''});
-			this.addPlayerErrorChecking();
-		},
-
-		addPlayerErrorChecking()
-		{
-			this.registerErrorCheckingOnField('players', 'email', function(index) {
-				if (typeof index === 'undefined') index = 0;
-				if (this.players[index].email.length) {
-					return this.$root.validateEmail(this.players[index].email);
-				}
-				return true;
-			}, 'Invalid email', true);
 		},
 
 		// remove a player from the array of players
 		removePlayer()
 		{
 			this.players.pop();
-			this.removeManualErrorCheck('players');
 		},
 
 		addCoach()
 		{
 			this.coaches.push({firstname: '', lastname: '', email: ''});
-			this.errors.coaches.push({email: ''});
-		},
-
-		addCoachErrorChecking()
-		{
-			this.registerErrorCheckingOnField('coaches', 'email', function(index) {
-				if (typeof index === 'undefined') index = 0;
-				if (this.coaches[index].length) {
-					return this.$root.validateEmail(this.coaches[index].email);
-				}
-				return true;
-			}, 'Invalid email', true);
 		},
 
 		removeCoach()
 		{
 			this.coaches.pop();
-			this.errors.coaches.pop();
-			this.removeManualErrorCheck('coaches');
 		},
 
 
@@ -497,19 +472,16 @@ export default  {
 			}
 		}, 
 
-		// tell ErrorChecker.js which fields to error check
+		// tell Validator.js which fields to error check
 		attachErrorChecking()
 		{
-			this.registerErrorCheckingOnField('name', 'filled', function() { return this.name.length > 0 }, 'Enter a name');
-			this.registerErrorCheckingOnField('teamname', 'filled', function() { return this.teamname.length > 0 }, 'Enter a team username');
-			this.registerErrorCheckingOnField('teamname', 'alphaNum', function() { var expression = /^[a-zA-Z0-9]+$/; return this.teamname.match(expression) }, 'Use only letters and numbers');
-			this.registerErrorCheckingOnField('teamname', 'length', function() { return this.teamname.length < 18 }, 'Must be 18 characters or less');
-			this.registerErrorCheckingOnField('city', 'filled', function() { return this.city !== '' }, 'Search for your city');
-			this.registerErrorCheckingOnField('long', 'length', function() { return this.long !== '' }, 'Search for your city');
-			this.registerErrorCheckingOnField('lat', 'length', function() { return this.lat !== '' }, 'Search for your city');
+			this.registerErrorChecking('name', 'required', ['Enter a name']);
+			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', 
+																	['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers']);
 
-			this.addPlayerErrorChecking();
-			this.addCoachErrorChecking();
+			this.registerErrorChecking('players.*.email', 'email', ['Invalid email']);
+			this.registerErrorChecking('location.city.zip', 'required|max:5', ['Enter a zip', 'Invalid zip']);
+			this.registerErrorChecking('coaches.*.email', 'email', ['Invalid email']);
 		},
 
 		// run all the registered error checkers + these homemade ones

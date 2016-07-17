@@ -27,7 +27,4 @@ elixir(function(mix) {
       'resources/views/**/*.php'
     ],
   });
-
-  
-
 });
