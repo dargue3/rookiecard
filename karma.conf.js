@@ -18,7 +18,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-        'tests/js/**/*.spec.js',
+        { pattern: 'tests/js/**/*.spec.js', watched: false, included: true, served: true },
     ],
 
 
@@ -42,7 +42,16 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['dots'],
+    reporters: ['dots', 'clear-screen'],
+
+    plugins: [
+        'phantomjs',
+        'karma-browserify',
+        'karma-jasmine',
+        'karma-chrome-launcher',
+        'karma-phantomjs-launcher',
+        'karma-clear-screen-reporter',
+    ],
 
 
     // web server port
@@ -66,7 +75,6 @@ module.exports = function(config) {
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: [
         'PhantomJS',
-        'Chrome'
     ],
 
 

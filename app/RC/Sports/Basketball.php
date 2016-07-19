@@ -21,7 +21,7 @@ class Basketball extends Sport implements SportInterface
 	 * 
 	 * @var array
 	 */
-	public $validKeys = ['id', 'member_id', 'min', 'dnp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
+	public $validKeys = ['id', 'member_id', 'gs', 'gp', 'min', 'dnp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
             'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
 
 

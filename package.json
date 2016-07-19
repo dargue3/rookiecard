@@ -18,7 +18,8 @@
     "phantomjs": "^1.9",
     "stylus": "^0.53.0",
     "vue-hot-reload-api": "^1.2.2",
-    "vueify-insert-css": "^1.0.0"
+    "vueify-insert-css": "^1.0.0",
+    "karma-clear-screen-reporter": ">=1.0.0"
   },
   "dependencies": {
     "bootstrap-sass": "^3.0.0",

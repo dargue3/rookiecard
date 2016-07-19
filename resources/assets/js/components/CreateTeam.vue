@@ -38,8 +38,8 @@
 						<div>
 							<label>Team URL</label>
 							<input type="text" class="form-control" :class="{'form-error' : errors.teamname}"
-											maxlength="18" @keyup="availability | debounce 750" placeholder="whsbasketball16" 
-											required v-model="teamname">
+											maxlength="18" placeholder="whsbasketball16" required 
+											debounce="600" v-model="teamname">
 							<span v-show="errors.teamname" class="form-error">{{ errors.teamname }}</span>
 							<span v-else class="input-info">rookiecard.com/team/{{ teamname }}</span>	
 						</div>
@@ -61,11 +61,21 @@
 						</div>
 
 						<div>
+							<label>I am a...</label>
+							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
+											required v-model="userIsA">
+								<option value="player">Player</option>
+								<option value="coach">Coach</option>
+								<option value="fan">Fan</option>
+							</select>
+						</div>
+
+						<div>
 							<label>Sex</label>
 							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
 											CreateTeam="gender" v-model="gender">
-								<option value="male">Male</option>
-								<option value="female">Female</option>
+								<option value="male">Men's</option>
+								<option value="female">Women's</option>
 								<option value="coed">Coed</option>
 							</select>
 						</div>
@@ -113,7 +123,7 @@
 							<a class="btn btn-primary --chevron --sm --right" @click="changePage">NEXT
 								<i class="material-icons btn-chevron --right">chevron_right</i>
 							</a>	
-							<span class="form-error">{{ errors.page }}</span>
+							<span class="form-error">{{ errors.page.info }}</span>
 						</div>
 					</div>	
 
@@ -168,7 +178,7 @@
 							<a class="btn btn-primary --chevron --sm --right" @click="changePage">NEXT
 								<i class="material-icons btn-chevron --right">chevron_right</i>
 							</a>	
-							<span class="form-error">{{ errors.page }}</span>
+							<span class="form-error">{{ errors.page.stats }}</span>
 						</div>
 					</div>		
 				</div> <!-- end of stats  -->
@@ -188,21 +198,6 @@
 						</div>
 						<hr>
 					</div>
-
-					<h4 class="CreateTeam__subheader">What's your role?</h4>
-					<div class="CreateTeam__inputs">
-						<div class="--smallSelect">
-							<label>I am a...</label>
-							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
-											required v-model="userIsA">
-								<option value="player">Player</option>
-								<option value="coach">Coach</option>
-								<option value="fan">Fan</option>
-							</select>
-						</div>
-					</div>
-
-					<hr class="CreateTeam__separator">
 
 					<h4 class="CreateTeam__subheader">Players</h4>
 					<!-- disabled inputs to show logged-in user as a player -->
@@ -241,10 +236,10 @@
 						</div>	
 					</div>
 					<div class="add-user">
-            <i @click="addPlayer()"
+            <i @click="players.push({firstname: '', lastname: '', email: ''})"
             		class="glyphicon glyphicon-plus">
             </i>
-            <i @click="removePlayer()"
+            <i @click="players.pop()"
               	class="glyphicon glyphicon-minus">
             </i>
 					</div>
@@ -288,10 +283,10 @@
 						</div>	
 					</div>
 					<div class="add-user">
-            <i @click="addCoach()"
+            <i @click="coaches.push({firstname: '', lastname: '', email: ''})"
             		class="glyphicon glyphicon-plus">
             </i>
-            <i @click="removeCoach()"
+            <i @click="coaches.pop()"
               	class="glyphicon glyphicon-minus">
             </i>
 					</div>
@@ -306,7 +301,7 @@
 						</div>
 						<div>
 							<a class="btn btn-primary save" @click="save">CREATE TEAM</a>
-							<span class="form-error">{{ errors.page }}</span>
+							<span class="form-error">{{ errors.page.roster }}</span>
 						</div>
 					</div>		
 				</div> <!-- end of stats  -->
@@ -338,7 +333,6 @@
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
 import StatsSelection 	from '../mixins/StatsSelection.js'
 import Validator 				from '../mixins/Validator.js'
-import Stats 						from './Stats.vue'
 
 export default  {
 	
@@ -350,13 +344,12 @@ export default  {
 
 	components:
 	{
-		'google-autocomplete' : GoogleTypeahead,
-		'rc-stats'						: Stats,
+		'google-autocomplete' : GoogleTypeahead
 	},
 
 	created()
 	{
-		this.$root.get(this.prefix + 'dummy/' + this.gender, 'CreateTeam_dummy');
+		this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
 
 		this.attachErrorChecking();
 	},
@@ -364,8 +357,8 @@ export default  {
 	data()
 	{
 		return {
-			prefix: this.$root.prefix + 'team/create/',
-			page: 'roster',
+			prefix: this.$root.prefix + 'team/create',
+			page: 'info',
 			name: '',
 			teamname: '',
 			slogan: '',
@@ -387,12 +380,8 @@ export default  {
 
 		save() {
 
-			console.log(this.errorCheck('location.city.zip'));
-			this.location.city.zip = '03842';
-			console.log(this.errorCheck('location.city.zip'));
-			return;
-
-			if (this.errors.totals.roster > 0) {
+			if (this.errorCheck() > 0) {
+				this.setPageError('Correct errors before submitting');
 				return;
 			}
 
@@ -402,7 +391,7 @@ export default  {
 				teamname: 	this.teamname,
 				slogan: 		this.slogan,
 				gender: 		this.gender,
-				homefield: 	this.location.homefield,
+				homefield: 	this.homefield,
 				city: 			this.city,
 				long: 			this.long,
 				lat: 				this.lat,
@@ -416,30 +405,7 @@ export default  {
 				rcStats: 		this.rcSelected,
 			}
 
-			var url = this.prefix + 'team/create';
-			this.$root.post(url, 'CreateTeam_submit', data);
-		},
-
-		// add a player to the array of players
-		addPlayer()
-		{
-			this.players.push({firstname: '', lastname: '', email: ''});
-		},
-
-		// remove a player from the array of players
-		removePlayer()
-		{
-			this.players.pop();
-		},
-
-		addCoach()
-		{
-			this.coaches.push({firstname: '', lastname: '', email: ''});
-		},
-
-		removeCoach()
-		{
-			this.coaches.pop();
+			this.$root.post(this.prefix, 'CreateTeam_submit', data);
 		},
 
 
@@ -448,65 +414,45 @@ export default  {
 			var errors = this.errorCheck();
 
 			if (! errors) {
+
+				this.setPageError('');
+
 				if (this.page === 'info') {
 					this.page = 'stats';
 				}
 				else if (this.page === 'stats') {
 					this.page = 'roster';
 				}
-				this.clearError('page');
 			}
 			else {
-				this.setError('page', 'Correct the errors on the page first');
+				this.setPageError('Correct errors before continuing');
 			}
 		},
-
-		availability()
-		{
-			var errors = this.errorCheck('teamname');
-
-			if (! errors) {
-				// ask the server if this teamname is available
-				var url = this.$root.prefix + 'team/create/' + this.teamname;
-				this.$root.post(url, 'CreateTeam_available')
-			}
-		}, 
 
 		// tell Validator.js which fields to error check
 		attachErrorChecking()
 		{
+			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers'];
+			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', msg);
 			this.registerErrorChecking('name', 'required', ['Enter a name']);
-			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', 
-																	['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers']);
-
+			this.registerErrorChecking('city', 'required', ['Search for your city']);
+							
 			this.registerErrorChecking('players.*.email', 'email', ['Invalid email']);
-			this.registerErrorChecking('location.city.zip', 'required|max:5', ['Enter a zip', 'Invalid zip']);
 			this.registerErrorChecking('coaches.*.email', 'email', ['Invalid email']);
+
+			// register a few manual messages to set if need be
+			this.manualErrorChecking('page.info');
+			this.manualErrorChecking('page.stats');
+			this.manualErrorChecking('page.roster');
 		},
 
-		// run all the registered error checkers + these homemade ones
-		errorCheckAll()
+		/**
+		 * Set an error below the "next" button
+		 */
+		setPageError(error) 
 		{
-			var errors = this.errorCheck();
-			var tempErrors = {players: []};
-			for (var x = 0; x < this.players.length; x++) {
-				var player = this.players[x];
-				// check that any emails inputted are valid emails
-				if (player.email.length) {
-					if (! this.$root.validateEmail(player.email)) {
-						errors++;
-						this.errors.players[x] = "Not a valid email address";
-					}
-					else {
-						this.errors.players[x] = '';
-					}
-				}
-				else {
-					this.errors.players[x] = '';
-				}
-			}
-		}
-	
+			this.$set('errors.page.' + this.page, error);
+		},
 	},
 
 	events:
@@ -521,10 +467,10 @@ export default  {
 		CreateTeam_available(response)
 		{
 			if (response.data.available) {
-				this.clearError('teamname');
+				this.errors.teamname = '';
 			}
 			else {
-				this.setError('teamname', 'Already taken, try another');
+				this.errors.teamname = 'Already taken, try another';
 			}
 		},
 
@@ -580,14 +526,23 @@ export default  {
 	watch:
 	{
 		// if they've changed the sport, update the stats associated with it too
-		sport(val)
+		sport()
 		{
 			this.initSelections(this.sport);
 		},
 
 		gender()
 		{
-			this.$root.get(this.prefix + 'dummy/' + this.gender, 'CreateTeam_dummy');
+			this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
+		},
+
+		teamname()
+		{
+			if (! this.errors.teamname && this.teamname.length) {
+				// ask the server if this teamname is available
+				var url = this.prefix + '/' + this.teamname;
+				this.$root.post(url, 'CreateTeam_available');
+			}
 		}
 	},
 

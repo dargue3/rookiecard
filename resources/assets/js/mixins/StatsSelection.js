@@ -72,7 +72,7 @@ export default {
 		// request all the stat columns for this sport from the server
 		getStatsBySport(sport)
 		{
-			var url =  this.prefix + 'stats/' + sport;
+			var url =  this.prefix + '/stats/' + sport;
 			var self = this;
 			this.$http.get(url)
 				.then(function(response) {

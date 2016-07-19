@@ -237,8 +237,13 @@ export default  {
 	methods:
 	{
 		
-		// show popup message (for more attention)
-		// uses sweetalert.js
+		/**
+		 * Show a sweetalert popup message
+		 *
+		 * @param {string} type  Possible: 'good', 'bad', 'info'
+		 * @param {string} title  
+		 * @param {string} msg  
+		 */
 		popup(type, title, msg)
 		{
 			switch(type) {
@@ -251,11 +256,16 @@ export default  {
 				case 'info':
 					swal(title, msg, "info");
 					break;
-					
 			}
 		},
 
-		// show banner message, triggers Alert.vue
+		
+		/**
+		 * Show a banner message using Alert component
+		 *
+		 * @param {string} type  Possible: 'good', 'bad', 'info'
+		 * @param {string} msg
+		 */
 		banner(type, msg)
 		{
 			// always hide any existing alerts
@@ -270,7 +280,11 @@ export default  {
 		},
 
 
-		// the default msg when erroring during ajax requests
+		/**
+		 * Display a given error message or a default one
+		 * 
+		 * @param {string | null} msg
+		 */
 		errorMsg(msg = null)
 		{
 			if(typeof msg === 'string')
@@ -280,29 +294,16 @@ export default  {
 		},
 
 
+		/**
+		 * Show a bootstrap modal with a given id
+		 *
+		 * @param {string} id
+		 */
 		showModal(id)
 		{
 			$('.for-blurring').removeClass('modal-unblur').addClass('modal-blur');
-      $('nav.navbar').removeClass('modal-unblur').addClass('modal-blur');
-      $('#' + id).modal('show');
-		},
-
-		validateJerseyNum(num)
-		{
-			if(!num.length) 
-				return true;
-
-			if(isNaN(num))
-				return false;
-
-			else if(parseInt(num) > 99 || parseInt(num) < 0)
-				return false;
-
-			else if(num.length > 2)
-				return false;
-
-			else
-				return true;
+    	$('nav.navbar').removeClass('modal-unblur').addClass('modal-blur');
+    	$('#' + id).modal('show');
 		},
 
 	}, // end methods

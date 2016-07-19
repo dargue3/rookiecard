@@ -13,7 +13,7 @@ abstract class Request extends FormRequest
   //triggers when validation fails on a CreateTeamRequest, etc.
 	protected function formatErrors(Validator $validator) {
 
-		return ['ok' => false, 'error' => 'Correct any errors and try again'];
+		return ['ok' => false, 'errors' => $validator->errors()];
 	
 	}
 
