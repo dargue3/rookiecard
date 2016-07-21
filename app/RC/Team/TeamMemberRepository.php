@@ -22,7 +22,7 @@ interface TeamMemberRepository
 	public function addEmailToMetaData($email);
 	public function attachMetaData(array $data);
 	public function getDefaultMetaData($firstname = '', $lastname = '');
-	public function editMember(array $data, $role, $admin);
+	public function editMember($id, array $data, $role, $admin);
 	public function deleteMember($member_id);
 	public function deleteGhost();
 }

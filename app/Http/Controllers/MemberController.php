@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Team;
 use Validator;
+use Exception;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
@@ -51,9 +52,10 @@ class MemberController extends Controller
     {
         // do a little bit of validation first
         $rules = [
-            'email' => 'email',
-            'name'  => 'required|string|max:100',
-            'role'  => 'required|string|in:ghost_player,ghost_coach'
+            'email'         => 'email',
+            'firstname'     => 'required|string|max:100',
+            'lastname'      => 'required|string|max:100',
+            'role'          => 'required|string|in:ghost_player,ghost_coach'
         ];
 
         $this->validate($request, $rules);
@@ -83,17 +85,18 @@ class MemberController extends Controller
      */
     public function update(Request $request, Team $team, $id)
     {
-        if (Auth::user()->cannot('edit-member', [$team, $id])) {
-            return ['ok' => false, 'error' => 'Unauthorized request'];
-        }
+        // if (Auth::user()->cannot('edit-member', [$team, $id])) {
+        //     throw new Exception("Unauthorized request");
+        // }
 
         // do a little bit of validation first
         $rules = [
-            'meta.name'         => 'required|string|max:100',
+            'isGhost'           => 'required|boolean',
+            'meta.firstname'    => 'required_if:isGhost,true|string|max:100',
+            'meta.lastname'     => 'required_if:isGhost,true|string|max:100',
             'meta.email'        => 'email',
             'meta.num'          => 'string|max:2',
             'meta.positions'    => 'array|max:2',
-            'meta.name'         => 'required|string|max:100',
             'role'              => 'required|boolean',
             'admin'             => 'required|boolean'
         ];
@@ -104,7 +107,7 @@ class MemberController extends Controller
             return ['ok' => false, 'errors' => $validator->errors()];
         }
 
-        $this->member->editMember($request->meta, $request->role, $request->admin);
+        $this->member->editMember(intval($id), $request->meta, $request->role, $request->admin);
 
         return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
@@ -120,7 +123,7 @@ class MemberController extends Controller
     public function destroy(Team $team, $id)
     {
         if (Auth::user()->cannot('edit-member', [$team, $id])) {
-            return ['ok' => false, 'error' => 'Unauthorized request'];
+            throw new Exception("Unauthorized request");
         }
         
         $this->member->deleteMember($id);

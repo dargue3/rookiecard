@@ -55,12 +55,12 @@
 				      	<span v-if="specialRow(col)">
 				      		<span v-if="col === 'name'">{{ row[col] }}</span>
 				      		<input v-if="col === 'starter'" type="checkbox" v-model="newStats[index][col]">
-				      		<input v-show="!usesMinutes" v-if="col === 'dnp'" type="checkbox" v-model="newStats[index][col]">
+				      		<input v-if="col === 'dnp' && ! usesMinutes" type="checkbox" v-model="newStats[index][col]">
 				      		<span v-if="col === 'fg_'">{{ newStats_percent(index, 'fg') | checkPercentage }}</span>
 				      		<span v-if="col === 'ft_'">{{ newStats_percent(index, 'ft') | checkPercentage }}</span>
 				      		<span v-if="col === 'threep_'">{{ newStats_percent(index, 'threep') | checkPercentage }}</span>
 				      	</span>
-				      	<input v-if="!specialRow(col)" type="text" class="form-control stats-input text-center" 
+				      	<input v-else type="text" class="form-control stats-input text-center" 
 				      					autocomplete="off" :placeholder="col | basketballStats" v-model="newStats[index][col]" number>
 				      </td>
 			    	</tr>
@@ -168,98 +168,40 @@ export default  {
 
 	watch: {
 
-		//if stats change, reinitialize the page
-		stats() {
+		// if stats change, reinitialize the page
+		stats()
+		{
 			this.compile();
 		},
 
-		//if the viewed event changes, reinitialize the page
-		event() {
+		// if the viewed event changes, reinitialize the page
+		event()
+		{
 			this.compile();
 		},
 	},
 
 
-	computed: {
-		
-		usesMinutes() {
-			if(this.newPlayerCols) {
-				if(this.newPlayerCols.indexOf('min') !== -1) 
-					return true;
-				else 
-					return false;
-			}
-			else
-				return true;
-		},
-
-		newPlayerCols() {
+	computed:
+	{
+		newPlayerCols()
+		{
 			var index;
-			var newCols = []
-			this.playerCols.forEach(function(col) {
-				if(col === 'name') {
-					//add dnp to the list after name
-					newCols.push(col);
-					newCols.push('dnp');
+			var newCols = JSON.parse(JSON.stringify(this.playerCols));
+
+			var ditch = ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff', 'dd2', 'td3'];
+			ditch.forEach(function(stat) {
+				var index = newCols.indexOf(stat);
+				if (index !== -1) {
+					newCols.splice(index, 1);
 				}
-				else
-					newCols.push(col);
 			});
 
-
-			index = newCols.indexOf('date');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('win');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('opp');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('gs');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('gp');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('efg_');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('astto');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('ts_');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('per');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('eff');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('dd2');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('td3');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
 			return newCols;
-
 		},
 
-		newTeamCols() {
+		newTeamCols()
+		{
 			var index;
 			var newCols = [];
 
@@ -267,13 +209,13 @@ export default  {
 				newCols.push(val);
 			});
 
-			index = newCols.indexOf('name');
-			if(index !== -1)
-				newCols.splice(index, 1);
-
-			index = newCols.indexOf('dnp');
-			if(index !== -1)
-				newCols.splice(index, 1);
+			var ditch = ['name', 'dnp'];
+			ditch.forEach(function(stat) {
+				var index = newCols.indexOf(stat);
+				if (index !== -1) {
+					newCols.splice(index, 1);
+				}
+			});
 
 			return newCols;
 		},
@@ -284,8 +226,6 @@ export default  {
 	methods: {
 
 		compile() {
-			var players = this.players;
-			var existingStats = this.stats;
 			var newStats = [];
 			var IDs = [];
 
@@ -294,28 +234,34 @@ export default  {
 			this.meta.teamScore = '';
 
 
-			//first initialize newStats with any existing data
-			for(var x = 0; x < existingStats.length; x++) {
-				var curr = existingStats[x];
+			// first initialize newStats with any existing data
+			for(var x = 0; x < this.stats.length; x++) {
+				var curr = this.stats[x];
 
 				
-				//catch the team stats for this event
-				if(curr.type === 1) {
-					//initialize meta data
+				// catch the team stats for this event
+				if(curr.type === 'team') {
+					// initialize meta data
 					var meta = JSON.parse(curr.meta);
 					this.meta.opp = meta.opp;
 					this.meta.oppScore = meta.oppScore;
 					continue;
 				}
 
-				if(IDs.indexOf(curr.member_id) !== -1)
-					//this player's stats already parsed (error somewhere down the road)
+				if(IDs.indexOf(curr.member_id) !== -1) {
+					// this player's stats already parsed (error somewhere down the road)
 					continue;
+				}
+
+				var player = this.players.filter(function(player) {
+					return player.member_id === curr.member_id;
+				})
 
 				var stats = JSON.parse(curr.stats);
 
 				stats['id'] = curr.owner_id;
 				stats['member_id'] = curr.member_id;
+				stats['name'] = player[0].abbrName;
 				
 				newStats.push(stats);	
 				IDs.push(curr.member_id);
@@ -324,12 +270,12 @@ export default  {
 
 
 
-			for(var x = 0; x < players.length; x++) {
-				var curr = players[x];
+			for(var x = 0; x < this.players.length; x++) {
+				var curr = this.players[x];
 				var emptyStats = {};
 
 				if(IDs.indexOf(curr.member_id) !== -1)
-					//this player's stats already parsed, don't create empty row
+					// this player's stats already parsed, don't create empty row
 					continue;
 
 				this.newPlayerCols.forEach(function(col) {
@@ -337,7 +283,7 @@ export default  {
 				});
 				emptyStats.id = curr.id;
 				emptyStats.member_id = curr.member_id;
-				emptyStats.name = this.abbreviateName(curr, players);
+				emptyStats.name = curr.abbrName
 				emptyStats.starter = false;
 				emptyStats.dnp = false;
 
@@ -348,47 +294,22 @@ export default  {
 
 
 			this.initScrollSpy();	
-
 		},
 
 
-		//attach listeners for whether or not to show SCROLL > indicators
-		initScrollSpy() {
-
+		// attach listeners for whether or not to show SCROLL > indicators
+		initScrollSpy()
+		{
 			setTimeout(function() {
 				this.attachScrollListener('#editTeamStatsDiv', 'teamStats');
 				this.attachScrollListener('#editPlayerStatsDiv', 'playerStats');
 			}.bind(this), 500);
-
 		},
 
 
-		//create an abbreviated name for 'thisPlayer'
-		//extend if that name exists, e.g. 2 different D. Argue, try Da. Argue, etc
-		abbreviateName(thisPlayer, players) {
-			var offset = 1;
-			var name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
-			var theirName = '';
-			//loop through checking all other players for duplicates
-			for(var x = 0; x < players.length; x++) {
-				if(thisPlayer.member_id === players[x].member_id) 
-					//don't include this user
-					continue;
-
-				theirName = players[x].firstname.substring(0, 1) + '. ' + players[x].lastname;
-				while(theirName === name) {
-					offset++;
-					name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
-					if(offset > 4)
-						break;
-				}
-			}
-			return name;
-		},
-
-
-		//decide whether or not this stat column needs special formatting
-		specialRow(col) {
+		// decide whether or not this stat column needs special formatting
+		specialRow(col)
+		{
 			if(col === 'name' || col === 'starter' || col === 'dnp')
 				return true;
 			if(col[col.length - 1] === '_')
@@ -398,18 +319,18 @@ export default  {
 		},
 
 
-		//submit to database
-		submitStats() {
-
-			//check that the inputs are error free
+		// submit to database
+		submitStats()
+		{
+			// check that the inputs are error free
 			var errors = this.errorCheck();
 
 			if(!errors) {
 
-				//did these stats exist and were then updated?
+				// did these stats exist and were then updated?
 				var statsAreNew = this.stats.length ? false : true;
 
-				//store how many points team had (for status update meta data)
+				// store how many points team had (for status update meta data)
 				this.meta.teamScore = this.teamStats.pts;
 				this.meta.team = this.team.name;
 				var self = this;
@@ -421,12 +342,12 @@ export default  {
 					meta: this.meta,
 				};
 
-				//save as a new event
+				// save as a new event
 				if(statsAreNew) {
 					var url = this.$parent.prefix + '/stats'; 
 					this.$http.post(url, data)
 						.then(function(response) {
-							//send a stats updated event to parent
+							// send a stats updated event to parent
 							if(response.data.ok) {
 								self.$dispatch('newStats', response.data.stats, response.data.feed);
 								$('#viewEventModal').modal('hide');
@@ -435,7 +356,7 @@ export default  {
 								self.$root.banner("good", 'Stats saved');
 							}
 							else {
-								//they weren't allowed to add stats
+								// they weren't allowed to add stats
 								self.$root.banner('bad', response.data.error);
 							}
 						})
@@ -445,7 +366,7 @@ export default  {
 						});
 				}
 
-				//update existing stats
+				// update existing stats
 				else {
 					var url = this.$parent.prefix + '/stats'; 
 					this.$http.put(url, data)
@@ -458,7 +379,7 @@ export default  {
 								self.$root.banner("good", 'Stats saved');
 							}
 							else {
-								//they weren't allowed to update stats
+								// they weren't allowed to update stats
 								self.$root.banner('bad', response.data.error);
 							}
 						})
@@ -470,14 +391,16 @@ export default  {
 			}
 		},
 
-		//throw away inputted data
-		discardStats() {
+		// throw away inputted data
+		discardStats()
+		{
 			$('#viewEventModal').modal('hide');
 			this.compile();
 		},
 
 
-		deleteStats() {
+		deleteStats()
+		{
 			$('#viewEventModal').modal('hide');
 			this.$dispatch('deleteStats', this.event);
 			this.stats = {};
@@ -498,9 +421,10 @@ export default  {
 		},
 
 
-		//calculates and saves the total for that field
-		//accepts everything except the percentage cols
-		team_total(col) {
+		// calculates and saves the total for that field
+		// accepts everything except the percentage cols
+		team_total(col)
+		{
 			var stats = this.newStats;
 			var total = 0;
 			for(var x = 0; x < stats.length; x++) {
@@ -513,10 +437,11 @@ export default  {
 			return total;
 		},
 
-		//calculates and saves percentages for team
-		//accepts fg, ft, threep for cols
-		//e.g. col == 'fg', var p = 'fg_'
-		team_percent(col) {
+		// calculates and saves percentages for team
+		// accepts fg, ft, threep for cols
+		// e.g. col == 'fg', var p = 'fg_'
+		team_percent(col)
+		{
 			var stats = this.newStats;
 			var m = col + 'm';
 			var a = col + 'a';
@@ -525,8 +450,8 @@ export default  {
 			var attempts = 0;
 			var percent = 0;
 			for(var x = 0; x < stats.length; x++) {
-				//first check if makes > attempts, return percent > 100
-				//the 'percentage' filter turns this into 'ERROR'
+				// first check if makes > attempts, return percent > 100
+				// the 'percentage' filter turns this into 'ERROR'
 				if(stats[x][m] > stats[x][a]) {
 					percent = 101;
 					this.teamStats[p] = 101;
@@ -544,7 +469,7 @@ export default  {
 			}
 			percent = makes / attempts;
 
-			//make into percentage with one decimal place accuracy
+			// make into percentage with one decimal place accuracy
 			percent = Math.round((percent * 100) * 10) / 10;
 			if(isNaN(percent))
 				percent = 0;
@@ -553,13 +478,14 @@ export default  {
 			return percent;
 		},
 
-		//calculates and saves percentages for this player
-		//accepts fg, ft, threep for cols
-		//e.g. col == 'fg', var p = 'fg_'
-		newStats_percent(index, col) {
+		// calculates and saves percentages for this player
+		// accepts fg, ft, threep for cols
+		// e.g. col == 'fg', var p = 'fg_'
+		newStats_percent(index, col)
+		{
 			var percentage = 0;
 
-			//dynamically picks which stat based on col
+			// dynamically picks which stat based on col
 			var m = col + 'm';
 			var a = col + 'a';
 			var p = col + '_';
@@ -569,7 +495,7 @@ export default  {
 			else
 				percentage = this.newStats[index][m] / this.newStats[index][a];
 
-			//make into percentage with one decimal place accuracy
+			// make into percentage with one decimal place accuracy
 			percentage = Math.round((percentage * 100) * 10) / 10;
 
 			if(isNaN(percentage))
@@ -579,7 +505,8 @@ export default  {
 			return percentage;
 		},
 
-		errorCheck() {
+		errorCheck()
+		{
 			var stats = this.newStats;
 			for(var x = 0; x < stats.length; x++) {
 				if(stats[x].fg_ > 100) {
@@ -604,9 +531,9 @@ export default  {
 			return false;
 		},
 
-		//displays a customized error message depending on which stat category was incorrect
-		errorMessage(col) {
-
+		// displays a customized error message depending on which stat category was incorrect
+		errorMessage(col)
+		{
 			this.$root.popup("bad", "Error in stats!", "One of the " + col + "M entries is greater than " + col + "A, please correct first. Look for the row with ERROR in " + col + "%");
 		},
 	},

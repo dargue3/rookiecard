@@ -396,7 +396,7 @@ class EloquentTeamMemberTest extends TestCase
         $this->assertFalse($this->repo->hasRole(new Admin));
 
         // attach jersey number meta data and admin status
-        $this->repo->editMember(['num' => '12', 'email' => 'cats@cats.com'], false, $admin = true);
+        $this->repo->editMember($member->id, ['num' => '12', 'email' => 'cats@cats.com'], false, $admin = true);
 
         $member = TeamMember::find($member->id);
 

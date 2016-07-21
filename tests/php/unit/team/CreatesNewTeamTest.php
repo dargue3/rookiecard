@@ -40,11 +40,11 @@ class CreatesNewTeamTest extends TestCase
 			'userStats'		=> ['pts', 'fgm', 'fga'],
 			'rcStats'		=> ['fg_'],
 			'players'		=> [
-				['name' => 'Testy McGee', 'email' => 'player@rookiecard.com'],
-				['name' => 'Tester McTestFace', 'email' => ''],
+				['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'],
+				['firstname' => 'Tester', 'lastname' => 'McTestFace', 'email' => ''],
 			],
 			'coaches'		=> [
-				['name' => 'Coach Test', 'email' => 'coach@rookiecard.com'],
+				['firstname' => 'Coach', 'lastname' => 'Test', 'email' => 'coach@rookiecard.com'],
 			],
 		];	
 	}
@@ -63,9 +63,9 @@ class CreatesNewTeamTest extends TestCase
     	$this->assertEquals('Providence, RI', $handler->meta['city']);
     	$this->assertEquals(69.24828429, $handler->lat);
     	$this->assertEquals(-72.4824724, $handler->long);
-    	$this->assertEquals(['name' => 'Testy McGee', 'email' => 'player@rookiecard.com'], $handler->players[0]);
-    	$this->assertEquals(['name' => 'Tester McTestFace', 'email' => ''], $handler->players[1]);
-    	$this->assertEquals(['name' => 'Coach Test', 'email' => 'coach@rookiecard.com'], $handler->coaches[0]);
+    	$this->assertEquals(['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'], $handler->players[0]);
+    	$this->assertEquals(['firstname' => 'Tester', 'lastname' => 'McTestFace', 'email' => ''], $handler->players[1]);
+    	$this->assertEquals(['firstname' => 'Coach', 'lastname' => 'Test', 'email' => 'coach@rookiecard.com'], $handler->coaches[0]);
     }
 
     /** @test */

@@ -1,6 +1,7 @@
 <?php
 namespace App\RC\Event;
 
+use App;
 use Auth;
 use App\Event;
 use App\RC\Stat\StatRepository;
@@ -37,11 +38,11 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	protected $stat;
 
 
-	public function __construct(StatRepository $stat)
+	public function __construct()
 	{
 		$this->limitPerTeam = config('rookiecard.events.limitPerTeam');
 
-		$this->stat = $stat;
+		$this->stat = App::make(StatRepository::class);
 	}
 
 

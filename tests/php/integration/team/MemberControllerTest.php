@@ -69,7 +69,8 @@ class MemberControllerTest extends TestCase
     {
     	$data = [
     		'email' => $this->faker->email,
-    		'name' => $this->faker->name,
+            'firstname' => $this->faker->firstName,
+    		'lastname' => $this->faker->lastName,
     		'role' => 'ghost_player',
     	];
     	
@@ -94,10 +95,12 @@ class MemberControllerTest extends TestCase
 
     	$data = [
     		'meta' => [
-				'name' 		=> $this->faker->name,
-				'email'		=> $this->faker->email,
-				'num'		=> '24',
-				'positions'	=> ['pg', 'sg'],
+                'isGhost'       => true,
+                'firstname'     => $this->faker->firstNameMale,
+				'lastname'      => $this->faker->lastName,
+				'email'         => $this->faker->email,
+				'num'           => '24',
+				'positions'     => ['pg', 'sg'],
     		],
     		'role' 	=> true,
     		'admin'	=> false,

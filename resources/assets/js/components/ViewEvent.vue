@@ -108,7 +108,7 @@ export default  {
 
 	watch: {
 		event() {
-			//new event, reset this flag to hide EditEvent.vue
+			// new event, reset this flag to hide EditEvent.vue
 			this.editEvent = false;
 		}
 	},
@@ -116,77 +116,81 @@ export default  {
 	computed: {
 
 
-		//FUTURE EVENTS
+		// FUTURE EVENTS
 
-		//event has NOT happened yet, user is admin
-		canEditEvent() {
+		// event has NOT happened yet, user is admin
+		canEditEvent()
+		{
 			return moment().isBefore(moment.unix(this.event.start)) && this.admin;
 		},
 
-		//event has NOT happened yet, user is NOT an admin
-		futureEvent() {
+		// event has NOT happened yet, user is NOT an admin
+		futureEvent()
+		{
 			return moment().isBefore(moment.unix(this.event.start)) && !this.admin;
 		},
 
 
+		// PAST EVENTS
 
-
-		//PAST EVENTS
-
-		//event has happened, user is admin, event was a game
-		canEditStats() {
+		// event has happened, user is admin, event was a game
+		canEditStats()
+		{
 			if(this.editEvent) {
-				//user wants to specifically edit the event regardless of date
+				// user wants to specifically edit the event regardless of date
 				return false;
 			}
 			else
 				return moment().isAfter(moment.unix(this.event.start)) && this.admin &&
-										(this.event.type === 1 || this.event.type === 2);
+										(this.event.type === 'home_game' || this.event.type === 'away_game');
 		},
 
 
-		//event has happened, user is an admin, event was NOT a game
-		pastEventNoStats() {
+		// event has happened, user is an admin, event was NOT a game
+		pastEventNoStats()
+		{
 			if(this.editEvent)
 				return false;
 			else
 				return moment().isAfter(moment.unix(this.event.start)) && this.admin  &&
-										(this.event.type !== 1 && this.event.type !== 2);
+										(this.event.type !== 'home_game' || this.event.type !== 'away_game');
 		},
 
 
-		//event has happened, user is NOT an admin, event was a game
-		pastEventStats() {
+		// event has happened, user is NOT an admin, event was a game
+		pastEventStats()
+		{
 			return moment().isAfter(moment.unix(this.event.start)) && !this.admin  &&
-										(this.event.type === 1 || this.event.type === 2);
+										(this.event.type === 'home_game' || this.event.type === 'away_game');
 		},
 
 
 
 
-		//event has happened, user is NOT an admin, event was NOT a game
-		pastEvent() {
+		// event has happened, user is NOT an admin, event was NOT a game
+		pastEvent()
+		{
 			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && !this.pastEventStats;
 		},
 
 
+		// SOME EXTRA LOGIC FOR CHOOSING WHAT TO SHOW
 
-
-		//SOME EXTRA LOGIC FOR CHOOSING WHAT TO SHOW
-
-		//only for choosing how wide to make the modal window
-		showStats() {
+		// only for choosing how wide to make the modal window
+		showStats()
+		{
 			if(this.editEvent) {
-				//user wants to specifically edit the event regardless of date
+				// user wants to specifically edit the event regardless of date
 				return false;
 			}
 			else
 				return this.pastEventStats || this.canEditStats;
 		},
 
-		//show basketball stats
-		basketball() {
-			return this.team.sport === 0;
+		// show basketball stats
+		basketball()
+		{
+			return this.team.sport === 'basketball';
 		}
 		
 	},
@@ -195,63 +199,61 @@ export default  {
 
 	methods: {
 
-		//find which event was clicked and display
-		viewEvent(id) {
-
-			//pass along event data
-			var event = this.events.filter(function(e) {
-				return e.id === id;
+		// find which event was clicked and display
+		viewEvent(id)
+		{
+			// pass along event data
+			var event = this.events.filter(function(event) {
+				return event.id === id;
 			});
 
-			//pass along any existing user stats for this event
-			var stats = this.stats.filter(function(e) {
-				return e.event_id === id;
+			// pass along any existing user stats for this event
+			var stats = this.stats.filter(function(stat) {
+				return stat.event_id === id;
 			});
 
 			this.event = event[0];
 
 			if(this.futureEvent || this.pastEvent) {
-				//if just showing info about the event to a non admin, pick CSS class for title
+				// if just showing info about the event to a non admin, pick CSS class for title
 				switch(this.event.type) {
 					case 0:
-						//practice
+						// practice
 						this.event.titleClass = 'practice';
 						break;
 					case 1:
-						//home game
+						// home game
 						this.event.titleClass = 'home';
 						break;
 					case 2:
-						//away game
+						// away game
 						this.event.titleClass = 'away';
 						break;
 					case 3:
-						//special event
-						this.event.titleClass = 'special';
+						// special event
+						this.event.titleClass = 'other';
 						break;
 				}
 			}
-
-
+			
 			this.currStats = stats;
 			
-			
-			//show modal
+			// show modal
       this.$root.showModal('viewEventModal')
     },
 	},
 
 	ready() {
 
-		//attach jquery listeners for click on events
-    //wait long enough to ensure calendar is fully loaded
+		// attach jquery listeners for click on events
+    // wait long enough to ensure calendar is fully loaded
     setTimeout(function() {
-    		//for clicks on calendar events
+    		// for clicks on calendar events
         $('.Calendar__container').on('click touchstart', 'a.event-trigger', function(e) {
           this.viewEvent($(e.target).data('event-id'));
         }.bind(this));
         
-        //for clicks on news feed event links
+        // for clicks on news feed event links
         $('.Feed').on('click touchstart', 'a.event-trigger', function(e) {
           this.viewEvent($(e.target).data('event-id'));
         }.bind(this));   
@@ -265,7 +267,7 @@ export default  {
 
 <style lang="stylus">
 
-//import color variables
+// import color variables
 @import '/resources/assets/stylus/variables.styl'
 
 .edit-button

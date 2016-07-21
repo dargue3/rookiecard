@@ -60,14 +60,13 @@
 									</div>
 									<div class="num-fans">
 										<div class="fan-count" :class="numFansClass">
-											<!-- for animating a new fan counter, show numFans +- 1 -->
 											<span v-if="!fansChanged" :transition="numFansTransition">{{ numFans }}</span>
 											<span v-if="fansChanged" :transition="numFansTransition">{{ numFans }}</span>
 										</div>
 										<div class="arrow-right --white"></div>
 									</div>
 
-									<div v-show="!isFan" class="fan-icon" @click="toggleFan">
+									<div v-show="!isFan && !isMember" class="fan-icon" @click="toggleFan">
 										<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
 									</div>
 									<div v-show="isFan && !isMember" class="fan-icon" @click="toggleFan">
@@ -264,14 +263,14 @@
 	        <div class="modal-content">
 	          <div class="modal-header">
 	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 v-show="(editUser.id || editUser.ghost) && !editUser.new" class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
+	            <h3 v-show="(editUser.member_id) && !editUser.new" class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
 	            <h3 v-show="editUser.new && editUser.role === 1" class="modal-title">Add a Player</h3>
 	            <h3 v-show="editUser.new && editUser.role === 3" class="modal-title">Add a Coach</h3>
 	          </div>
 	          <div class="modal-body">
 	          	<div class="row">
 	            
-								<rc-edit-user v-if="editUser.id || editUser.new || editUser.ghost" :user="editUser" :positions="positions"></rc-edit-user>
+								<rc-edit-user v-if="editUser.member_id || editUser.new" :user="editUser" :positions="positions"></rc-edit-user>
 
 							</div>
 	          </div>
@@ -337,13 +336,14 @@ export default  {
 			prefix: prefix + teamname,
 			requestFinished: false,
 			notFound: false,
+			auth: {},
 			team: {
 				meta: {},
 			},
 			isAdmin: false,
-			auth: {},
 			isFan: false,
-			isMember: false,
+			isPlayer: false,
+			isCoach: false,
 			hasBeenInvited: false,
 			hasRequestedToJoin: false,
 			isCreator: false,
@@ -356,7 +356,7 @@ export default  {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'calendar',
+			tab: 'roster',
 			statsTab: 'teamRecent',
 			events: [], 
 			stats: [], 
@@ -377,6 +377,11 @@ export default  {
 		numFans()
 		{
 			return this.fans.length;
+		},
+
+		isMember()
+		{
+			return this.isPlayer || this.isCoach;
 		},
 
 		// makes fan counter div wider with larger numFans
@@ -467,6 +472,7 @@ export default  {
 
 			setTimeout(function() {
 				this.requestFinished = true;
+				this.$broadcast('dataReady');
 			}.bind(this), 100);
 		},
 
@@ -476,6 +482,17 @@ export default  {
 		{
 			this.requestFinished = true;
 			this.notFound = true;
+		},
+
+		/**
+		 * User has toggled their fan status
+		 */
+		Team_toggleFan(response)
+		{
+			this.updateFanStatus();
+			this.users = [];
+			this.formatUsers(response.data.members);
+			
 		},
 
 
@@ -551,40 +568,16 @@ export default  {
 
 		
 
-
-		// new user was created from EditUser
-		newUser(user)
+		/**
+		 * A user was created/edited/deleted
+		 *
+		 * @param {array} members  The updated array of team members
+		 */
+		Team_updated_members(members)
 		{
-			// format raw data and add to array of users
-			this.formatUsers(user);
+			this.users = [];
+			this.formatUsers(members);
 		},
-
-		// user was updated from EditUser
-		updateUser(editedUser)
-		{
-			// remove current version of this user
-			this.users = this.users.filter(function(user) {
-				return user.member_id !== editedUser.member_id
-			});
-
-			// format raw data and add to array of users
-			this.formatUsers(editedUser);
-		},
-
-
-		// user was kicked from team from EditUser
-		deleteUser(editedUser)
-		{	
-			// remove current version of user from users
-			this.users = this.users.filter(function(user) {
-				return user.member_id !== editedUser.member_id
-			});
-
-			if (!editedUser.deleted) {
-				// if there's a ghost remaining, format raw data and add to array of users
-				this.formatUsers(editedUser);
-			}
-		}
 	},
 	
 
@@ -596,8 +589,8 @@ export default  {
 		},
 
 		// method for assigning data after ajax call finishes
-		compile(data) {
-		
+		compile(data)
+		{
 			this.auth = this.$root.user;
 			this.team = data.team;
 
@@ -655,6 +648,16 @@ export default  {
 					user.meta = {};
 				}
 
+				if (this.auth.id === user.id) {
+					// save the logged-in users's data separately too
+					this.isAdmin = user.isAdmin;
+					this.isFan = user.isFan;
+					this.isPlayer = user.isPlayer;
+					this.isCoach = user.isCoach;
+					this.hasRequestedToJoin = user.hasRequestedToJoin;
+					this.hasBeenInvited = user.hasBeenInvited;
+				}
+
 				// mark which user is the creator
 				if (this.team.creator_id === user.id) {
 					user.isCreator = true;
@@ -667,28 +670,18 @@ export default  {
 
 
 		// user hit fan button
-		toggleFan() {
-
+		toggleFan()
+		{
 			var self = this;
 			var url = this.prefix + '/fan';
-			this.$http.post(url)
-				.then(function(response) {
-					if (response.data.ok) 
-						self.updateFanStatus();
-					else
-						throw response.data.error
-				})
-				.catch(function(error) {
-					self.$root.errorMsg(error);
-				});
+			this.$root.post(url, 'Team_toggleFan');
 		},
 
 
 
 		// successful request, change fan status
-		updateFanStatus() {
-			var self = this;
-
+		updateFanStatus()
+		{
 			if (this.isFan) {
 				// use decrement animation on counter
 				this.numFansTransition = 'number-tick-down'
@@ -703,29 +696,14 @@ export default  {
 			this.fansChanged = !this.fansChanged;
 
 			if (this.isFan) {
-				// is now a fan of this team
-				this.auth.role = 4;
-				this.auth.meta = {};
-				this.auth.admin = false;
-				this.isAdmin = false;
-				this.users.push(this.auth);
-
 				// tell App.vue to add this team to the nav dropdown
 				this.$dispatch('becameAFanOfTeam', this.team);
 				this.$root.banner('good', "You're now a fan");
 			}
 
-
 			else {
-				// is no longer a fan
-				this.auth.role = null;
-				this.isAdmin = false;
-				this.users = this.users.filter(function(user) {
-					return user.id !== self.auth.id;
-				});
-
-				self.$dispatch('removedAsFanOfTeam', self.team.teamname);
-				self.$root.banner('good', "You're no longer a fan");	
+				this.$dispatch('removedAsFanOfTeam', this.team.teamname);
+				this.$root.banner('good', "You're no longer a fan");	
 			}
 		},
 

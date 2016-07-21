@@ -1,66 +1,43 @@
-
 <template>
   <div class="calendar-wrapper">
     <div class="filler"></div>
 
   	<div class="Calendar">
+      <div class="Calendar__nav">
 
-      <div id="calendarNav" class="row">
-        <div class="col-xs-12 col-sm-6 Calendar__nav no-highlight ">
-          <table id="calNav">
-            <tr>
-              <td id="chevLeft" @click="chevClick('Left')" data-cal-nav="prev">
-                <a><i class="material-icons chevron">chevron_left</i></a>
-              </td>
-              <td id="calNavHeaderTable">
-                <!-- h3 tag dynamically set by calendar.js -->
-                <h3 class="Calendar__header"></h3>
-              </td>
-              <td id="chevRight" @click="chevClick('Right')" data-cal-nav="next">
-                <a><i class="material-icons chevron">chevron_right</i></a>
-              </td>
-            </tr>
-          </table>
+        <div class="nav">
+          <a chevron="prev" @click="chevron('prev')"><i class="material-icons chevron">chevron_left</i></a>
+          <h3 class="Calendar__header"></h3>
+          <a chevron="next" @click="chevron('next')"><i class="material-icons chevron">chevron_right</i></a>
         </div>
-        <div class="col-xs-12 col-sm-6 Calendar__nav">
-          <table id="addEventContainer">
-            <tr>
-              <td id='addEventIconDiv'>
-                <a v-show="admin" id='addEventTrigger' @click="$root.showModal('addEventModal')">
-                  <i id="addEventIcon" class="glyphicon glyphicon-plus"></i>
-                  <span id="addEventText">Add an Event</span>
-                </a>
-              </td>
-            </tr>
-          </table>
+        
+        <div class="add-event">
+          <a v-show="admin" @click="$root.showModal('addEventModal')">
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>Add an Event</span>
+          </a>
         </div>
+    
       </div>
-      <div class="row">
-          <div class="col-xs-12 Calendar__container">
-              <div class="calendar"></div>
-          </div>
+      <div class="Calendar__container">
+          <div class="calendar"></div>
       </div>
-
   	</div>
+
+    <div class="filler"></div>
   </div> 
 	
 </template>
 
-
-
-
 <script>
-
 var animateEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
 var rubberBand = 'animated rubberBand';
 
-export default  {
-	
+export default 
+{
 	name: 'Calendar',
 
-
 	props: ['admin', 'events'],
-
 
 	data() {
 
@@ -73,8 +50,7 @@ export default  {
         modal: '#events-modal',
         first_event: firstDayOfYear,
         onAfterViewLoad: function(view) {
-          var month = this.getTitle();
-          $('.Calendar__header').text(month);
+          $('.Calendar__header').text(this.getTitle());
         },
         classes: {
           months: {
@@ -97,11 +73,11 @@ export default  {
     var self = this;
     $(function() {
 
-      //attach the calendar when the DOM is ready
+      // attach the calendar when the DOM is ready
       self.calendar = $('.calendar').calendar(self.options);
 
-      //hide tooltips if on mobile (they are annoying and counterintuitive)
-      //give time for DOM to settle before checking
+      // hide tooltips if on mobile (they are annoying and counterintuitive)
+      // give time for DOM to settle before checking
       setTimeout(function() {
         if(window.innerWidth < 767) {
           $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
@@ -113,10 +89,10 @@ export default  {
 
 	methods: {
 
-    //events array changed, reload the calendar data
+    // events array changed, reload the calendar data
     compile() {
 
-      //attach a new events array
+      // attach a new events array
       var events = this.formatEvents();
       if(events.length)
         var firstEvent = events[0].start;
@@ -131,7 +107,7 @@ export default  {
       this.calendar.view();
     },
 
-    //format events for calendar
+    // format events for calendar
     formatEvents() {
 
       var formattedEvents = [];
@@ -147,19 +123,19 @@ export default  {
 
         switch(event.type) {
           case 'practice':
-            //practice event
+            // practice event
             temp.class = 'event-practice';
             break;
           case 'home_game':
-            //game event
+            // game event
             temp.class = 'event-homeGame';
             break;
           case 'away_game':
-            //game event
+            // game event
             temp.class = 'event-awayGame';
             break;  
           case 'other':
-            //other event
+            // other event
             temp.class = 'event-other';
             break;    
         }
@@ -170,17 +146,17 @@ export default  {
       return formattedEvents;
     },
 
-    //formats the title with an appropriate date string
+    // formats the title with an appropriate date string
     formatEventTitle(title, start, end) {
 
       var startTime, endTime;    
 
       if(moment(start).isSame(end, 'day')) {
-        //events on same day, drop date in title
+        // events on same day, drop date in title
 
         if((moment(start).hour() < 12 && moment(end).hour() < 12) ||
            (moment(start).hour() >= 12 && moment(end).hour() >= 12)) {
-          //both are am or pm, drop that from string as well
+          // both are am or pm, drop that from string as well
           var startTime = moment(start).format('h:mm');
           var endTime   = moment(end).format('h:mm a');
         }
@@ -196,13 +172,13 @@ export default  {
       }
     },
 
-    //animate click and switch month
-    chevClick(direction) {
-      
-      var chevron = $('#chev' + direction);
-      this.calendar.navigate(chevron.data('cal-nav'));
+    // animate click and switch month
+    chevron(direction) {
+      this.calendar.navigate(direction);
 
-      //animate
+      var chevron = $('[chevron="' + direction + '"]')
+
+      // animate chevron
       chevron.addClass(rubberBand).one(animateEnd, function(){
         chevron.removeClass(rubberBand);
       });
@@ -228,24 +204,38 @@ export default  {
     flex 1
 
 .Calendar
-  flex 3
+  display flex
+  flex-flow row wrap
+  flex-basis 775px
   padding-bottom 3em
 
 .Calendar__nav
+  flex-basis 100%
+  display flex
+  justify-content center
   margin-top 15px
-  .chevron
-    font-size 44px
-    margin-top 7px
+  .nav
+    display flex
+    flex 1
+  .add-event
+    a
+      float right
+    margin 10px 15px 0px 0px
+    font-size 16px
+    flex 1
 
 .Calendar__header
   margin 0
+  margin-top 9px
   width 190px
-  text-align center       
+  text-align center     
 
 .Calendar__container
+  flex-basis 100%
   margin-top 45px
   max-width 775px
   background whitesmoke
+  padding 0px 15px
   .calendar
     background lighten(whitesmoke, 40%)
 
@@ -253,57 +243,21 @@ div
   .cal-row-head .cal-cell1
     background whitesmoke
 
-#calendarNav
-  height 54px
-  div
-    padding-left 0
 
-table#calNav
-  @media only screen and (max-width 767px)
-    margin auto
 
-#calNavHeaderTable
-  padding 0
-
-#addEventContainer
-  float right
-  margin-top 17px
-  @media only screen and (max-width 767px)
-    text-align center
-    margin auto
-    margin-top 15px
-    margin-bottom 15px
-    float none
-
-#addEventIcon
-  margin 0 auto
-
-#addEventText
-  position relative
-  font-size 16px
-  left 3px
-
-#addEventIconDiv
-  margin-top 4px
-
-#addEventIconDiv
-  width 100%
-  text-align right
-    
-#addEventDiv
-  padding-bottom 15px 
-
-#chevRight
-#chevLeft
+a[chevron="prev"]
+a[chevron="next"]
   position relative
   -webkit-animation-duration 0.2s
   -animation-duration 0.2s
   &:hover
     cursor pointer
+  .chevron
+    font-size 44px
     
 
 
-//the following classes are overwriting the classes in bootstrap-calendar css
+// the following classes are overwriting the classes in bootstrap-calendar css
 #cal-day-box .day-highlight.dh-event-awayGame
   border 1px solid rc_yellow
 #cal-day-box .day-highlight.dh-event-homeGame

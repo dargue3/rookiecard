@@ -3,13 +3,14 @@
 	
 	<div>
 
-		<div v-if="type === 'event' && !stats.length" class="Stats__title --noStats">
+		<div v-if="type === 'event' && ! stats.length" class="Stats__title --noStats">
 			<p>This event's stats aren't posted yet... bug a team admin to post them!</p>
 		</div>
 		
-		<basketball v-if="sport === 0 && stats.length" :type="type" :event="event"
+		<basketball v-if="sport === 'basketball'" :type="type" :event="event"
   							:players="players" :raw-stats="stats" :pagination="pagination"
-  							:team-cols="teamCols" :player-cols="playerCols"></basketball>	
+  							:team-cols="teamCols" :player-cols="playerCols">
+  	</basketball>	
 
 
 
@@ -29,23 +30,34 @@ export default  {
 	props: ['stats', 'players', 'type', 'team', 'sport', 'event', 'pagination',
 						'teamCols', 'playerCols'],
 
-	components: {
+	components:
+	{
 		'basketball' : BasketballStats,
 	},
 
 
-	data() {
-
+	data()
+	{
 		return {
 			
 		}
 	},
 
-	watch: {
+	watch:
+	{
 		//stats have changed, compile
-		stats() {
+		stats()
+		{
 			this.$broadcast('compileStats');	
 		},
+	},
+
+	events: 
+	{
+		dataReady()
+		{
+			this.$broadcast('compileStats');
+		}
 	},
 
 };
@@ -180,7 +192,7 @@ ul.pagination
 			float left
 			padding-left 1.5em
 			i
-				top -7px
+				top -5px
 				left -9px
 		i
 			position absolute

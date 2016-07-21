@@ -47,7 +47,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
 	/**
 	 * Use given member as the subject of this repo's actions
 	 * 
-	 * @param  mixed $member 
+	 * @param  TeamMember|int $member 
 	 * @return EloquentTeamMember
 	 */
 	public function using($member)
@@ -571,14 +571,15 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     /**
      * Make this member's data match the arguments
      * 
+     * @param int $id  The id of the member being edited
      * @param  array $data Array of meta data to be attached
      * @param boolean $switchRole Whether to switch from coach -> player or vice versa
      * @param  boolean $admin Their new admin status
      * @return EloquentTeamMember
      */
-    public function editMember(array $data, $switchRole, $admin)
+    public function editMember($id, array $data, $switchRole, $admin)
     {
-    	$this->checkForMember();
+    	$this->using($id);
 
         $this->attachMetaData($data);
 

@@ -148,11 +148,11 @@ class TeamControllerTest extends TestCase
             'userStats'     => ['pts', 'fgm', 'fga'],
             'rcStats'       => ['fg_'],
             'players'       => [
-                ['name' => 'Testy McGee', 'email' => 'player@rookiecard.com'],
-                ['name' => 'Tester McTestFace', 'email' => ''],
+                ['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'],
+                ['firstname' => 'Tester', 'lastname' => 'McTestFace', 'email' => ''],
             ],
             'coaches'       => [
-                ['name' => 'Coach Test', 'email' => 'coach@rookiecard.com'],
+                ['firstname' => 'Coach', 'lastname' => 'Test', 'email' => 'coach@rookiecard.com'],
             ],
         ];
 

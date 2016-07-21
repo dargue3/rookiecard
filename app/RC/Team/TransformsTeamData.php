@@ -52,6 +52,7 @@ class TransformsTeamData
                 'firstname'             => $user['firstname'],     
                 'lastname'              => $user['lastname'],  
                 'name'                  => $user['firstname'] . " " . $user['lastname'],
+                'abbrName'              => $user['firstname'][0] . ". " . $user['lastname'],
                 'pic'                   => $user['pic'],
 		        'member_id' 			=> $member->id,
                 'isCoach'               => $memberRepo->isCoach(),
@@ -64,6 +65,29 @@ class TransformsTeamData
 		        'meta'					=> $member->meta
 	        ];
 	    }
+
+        return $this->checkForDuplicateNames($formatted);
+    }
+
+
+    /**
+     * Makes sure that there are no duplicate abbreviated names
+     * 
+     * @param  array $formatted 
+     * @return array        
+     */
+    public function checkForDuplicateNames($formatted)
+    {
+        foreach($formatted as $member) {
+            foreach ($formatted as $another) {
+                if ($member['id'] == $another['id']) continue;
+                $index = 1;
+                while ($member['abbrName'] == $another['abbrName']) {
+                    $member['abbrName'] = substring($member['firstname'], 0, $index) . '. ' . $member['lastname'];    
+                    $index++;    
+                }
+            }
+        }
 
         return $formatted;
     }
@@ -112,6 +136,7 @@ class TransformsTeamData
             'backdrop'      => $team->backdrop,
             'creator_id'    => $team->creator_id,
             'season'        => $team->season,
+            'sport'         => $team->sport
         ];
     }
 

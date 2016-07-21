@@ -78,8 +78,7 @@ trait ManagesTeamRoles
         }
 
         if ($this->hasRole($role)) {
-            $role = $role->name();
-            throw new Exception("This member already has a role of '$role'");
+            $this->removeRole($role);
         }
 
         $this->member->roles()->attach($role->id());
@@ -219,7 +218,6 @@ trait ManagesTeamRoles
     }
 
 
-
     /**
      * @return boolean
      */
@@ -232,7 +230,6 @@ trait ManagesTeamRoles
     }
 
 
-
      /**
      * @return boolean
      */
@@ -243,7 +240,6 @@ trait ManagesTeamRoles
     }
 
 
-
      /**
      * @return boolean
      */
@@ -251,7 +247,6 @@ trait ManagesTeamRoles
     {
         return $this->hasRole(new Admin);
     }
-
 
 
      /**
@@ -264,7 +259,6 @@ trait ManagesTeamRoles
     }
 
 
-
      /**
      * @return boolean
      */
@@ -273,7 +267,6 @@ trait ManagesTeamRoles
         return  $this->hasRole(new Coach) or
                 $this->hasRole(new GhostCoach);
     }
-
 
 
      /**
@@ -285,7 +278,6 @@ trait ManagesTeamRoles
     }
 
 
-
      /**
      * @return boolean
      */
@@ -294,7 +286,6 @@ trait ManagesTeamRoles
         return  $this->hasRole(new InvitedPlayer) or
                 $this->hasRole(new InvitedCoach);
     }
-
 
 
      /**

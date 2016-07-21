@@ -21,34 +21,34 @@
 
     <form v-else @submit.prevent="save()">
     	<div v-if="!user.new" class="row EditUser__role">
-	    	<div v-if="user.role < 4" class="col-xs-6">
+	    	<div v-if="user.isCoach || user.isPlayer" class="col-xs-6">
 	        <label>Is a...</label>
 	        <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
 	        				data-max-options="1" v-model="user.role" number>
-	        	<option v-if="user.ghost" value="ghost_player">Player</option>    
+	        	<option v-if="user.isGhost" value="ghost_player">Player</option>    
 	          <option v-else value="player">Player</option>    
-	          <option v-if="user.ghost" value="ghost_coach">Coach</option>    
+	          <option v-if="user.isGhost" value="ghost_coach">Coach</option>    
 	          <option v-else value="coach">Coach</option>    
 	        </select>
 	      </div>
 	    </div>
-	    <div v-if="user.role < 2" class="row EditUser__data">
+	    <div v-if="user.isPlayer" class="row EditUser__data">
         <div class="col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0">
           <label for="number">Jersey Number</label>
-          <input type="text" class="form-control" :class="{'form-error' : errors.num}"
-          				v-model="user.meta.num" @keyup="errorCheck('num')" autocomplete="false">
-          <span v-show="errors.num" class="form-error">{{ errors.num }}</span>
+          <input type="text" class="form-control" :class="{'form-error' : errors.user.meta.num}"
+          				v-model="user.meta.num" @keyup="errorCheck('num')" autocomplete="false" maxlength="2">
+          <span v-show="errors.user.meta.num" class="form-error">{{ errors.user.meta.num }}</span>
         </div>
         <div class="col-xs-6 col-sm-4">
           <label>Primary</label>
-          <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
+          <select data-style="btn-select btn-lg" EditUser="position[0]" class="selectpicker form-control show-tick"
           				multiple data-max-options="1" v-model="user.meta.positions[0]">
             <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
           </select>
         </div>
         <div class="col-xs-6 col-sm-4">
           <label>Secondary</label>
-          <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
+          <select data-style="btn-select btn-lg" EditUser="position[1]" class="selectpicker form-control show-tick"
           				multiple data-max-options="1" v-model="user.meta.positions[1]">
             <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
           </select>
@@ -56,23 +56,31 @@
 	    </div>
 
 
-	    <div v-if="user.ghost" class="row EditUser__data">
-  			<div class="col-xs-12 col-sm-6">
-  				<label>Name</label>
-  				<input type="text" class="form-control" maxlength="100" v-model="user.meta.ghost.name" required
-  								:class="{'form-error' : errors.name}" autocomplete="false">
-  				<span v-show="errors.name" class="form-error">{{ errors.name }}</span>
+	    <div v-if="user.isGhost" class="row EditUser__data">
+  			<div class="col-xs-6 col-sm-3">
+  				<label>First Name</label>
+  				<input type="text" class="form-control" maxlength="100" v-model="user.meta.firstname" required
+  								:class="{'form-error' : errors.user.meta.firstname}" autocomplete="false">
+  				<span v-show="errors.user.meta.firstname" class="form-error">{{ errors.user.meta.firstname }}</span>
+  			</div>
+  			<div class="col-xs-6 col-sm-3">
+  				<label>Last Name</label>
+  				<input type="text" class="form-control" maxlength="100" v-model="user.meta.lastname" required
+  								:class="{'form-error' : errors.user.meta.lastname}" autocomplete="false">
+  				<span v-show="errors.user.meta.lastname" class="form-error">{{ errors.user.meta.lastname }}</span>
   			</div>
   			<div class="col-xs-12 col-sm-6">
   				<label>Email</label>
-  				<input type="text" class="form-control" :class="{ 'form-error' : this.errors.email }" maxlength="100" v-model="user.meta.ghost.email"
+  				<input type="text" class="form-control" :class="{ 'form-error' : errors.user.meta.email }" maxlength="100" v-model="user.meta.email"
   								autocomplete="false">
-					<span v-show="errors.email" class="form-error">{{ errors.email }}</span>
-  				<span v-show="!errors.email && ghostEmail" class="input-info">Editing the email will resend an invitation</span>
-  				<span v-show="!errors.email && !ghostEmail" class="input-info">Sends an invitation to join the team</span>
+					<span v-show="errors.user.meta.email" class="form-error">{{ errors.user.meta.email }}</span>
+					<template v-else>
+						<span v-show="ghostEmail" class="input-info">Editing the email will resend an invitation</span>
+  					<span v-show="! ghostEmail" class="input-info">Invite someone to take this spot!</span>
+					</template>
   			</div>
 			</div>
-	    <div v-if="!user.ghost" class="row">
+	    <div v-if="! user.isGhost" class="row">
         <div class="col-xs-6">
           <div class="switch-container">
 						<input type="checkbox" bootstrap-switch="EditUser">
@@ -89,8 +97,8 @@
 		    	<a class="btn btn-primary btn-block btn-md" @click="save()">SAVE</a>
 		    </div>
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
-		    	<a v-if="!user.new && !user.ghost" class="btn btn-delete btn-block btn-md" @click="kick()">KICK</a>
-		    	<a v-if="!user.new && user.ghost" class="btn btn-delete btn-block btn-md" @click="kick()">DELETE</a>
+		    	<a v-if="!user.new && !user.isGhost" class="btn btn-delete btn-block btn-md" @click="kick()">KICK</a>
+		    	<a v-if="!user.new && user.isGhost" class="btn btn-delete btn-block btn-md" @click="kick()">DELETE</a>
 		    </div>
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
 		    	<a class="btn btn-cancel btn-block btn-md outline"@click="cancel()">CANCEL</a>
@@ -104,6 +112,7 @@
 
 <script>
 
+import Validator from './../mixins/Validator.js';
 
 export default  {
 	
@@ -111,93 +120,111 @@ export default  {
 
 	props: ['user', 'positions'],
 
+	mixins: [ Validator ],
 
 	data() {
 		
 		return {
 			ghostEmail: false,
 			adminOptions: {
-				state: this.user.admin,
+				state: this.user.isAdmin,
 				onText: 'YES',
 				offText: 'NO',
 				onSwitchChange: function(e, state) {
-					this.user.admin = state;
+					this.user.isAdmin = state;
 				}.bind(this)
 			},
 			confirmKick: false,
 			kickButton: '',
 			kickMsg: '',
 			kickText: '',
-			errors: {
-				num: '',
-				email: '',
-				name: '',
-			},
 		}
 	},
 
+	beforeCompile()
+	{
+			this.setErrorChecking();
+	},
+
 	computed: {
-		role() {
+		role()
+		{
 			return this.user.role;
 		},
-
-		//whether or not this user is a fan
-		isFan() {
-			return this.user.role === 4 || this.user.role === 45 || 
-							this.user.role === 46 || this.user.role === 47;
-		}
 	},
 
 	watch: {
 
 		//if user changed, set inputs to correct new states
-		user() {
-
+		user()
+		{
 			this.initialize();
-
 		},
 
 		//if role changed, set inputs to correct new states
-		role() {
-
+		role()
+		{
 			this.initialize();
-
 		},
 
 
 	},
 
+	events:
+	{
+		EditUser_update(response)
+		{
+			$('#rosterModal').modal('hide');
+			this.$dispatch('Team_updated_members', response.data.members);
+			this.$root.banner('good', "User saved");
+		},
+	},
+
 	methods: {
 
 		//whenever the data reloads, reset the input elements and some logic
-		initialize() {
-
+		initialize()
+		{
 			this.confirmKick = false;
 
-			if(this.user.ghost) {
-				if(this.user.meta.ghost.email)
+			if(this.user.isGhost) {
+				if(this.user.meta.email) {
 					this.ghostEmail = true;
-				else
+				}
+				else {
 					this.ghostEmail = false;
+				}
 			}
 
 			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.admin);
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.isAdmin);
 
 			$('.selectpicker[EditUser]').selectpicker({
 				noneSelectedText: 'None'
-			});
+			}).selectpicker('refresh');
 
+			this.setErrorChecking();
+		},
+
+		setErrorChecking()
+		{
+			this.registerErrorChecking('user.meta.num', 'jersey', 'Choose between 00-99');
+
+			// extra details to check if editing a ghost
+			if (this.user.isGhost) {
+				this.registerErrorChecking('user.meta.firstname', 'required', 'Enter a first name');
+				this.registerErrorChecking('user.meta.lastname', 'required', 'Enter a last name');
+				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email');
+			}
 		},
 
 
 		//send ajax request to save data
-		save() {
-			
-			var errors = this.errorCheck('all');
-
-			if(errors)
+		save()
+		{
+			if (this.errorCheck() > 0) {
 				return;
+			}
 
 			if(this.user.new) {
 				this.newUser();
@@ -209,7 +236,8 @@ export default  {
 
 
 		//send post request to server to save new user
-		newUser() {
+		newUser()
+		{
 			var self = this;
 			var url = this.$parent.prefix + '/member'; 
 			var data = { 
@@ -234,39 +262,35 @@ export default  {
 
 
 		//send put request to server to update user
-		updateUser() {
-
+		updateUser()
+		{
 			$('#rosterModal').modal('hide');
 
 			var self = this;
-			var url = this.$parent.prefix + '/user'; 
-			var data = { user: this.user };
-			this.$http.put(url, data)
-				.then(function(response) {
-					if(!response.data.ok)
-						throw response.data.error;
-
-					$('#rosterModal').modal('hide');
-					this.$dispatch('updateUser', response.data.user);
-					//if successful, save new data, show success banner
-					self.$root.banner('good', "User saved");
-					
-				})
-				.catch(function(error) {
-					self.$root.errorMsg(error);
-				});
+			var url = this.$parent.prefix + '/member/' + this.user.member_id;
+			var switchRole = false;
+			if (this.user.isPlayer && (this.user.role === 'coach' || this.user.role === 'ghost_coach')) switchRole = true;
+			if (this.user.isCoach && (this.user.role === 'player' || this.user.role === 'ghost_player')) switchRole = true;
+			var data = {
+				meta: this.user.meta,
+				isGhost: this.user.isGhost,
+				role: switchRole,
+				admin: this.user.isAdmin,
+			} 
+			this.$root.put(url, 'EditUser_update', data);
 		},
 
 
 		//close modal
-		cancel() {
+		cancel()
+		{
 			$('#rosterModal').modal('hide');
 		},
 
 
 		//show popup asking to confirm the kick, send event to Team if they do
-		kick(confirm) {
-
+		kick(confirm)
+		{
 			if(typeof confirm !== 'boolean') {
 				//they need to first confirm their decision to kick
 				this.confirm();
@@ -279,12 +303,15 @@ export default  {
 				return;
 			}
 
-			if(this.user.ghost)
+			if(this.user.ghost) {
 				var msg = 'Ghost deleted';
-			else if(this.isFan)
+			}
+			else if(this.user.isFan) {
 				var msg = 'Fan removed';
-			else
+			}
+			else {
 				var msg = 'User kicked, replaced with ghost';
+			}
 
 			//tell server about new changes
 			var data = { user: this.user };
@@ -315,15 +342,16 @@ export default  {
 
 
 		//change the popup so they can confirm their kick on a player
-		confirm() {
-			if(this.isFan) {
+		confirm()
+		{
+			if(this.user.isFan) {
 				//this is a fan
 				this.kickMsg = 'Remove ' + this.user.firstname + ' as a fan?';
 				this.kickText = '';
 				this.kickButton = 'REMOVE';
 			}
 
-			else if(this.ghost) {
+			else if(this.user.isGhost) {
 				//they're a ghost, stats will be deleted too
 				this.kickMsg = 'Delete this ghost?';
 				this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
@@ -337,56 +365,8 @@ export default  {
 				this.kickButton = 'KICK';
 			}
 
-
 			this.confirmKick = true;
-			
 		},
-
-
-
-
-
-		errorCheck(input) {
-			var errors = 0;
-			var role = this.user.role
-
-			if((input === 'num' || input === 'all') && role <= 1) {
-				//check that the jersey number is between 00 - 99
-				if(!this.$root.validateJerseyNum(this.user.meta.num)) {
-					errors++;
-					this.errors.num = 'Not a valid number';
-				}
-				else {
-					this.errors.num = '';
-				}
-			}
-
-			if((input === 'email' || input === 'all') && (role === 1 || role === 3)) {
-				//check that the email is valid
-				if(this.user.meta.ghost.email.length && !this.$root.validateEmail(this.user.meta.ghost.email)) {
-					errors++;
-					this.errors.email = 'Not a valid email';
-				}
-				else {
-					this.errors.email = '';
-				}
-			}
-
-			if((input === 'name' || input === 'all') && this.user.ghost) {
-				//check that they've added a name
-				if(!this.user.meta.ghost.name.length) {
-					errors++;
-					this.errors.name = 'Enter a name';
-				}
-				else {
-					this.errors.name = '';
-				}
-			}
-
-			return errors;
-		},
-
-
 	},
 
 	//initialize inputs with jquery

@@ -43,9 +43,8 @@ export default  {
 		//format the results into the necessary items
 		placeSelected(place)
 		{
-			var city = place.address_components[0].long_name;
-			var state = place.address_components[2].short_name;
-			this.city = city + ', ' + state;
+			var address = place.formatted_address.split(',');
+			this.city = address[0] + ', ' + address[1][1] + address[1][2];
 			this.lat = place.geometry.location.lat();
 			this.long = place.geometry.location.lng();
 			this.selected = true;

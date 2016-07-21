@@ -14,7 +14,7 @@
     <meta id="_token" value="{{ csrf_token() }}">
 
 	{{-- jquery is required for bootstrap, keep above --}}
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
 
 	{{-- fonts --}}
 	<link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
@@ -22,30 +22,29 @@
     <link href='https://fonts.googleapis.com/css?family=Monda' rel='stylesheet' type='text/css'>
 
     <!-- css -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/css/bootstrap-select.min.css">
-    <link rel="stylesheet" href="/css/stylus.css">
-    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="/css/dropzone.css">
     <link rel='stylesheet' href='/css/sweetalert.css'>
     <link rel='stylesheet' href='/css/bootstrap-switch.css'>
     <link rel="stylesheet" href="/bower_components/bootstrap-calendar/css/calendar.css">
     <link rel='stylesheet' href='/css/animate.css-master/animate.css'></link>
     <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="/css/stylus.css">
+    <link rel="stylesheet" href="/css/variables.css">
     
     
     <!-- js -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/js/sweetalert.min.js"></script>
     <script src="/js/jstz-1.0.4.min.js"></script>
     <script src="/js/bootstrap-switch.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/js/bootstrap-select.min.js"></script> 
+    <script src="/js/bootstrap-select.min.js"></script> 
     <script src='/js/nav.js'></script>
     <script src='/js/pace.js'></script>
     <script src='/js/dropzone.js'></script>
-    <script src='/js/parallax.min.js'></script>
     <script src="/bower_components/moment/moment.js"></script>
     <script src="/bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
     <script src="/bower_components/underscore/underscore-min.js"></script>

@@ -123,12 +123,12 @@ class CreatesNewTeam
     public function addMembers()
     {
         foreach ($this->players as $player) {
-            $this->memberRepo->newPlayer($this->team->id, $player['name'])
+            $this->memberRepo->newPlayer($this->team->id, $player['firstname'], $player['lastname'])
                             ->invite($player['email']);
         }
 
         foreach ($this->coaches as $coach) {
-            $this->memberRepo->newCoach($this->team->id, $coach['name'])
+            $this->memberRepo->newCoach($this->team->id, $coach['firstname'], $coach['lastname'])
                             ->invite($coach['email']);
         }
 

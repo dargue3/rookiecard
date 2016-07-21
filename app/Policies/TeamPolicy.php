@@ -19,11 +19,11 @@ class TeamPolicy
     protected $event;
 
       
-    public function __construct()
+    public function __construct(TeamMemberRepository $member, NewsFeedRepository $feed, EventRepository $event)
     {
-        $this->member = App::make(TeamMemberRepository::class);
-        $this->feed = App::make(NewsFeedRepository::class);
-        $this->event = App::make(EventRepository::class);
+        $this->member = $member;
+        $this->feed = $feed;
+        $this->event = $event;
     }
    
 

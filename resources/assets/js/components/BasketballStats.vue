@@ -213,12 +213,12 @@ export default  {
 	mixins: [StatsScrollSpy],
 
 
-	data() {	
+	data()
+	{	
+    if (!this.pagination) this.pagination = false;
 
-    if(!this.pagination) this.pagination = false;
-
-    //if single-event stats are being viewed, remove unnecessary columns
-    if(this.type === 'event') {
+    // if single-event stats are being viewed, remove unnecessary columns
+    if (this.type === 'event') {
     	this.formatForEvent();
     }
  	
@@ -240,152 +240,135 @@ export default  {
 
 	},
 
-	computed: {
-
-		ifPagination() {
+	computed:
+	{
+		ifPagination()
+		{
 			return this.pagCount > 1 && this.pagination
 		},
 
-		//gets rid of the stat categories that aren't useful for team season stats
-		teamSeasonCols() {
+		// gets rid of the stat categories that aren't useful for team season stats
+		teamSeasonCols()
+		{
 			var index;
 			var teamCols = [];
-			//make a non-reactive copy of cols
+			// make a non-reactive copy of cols
 			this.teamCols.forEach(function(val) {
 				teamCols.push(val);
 			});
 
 			index = teamCols.indexOf('date');
-			if(index !== -1)
+			if (index !== -1)
 				teamCols.splice(index, 1);
 
 			index = teamCols.indexOf('win');
-			if(index !== -1)
+			if (index !== -1)
 				teamCols.splice(index, 1);
 
 			index = teamCols.indexOf('opp');
-			if(index !== -1)
+			if (index !== -1)
 				teamCols.splice(index, 1);
 
 			return teamCols;
 		},
 
-		//use all team stats for recent stats
-		teamRecentCols() {
+		// use all team stats for recent stats
+		teamRecentCols()
+		{
 			return this.teamCols;
 		},
 
-		//gets rid of the stat categories that aren't useful for player season stats
-		playerSeasonCols() {
+		// gets rid of the stat categories that aren't useful for player season stats
+		playerSeasonCols()
+		{
 			var index;
 			var playerCols = [];
-			//make a non-reactive copy of cols
+			// make a non-reactive copy of cols
 			this.playerCols.forEach(function(val) {
 				playerCols.push(val);
 			});
 
-			index = playerCols.indexOf('date');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('win');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('opp');
-			if(index !== -1)
-				playerCols.splice(index, 1);
+			var ditch = ['date', 'win', 'opp'];
+			ditch.forEach(function(stat) {
+				var index = playerCols.indexOf(stat);
+				if (index !== -1) {
+					playerCols.splice(index, 1);
+				}
+			});
 
 			return playerCols;
 		},
 
-		//gets rid of the stat categories that aren't useful for recent player stats
-		playerRecentCols() {
+		// gets rid of the stat categories that aren't useful for recent player stats
+		playerRecentCols()
+		{
 			var index;
 			var playerCols = [];
-			//make a non-reactive copy of cols
+			// make a non-reactive copy of cols
 			this.playerCols.forEach(function(val) {
 				playerCols.push(val);
 			});
 
-			index = playerCols.indexOf('name');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('gs');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('gp');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('efg_');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('astto');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('ts_');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('per');
-			if(index !== -1)
-				playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('eff');
-			if(index !== -1)
-				playerCols.splice(index, 1);
+			var ditch = ['name', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff'];
+			ditch.forEach(function(stat) {
+				var index = playerCols.indexOf(stat);
+				if (index !== -1) {
+					playerCols.splice(index, 1);
+				}
+			});
 
 			return playerCols;
 		}
 	},
 
-	events: {
-		compileStats() {
+	events:
+	{
+		compileStats()
+		{
 			this.compile();
 		}
 	},
 
-	watch: {
-		type() {
+	watch:
+	{
+		type()
+		{
 			this.initScrollSpy();
 		}
 	},
 
-	methods: {
-
-		//initializes variables when stats request arrives
-		compile() {
-
+	methods:
+	{
+		// initializes variables when stats request arrives
+		compile()
+		{
 			var pagCount = 1;
 			var rawTeamStats = [];
 			var rawPlayerStats = [];
 
-			if(this.rawStats.length) {
+			if (this.rawStats.length) {
 
-				//separate the data into player and team stats arrays
-				for(var x = 0; x < this.rawStats.length; x++) {
+				// separate the data into player and team stats arrays
+				for (var x = 0; x < this.rawStats.length; x++) {
 
-					//team stats
-					if(this.rawStats[x].type === 1)
+					// team stats
+					if (this.rawStats[x].type === 'team') {
 						rawTeamStats.push(this.rawStats[x]);
+					}
 
-					//player stats
-					if(this.rawStats[x].type === 0)
+					// player stats
+					if (this.rawStats[x].type === 'player') {
 						rawPlayerStats.push(this.rawStats[x]);
+					}
 				}
 
-				//format stats for table
+				// format stats for table
 				this.makeTeamRecentStats(rawTeamStats);
 				this.makePlayerSeasonStats(rawPlayerStats);
 				this.makeTeamSeasonStats(rawTeamStats);
 
 				
-				//initialize the sorting order on columns to be descending
+				// initialize the sorting order on columns to be descending
 				var teamSortOrders = {};
 				this.teamCols.forEach(function(key) {
 					teamSortOrders[key] = -1;
@@ -396,7 +379,7 @@ export default  {
 				});
 				playerSortOrders['lastname'] = -1;
 
-				//number of pages
+				// number of pages
 				pagCount = Math.ceil(this.teamRecentStats.length / this.rowsPerPage);
 
 				this.pagCount = pagCount;
@@ -406,7 +389,7 @@ export default  {
 			}
 
 			else {
-				//error occurred getting data, create placeholder data
+				// error occurred getting data, create placeholder data
 				this.playerSeasonStats 	= this.markEmpty(0);
 				this.playerRecentStats 	= this.markEmpty(0);
 				this.teamRecentStats 		= this.markEmpty(1);
@@ -418,52 +401,54 @@ export default  {
 		},
 
 
-		//prepare listeners for showing "SCROLL >" indicators
-		initScrollSpy() {
-			if(this.type === 'teamSeason') 
+		// prepare listeners for showing "SCROLL >" indicators
+		initScrollSpy()
+		{
+			if (this.type === 'teamSeason') 
 				this.attachScrollListener('#teamSeasonDiv', 'teamSeason');
 
-			if(this.type === 'teamRecent') 
+			if (this.type === 'teamRecent') 
 				this.attachScrollListener('#teamRecentDiv', 'teamRecent');
 
-			if(this.type === 'playerSeason') 
+			if (this.type === 'playerSeason') 
 				this.attachScrollListener('#playerSeasonDiv', 'playerSeason');
 
-			if(this.type === 'event' || this.type === 'playerRecent') 
+			if (this.type === 'event' || this.type === 'playerRecent') 
 				this.attachScrollListener('#playerRecentDiv', 'playerRecent');
 		},
 
 
-		//compiles averages for the season for each player
-		//fair warning: this function is sort of a monster
-		makePlayerSeasonStats(rawData) {
+		// compiles averages for the season for each player
+		// fair warning: this function is sort of a monster
+		makePlayerSeasonStats(rawData)
+		{
 			var statsArray = [];
 			var IDs = [];
 			var playerStats = [];
 
-			//start by grouping all the stats by player
-			for(var x = 0; x < rawData.length; x++) {
+			// start by grouping all the stats by player
+			for (var x = 0; x < rawData.length; x++) {
 				var data = rawData[x];
 				var userStats = [];
 
-				//if this player hasn't had their stats grouped yet
-				if(IDs.indexOf(data.owner_id) === -1) {
-					//find all of this player's stats in rawData
+				// if this player hasn't had their stats grouped yet
+				if (IDs.indexOf(data.member_id) === -1) {
+					// find all of this player's stats in rawData
 					userStats = rawData.filter(function(stat) {
-						return stat.owner_id === data.owner_id && stat.type === 0;
+						return stat.member_id === data.member_id && stat.type === 'player';
 					});
-					//add them to the list of already sorted
-					IDs.push(data.owner_id);
+					// add them to the list of already sorted
+					IDs.push(data.member_id);
 					statsArray.push(userStats);
 				}
 			}
 
 
-			//now loop through each players' stats and average
-			for(var x = 0; x < statsArray.length; x++) {
+			// now loop through each players' stats and average
+			for (var x = 0; x < statsArray.length; x++) {
 
-				//init object of compiled player's stats
-				//length of this array === number of games played
+				// init object of compiled player's stats
+				// length of this array === number of games played
 				var totalStats = {};
 				this.playerSeasonCols.forEach(function(key) {
 					totalStats[key] = 0;
@@ -473,112 +458,114 @@ export default  {
 					return player.member_id === statsArray[x][0].member_id;
 				});
 				totalStats.lastname = thisPlayer[0].lastname;
+				totalStats.name = thisPlayer[0].abbrName;
 				
 
-				//loop through each stats object belonging to this user
-				for(var y = 0; y < statsArray[x].length; y++) {
-					//store the stats for this event
+				// loop through each stats object belonging to this user
+				for (var y = 0; y < statsArray[x].length; y++) {
+					// store the stats for this event
 					var stats = JSON.parse(statsArray[x][y].stats);
 					var doubleDigits = 0;
 
-					for(var key in stats) {
-						if(stats.hasOwnProperty(key)) {
+					for (var key in stats) {
+						if (stats.hasOwnProperty(key)) {
 
-							if(key[key.length - 1] === '_')
-								continue; //leave the percentages (e.g. fg_) for later
+							if (key[key.length - 1] === '_')
+								continue; // leave the percentages (e.g. fg_) for later
 
-							if(isNaN(stats[key])){
-								totalStats[key] = stats[key]; //not something that needs averaging
+							if (isNaN(stats[key])){
+								totalStats[key] = stats[key]; // not something that needs averaging
 								continue;
 							}
 
-							if(key === 'starter') {
-								//rename 'starter' to be 'gs'
+							if (key === 'starter') {
+								// rename 'starter' to be 'gs'
 								totalStats.gs++;
 								continue;
 							}
 
-							//make a counter for double and triple doubles
-							//double double = 2 stat categories in double digits
-							if(stats[key] >= 10) {
-								if(key === 'ast' || key === 'reb' || key === 'stl' || key === 'blk' || key === 'pts') {
+							// make a counter for double and triple doubles
+							// double double = 2 stat categories in double digits
+							if (stats[key] >= 10) {
+								if (key === 'ast' || key === 'reb' || key === 'stl' || key === 'blk' || key === 'pts') {
 									doubleDigits++;
 								}
 							}
 
-							//add the these stats to the total
+							// add the these stats to the total
 							totalStats[key] = totalStats[key] + stats[key];	
 						}
 					}
 
-					//if two categories in double digits, they get a double double
-					//a triple double counts as both
-					if(doubleDigits == 2)
+					// if two categories in double digits, they get a double double
+					// a triple double counts as both
+					if (doubleDigits == 2) {
 						totalStats.dd2++;
-					if(doubleDigits > 2) {
+					}
+					if (doubleDigits > 2) {
 						totalStats.dd2++;
 						totalStats.td3++;
 					}
 				}
 
-				//depending on what sport this team is, do the correct stat crunching
+				// depending on what sport this team is, do the correct stat crunching
 				playerStats.push(this.crunchStats(totalStats));
 
 			}
 
-			if(!playerStats.length)
+			if (!playerStats.length) {
 				playerStats = this.markEmpty(0);
+			}
 
-			//finally done
+			// finally done
 			this.playerSeasonStats = playerStats;
-				
 		},
 
 		crunchStats(totals) {
 			var crunched = {};
 
-			//loop through each key
-			for(var key in totals) {
-				if(totals.hasOwnProperty(key)) {
-					//key exists
+			// loop through each key
+			for (var key in totals) {
+				if (totals.hasOwnProperty(key)) {
+					// key exists
 
-					//keys not needing averaging
-					if(key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
+					// keys not needing averaging
+					if (key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
 						crunched[key] = totals[key];
 						continue;
 					}
 
-					//special cases, aren't averaged
-					if(key === 'gs' || key === 'gp') {
-						if(totals[key] === true)
+					// special cases, aren't averaged
+					if (key === 'gs' || key === 'gp') {
+						if (totals[key] === true)
 							crunched[key] = 1;
-						else if(totals[key] === false)
+						else if (totals[key] === false)
 							crunched[key] = 0;
 						else
 							crunched[key] = totals[key];
 						continue;
 					}
 
-					//average by number of games played, round to nearest tenth
+					// average by number of games played, round to nearest tenth
 					crunched[key] = Math.round((totals[key] / totals['gp']) * 10) / 10;
 				}
 			}
 
-			//calculate the percentages
-			//field goal, 3 pointers, free throws
+			// calculate the percentages
+			// field goal, 3 pointers, free throws
 			var prefixes = ['fg', 'threep', 'ft'];
-			for(var x = 0; x < prefixes.length; x++) {
+			for (var x = 0; x < prefixes.length; x++) {
 				var makes = prefixes[x] + 'm';
 				var attempts = prefixes[x] + 'a';
 				var percentage = prefixes[x] + '_';
 
-				if(crunched[makes] && crunched[attempts]) {
+				if (crunched[makes] && crunched[attempts]) {
 					var percent = crunched[makes] / crunched[attempts];
-					if(isNaN(percent)) {
+					if (isNaN(percent)) {
 						crunched[percentage] = 0;
 						continue;
 					}
-					//convert to percentages and round to nearest tenth
+					// convert to percentages and round to nearest tenth
 					crunched[percentage] = Math.round((percent * 100) * 10) / 10;
 				}
 				else {
@@ -587,23 +574,23 @@ export default  {
 			}
 
 
-			//calculate special stats
+			// calculate special stats
 
-			if(this.playerSeasonCols.includes('eff')) {
+			if (this.playerSeasonCols.includes('eff')) {
 				crunched['eff'] = this.efficiency(totals);
 			}
 
-			if(this.playerSeasonCols.includes('efg_')) {
+			if (this.playerSeasonCols.includes('efg_')) {
 				var efg = (totals['fgm'] + 0.5 * totals['threepm']) / totals['fga'];
 				crunched['efg_'] = Math.round((efg * 100) * 10) / 10;
 			}
 
-			if(this.playerSeasonCols.includes('ts_')) {
+			if (this.playerSeasonCols.includes('ts_')) {
 				var ts = totals['pts'] / (2 * (totals['fga'] + (0.44 * totals['fta'])));
 				crunched['ts_'] = Math.round((ts * 100) * 10) / 10;
 			}
 
-			if(this.playerSeasonCols.includes('astto')) {
+			if (this.playerSeasonCols.includes('astto')) {
 				var astto = totals['ast'] / totals['to'];
 				crunched['astto'] = Math.round(astto * 10) / 10;
 			}
@@ -611,7 +598,7 @@ export default  {
 			return crunched;
 		},
 
-		//calculates a players season efficiency rating
+		// calculates a players season efficiency rating
 		efficiency(totals) {
 			var eff =  (totals['pts'] + totals['reb'] + totals['ast'] + totals['stl'] +
 						totals['blk'] - (totals['fga'] - totals['fgm']) - (totals['fta'] - totals['ftm']) - 
@@ -621,52 +608,52 @@ export default  {
 		},
 
 
-		//compiles raw stats into a list of stats by event
+		// compiles raw stats into a list of stats by event
 		makeTeamRecentStats(rawData) {
 			var teamStats = [];
 
-			//for each event, parse some info
-			for(var x = 0; x < rawData.length; x++) {
+			// for each event, parse some info
+			for (var x = 0; x < rawData.length; x++) {
 				var data = rawData[x];
 
 				var stats = JSON.parse(data.stats);
 				var meta = JSON.parse(data.meta);
 
-				//format date of event like 1/31
-				var date = moment.utc(data.event_date * 1000).local().format('M/D');
+				// format date of event like 1/31
+				var date = moment.utc(meta.event.start * 1000).local().format('M/D');
 
 				stats.date 		 = date;
 				stats.id 			 = data.id;
 				stats.event_id = data.event_id;
 
-				//if they included who this game was against
-				if(meta.event.class === 1) {
-					//home game
+				// if they included who this game was against
+				if (meta.event.class === 1) {
+					// home game
 					stats.opp = 'vs. ' + meta.opp;
 					meta.home = 'vs.';
 				}
-				else if(meta.event.class === 2) {
-					//away game
+				else if (meta.event.class === 2) {
+					// away game
 					stats.opp = '@ ' + meta.opp;
 					meta.home = '@';
 				}
 				else {
-					//unspecified
+					// unspecified
 					stats.opp = meta.opp;
 				}
 				
 
 
-				if(meta.oppScore < stats.pts) {
-					//they won
+				if (meta.oppScore < stats.pts) {
+					// they won
 					stats.win = 'W';
 				}
-				else if(meta.oppScore > stats.pts) {
-					//they lost
+				else if (meta.oppScore > stats.pts) {
+					// they lost
 					stats.win = 'L';
 				}
-				else if(meta.oppScore === stats.pts) {
-					//tie
+				else if (meta.oppScore === stats.pts) {
+					// tie
 					stats.win = 'TIE';
 				}
 
@@ -674,7 +661,7 @@ export default  {
 				teamStats.push(stats);
 			}
 
-			if(!teamStats.length)
+			if (!teamStats.length)
 				teamStats = this.markEmpty(1)
 
 			this.teamRecentStats = teamStats;
@@ -689,28 +676,28 @@ export default  {
 				gp: rawData.length,
 			};
 			
-			for(var x = 0; x < rawData.length; x++) {
+			for (var x = 0; x < rawData.length; x++) {
 	
-				//store the stats for this event
+				// store the stats for this event
 				var stats = JSON.parse(rawData[x].stats);
 				var meta = JSON.parse(rawData[x].meta);
 				var doubleDigits = 0;
 
-				for(var key in stats) {
-					if(stats.hasOwnProperty(key)) {
+				for (var key in stats) {
+					if (stats.hasOwnProperty(key)) {
 
-						if(key.includes('_')) {
+						if (key.includes('_')) {
 							totalStats[key] = '-';
-							continue; //leave the percentages (e.g. fg_) for later
+							continue; // leave the percentages (e.g. fg_) for later
 						}
 
-						if(isNaN(stats[key])) {
-							totalStats[key] = stats[key]; //not something that needs averaging
+						if (isNaN(stats[key])) {
+							totalStats[key] = stats[key]; // not something that needs averaging
 							continue;
 						}
 						
-						//if this key already exists, add the numbers
-						if(totalStats[key]) 
+						// if this key already exists, add the numbers
+						if (totalStats[key]) 
 							totalStats[key] = totalStats[key] + stats[key];
 						else 
 							totalStats[key] = stats[key];
@@ -724,7 +711,7 @@ export default  {
 		
 		},
 
-		//if stats are being viewed for a single event, cut out unnecessary columns
+		// if stats are being viewed for a single event, cut out unnecessary columns
 		formatForEvent() {
 
 			var index = this.teamCols.indexOf('win');
@@ -746,37 +733,37 @@ export default  {
 		},
 
 
-		//decides whether or not this row is shown
-		//based on which pagination page is active
+		// decides whether or not this row is shown
+		// based on which pagination page is active
 		statShown(index) {
 			return this.pagActive === Math.floor(index / this.rowsPerPage) || !this.pagination;
 		},
 
-		//returns 'win' or 'loss' for formatting class on W/L column
+		// returns 'win' or 'loss' for formatting class on W/L column
 		winLossClass(val) {
-			if(val === 'W')
+			if (val === 'W')
 				return 'win';
-			else if(val === 'L')
+			else if (val === 'L')
 				return 'loss';
-			else if(val === 'TIE')
+			else if (val === 'TIE')
 				return 'versus';
 			else
 				return '';
 		},
 
-		//new pagination link was clicked
+		// new pagination link was clicked
 		switchPag(clicked) {
 			this.pagActive = clicked;
 		},
 
-		//set the clicked header as the sort key
-		//invert ascending / descending
+		// set the clicked header as the sort key
+		// invert ascending / descending
 		playerSortBy(key) {
 
-			if(key === 'name') {
-				//if sorting by name, really sort by hidden lastname field
+			if (key === 'name') {
+				// if sorting by name, really sort by hidden lastname field
 				key = 'lastname'; 
-				if(key === this.playerSortKey)
+				if (key === this.playerSortKey)
 					this.playerSortOrders['name']  = this.playerSortOrders['name'] * -1;
 				else
 					this.playerSortKey = 'lastname';
@@ -784,32 +771,32 @@ export default  {
 				return;
 			}
 
-			if(key === this.playerSortKey)
+			if (key === this.playerSortKey)
 				this.playerSortOrders[key]  = this.playerSortOrders[key] * -1;
 			else
 				this.playerSortKey = key;
 		},
 
 		teamSortBy(key) {
-			if(key === this.teamSortKey)
+			if (key === this.teamSortKey)
 				this.teamSortOrders[key]  = this.teamSortOrders[key] * -1;
 			else
 				this.teamSortKey = key;
 		},
 
 
-		//instead of an empty stats row, fill with '-'
+		// instead of an empty stats row, fill with '-'
 		markEmpty(type) {
 			var stats = [{}];
 
-			if(type === 0) {
-				//player stats
+			if (type === 'player') {
+				// player stats
 				this.playerCols.forEach(function(key) {
 					stats[key] = '-';
 				});
 			}
-			else if(type === 1) {
-				//team stats
+			else if (type === 'team') {
+				// team stats
 				this.teamCols.forEach(function(key) {
 					stats[key] = '-';
 				});

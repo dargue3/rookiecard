@@ -1851,383 +1851,6 @@ module.exports = function(a, b){
 }).apply(this, arguments);
 
 },{}],36:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/debug/browser.js", module);
-(function(){
-
-/**
- * This is the web browser implementation of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = require('./debug');
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-exports.storage = 'undefined' != typeof chrome
-               && 'undefined' != typeof chrome.storage
-                  ? chrome.storage.local
-                  : localstorage();
-
-/**
- * Colors.
- */
-
-exports.colors = [
-  'lightseagreen',
-  'forestgreen',
-  'goldenrod',
-  'dodgerblue',
-  'darkorchid',
-  'crimson'
-];
-
-/**
- * Currently only WebKit-based Web Inspectors, Firefox >= v31,
- * and the Firebug extension (any Firefox version) are known
- * to support "%c" CSS customizations.
- *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
- */
-
-function useColors() {
-  // is webkit? http://stackoverflow.com/a/16459606/376773
-  return ('WebkitAppearance' in document.documentElement.style) ||
-    // is firebug? http://stackoverflow.com/a/398120/376773
-    (window.console && (console.firebug || (console.exception && console.table))) ||
-    // is firefox >= v31?
-    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
-}
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-exports.formatters.j = function(v) {
-  return JSON.stringify(v);
-};
-
-
-/**
- * Colorize log arguments if enabled.
- *
- * @api public
- */
-
-function formatArgs() {
-  var args = arguments;
-  var useColors = this.useColors;
-
-  args[0] = (useColors ? '%c' : '')
-    + this.namespace
-    + (useColors ? ' %c' : ' ')
-    + args[0]
-    + (useColors ? '%c ' : ' ')
-    + '+' + exports.humanize(this.diff);
-
-  if (!useColors) return args;
-
-  var c = 'color: ' + this.color;
-  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
-
-  // the final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-z%]/g, function(match) {
-    if ('%%' === match) return;
-    index++;
-    if ('%c' === match) {
-      // we only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-
-  args.splice(lastC, 0, c);
-  return args;
-}
-
-/**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
- *
- * @api public
- */
-
-function log() {
-  // this hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return 'object' === typeof console
-    && console.log
-    && Function.prototype.apply.call(console.log, console, arguments);
-}
-
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-
-function save(namespaces) {
-  try {
-    if (null == namespaces) {
-      exports.storage.removeItem('debug');
-    } else {
-      exports.storage.debug = namespaces;
-    }
-  } catch(e) {}
-}
-
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-
-function load() {
-  var r;
-  try {
-    r = exports.storage.debug;
-  } catch(e) {}
-  return r;
-}
-
-/**
- * Enable namespaces listed in `localStorage.debug` initially.
- */
-
-exports.enable(load());
-
-/**
- * Localstorage attempts to return the localstorage.
- *
- * This is necessary because safari throws
- * when a user disables cookies/localstorage
- * and you attempt to access it.
- *
- * @return {LocalStorage}
- * @api private
- */
-
-function localstorage(){
-  try {
-    return window.localStorage;
-  } catch (e) {}
-}
-
-}).apply(this, arguments);
-
-},{"./debug":37}],37:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/debug/debug.js", module);
-(function(){
-
-/**
- * This is the common logic for both the Node.js and web browser
- * implementations of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = debug;
-exports.coerce = coerce;
-exports.disable = disable;
-exports.enable = enable;
-exports.enabled = enabled;
-exports.humanize = require('ms');
-
-/**
- * The currently active debug mode names, and names to skip.
- */
-
-exports.names = [];
-exports.skips = [];
-
-/**
- * Map of special "%n" handling functions, for the debug "format" argument.
- *
- * Valid key names are a single, lowercased letter, i.e. "n".
- */
-
-exports.formatters = {};
-
-/**
- * Previously assigned color.
- */
-
-var prevColor = 0;
-
-/**
- * Previous log timestamp.
- */
-
-var prevTime;
-
-/**
- * Select a color.
- *
- * @return {Number}
- * @api private
- */
-
-function selectColor() {
-  return exports.colors[prevColor++ % exports.colors.length];
-}
-
-/**
- * Create a debugger with the given `namespace`.
- *
- * @param {String} namespace
- * @return {Function}
- * @api public
- */
-
-function debug(namespace) {
-
-  // define the `disabled` version
-  function disabled() {
-  }
-  disabled.enabled = false;
-
-  // define the `enabled` version
-  function enabled() {
-
-    var self = enabled;
-
-    // set `diff` timestamp
-    var curr = +new Date();
-    var ms = curr - (prevTime || curr);
-    self.diff = ms;
-    self.prev = prevTime;
-    self.curr = curr;
-    prevTime = curr;
-
-    // add the `color` if not set
-    if (null == self.useColors) self.useColors = exports.useColors();
-    if (null == self.color && self.useColors) self.color = selectColor();
-
-    var args = Array.prototype.slice.call(arguments);
-
-    args[0] = exports.coerce(args[0]);
-
-    if ('string' !== typeof args[0]) {
-      // anything else let's inspect with %o
-      args = ['%o'].concat(args);
-    }
-
-    // apply any `formatters` transformations
-    var index = 0;
-    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
-      // if we encounter an escaped % then don't increase the array index
-      if (match === '%%') return match;
-      index++;
-      var formatter = exports.formatters[format];
-      if ('function' === typeof formatter) {
-        var val = args[index];
-        match = formatter.call(self, val);
-
-        // now we need to remove `args[index]` since it's inlined in the `format`
-        args.splice(index, 1);
-        index--;
-      }
-      return match;
-    });
-
-    if ('function' === typeof exports.formatArgs) {
-      args = exports.formatArgs.apply(self, args);
-    }
-    var logFn = enabled.log || exports.log || console.log.bind(console);
-    logFn.apply(self, args);
-  }
-  enabled.enabled = true;
-
-  var fn = exports.enabled(namespace) ? enabled : disabled;
-
-  fn.namespace = namespace;
-
-  return fn;
-}
-
-/**
- * Enables a debug mode by namespaces. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} namespaces
- * @api public
- */
-
-function enable(namespaces) {
-  exports.save(namespaces);
-
-  var split = (namespaces || '').split(/[\s,]+/);
-  var len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    namespaces = split[i].replace(/\*/g, '.*?');
-    if (namespaces[0] === '-') {
-      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-    } else {
-      exports.names.push(new RegExp('^' + namespaces + '$'));
-    }
-  }
-}
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-function disable() {
-  exports.enable('');
-}
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-function enabled(name) {
-  var i, len;
-  for (i = 0, len = exports.skips.length; i < len; i++) {
-    if (exports.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.names.length; i < len; i++) {
-    if (exports.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Coerce `val`.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-}).apply(this, arguments);
-
-},{"ms":123}],38:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/index.js", module);
 (function(){
 
@@ -2235,7 +1858,7 @@ module.exports =  require('./lib/');
 
 }).apply(this, arguments);
 
-},{"./lib/":39}],39:[function(require,module,exports){
+},{"./lib/":37}],37:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/index.js", module);
 (function(){
 
@@ -2251,7 +1874,7 @@ module.exports.parser = require('engine.io-parser');
 
 }).apply(this, arguments);
 
-},{"./socket":40,"engine.io-parser":48}],40:[function(require,module,exports){
+},{"./socket":38,"engine.io-parser":48}],38:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/socket.js", module);
 (function(){
 (function (global){
@@ -2987,7 +2610,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./transport":41,"./transports":42,"component-emitter":34,"debug":36,"engine.io-parser":48,"indexof":53,"parsejson":124,"parseqs":125,"parseuri":126}],41:[function(require,module,exports){
+},{"./transport":39,"./transports":40,"component-emitter":34,"debug":46,"engine.io-parser":48,"indexof":53,"parsejson":124,"parseqs":125,"parseuri":126}],39:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transport.js", module);
 (function(){
 /**
@@ -3148,7 +2771,7 @@ Transport.prototype.onClose = function () {
 
 }).apply(this, arguments);
 
-},{"component-emitter":34,"engine.io-parser":48}],42:[function(require,module,exports){
+},{"component-emitter":34,"engine.io-parser":48}],40:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/index.js", module);
 (function(){
 (function (global){
@@ -3209,7 +2832,7 @@ function polling(opts){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling-jsonp":43,"./polling-xhr":44,"./websocket":46,"xmlhttprequest-ssl":47}],43:[function(require,module,exports){
+},{"./polling-jsonp":41,"./polling-xhr":42,"./websocket":44,"xmlhttprequest-ssl":45}],41:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-jsonp.js", module);
 (function(){
 (function (global){
@@ -3455,7 +3078,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling":45,"component-inherit":35}],44:[function(require,module,exports){
+},{"./polling":43,"component-inherit":35}],42:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-xhr.js", module);
 (function(){
 (function (global){
@@ -3875,7 +3498,7 @@ function unloadHandler() {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling":45,"component-emitter":34,"component-inherit":35,"debug":36,"xmlhttprequest-ssl":47}],45:[function(require,module,exports){
+},{"./polling":43,"component-emitter":34,"component-inherit":35,"debug":46,"xmlhttprequest-ssl":45}],43:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling.js", module);
 (function(){
 /**
@@ -4128,7 +3751,7 @@ Polling.prototype.uri = function(){
 
 }).apply(this, arguments);
 
-},{"../transport":41,"component-inherit":35,"debug":36,"engine.io-parser":48,"parseqs":125,"xmlhttprequest-ssl":47,"yeast":169}],46:[function(require,module,exports){
+},{"../transport":39,"component-inherit":35,"debug":46,"engine.io-parser":48,"parseqs":125,"xmlhttprequest-ssl":45,"yeast":173}],44:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/websocket.js", module);
 (function(){
 (function (global){
@@ -4424,7 +4047,7 @@ WS.prototype.check = function(){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"../transport":41,"component-inherit":35,"debug":36,"engine.io-parser":48,"parseqs":125,"ws":29,"yeast":169}],47:[function(require,module,exports){
+},{"../transport":39,"component-inherit":35,"debug":46,"engine.io-parser":48,"parseqs":125,"ws":29,"yeast":173}],45:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/xmlhttprequest.js", module);
 (function(){
 // browser shim for xmlhttprequest module
@@ -4466,7 +4089,384 @@ module.exports = function(opts) {
 
 }).apply(this, arguments);
 
-},{"has-cors":52}],48:[function(require,module,exports){
+},{"has-cors":52}],46:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":47}],47:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":123}],48:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/browser.js", module);
 (function(){
 (function (global){
@@ -5068,7 +5068,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./keys":49,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":27,"blob":28,"has-binary":50,"utf8":139}],49:[function(require,module,exports){
+},{"./keys":49,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":27,"blob":28,"has-binary":50,"utf8":143}],49:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/keys.js", module);
 (function(){
 
@@ -8391,7 +8391,7 @@ exports.Socket = require('./socket');
 
 }).apply(this, arguments);
 
-},{"./manager":129,"./socket":131,"./url":132,"debug":36,"socket.io-parser":135}],129:[function(require,module,exports){
+},{"./manager":129,"./socket":131,"./url":132,"debug":134,"socket.io-parser":137}],129:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/manager.js", module);
 (function(){
 
@@ -8954,7 +8954,7 @@ Manager.prototype.onreconnect = function(){
 
 }).apply(this, arguments);
 
-},{"./on":130,"./socket":131,"backo2":26,"component-bind":33,"component-emitter":133,"debug":36,"engine.io-client":38,"indexof":53,"socket.io-parser":135}],130:[function(require,module,exports){
+},{"./on":130,"./socket":131,"backo2":26,"component-bind":33,"component-emitter":133,"debug":134,"engine.io-client":36,"indexof":53,"socket.io-parser":137}],130:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/on.js", module);
 (function(){
 
@@ -9402,7 +9402,7 @@ Socket.prototype.compress = function(compress){
 
 }).apply(this, arguments);
 
-},{"./on":130,"component-bind":33,"component-emitter":133,"debug":36,"has-binary":51,"socket.io-parser":135,"to-array":138}],132:[function(require,module,exports){
+},{"./on":130,"component-bind":33,"component-emitter":133,"debug":134,"has-binary":51,"socket.io-parser":137,"to-array":142}],132:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/url.js", module);
 (function(){
 (function (global){
@@ -9486,7 +9486,7 @@ function url(uri, loc){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"debug":36,"parseuri":126}],133:[function(require,module,exports){
+},{"debug":134,"parseuri":126}],133:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/component-emitter/index.js", module);
 (function(){
 
@@ -9654,6 +9654,383 @@ Emitter.prototype.hasListeners = function(event){
 }).apply(this, arguments);
 
 },{}],134:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":135}],135:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":123}],136:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/binary.js", module);
 (function(){
 (function (global){
@@ -9802,7 +10179,7 @@ exports.removeBlobs = function(data, callback) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./is-buffer":136,"isarray":54}],135:[function(require,module,exports){
+},{"./is-buffer":138,"isarray":54}],137:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/index.js", module);
 (function(){
 
@@ -10208,7 +10585,7 @@ function error(data){
 
 }).apply(this, arguments);
 
-},{"./binary":134,"./is-buffer":136,"component-emitter":34,"debug":36,"isarray":54,"json3":137}],136:[function(require,module,exports){
+},{"./binary":136,"./is-buffer":138,"component-emitter":34,"debug":139,"isarray":54,"json3":141}],138:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/is-buffer.js", module);
 (function(){
 (function (global){
@@ -10229,7 +10606,384 @@ function isBuf(obj) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],137:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":140}],140:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":123}],141:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/json3/lib/json3.js", module);
 (function(){
 (function (global){
@@ -11139,7 +11893,7 @@ _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],138:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/to-array/index.js", module);
 (function(){
 module.exports = toArray
@@ -11158,7 +11912,7 @@ function toArray(list, index) {
 
 }).apply(this, arguments);
 
-},{}],139:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
 (function(){
 (function (global){
@@ -11410,7 +12164,7 @@ _hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],140:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-autosize/index.js", module);
 (function(){
 var autosize = require('autosize')
@@ -11433,7 +12187,7 @@ exports.install = function(Vue) {
 }
 }).apply(this, arguments);
 
-},{"autosize":4}],141:[function(require,module,exports){
+},{"autosize":4}],145:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-hot-reload-api/index.js", module);
 (function(){
 var Vue // late bind
@@ -11738,7 +12492,7 @@ function format (id) {
 
 }).apply(this, arguments);
 
-},{}],142:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/before.js", module);
 (function(){
 /**
@@ -11762,7 +12516,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"../util":165}],143:[function(require,module,exports){
+},{"../util":169}],147:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/index.js", module);
 (function(){
 /**
@@ -11833,7 +12587,7 @@ function parseHeaders(str) {
 
 }).apply(this, arguments);
 
-},{"../../promise":158,"../../util":165,"./xhr":146}],144:[function(require,module,exports){
+},{"../../promise":162,"../../util":169,"./xhr":150}],148:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/jsonp.js", module);
 (function(){
 /**
@@ -11887,7 +12641,7 @@ module.exports = function (request) {
 
 }).apply(this, arguments);
 
-},{"../../promise":158,"../../util":165}],145:[function(require,module,exports){
+},{"../../promise":162,"../../util":169}],149:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xdr.js", module);
 (function(){
 /**
@@ -11930,7 +12684,7 @@ module.exports = function (request) {
 
 }).apply(this, arguments);
 
-},{"../../promise":158,"../../util":165}],146:[function(require,module,exports){
+},{"../../promise":162,"../../util":169}],150:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xhr.js", module);
 (function(){
 /**
@@ -11979,7 +12733,7 @@ module.exports = function (request) {
 
 }).apply(this, arguments);
 
-},{"../../promise":158,"../../util":165}],147:[function(require,module,exports){
+},{"../../promise":162,"../../util":169}],151:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/cors.js", module);
 (function(){
 /**
@@ -12022,7 +12776,7 @@ function crossOrigin(request) {
 
 }).apply(this, arguments);
 
-},{"../util":165,"./client/xdr":145}],148:[function(require,module,exports){
+},{"../util":169,"./client/xdr":149}],152:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/header.js", module);
 (function(){
 /**
@@ -12054,7 +12808,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"../util":165}],149:[function(require,module,exports){
+},{"../util":169}],153:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/index.js", module);
 (function(){
 /**
@@ -12157,7 +12911,7 @@ module.exports = _.http = Http;
 
 }).apply(this, arguments);
 
-},{"../promise":158,"../util":165,"./before":142,"./client":143,"./cors":147,"./header":148,"./interceptor":150,"./jsonp":151,"./method":152,"./mime":153,"./timeout":154}],150:[function(require,module,exports){
+},{"../promise":162,"../util":169,"./before":146,"./client":147,"./cors":151,"./header":152,"./interceptor":154,"./jsonp":155,"./method":156,"./mime":157,"./timeout":158}],154:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/interceptor.js", module);
 (function(){
 /**
@@ -12208,7 +12962,7 @@ function when(value, fulfilled, rejected) {
 
 }).apply(this, arguments);
 
-},{"../promise":158,"../util":165}],151:[function(require,module,exports){
+},{"../promise":162,"../util":169}],155:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/jsonp.js", module);
 (function(){
 /**
@@ -12232,7 +12986,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"./client/jsonp":144}],152:[function(require,module,exports){
+},{"./client/jsonp":148}],156:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/method.js", module);
 (function(){
 /**
@@ -12255,7 +13009,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{}],153:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/mime.js", module);
 (function(){
 /**
@@ -12297,7 +13051,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"../util":165}],154:[function(require,module,exports){
+},{"../util":169}],158:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/timeout.js", module);
 (function(){
 /**
@@ -12333,7 +13087,7 @@ module.exports = function () {
 
 }).apply(this, arguments);
 
-},{}],155:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/index.js", module);
 (function(){
 /**
@@ -12392,7 +13146,7 @@ module.exports = install;
 
 }).apply(this, arguments);
 
-},{"./http":149,"./promise":158,"./resource":159,"./url":160,"./util":165}],156:[function(require,module,exports){
+},{"./http":153,"./promise":162,"./resource":163,"./url":164,"./util":169}],160:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/promise.js", module);
 (function(){
 /**
@@ -12577,7 +13331,7 @@ module.exports = Promise;
 
 }).apply(this, arguments);
 
-},{"../util":165}],157:[function(require,module,exports){
+},{"../util":169}],161:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/url-template.js", module);
 (function(){
 /**
@@ -12733,7 +13487,7 @@ exports.encodeReserved = function (str) {
 
 }).apply(this, arguments);
 
-},{}],158:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/promise.js", module);
 (function(){
 /**
@@ -12848,7 +13602,7 @@ module.exports = Promise;
 
 }).apply(this, arguments);
 
-},{"./lib/promise":156,"./util":165}],159:[function(require,module,exports){
+},{"./lib/promise":160,"./util":169}],163:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/resource.js", module);
 (function(){
 /**
@@ -12964,7 +13718,7 @@ module.exports = _.resource = Resource;
 
 }).apply(this, arguments);
 
-},{"./util":165}],160:[function(require,module,exports){
+},{"./util":169}],164:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/index.js", module);
 (function(){
 /**
@@ -13100,7 +13854,7 @@ module.exports = _.url = Url;
 
 }).apply(this, arguments);
 
-},{"../util":165,"./legacy":161,"./query":162,"./root":163,"./template":164}],161:[function(require,module,exports){
+},{"../util":169,"./legacy":165,"./query":166,"./root":167,"./template":168}],165:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/legacy.js", module);
 (function(){
 /**
@@ -13152,7 +13906,7 @@ function encodeUriQuery(value, spaces) {
 
 }).apply(this, arguments);
 
-},{"../util":165}],162:[function(require,module,exports){
+},{"../util":169}],166:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/query.js", module);
 (function(){
 /**
@@ -13182,7 +13936,7 @@ module.exports = function (options, next) {
 
 }).apply(this, arguments);
 
-},{"../util":165}],163:[function(require,module,exports){
+},{"../util":169}],167:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/root.js", module);
 (function(){
 /**
@@ -13204,7 +13958,7 @@ module.exports = function (options, next) {
 
 }).apply(this, arguments);
 
-},{"../util":165}],164:[function(require,module,exports){
+},{"../util":169}],168:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/template.js", module);
 (function(){
 /**
@@ -13226,7 +13980,7 @@ module.exports = function (options) {
 
 }).apply(this, arguments);
 
-},{"../lib/url-template":157}],165:[function(require,module,exports){
+},{"../lib/url-template":161}],169:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/util.js", module);
 (function(){
 /**
@@ -13354,7 +14108,7 @@ function merge(target, source, deep) {
 
 }).apply(this, arguments);
 
-},{}],166:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", module);
 (function(){
 /*!
@@ -16068,7 +16822,7 @@ _hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", 
 }));
 }).apply(this, arguments);
 
-},{}],167:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue/dist/vue.common.js", module);
 (function(){
 (function (process,global){
@@ -26149,7 +26903,7 @@ module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"_process":127}],168:[function(require,module,exports){
+},{"_process":127}],172:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vueify/lib/insert-css.js", module);
 (function(){
 var inserted = exports.cache = {}
@@ -26173,7 +26927,7 @@ exports.insert = function (css) {
 
 }).apply(this, arguments);
 
-},{}],169:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/yeast/index.js", module);
 (function(){
 'use strict';
@@ -26247,7 +27001,7 @@ module.exports = yeast;
 
 }).apply(this, arguments);
 
-},{}],170:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/AddEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -26610,7 +27364,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],171:[function(require,module,exports){
+},{"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],175:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Alert.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -26695,7 +27449,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],172:[function(require,module,exports){
+},{"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],176:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/App.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -26734,7 +27488,7 @@ exports.default = {
 			prefix: '/api/v1/',
 			user: {},
 			teams: [],
-			showAlert: false,
+			alert: false,
 			alertCounter: 0,
 			alertMessage: "You better check yoself",
 			alertType: "info"
@@ -26868,12 +27622,12 @@ exports.default = {
    */
 		banner: function banner(type, msg) {
 			// always hide any existing alerts
-			this.showAlert = false;
+			this.alert = false;
 
 			// give some timeout so there's a noticeable gap between old and new alerts
 			var self = this;
 			setTimeout(function () {
-				self.showAlert = true;
+				self.alert = true;
 				self.$broadcast('displayAlert', type, msg);
 			}, 400);
 		},
@@ -26927,7 +27681,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<div>\n\t\n    <nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n      <div class=\"container\">\n\n         <!-- logo and hamburger  -->\n        <div class=\"navbar-header\">\n            <button id=\"hamburger\" type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#navbar-left\">\n                <span class=\"sr-only\">Toggle navigation</span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n            </button>\n            <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n\n            \n        <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n          <!-- search bar -->\n          <ul class=\"nav navbar-nav\">\n            <div id=\"navSearchDiv\">\n              <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n              <form method=\"GET\" action=\"/search\" accept-charset=\"UTF-8\">\n          \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form\" placeholder=\"Search players and teams...\" tabindex=\"1\" required=\"\" role=\"search\" name=\"q\" type=\"search\">\n          \t\t</form>\n            </div>\n          </ul>\n\n          <!-- nav links -->\n          <ul class=\"nav navbar-nav navbar-right\">\n            <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n            <li id=\"teamDropdown\" class=\"dropdown\">\n              <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n                <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span id=\"teamCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n            \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n                <li v-for=\"team in memberOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li>\n                <li v-if=\"memberOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n                <li v-for=\"team in fanOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"fanOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n                <li v-for=\"team in invitedTo\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"invitedTo.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n              </ul>\n            </li>\n            <li id=\"optionsDropdown\" class=\"dropdown\">\n              <a href=\"#\" id=\"navOptions\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span id=\"optionsCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu\" role=\"menu\">\n                <li><a class=\"nav-link\">Settings</a></li>\n                <li><a class=\"nav-link\">Help</a></li>\n                <li><a class=\"nav-link\">Submit Feedback</a></li>\n                <li id=\"divider\" class=\"divider\"></li>\n                <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n              </ul>\n            </li>\n          </ul>\n        </div>\n      </div>\n    </nav>\n\n    <nav style=\"display: none\" class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n      <div class=\"container\">\n        <div class=\"navbar-header\">\n          <a href=\"/\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n      </div>\n    </nav>\n\n\t\t<rc-alert :show=\"showAlert\" transition=\"fade-fast\"></rc-alert>\n\t\n\t\t<router-view id=\"router\" transition=\"fade-slow\" class=\"router\"></router-view>\n\t\n\t</div>\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<div>\n\t\n    <nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n      <div class=\"container\">\n\n         <!-- logo and hamburger  -->\n        <div class=\"navbar-header\">\n            <button id=\"hamburger\" type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#navbar-left\">\n                <span class=\"sr-only\">Toggle navigation</span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n            </button>\n            <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n\n            \n        <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n          <!-- search bar -->\n          <ul class=\"nav navbar-nav\">\n            <div id=\"navSearchDiv\">\n              <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n              <form method=\"GET\" action=\"/search\" accept-charset=\"UTF-8\">\n          \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form\" placeholder=\"Search players and teams...\" tabindex=\"1\" required=\"\" role=\"search\" name=\"q\" type=\"search\">\n          \t\t</form>\n            </div>\n          </ul>\n\n          <!-- nav links -->\n          <ul class=\"nav navbar-nav navbar-right\">\n            <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n            <li id=\"teamDropdown\" class=\"dropdown\">\n              <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n                <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span id=\"teamCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n            \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n                <li v-for=\"team in memberOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li>\n                <li v-if=\"memberOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n                <li v-for=\"team in fanOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"fanOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n                <li v-for=\"team in invitedTo\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"invitedTo.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n              </ul>\n            </li>\n            <li id=\"optionsDropdown\" class=\"dropdown\">\n              <a href=\"#\" id=\"navOptions\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span id=\"optionsCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu\" role=\"menu\">\n                <li><a class=\"nav-link\">Settings</a></li>\n                <li><a class=\"nav-link\">Help</a></li>\n                <li><a class=\"nav-link\">Submit Feedback</a></li>\n                <li id=\"divider\" class=\"divider\"></li>\n                <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n              </ul>\n            </li>\n          </ul>\n        </div>\n      </div>\n    </nav>\n\n    <nav style=\"display: none\" class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n      <div class=\"container\">\n        <div class=\"navbar-header\">\n          <a href=\"/\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n      </div>\n    </nav>\n\n\t\t<rc-alert :show=\"alert\" transition=\"fade-fast\"></rc-alert>\n\t\n\t\t<router-view id=\"router\" transition=\"fade-md\" transition-mode=\"out-in\" class=\"router\"></router-view>\n\t\n\t</div>\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -26944,7 +27698,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/Requests.js":189,"./Alert.vue":171,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],173:[function(require,module,exports){
+},{"../mixins/Requests.js":193,"./Alert.vue":175,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],177:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/BasketballStats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -26970,10 +27724,9 @@ exports.default = {
 	mixins: [_StatsScrollSpy2.default],
 
 	data: function data() {
-
 		if (!this.pagination) this.pagination = false;
 
-		//if single-event stats are being viewed, remove unnecessary columns
+		// if single-event stats are being viewed, remove unnecessary columns
 		if (this.type === 'event') {
 			this.formatForEvent();
 		}
@@ -27002,11 +27755,11 @@ exports.default = {
 		},
 
 
-		//gets rid of the stat categories that aren't useful for team season stats
+		// gets rid of the stat categories that aren't useful for team season stats
 		teamSeasonCols: function teamSeasonCols() {
 			var index;
 			var teamCols = [];
-			//make a non-reactive copy of cols
+			// make a non-reactive copy of cols
 			this.teamCols.forEach(function (val) {
 				teamCols.push(val);
 			});
@@ -27024,66 +27777,49 @@ exports.default = {
 		},
 
 
-		//use all team stats for recent stats
+		// use all team stats for recent stats
 		teamRecentCols: function teamRecentCols() {
 			return this.teamCols;
 		},
 
 
-		//gets rid of the stat categories that aren't useful for player season stats
+		// gets rid of the stat categories that aren't useful for player season stats
 		playerSeasonCols: function playerSeasonCols() {
 			var index;
 			var playerCols = [];
-			//make a non-reactive copy of cols
+			// make a non-reactive copy of cols
 			this.playerCols.forEach(function (val) {
 				playerCols.push(val);
 			});
 
-			index = playerCols.indexOf('date');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('win');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('opp');
-			if (index !== -1) playerCols.splice(index, 1);
+			var ditch = ['date', 'win', 'opp'];
+			ditch.forEach(function (stat) {
+				var index = playerCols.indexOf(stat);
+				if (index !== -1) {
+					playerCols.splice(index, 1);
+				}
+			});
 
 			return playerCols;
 		},
 
 
-		//gets rid of the stat categories that aren't useful for recent player stats
+		// gets rid of the stat categories that aren't useful for recent player stats
 		playerRecentCols: function playerRecentCols() {
 			var index;
 			var playerCols = [];
-			//make a non-reactive copy of cols
+			// make a non-reactive copy of cols
 			this.playerCols.forEach(function (val) {
 				playerCols.push(val);
 			});
 
-			index = playerCols.indexOf('name');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('gs');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('gp');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('efg_');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('astto');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('ts_');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('per');
-			if (index !== -1) playerCols.splice(index, 1);
-
-			index = playerCols.indexOf('eff');
-			if (index !== -1) playerCols.splice(index, 1);
+			var ditch = ['name', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff'];
+			ditch.forEach(function (stat) {
+				var index = playerCols.indexOf(stat);
+				if (index !== -1) {
+					playerCols.splice(index, 1);
+				}
+			});
 
 			return playerCols;
 		}
@@ -27102,33 +27838,35 @@ exports.default = {
 	},
 
 	methods: {
-
-		//initializes variables when stats request arrives
+		// initializes variables when stats request arrives
 
 		compile: function compile() {
-
 			var pagCount = 1;
 			var rawTeamStats = [];
 			var rawPlayerStats = [];
 
 			if (this.rawStats.length) {
 
-				//separate the data into player and team stats arrays
+				// separate the data into player and team stats arrays
 				for (var x = 0; x < this.rawStats.length; x++) {
 
-					//team stats
-					if (this.rawStats[x].type === 1) rawTeamStats.push(this.rawStats[x]);
+					// team stats
+					if (this.rawStats[x].type === 'team') {
+						rawTeamStats.push(this.rawStats[x]);
+					}
 
-					//player stats
-					if (this.rawStats[x].type === 0) rawPlayerStats.push(this.rawStats[x]);
+					// player stats
+					if (this.rawStats[x].type === 'player') {
+						rawPlayerStats.push(this.rawStats[x]);
+					}
 				}
 
-				//format stats for table
+				// format stats for table
 				this.makeTeamRecentStats(rawTeamStats);
 				this.makePlayerSeasonStats(rawPlayerStats);
 				this.makeTeamSeasonStats(rawTeamStats);
 
-				//initialize the sorting order on columns to be descending
+				// initialize the sorting order on columns to be descending
 				var teamSortOrders = {};
 				this.teamCols.forEach(function (key) {
 					teamSortOrders[key] = -1;
@@ -27139,14 +27877,14 @@ exports.default = {
 				});
 				playerSortOrders['lastname'] = -1;
 
-				//number of pages
+				// number of pages
 				pagCount = Math.ceil(this.teamRecentStats.length / this.rowsPerPage);
 
 				this.pagCount = pagCount;
 				this.teamSortOrders = teamSortOrders;
 				this.playerSortOrders = playerSortOrders;
 			} else {
-				//error occurred getting data, create placeholder data
+				// error occurred getting data, create placeholder data
 				this.playerSeasonStats = this.markEmpty(0);
 				this.playerRecentStats = this.markEmpty(0);
 				this.teamRecentStats = this.markEmpty(1);
@@ -27157,7 +27895,7 @@ exports.default = {
 		},
 
 
-		//prepare listeners for showing "SCROLL >" indicators
+		// prepare listeners for showing "SCROLL >" indicators
 		initScrollSpy: function initScrollSpy() {
 			if (this.type === 'teamSeason') this.attachScrollListener('#teamSeasonDiv', 'teamSeason');
 
@@ -27169,35 +27907,35 @@ exports.default = {
 		},
 
 
-		//compiles averages for the season for each player
-		//fair warning: this function is sort of a monster
+		// compiles averages for the season for each player
+		// fair warning: this function is sort of a monster
 		makePlayerSeasonStats: function makePlayerSeasonStats(rawData) {
 			var statsArray = [];
 			var IDs = [];
 			var playerStats = [];
 
-			//start by grouping all the stats by player
+			// start by grouping all the stats by player
 			for (var x = 0; x < rawData.length; x++) {
 				var data = rawData[x];
 				var userStats = [];
 
-				//if this player hasn't had their stats grouped yet
-				if (IDs.indexOf(data.owner_id) === -1) {
-					//find all of this player's stats in rawData
+				// if this player hasn't had their stats grouped yet
+				if (IDs.indexOf(data.member_id) === -1) {
+					// find all of this player's stats in rawData
 					userStats = rawData.filter(function (stat) {
-						return stat.owner_id === data.owner_id && stat.type === 0;
+						return stat.member_id === data.member_id && stat.type === 'player';
 					});
-					//add them to the list of already sorted
-					IDs.push(data.owner_id);
+					// add them to the list of already sorted
+					IDs.push(data.member_id);
 					statsArray.push(userStats);
 				}
 			}
 
-			//now loop through each players' stats and average
+			// now loop through each players' stats and average
 			for (var x = 0; x < statsArray.length; x++) {
 
-				//init object of compiled player's stats
-				//length of this array === number of games played
+				// init object of compiled player's stats
+				// length of this array === number of games played
 				var totalStats = {};
 				this.playerSeasonCols.forEach(function (key) {
 					totalStats[key] = 0;
@@ -27207,87 +27945,92 @@ exports.default = {
 					return player.member_id === statsArray[x][0].member_id;
 				});
 				totalStats.lastname = thisPlayer[0].lastname;
+				totalStats.name = thisPlayer[0].abbrName;
 
-				//loop through each stats object belonging to this user
+				// loop through each stats object belonging to this user
 				for (var y = 0; y < statsArray[x].length; y++) {
-					//store the stats for this event
+					// store the stats for this event
 					var stats = JSON.parse(statsArray[x][y].stats);
 					var doubleDigits = 0;
 
 					for (var key in stats) {
 						if (stats.hasOwnProperty(key)) {
 
-							if (key[key.length - 1] === '_') continue; //leave the percentages (e.g. fg_) for later
+							if (key[key.length - 1] === '_') continue; // leave the percentages (e.g. fg_) for later
 
 							if (isNaN(stats[key])) {
-								totalStats[key] = stats[key]; //not something that needs averaging
+								totalStats[key] = stats[key]; // not something that needs averaging
 								continue;
 							}
 
 							if (key === 'starter') {
-								//rename 'starter' to be 'gs'
+								// rename 'starter' to be 'gs'
 								totalStats.gs++;
 								continue;
 							}
 
-							//make a counter for double and triple doubles
-							//double double = 2 stat categories in double digits
+							// make a counter for double and triple doubles
+							// double double = 2 stat categories in double digits
 							if (stats[key] >= 10) {
 								if (key === 'ast' || key === 'reb' || key === 'stl' || key === 'blk' || key === 'pts') {
 									doubleDigits++;
 								}
 							}
 
-							//add the these stats to the total
+							// add the these stats to the total
 							totalStats[key] = totalStats[key] + stats[key];
 						}
 					}
 
-					//if two categories in double digits, they get a double double
-					//a triple double counts as both
-					if (doubleDigits == 2) totalStats.dd2++;
+					// if two categories in double digits, they get a double double
+					// a triple double counts as both
+					if (doubleDigits == 2) {
+						totalStats.dd2++;
+					}
 					if (doubleDigits > 2) {
 						totalStats.dd2++;
 						totalStats.td3++;
 					}
 				}
 
-				//depending on what sport this team is, do the correct stat crunching
+				// depending on what sport this team is, do the correct stat crunching
 				playerStats.push(this.crunchStats(totalStats));
 			}
 
-			if (!playerStats.length) playerStats = this.markEmpty(0);
+			if (!playerStats.length) {
+				playerStats = this.markEmpty(0);
+			}
 
-			//finally done
+			// finally done
 			this.playerSeasonStats = playerStats;
 		},
 		crunchStats: function crunchStats(totals) {
 			var crunched = {};
 
-			//loop through each key
+			// loop through each key
 			for (var key in totals) {
 				if (totals.hasOwnProperty(key)) {
-					//key exists
+					// key exists
 
-					//keys not needing averaging
+					// keys not needing averaging
 					if (key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
 						crunched[key] = totals[key];
 						continue;
 					}
 
-					//special cases, aren't averaged
+					// special cases, aren't averaged
 					if (key === 'gs' || key === 'gp') {
 						if (totals[key] === true) crunched[key] = 1;else if (totals[key] === false) crunched[key] = 0;else crunched[key] = totals[key];
 						continue;
 					}
 
-					//average by number of games played, round to nearest tenth
+					// average by number of games played, round to nearest tenth
 					crunched[key] = Math.round(totals[key] / totals['gp'] * 10) / 10;
 				}
 			}
 
-			//calculate the percentages
-			//field goal, 3 pointers, free throws
+			// calculate the percentages
+			// field goal, 3 pointers, free throws
 			var prefixes = ['fg', 'threep', 'ft'];
 			for (var x = 0; x < prefixes.length; x++) {
 				var makes = prefixes[x] + 'm';
@@ -27300,14 +28043,14 @@ exports.default = {
 						crunched[percentage] = 0;
 						continue;
 					}
-					//convert to percentages and round to nearest tenth
+					// convert to percentages and round to nearest tenth
 					crunched[percentage] = Math.round(percent * 100 * 10) / 10;
 				} else {
 					crunched[percentage] = 0;
 				}
 			}
 
-			//calculate special stats
+			// calculate special stats
 
 			if (this.playerSeasonCols.includes('eff')) {
 				crunched['eff'] = this.efficiency(totals);
@@ -27332,7 +28075,7 @@ exports.default = {
 		},
 
 
-		//calculates a players season efficiency rating
+		// calculates a players season efficiency rating
 		efficiency: function efficiency(totals) {
 			var eff = (totals['pts'] + totals['reb'] + totals['ast'] + totals['stl'] + totals['blk'] - (totals['fga'] - totals['fgm']) - (totals['fta'] - totals['ftm']) - totals['to']) / totals['gp'];
 
@@ -27340,46 +28083,46 @@ exports.default = {
 		},
 
 
-		//compiles raw stats into a list of stats by event
+		// compiles raw stats into a list of stats by event
 		makeTeamRecentStats: function makeTeamRecentStats(rawData) {
 			var teamStats = [];
 
-			//for each event, parse some info
+			// for each event, parse some info
 			for (var x = 0; x < rawData.length; x++) {
 				var data = rawData[x];
 
 				var stats = JSON.parse(data.stats);
 				var meta = JSON.parse(data.meta);
 
-				//format date of event like 1/31
-				var date = moment.utc(data.event_date * 1000).local().format('M/D');
+				// format date of event like 1/31
+				var date = moment.utc(meta.event.start * 1000).local().format('M/D');
 
 				stats.date = date;
 				stats.id = data.id;
 				stats.event_id = data.event_id;
 
-				//if they included who this game was against
+				// if they included who this game was against
 				if (meta.event.class === 1) {
-					//home game
+					// home game
 					stats.opp = 'vs. ' + meta.opp;
 					meta.home = 'vs.';
 				} else if (meta.event.class === 2) {
-					//away game
+					// away game
 					stats.opp = '@ ' + meta.opp;
 					meta.home = '@';
 				} else {
-					//unspecified
+					// unspecified
 					stats.opp = meta.opp;
 				}
 
 				if (meta.oppScore < stats.pts) {
-					//they won
+					// they won
 					stats.win = 'W';
 				} else if (meta.oppScore > stats.pts) {
-					//they lost
+					// they lost
 					stats.win = 'L';
 				} else if (meta.oppScore === stats.pts) {
-					//tie
+					// tie
 					stats.win = 'TIE';
 				}
 
@@ -27399,7 +28142,7 @@ exports.default = {
 
 			for (var x = 0; x < rawData.length; x++) {
 
-				//store the stats for this event
+				// store the stats for this event
 				var stats = JSON.parse(rawData[x].stats);
 				var meta = JSON.parse(rawData[x].meta);
 				var doubleDigits = 0;
@@ -27409,15 +28152,15 @@ exports.default = {
 
 						if (key.includes('_')) {
 							totalStats[key] = '-';
-							continue; //leave the percentages (e.g. fg_) for later
+							continue; // leave the percentages (e.g. fg_) for later
 						}
 
 						if (isNaN(stats[key])) {
-							totalStats[key] = stats[key]; //not something that needs averaging
+							totalStats[key] = stats[key]; // not something that needs averaging
 							continue;
 						}
 
-						//if this key already exists, add the numbers
+						// if this key already exists, add the numbers
 						if (totalStats[key]) totalStats[key] = totalStats[key] + stats[key];else totalStats[key] = stats[key];
 					}
 				}
@@ -27427,7 +28170,7 @@ exports.default = {
 		},
 
 
-		//if stats are being viewed for a single event, cut out unnecessary columns
+		// if stats are being viewed for a single event, cut out unnecessary columns
 		formatForEvent: function formatForEvent() {
 
 			var index = this.teamCols.indexOf('win');
@@ -27448,31 +28191,31 @@ exports.default = {
 		},
 
 
-		//decides whether or not this row is shown
-		//based on which pagination page is active
+		// decides whether or not this row is shown
+		// based on which pagination page is active
 		statShown: function statShown(index) {
 			return this.pagActive === Math.floor(index / this.rowsPerPage) || !this.pagination;
 		},
 
 
-		//returns 'win' or 'loss' for formatting class on W/L column
+		// returns 'win' or 'loss' for formatting class on W/L column
 		winLossClass: function winLossClass(val) {
 			if (val === 'W') return 'win';else if (val === 'L') return 'loss';else if (val === 'TIE') return 'versus';else return '';
 		},
 
 
-		//new pagination link was clicked
+		// new pagination link was clicked
 		switchPag: function switchPag(clicked) {
 			this.pagActive = clicked;
 		},
 
 
-		//set the clicked header as the sort key
-		//invert ascending / descending
+		// set the clicked header as the sort key
+		// invert ascending / descending
 		playerSortBy: function playerSortBy(key) {
 
 			if (key === 'name') {
-				//if sorting by name, really sort by hidden lastname field
+				// if sorting by name, really sort by hidden lastname field
 				key = 'lastname';
 				if (key === this.playerSortKey) this.playerSortOrders['name'] = this.playerSortOrders['name'] * -1;else this.playerSortKey = 'lastname';
 
@@ -27486,17 +28229,17 @@ exports.default = {
 		},
 
 
-		//instead of an empty stats row, fill with '-'
+		// instead of an empty stats row, fill with '-'
 		markEmpty: function markEmpty(type) {
 			var stats = [{}];
 
-			if (type === 0) {
-				//player stats
+			if (type === 'player') {
+				// player stats
 				this.playerCols.forEach(function (key) {
 					stats[key] = '-';
 				});
-			} else if (type === 1) {
-				//team stats
+			} else if (type === 'team') {
+				// team stats
 				this.teamCols.forEach(function (key) {
 					stats[key] = '-';
 				});
@@ -27534,11 +28277,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsScrollSpy.js":190,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],174:[function(require,module,exports){
+},{"../mixins/StatsScrollSpy.js":194,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],178:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Calendar.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  margin-top: 15px;\n}\n.Calendar__nav .chevron {\n  font-size: 44px;\n  margin-top: 7px;\n}\n.Calendar__header {\n  margin: 0;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\n#calendarNav {\n  height: 54px;\n}\n#calendarNav div {\n  padding-left: 0;\n}\n@media only screen and (max-width: 767px) {\n  table#calNav {\n    margin: auto;\n  }\n}\n#calNavHeaderTable {\n  padding: 0;\n}\n#addEventContainer {\n  float: right;\n  margin-top: 17px;\n}\n@media only screen and (max-width: 767px) {\n  #addEventContainer {\n    text-align: center;\n    margin: auto;\n    margin-top: 15px;\n    margin-bottom: 15px;\n    float: none;\n  }\n}\n#addEventIcon {\n  margin: 0 auto;\n}\n#addEventText {\n  position: relative;\n  font-size: 16px;\n  left: 3px;\n}\n#addEventIconDiv {\n  margin-top: 4px;\n}\n#addEventIconDiv {\n  width: 100%;\n  text-align: right;\n}\n#addEventDiv {\n  padding-bottom: 15px;\n}\n#chevRight,\n#chevLeft {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\n#chevRight:hover,\n#chevLeft:hover {\n  cursor: pointer;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-flex-basis: 775px;\n      -ms-flex-preferred-size: 775px;\n          flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -27550,7 +28293,6 @@ var animateEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationen
 var rubberBand = 'animated rubberBand';
 
 exports.default = {
-
   name: 'Calendar',
 
   props: ['admin', 'events'],
@@ -27566,8 +28308,7 @@ exports.default = {
         modal: '#events-modal',
         first_event: firstDayOfYear,
         onAfterViewLoad: function onAfterViewLoad(view) {
-          var month = this.getTitle();
-          $('.Calendar__header').text(month);
+          $('.Calendar__header').text(this.getTitle());
         },
         classes: {
           months: {
@@ -27590,11 +28331,11 @@ exports.default = {
     var self = this;
     $(function () {
 
-      //attach the calendar when the DOM is ready
+      // attach the calendar when the DOM is ready
       self.calendar = $('.calendar').calendar(self.options);
 
-      //hide tooltips if on mobile (they are annoying and counterintuitive)
-      //give time for DOM to settle before checking
+      // hide tooltips if on mobile (they are annoying and counterintuitive)
+      // give time for DOM to settle before checking
       setTimeout(function () {
         if (window.innerWidth < 767) {
           $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
@@ -27606,11 +28347,11 @@ exports.default = {
 
   methods: {
 
-    //events array changed, reload the calendar data
+    // events array changed, reload the calendar data
 
     compile: function compile() {
 
-      //attach a new events array
+      // attach a new events array
       var events = this.formatEvents();
       if (events.length) var firstEvent = events[0].start;else var firstEvent = moment().dayOfYear(1).hour(0).minute(0).unix() * 1000;
 
@@ -27623,7 +28364,7 @@ exports.default = {
     },
 
 
-    //format events for calendar
+    // format events for calendar
     formatEvents: function formatEvents() {
 
       var formattedEvents = [];
@@ -27639,19 +28380,19 @@ exports.default = {
 
         switch (event.type) {
           case 'practice':
-            //practice event
+            // practice event
             temp.class = 'event-practice';
             break;
           case 'home_game':
-            //game event
+            // game event
             temp.class = 'event-homeGame';
             break;
           case 'away_game':
-            //game event
+            // game event
             temp.class = 'event-awayGame';
             break;
           case 'other':
-            //other event
+            // other event
             temp.class = 'event-other';
             break;
         }
@@ -27663,16 +28404,16 @@ exports.default = {
     },
 
 
-    //formats the title with an appropriate date string
+    // formats the title with an appropriate date string
     formatEventTitle: function formatEventTitle(title, start, end) {
 
       var startTime, endTime;
 
       if (moment(start).isSame(end, 'day')) {
-        //events on same day, drop date in title
+        // events on same day, drop date in title
 
         if (moment(start).hour() < 12 && moment(end).hour() < 12 || moment(start).hour() >= 12 && moment(end).hour() >= 12) {
-          //both are am or pm, drop that from string as well
+          // both are am or pm, drop that from string as well
           var startTime = moment(start).format('h:mm');
           var endTime = moment(end).format('h:mm a');
         } else {
@@ -27686,13 +28427,13 @@ exports.default = {
     },
 
 
-    //animate click and switch month
-    chevClick: function chevClick(direction) {
+    // animate click and switch month
+    chevron: function chevron(direction) {
+      this.calendar.navigate(direction);
 
-      var chevron = $('#chev' + direction);
-      this.calendar.navigate(chevron.data('cal-nav'));
+      var chevron = $('[chevron="' + direction + '"]');
 
-      //animate
+      // animate chevron
       chevron.addClass(rubberBand).one(animateEnd, function () {
         chevron.removeClass(rubberBand);
       });
@@ -27701,13 +28442,13 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"calendar-wrapper\">\n  <div class=\"filler\"></div>\n\n\t<div class=\"Calendar\">\n\n    <div id=\"calendarNav\" class=\"row\">\n      <div class=\"col-xs-12 col-sm-6 Calendar__nav no-highlight \">\n        <table id=\"calNav\">\n          <tbody><tr>\n            <td id=\"chevLeft\" @click=\"chevClick('Left')\" data-cal-nav=\"prev\">\n              <a><i class=\"material-icons chevron\">chevron_left</i></a>\n            </td>\n            <td id=\"calNavHeaderTable\">\n              <!-- h3 tag dynamically set by calendar.js -->\n              <h3 class=\"Calendar__header\"></h3>\n            </td>\n            <td id=\"chevRight\" @click=\"chevClick('Right')\" data-cal-nav=\"next\">\n              <a><i class=\"material-icons chevron\">chevron_right</i></a>\n            </td>\n          </tr>\n        </tbody></table>\n      </div>\n      <div class=\"col-xs-12 col-sm-6 Calendar__nav\">\n        <table id=\"addEventContainer\">\n          <tbody><tr>\n            <td id=\"addEventIconDiv\">\n              <a v-show=\"admin\" id=\"addEventTrigger\" @click=\"$root.showModal('addEventModal')\">\n                <i id=\"addEventIcon\" class=\"glyphicon glyphicon-plus\"></i>\n                <span id=\"addEventText\">Add an Event</span>\n              </a>\n            </td>\n          </tr>\n        </tbody></table>\n      </div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-xs-12 Calendar__container\">\n            <div class=\"calendar\"></div>\n        </div>\n    </div>\n\n\t</div>\n</div> \n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"calendar-wrapper\">\n  <div class=\"filler\"></div>\n\n\t<div class=\"Calendar\">\n    <div class=\"Calendar__nav\">\n\n      <div class=\"nav\">\n        <a chevron=\"prev\" @click=\"chevron('prev')\"><i class=\"material-icons chevron\">chevron_left</i></a>\n        <h3 class=\"Calendar__header\"></h3>\n        <a chevron=\"next\" @click=\"chevron('next')\"><i class=\"material-icons chevron\">chevron_right</i></a>\n      </div>\n      \n      <div class=\"add-event\">\n        <a v-show=\"admin\" @click=\"$root.showModal('addEventModal')\">\n          <i class=\"glyphicon glyphicon-plus\"></i>\n          <span>Add an Event</span>\n        </a>\n      </div>\n  \n    </div>\n    <div class=\"Calendar__container\">\n        <div class=\"calendar\"></div>\n    </div>\n\t</div>\n\n  <div class=\"filler\"></div>\n</div> \n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  margin-top: 15px;\n}\n.Calendar__nav .chevron {\n  font-size: 44px;\n  margin-top: 7px;\n}\n.Calendar__header {\n  margin: 0;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\n#calendarNav {\n  height: 54px;\n}\n#calendarNav div {\n  padding-left: 0;\n}\n@media only screen and (max-width: 767px) {\n  table#calNav {\n    margin: auto;\n  }\n}\n#calNavHeaderTable {\n  padding: 0;\n}\n#addEventContainer {\n  float: right;\n  margin-top: 17px;\n}\n@media only screen and (max-width: 767px) {\n  #addEventContainer {\n    text-align: center;\n    margin: auto;\n    margin-top: 15px;\n    margin-bottom: 15px;\n    float: none;\n  }\n}\n#addEventIcon {\n  margin: 0 auto;\n}\n#addEventText {\n  position: relative;\n  font-size: 16px;\n  left: 3px;\n}\n#addEventIconDiv {\n  margin-top: 4px;\n}\n#addEventIconDiv {\n  width: 100%;\n  text-align: right;\n}\n#addEventDiv {\n  padding-bottom: 15px;\n}\n#chevRight,\n#chevLeft {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\n#chevRight:hover,\n#chevLeft:hover {\n  cursor: pointer;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n"] = false
+    __vueify_insert__.cache[".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-flex-basis: 775px;\n      -ms-flex-preferred-size: 775px;\n          flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -27718,7 +28459,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],175:[function(require,module,exports){
+},{"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],179:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/CreateTeam.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -27766,15 +28507,14 @@ exports.default = {
 			page: 'info',
 			name: '',
 			teamname: '',
-			slogan: '',
+			sport: 'basketball',
+			userIsA: 'fan',
 			gender: 'male',
 			homefield: '',
 			city: '',
 			long: '',
 			lat: '',
-			sport: 'basketball',
-			userIsA: 'fan',
-			location: { city: { zip: '24' } },
+			slogan: '',
 			players: [{ firstname: '', lastname: '', email: '' }],
 			coaches: [{ firstname: '', lastname: '', email: '' }],
 			dummy: [{ firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com' }]
@@ -27783,6 +28523,12 @@ exports.default = {
 
 
 	methods: {
+		/**
+   * Send request to server to create this team
+   * 
+   * @return Routes to /team/<teamname>
+   */
+
 		save: function save() {
 
 			if (this.errorCheck() > 0) {
@@ -27812,11 +28558,28 @@ exports.default = {
 
 			this.$root.post(this.prefix, 'CreateTeam_submit', data);
 		},
+
+
+		/**
+   * User has clicked the "Next >" button
+   * Error check and move the page forward
+   *
+   * @return {void}
+   */
 		changePage: function changePage() {
-			var errors = this.errorCheck();
+			var errors = 0;
+
+			this.setPageError('Correct errors before continuing');
+
+			if (this.page === 'info') {
+				errors += this.errorCheck('name');
+				errors += this.errorCheck('teamname');
+				errors += this.errorCheck('city');
+			} else if (this.page === 'roster') {
+				errors = this.errorCheck();
+			}
 
 			if (!errors) {
-
 				this.setPageError('');
 
 				if (this.page === 'info') {
@@ -27824,31 +28587,36 @@ exports.default = {
 				} else if (this.page === 'stats') {
 					this.page = 'roster';
 				}
-			} else {
-				this.setPageError('Correct errors before continuing');
 			}
 		},
 
 
-		// tell Validator.js which fields to error check
+		/**
+   * Tell Validator.js which variables to error check
+   *
+   * @return {void} 
+   */
 		attachErrorChecking: function attachErrorChecking() {
 			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers'];
 			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', msg);
-			this.registerErrorChecking('name', 'required', ['Enter a name']);
-			this.registerErrorChecking('city', 'required', ['Search for your city']);
+			this.registerErrorChecking('name', 'required', 'Enter a name');
+			this.registerErrorChecking('city', 'required', 'Search for your city');
 
-			this.registerErrorChecking('players.*.email', 'email', ['Invalid email']);
-			this.registerErrorChecking('coaches.*.email', 'email', ['Invalid email']);
+			this.registerErrorChecking('players.*.email', 'email', 'Invalid email');
+			this.registerErrorChecking('players.*.firstname', 'required', 'Enter a first name');
+			this.registerErrorChecking('players.*.lastname', 'required', 'Enter a last name');
+			this.registerErrorChecking('coaches.*.email', 'email', 'Invalid email');
+			this.registerErrorChecking('coaches.*.firstname', 'required', 'Enter a first name');
+			this.registerErrorChecking('coaches.*.lastname', 'required', 'Enter a last name');
 
-			// register a few manual messages to set if need be
+			// will use these below the "Next >" button if error on the page
 			this.manualErrorChecking('page.info');
-			this.manualErrorChecking('page.stats');
 			this.manualErrorChecking('page.roster');
 		},
 
 
 		/**
-   * Set an error below the "next" button
+   * Set an error below the "Next >" button
    */
 		setPageError: function setPageError(error) {
 			this.$set('errors.page.' + this.page, error);
@@ -27856,14 +28624,22 @@ exports.default = {
 	},
 
 	events: {
-		// store dummy names and emails for placeholders
+		/**
+   * Request returned with dummy data used as placeholders for ghosts
+   *
+   * @param {object} response
+   */
 
 		CreateTeam_dummy: function CreateTeam_dummy(response) {
 			this.dummy = response.data.dummy;
 		},
 
 
-		// was the teamname available?
+		/**
+   * Request returned whether or not this teamname is available
+   *
+   * @param {object} response
+   */
 		CreateTeam_available: function CreateTeam_available(response) {
 			if (response.data.available) {
 				this.errors.teamname = '';
@@ -27873,13 +28649,22 @@ exports.default = {
 		},
 
 
-		// route the user to the newly created team
+		/**
+   * Request returned after creating the team
+   *
+   * @param {object} response 
+   */
 		CreateTeam_submit: function CreateTeam_submit(response) {
 			// use a delay because it felt TOO fast without one
 			setTimeout(function () {
 				this.$router.go('/team/' + response.data.team.teamname);
 			}.bind(this), 750);
 		},
+
+
+		/**
+   * Inititialze the selectpickers in the stats section
+   */
 		initSelectPicker: function initSelectPicker() {
 			var userPicker = $('[CreateTeam="userStats"]');
 			var rcPicker = $('[CreateTeam="rcStats"]');
@@ -27887,8 +28672,8 @@ exports.default = {
 			userPicker.selectpicker({});
 			rcPicker.selectpicker({});
 
-			userPicker.selectpicker('val', this.userSelected);
-			rcPicker.selectpicker('val', this.rcSelected);
+			userPicker.selectpicker('val', this.userSelected).selectpicker('refresh');
+			rcPicker.selectpicker('val', this.rcSelected).selectpicker('refresh');
 			userPicker.selectpicker('refresh');
 			rcPicker.selectpicker('refresh');
 
@@ -27901,6 +28686,11 @@ exports.default = {
 				this.setDependencies();
 			}.bind(this));
 		},
+
+
+		/**
+   * The stats selected have been changed, re-render the pickers
+   */
 		renderSelectPicker: function renderSelectPicker() {
 			var userPicker = $('[CreateTeam="userStats"]');
 			var rcPicker = $('[CreateTeam="rcStats"]');
@@ -27915,14 +28705,26 @@ exports.default = {
 	},
 
 	watch: {
-		// if they've changed the sport, update the stats associated with it too
+		/**
+   * If the sport changed, change the stats in the pickers as well
+   */
 
 		sport: function sport() {
 			this.initSelections(this.sport);
 		},
+
+
+		/**
+   * If the team's gender has changed, update the dummy names to be accurate
+   */
 		gender: function gender() {
 			this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
 		},
+
+
+		/**
+   * If the teamname changed, ask the server if this name is in use yet
+   */
 		teamname: function teamname() {
 			if (!this.errors.teamname && this.teamname.length) {
 				// ask the server if this teamname is available
@@ -27955,7 +28757,7 @@ exports.default = {
 	maxFilesize: 10,
 };*/
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team URL</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" placeholder=\"whsbasketball16\" required=\"\" debounce=\"600\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"basketball\">Basketball</option>    \n\t              <option value=\"baseball\" disabled=\"\">Baseball</option>    \n\t              <option value=\"softball\" disabled=\"\">Softball</option>    \n\t              <option value=\"football\" disabled=\"\">Football</option>    \n            \t</select>\n\t\t\t\t\t\t\t<span class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>I am a...</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"player\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"coach\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"fan\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sex</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"male\">Men's</option>\n\t\t\t\t\t\t\t\t<option value=\"female\">Women's</option>\n\t\t\t\t\t\t\t\t<option value=\"coed\">Coed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Cowell Stadium\" v-model=\"homefield\">\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"city\" :long.sync=\"long\" :lat.sync=\"lat\" label=\"City / Town\" :error=\"errors.city\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\n\t\t\t\t\t<!-- <div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<form action=\"/team/create/unhfootball/pic\" class=\"dropzone\" id=\"create-team-dropzone\"></form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div> -->\n\t\t\t\t\t\n\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existent back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.info }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by Admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.stats }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that are on this team.</p>\n\t\t\t\t\t\t<p>Your team will be populated with \"ghost\" users.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to join, add their email.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Players</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a player -->\n\t\t\t\t\t<div v-show=\"userIsA == 'player'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"player in players\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.firstname\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.lastname\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.email\" :class=\"{'form-error' : errors.players[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"players.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"players.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Coaches</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a coach -->\n\t\t\t\t\t<div v-show=\"userIsA == 'coach'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"coach in coaches\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.firstname\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.lastname\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.email\" :class=\"{'form-error' : errors.coaches[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"coaches.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"coaches.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.roster }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2016 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team URL</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" placeholder=\"whsbasketball16\" required=\"\" debounce=\"600\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"basketball\">Basketball</option>    \n\t              <option value=\"baseball\" disabled=\"\">Baseball</option>    \n\t              <option value=\"softball\" disabled=\"\">Softball</option>    \n\t              <option value=\"football\" disabled=\"\">Football</option>    \n            \t</select>\n\t\t\t\t\t\t\t<span class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>I am a...</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"player\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"coach\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"fan\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sex</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"male\">Men</option>\n\t\t\t\t\t\t\t\t<option value=\"female\">Women</option>\n\t\t\t\t\t\t\t\t<option value=\"coed\">Co-ed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Cowell Stadium\" v-model=\"homefield\">\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"city\" :long.sync=\"long\" :lat.sync=\"lat\" label=\"City / Town\" :error=\"errors.city\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\n\t\t\t\t\t<!-- <div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<form action=\"/team/create/unhfootball/pic\" class=\"dropzone\" id=\"create-team-dropzone\"></form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div> -->\n\t\t\t\t\t\n\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existent back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.info }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by team admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.stats }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that are on this team.</p>\n\t\t\t\t\t\t<p>Your team will be populated with \"ghost\" users.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to join, add their email.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Players</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a player -->\n\t\t\t\t\t<div v-show=\"userIsA == 'player'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"player in players\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.firstname\" :class=\"{'form-error' : errors.players[$index].firstname}\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].firstname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.lastname\" :class=\"{'form-error' : errors.players[$index].lastname}\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].lastname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.email\" :class=\"{'form-error' : errors.players[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"players.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"players.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Coaches</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a coach -->\n\t\t\t\t\t<div v-show=\"userIsA == 'coach'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"coach in coaches\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.firstname\" :class=\"{'form-error' : errors.coaches[$index].firstname}\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].firstname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.lastname\" :class=\"{'form-error' : errors.coaches[$index].lastname}\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].lastname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.email\" :class=\"{'form-error' : errors.coaches[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"coaches.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"coaches.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.roster }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2016 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -27972,7 +28774,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsSelection.js":191,"../mixins/Validator.js":192,"./GoogleTypeahead.vue":179,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],176:[function(require,module,exports){
+},{"../mixins/StatsSelection.js":195,"../mixins/Validator.js":196,"./GoogleTypeahead.vue":183,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],180:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditBasketballStats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -27986,6 +28788,10 @@ Object.defineProperty(exports, "__esModule", {
 var _isInteger = require('babel-runtime/core-js/number/is-integer');
 
 var _isInteger2 = _interopRequireDefault(_isInteger);
+
+var _stringify = require('babel-runtime/core-js/json/stringify');
+
+var _stringify2 = _interopRequireDefault(_stringify);
 
 var _StatsScrollSpy = require('../mixins/StatsScrollSpy.js');
 
@@ -28016,71 +28822,31 @@ exports.default = {
 
 	watch: {
 
-		//if stats change, reinitialize the page
+		// if stats change, reinitialize the page
 
 		stats: function stats() {
 			this.compile();
 		},
 
 
-		//if the viewed event changes, reinitialize the page
+		// if the viewed event changes, reinitialize the page
 		event: function event() {
 			this.compile();
 		}
 	},
 
 	computed: {
-		usesMinutes: function usesMinutes() {
-			if (this.newPlayerCols) {
-				if (this.newPlayerCols.indexOf('min') !== -1) return true;else return false;
-			} else return true;
-		},
 		newPlayerCols: function newPlayerCols() {
 			var index;
-			var newCols = [];
-			this.playerCols.forEach(function (col) {
-				if (col === 'name') {
-					//add dnp to the list after name
-					newCols.push(col);
-					newCols.push('dnp');
-				} else newCols.push(col);
+			var newCols = JSON.parse((0, _stringify2.default)(this.playerCols));
+
+			var ditch = ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff', 'dd2', 'td3'];
+			ditch.forEach(function (stat) {
+				var index = newCols.indexOf(stat);
+				if (index !== -1) {
+					newCols.splice(index, 1);
+				}
 			});
-
-			index = newCols.indexOf('date');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('win');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('opp');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('gs');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('gp');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('efg_');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('astto');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('ts_');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('per');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('eff');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('dd2');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('td3');
-			if (index !== -1) newCols.splice(index, 1);
 
 			return newCols;
 		},
@@ -28092,11 +28858,13 @@ exports.default = {
 				newCols.push(val);
 			});
 
-			index = newCols.indexOf('name');
-			if (index !== -1) newCols.splice(index, 1);
-
-			index = newCols.indexOf('dnp');
-			if (index !== -1) newCols.splice(index, 1);
+			var ditch = ['name', 'dnp'];
+			ditch.forEach(function (stat) {
+				var index = newCols.indexOf(stat);
+				if (index !== -1) {
+					newCols.splice(index, 1);
+				}
+			});
 
 			return newCols;
 		}
@@ -28104,8 +28872,6 @@ exports.default = {
 
 	methods: {
 		compile: function compile() {
-			var players = this.players;
-			var existingStats = this.stats;
 			var newStats = [];
 			var IDs = [];
 
@@ -28113,38 +28879,44 @@ exports.default = {
 			this.meta.oppScore = '';
 			this.meta.teamScore = '';
 
-			//first initialize newStats with any existing data
-			for (var x = 0; x < existingStats.length; x++) {
-				var curr = existingStats[x];
+			// first initialize newStats with any existing data
+			for (var x = 0; x < this.stats.length; x++) {
+				var curr = this.stats[x];
 
-				//catch the team stats for this event
-				if (curr.type === 1) {
-					//initialize meta data
+				// catch the team stats for this event
+				if (curr.type === 'team') {
+					// initialize meta data
 					var meta = JSON.parse(curr.meta);
 					this.meta.opp = meta.opp;
 					this.meta.oppScore = meta.oppScore;
 					continue;
 				}
 
-				if (IDs.indexOf(curr.member_id) !== -1)
-					//this player's stats already parsed (error somewhere down the road)
+				if (IDs.indexOf(curr.member_id) !== -1) {
+					// this player's stats already parsed (error somewhere down the road)
 					continue;
+				}
+
+				var player = this.players.filter(function (player) {
+					return player.member_id === curr.member_id;
+				});
 
 				var stats = JSON.parse(curr.stats);
 
 				stats['id'] = curr.owner_id;
 				stats['member_id'] = curr.member_id;
+				stats['name'] = player[0].abbrName;
 
 				newStats.push(stats);
 				IDs.push(curr.member_id);
 			}
 
-			for (var x = 0; x < players.length; x++) {
-				var curr = players[x];
+			for (var x = 0; x < this.players.length; x++) {
+				var curr = this.players[x];
 				var emptyStats = {};
 
 				if (IDs.indexOf(curr.member_id) !== -1)
-					//this player's stats already parsed, don't create empty row
+					// this player's stats already parsed, don't create empty row
 					continue;
 
 				this.newPlayerCols.forEach(function (col) {
@@ -28152,7 +28924,7 @@ exports.default = {
 				});
 				emptyStats.id = curr.id;
 				emptyStats.member_id = curr.member_id;
-				emptyStats.name = this.abbreviateName(curr, players);
+				emptyStats.name = curr.abbrName;
 				emptyStats.starter = false;
 				emptyStats.dnp = false;
 
@@ -28165,9 +28937,8 @@ exports.default = {
 		},
 
 
-		//attach listeners for whether or not to show SCROLL > indicators
+		// attach listeners for whether or not to show SCROLL > indicators
 		initScrollSpy: function initScrollSpy() {
-
 			setTimeout(function () {
 				this.attachScrollListener('#editTeamStatsDiv', 'teamStats');
 				this.attachScrollListener('#editPlayerStatsDiv', 'playerStats');
@@ -28175,30 +28946,7 @@ exports.default = {
 		},
 
 
-		//create an abbreviated name for 'thisPlayer'
-		//extend if that name exists, e.g. 2 different D. Argue, try Da. Argue, etc
-		abbreviateName: function abbreviateName(thisPlayer, players) {
-			var offset = 1;
-			var name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
-			var theirName = '';
-			//loop through checking all other players for duplicates
-			for (var x = 0; x < players.length; x++) {
-				if (thisPlayer.member_id === players[x].member_id)
-					//don't include this user
-					continue;
-
-				theirName = players[x].firstname.substring(0, 1) + '. ' + players[x].lastname;
-				while (theirName === name) {
-					offset++;
-					name = thisPlayer.firstname.substring(0, offset) + '. ' + thisPlayer.lastname;
-					if (offset > 4) break;
-				}
-			}
-			return name;
-		},
-
-
-		//decide whether or not this stat column needs special formatting
+		// decide whether or not this stat column needs special formatting
 		specialRow: function specialRow(col) {
 			if (col === 'name' || col === 'starter' || col === 'dnp') return true;
 			if (col[col.length - 1] === '_') return true;
@@ -28207,18 +28955,17 @@ exports.default = {
 		},
 
 
-		//submit to database
+		// submit to database
 		submitStats: function submitStats() {
-
-			//check that the inputs are error free
+			// check that the inputs are error free
 			var errors = this.errorCheck();
 
 			if (!errors) {
 
-				//did these stats exist and were then updated?
+				// did these stats exist and were then updated?
 				var statsAreNew = this.stats.length ? false : true;
 
-				//store how many points team had (for status update meta data)
+				// store how many points team had (for status update meta data)
 				this.meta.teamScore = this.teamStats.pts;
 				this.meta.team = this.team.name;
 				var self = this;
@@ -28230,11 +28977,11 @@ exports.default = {
 					meta: this.meta
 				};
 
-				//save as a new event
+				// save as a new event
 				if (statsAreNew) {
 					var url = this.$parent.prefix + '/stats';
 					this.$http.post(url, data).then(function (response) {
-						//send a stats updated event to parent
+						// send a stats updated event to parent
 						if (response.data.ok) {
 							self.$dispatch('newStats', response.data.stats, response.data.feed);
 							$('#viewEventModal').modal('hide');
@@ -28242,7 +28989,7 @@ exports.default = {
 							self.compile();
 							self.$root.banner("good", 'Stats saved');
 						} else {
-							//they weren't allowed to add stats
+							// they weren't allowed to add stats
 							self.$root.banner('bad', response.data.error);
 						}
 					}).catch(function () {
@@ -28250,7 +28997,7 @@ exports.default = {
 					});
 				}
 
-				//update existing stats
+				// update existing stats
 				else {
 						var url = this.$parent.prefix + '/stats';
 						this.$http.put(url, data).then(function (response) {
@@ -28261,7 +29008,7 @@ exports.default = {
 								self.compile();
 								self.$root.banner("good", 'Stats saved');
 							} else {
-								//they weren't allowed to update stats
+								// they weren't allowed to update stats
 								self.$root.banner('bad', response.data.error);
 							}
 						}).catch(function () {
@@ -28272,7 +29019,7 @@ exports.default = {
 		},
 
 
-		//throw away inputted data
+		// throw away inputted data
 		discardStats: function discardStats() {
 			$('#viewEventModal').modal('hide');
 			this.compile();
@@ -28295,8 +29042,8 @@ exports.default = {
 		},
 
 
-		//calculates and saves the total for that field
-		//accepts everything except the percentage cols
+		// calculates and saves the total for that field
+		// accepts everything except the percentage cols
 		team_total: function team_total(col) {
 			var stats = this.newStats;
 			var total = 0;
@@ -28308,9 +29055,9 @@ exports.default = {
 		},
 
 
-		//calculates and saves percentages for team
-		//accepts fg, ft, threep for cols
-		//e.g. col == 'fg', var p = 'fg_'
+		// calculates and saves percentages for team
+		// accepts fg, ft, threep for cols
+		// e.g. col == 'fg', var p = 'fg_'
 		team_percent: function team_percent(col) {
 			var stats = this.newStats;
 			var m = col + 'm';
@@ -28320,8 +29067,8 @@ exports.default = {
 			var attempts = 0;
 			var percent = 0;
 			for (var x = 0; x < stats.length; x++) {
-				//first check if makes > attempts, return percent > 100
-				//the 'percentage' filter turns this into 'ERROR'
+				// first check if makes > attempts, return percent > 100
+				// the 'percentage' filter turns this into 'ERROR'
 				if (stats[x][m] > stats[x][a]) {
 					percent = 101;
 					this.teamStats[p] = 101;
@@ -28333,7 +29080,7 @@ exports.default = {
 			}
 			percent = makes / attempts;
 
-			//make into percentage with one decimal place accuracy
+			// make into percentage with one decimal place accuracy
 			percent = Math.round(percent * 100 * 10) / 10;
 			if (isNaN(percent)) percent = 0;
 
@@ -28342,20 +29089,20 @@ exports.default = {
 		},
 
 
-		//calculates and saves percentages for this player
-		//accepts fg, ft, threep for cols
-		//e.g. col == 'fg', var p = 'fg_'
+		// calculates and saves percentages for this player
+		// accepts fg, ft, threep for cols
+		// e.g. col == 'fg', var p = 'fg_'
 		newStats_percent: function newStats_percent(index, col) {
 			var percentage = 0;
 
-			//dynamically picks which stat based on col
+			// dynamically picks which stat based on col
 			var m = col + 'm';
 			var a = col + 'a';
 			var p = col + '_';
 
 			if (this.newStats[index][m] === '' || this.newStats[index][a] === '') percentage = 0;else percentage = this.newStats[index][m] / this.newStats[index][a];
 
-			//make into percentage with one decimal place accuracy
+			// make into percentage with one decimal place accuracy
 			percentage = Math.round(percentage * 100 * 10) / 10;
 
 			if (isNaN(percentage)) percentage = 0;
@@ -28389,16 +29136,15 @@ exports.default = {
 		},
 
 
-		//displays a customized error message depending on which stat category was incorrect
+		// displays a customized error message depending on which stat category was incorrect
 		errorMessage: function errorMessage(col) {
-
 			this.$root.popup("bad", "Error in stats!", "One of the " + col + "M entries is greater than " + col + "A, please correct first. Look for the row with ERROR in " + col + "%");
 		}
 	}
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div id=\"statsWrapper\">\n\n\t<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->\n\t<div class=\"edit-button\">\n\t\t<a class=\"btn btn-primary --chevron --lg\" @click=\"editEvent = true\">\n\t\t\tEdit Event Details\n\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t</a>\n\t</div>\n\n\t<!-- notes to user -->\n\t<div class=\"stat-notes\">\n\t\t<span><strong>Notes about stat entries:</strong></span>\n\t\t<ul>\n\t\t\t<li>\n\t\t\t\t<p>Any fields left empty are treated as zeros.</p>\n\t\t\t</li>\n\t\t\t<li v-show=\"usesMinutes\">\n\t\t\t\t<p>If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.</p>\n\t\t\t</li>\n\t\t\t<li v-show=\"!usesMinutes\">\n\t\t\t\t<p>If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.</p>\n\t\t\t</li>\n\t\t</ul>\n\t</div>\n\n\t<!-- input new stats here -->\n\t<h3>Box Score</h3>\n\t<form @submit.prevent=\"\">\n\t\t<div v-if=\"overflowed.playerStats\" class=\"Stats__overflow\">\n\t\t\t<span class=\"--left\" v-show=\"overflowed.playerStats.first\">\n\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t</span>\n\t\t\t<span class=\"--right\" v-show=\"overflowed.playerStats.last\">\n\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t</span>\n\t\t</div>\t\t\n\t\t<div id=\"editPlayerStatsDiv\" class=\"table-responsive stats-container\">\n\t\t\t<table class=\"table stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr>\n\t\t      \t<th v-for=\"col in newPlayerCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t      \t\t{{ col | basketballStats }}\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr v-for=\"(index, row) in newStats | orderBy 'lastname'\" class=\"form-group\">\n\t\t\t      <td v-for=\"col in newPlayerCols\" class=\"new-stats stat-entries text-center\">\n\t\t\t      \t<!-- span inserts calculated data that isn't inputted by user -->\n\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t      \t\t<span v-if=\"col === 'name'\">{{ row[col] }}</span>\n\t\t\t      \t\t<input v-if=\"col === 'starter'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t      \t\t<input v-show=\"!usesMinutes\" v-if=\"col === 'dnp'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t      \t\t<span v-if=\"col === 'fg_'\">{{ newStats_percent(index, 'fg') | checkPercentage }}</span>\n\t\t\t      \t\t<span v-if=\"col === 'ft_'\">{{ newStats_percent(index, 'ft') | checkPercentage }}</span>\n\t\t\t      \t\t<span v-if=\"col === 'threep_'\">{{ newStats_percent(index, 'threep') | checkPercentage }}</span>\n\t\t\t      \t</span>\n\t\t\t      \t<input v-if=\"!specialRow(col)\" type=\"text\" class=\"form-control stats-input text-center\" autocomplete=\"off\" :placeholder=\"col | basketballStats\" v-model=\"newStats[index][col]\" number=\"\">\n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t</div>\n\n\t\t<div class=\"meta-data\">\n\t\t\t<div class=\"form-group opponent\">\n\t\t\t\t<label for=\"opp\">Opponent</label>\n\t\t\t\t<input name=\"opp\" type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" v-model=\"meta.opp\">\n\t\t\t</div>\n\t\t\t<div class=\"form-group opponent-score\">\n\t\t\t\t<label for=\"oppScore\">Opponent Score</label>\n\t\t\t\t<input name=\"oppScore\" type=\"text\" class=\"form-control\" number=\"\" required=\"\" autocomplete=\"off\" v-model=\"meta.oppScore\">\n\t\t\t</div>\n\t\t</div>\n\n\t\t<!-- compiled team stats table -->\n\t\t<h3>Team Stats</h3>\n\t\t<div v-if=\"overflowed.teamStats\" class=\"Stats__overflow\">\n\t\t\t<span class=\"--left\" v-show=\"overflowed.teamStats.first\">\n\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t</span>\n\t\t\t<span class=\"--right\" v-show=\"overflowed.teamStats.last\">\n\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t</span>\n\t\t</div>\t\t\n\t\t<div id=\"editTeamStatsDiv\" class=\"table-responsive stats-container\">\n\t\t\t<table class=\"table table-striped stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr>\n\t\t      \t<th v-for=\"col in newTeamCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t      \t\t{{ col | basketballStats }}\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr class=\"no-hover\">\n\t\t\t      <td v-for=\"col in newTeamCols\" class=\"stat-entries\">\n\t\t\t      <!-- span inserts calculated percentages instead of totals -->\n\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t\t      \t<span v-if=\"col === 'fg_'\">{{ team_percent('fg') | checkPercentage }}</span>\n\t\t\t\t      \t<span v-if=\"col === 'threep_'\">{{ team_percent('threep') | checkPercentage }}</span>\n\t\t\t\t      \t<span v-if=\"col === 'ft_'\">{{ team_percent('ft') | checkPercentage }}</span>\n\t\t\t\t      </span>\n\t\t\t      \t<span v-else=\"\">{{ team_total(col) }}</span>\n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t</div>\n\n    <div class=\"row\">\n      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-md-2\" :class=\"[stats.length ? 'col-md-offset-3' : 'col-md-offset-4',\n      \t\t\t         stats.length ? 'col-sm-offset-0' : 'col-sm-offset-2']\">\n      \t<input type=\"submit\" class=\"btn btn-block btn-primary btn-md\" value=\"SAVE\">\n      </div>\n      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\" v-show=\"stats.length\">\n      \t<a @click=\"deleteStats()\" class=\"btn btn-block btn-delete btn-md\">DELETE</a>\n      </div>\n      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\">\n      \t<a @click=\"discardStats()\" class=\"btn btn-block btn-cancel btn-md outline\">CANCEL</a>\n      </div>\n    </div>\n\n\t</form>\n</div>\n\t\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div id=\"statsWrapper\">\n\n\t<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->\n\t<div class=\"edit-button\">\n\t\t<a class=\"btn btn-primary --chevron --lg\" @click=\"editEvent = true\">\n\t\t\tEdit Event Details\n\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t</a>\n\t</div>\n\n\t<!-- notes to user -->\n\t<div class=\"stat-notes\">\n\t\t<span><strong>Notes about stat entries:</strong></span>\n\t\t<ul>\n\t\t\t<li>\n\t\t\t\t<p>Any fields left empty are treated as zeros.</p>\n\t\t\t</li>\n\t\t\t<li v-show=\"usesMinutes\">\n\t\t\t\t<p>If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.</p>\n\t\t\t</li>\n\t\t\t<li v-show=\"!usesMinutes\">\n\t\t\t\t<p>If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.</p>\n\t\t\t</li>\n\t\t</ul>\n\t</div>\n\n\t<!-- input new stats here -->\n\t<h3>Box Score</h3>\n\t<form @submit.prevent=\"\">\n\t\t<div v-if=\"overflowed.playerStats\" class=\"Stats__overflow\">\n\t\t\t<span class=\"--left\" v-show=\"overflowed.playerStats.first\">\n\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t</span>\n\t\t\t<span class=\"--right\" v-show=\"overflowed.playerStats.last\">\n\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t</span>\n\t\t</div>\t\t\n\t\t<div id=\"editPlayerStatsDiv\" class=\"table-responsive stats-container\">\n\t\t\t<table class=\"table stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr>\n\t\t      \t<th v-for=\"col in newPlayerCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t      \t\t{{ col | basketballStats }}\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr v-for=\"(index, row) in newStats | orderBy 'lastname'\" class=\"form-group\">\n\t\t\t      <td v-for=\"col in newPlayerCols\" class=\"new-stats stat-entries text-center\">\n\t\t\t      \t<!-- span inserts calculated data that isn't inputted by user -->\n\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t      \t\t<span v-if=\"col === 'name'\">{{ row[col] }}</span>\n\t\t\t      \t\t<input v-if=\"col === 'starter'\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t      \t\t<input v-if=\"col === 'dnp' &amp;&amp; ! usesMinutes\" type=\"checkbox\" v-model=\"newStats[index][col]\">\n\t\t\t      \t\t<span v-if=\"col === 'fg_'\">{{ newStats_percent(index, 'fg') | checkPercentage }}</span>\n\t\t\t      \t\t<span v-if=\"col === 'ft_'\">{{ newStats_percent(index, 'ft') | checkPercentage }}</span>\n\t\t\t      \t\t<span v-if=\"col === 'threep_'\">{{ newStats_percent(index, 'threep') | checkPercentage }}</span>\n\t\t\t      \t</span>\n\t\t\t      \t<input v-else=\"\" type=\"text\" class=\"form-control stats-input text-center\" autocomplete=\"off\" :placeholder=\"col | basketballStats\" v-model=\"newStats[index][col]\" number=\"\">\n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t</div>\n\n\t\t<div class=\"meta-data\">\n\t\t\t<div class=\"form-group opponent\">\n\t\t\t\t<label for=\"opp\">Opponent</label>\n\t\t\t\t<input name=\"opp\" type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" v-model=\"meta.opp\">\n\t\t\t</div>\n\t\t\t<div class=\"form-group opponent-score\">\n\t\t\t\t<label for=\"oppScore\">Opponent Score</label>\n\t\t\t\t<input name=\"oppScore\" type=\"text\" class=\"form-control\" number=\"\" required=\"\" autocomplete=\"off\" v-model=\"meta.oppScore\">\n\t\t\t</div>\n\t\t</div>\n\n\t\t<!-- compiled team stats table -->\n\t\t<h3>Team Stats</h3>\n\t\t<div v-if=\"overflowed.teamStats\" class=\"Stats__overflow\">\n\t\t\t<span class=\"--left\" v-show=\"overflowed.teamStats.first\">\n\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t</span>\n\t\t\t<span class=\"--right\" v-show=\"overflowed.teamStats.last\">\n\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t</span>\n\t\t</div>\t\t\n\t\t<div id=\"editTeamStatsDiv\" class=\"table-responsive stats-container\">\n\t\t\t<table class=\"table table-striped stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr>\n\t\t      \t<th v-for=\"col in newTeamCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"col | basketballTooltips\">\n\t\t      \t\t{{ col | basketballStats }}\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr class=\"no-hover\">\n\t\t\t      <td v-for=\"col in newTeamCols\" class=\"stat-entries\">\n\t\t\t      <!-- span inserts calculated percentages instead of totals -->\n\t\t\t      \t<span v-if=\"specialRow(col)\">\n\t\t\t\t      \t<span v-if=\"col === 'fg_'\">{{ team_percent('fg') | checkPercentage }}</span>\n\t\t\t\t      \t<span v-if=\"col === 'threep_'\">{{ team_percent('threep') | checkPercentage }}</span>\n\t\t\t\t      \t<span v-if=\"col === 'ft_'\">{{ team_percent('ft') | checkPercentage }}</span>\n\t\t\t\t      </span>\n\t\t\t      \t<span v-else=\"\">{{ team_total(col) }}</span>\n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t</div>\n\n    <div class=\"row\">\n      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-md-2\" :class=\"[stats.length ? 'col-md-offset-3' : 'col-md-offset-4',\n      \t\t\t         stats.length ? 'col-sm-offset-0' : 'col-sm-offset-2']\">\n      \t<input type=\"submit\" class=\"btn btn-block btn-primary btn-md\" value=\"SAVE\">\n      </div>\n      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\" v-show=\"stats.length\">\n      \t<a @click=\"deleteStats()\" class=\"btn btn-block btn-delete btn-md\">DELETE</a>\n      </div>\n      <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0 col-md-2\">\n      \t<a @click=\"discardStats()\" class=\"btn btn-block btn-cancel btn-md outline\">CANCEL</a>\n      </div>\n    </div>\n\n\t</form>\n</div>\n\t\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -28415,7 +29161,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsScrollSpy.js":190,"babel-runtime/core-js/number/is-integer":6,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],177:[function(require,module,exports){
+},{"../mixins/StatsScrollSpy.js":194,"babel-runtime/core-js/json/stringify":5,"babel-runtime/core-js/number/is-integer":6,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],181:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -28746,7 +29492,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/json/stringify":5,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],178:[function(require,module,exports){
+},{"babel-runtime/core-js/json/stringify":5,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],182:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditUser.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -28756,46 +29502,47 @@ var __vueify_style__ = __vueify_insert__.insert(".EditUser {\n  background: #fff
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _Validator = require('./../mixins/Validator.js');
+
+var _Validator2 = _interopRequireDefault(_Validator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 exports.default = {
 
 	name: 'EditUser',
 
 	props: ['user', 'positions'],
 
+	mixins: [_Validator2.default],
+
 	data: function data() {
 
 		return {
 			ghostEmail: false,
 			adminOptions: {
-				state: this.user.admin,
+				state: this.user.isAdmin,
 				onText: 'YES',
 				offText: 'NO',
 				onSwitchChange: function (e, state) {
-					this.user.admin = state;
+					this.user.isAdmin = state;
 				}.bind(this)
 			},
 			confirmKick: false,
 			kickButton: '',
 			kickMsg: '',
-			kickText: '',
-			errors: {
-				num: '',
-				email: '',
-				name: ''
-			}
+			kickText: ''
 		};
+	},
+	beforeCompile: function beforeCompile() {
+		this.setErrorChecking();
 	},
 
 
 	computed: {
 		role: function role() {
 			return this.user.role;
-		},
-
-
-		//whether or not this user is a fan
-		isFan: function isFan() {
-			return this.user.role === 4 || this.user.role === 45 || this.user.role === 46 || this.user.role === 47;
 		}
 	},
 
@@ -28804,15 +29551,21 @@ exports.default = {
 		//if user changed, set inputs to correct new states
 
 		user: function user() {
-
 			this.initialize();
 		},
 
 
 		//if role changed, set inputs to correct new states
 		role: function role() {
-
 			this.initialize();
+		}
+	},
+
+	events: {
+		EditUser_update: function EditUser_update(response) {
+			$('#rosterModal').modal('hide');
+			this.$dispatch('Team_updated_members', response.data.members);
+			this.$root.banner('good', "User saved");
 		}
 	},
 
@@ -28821,28 +29574,42 @@ exports.default = {
 		//whenever the data reloads, reset the input elements and some logic
 
 		initialize: function initialize() {
-
 			this.confirmKick = false;
 
-			if (this.user.ghost) {
-				if (this.user.meta.ghost.email) this.ghostEmail = true;else this.ghostEmail = false;
+			if (this.user.isGhost) {
+				if (this.user.meta.email) {
+					this.ghostEmail = true;
+				} else {
+					this.ghostEmail = false;
+				}
 			}
 
 			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.admin);
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.isAdmin);
 
 			$('.selectpicker[EditUser]').selectpicker({
 				noneSelectedText: 'None'
-			});
+			}).selectpicker('refresh');
+
+			this.setErrorChecking();
+		},
+		setErrorChecking: function setErrorChecking() {
+			this.registerErrorChecking('user.meta.num', 'jersey', 'Choose between 00-99');
+
+			// extra details to check if editing a ghost
+			if (this.user.isGhost) {
+				this.registerErrorChecking('user.meta.firstname', 'required', 'Enter a first name');
+				this.registerErrorChecking('user.meta.lastname', 'required', 'Enter a last name');
+				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email');
+			}
 		},
 
 
 		//send ajax request to save data
 		save: function save() {
-
-			var errors = this.errorCheck('all');
-
-			if (errors) return;
+			if (this.errorCheck() > 0) {
+				return;
+			}
 
 			if (this.user.new) {
 				this.newUser();
@@ -28876,22 +29643,20 @@ exports.default = {
 
 		//send put request to server to update user
 		updateUser: function updateUser() {
-
 			$('#rosterModal').modal('hide');
 
 			var self = this;
-			var url = this.$parent.prefix + '/user';
-			var data = { user: this.user };
-			this.$http.put(url, data).then(function (response) {
-				if (!response.data.ok) throw response.data.error;
-
-				$('#rosterModal').modal('hide');
-				this.$dispatch('updateUser', response.data.user);
-				//if successful, save new data, show success banner
-				self.$root.banner('good', "User saved");
-			}).catch(function (error) {
-				self.$root.errorMsg(error);
-			});
+			var url = this.$parent.prefix + '/member/' + this.user.member_id;
+			var switchRole = false;
+			if (this.user.isPlayer && (this.user.role === 'coach' || this.user.role === 'ghost_coach')) switchRole = true;
+			if (this.user.isCoach && (this.user.role === 'player' || this.user.role === 'ghost_player')) switchRole = true;
+			var data = {
+				meta: this.user.meta,
+				isGhost: this.user.isGhost,
+				role: switchRole,
+				admin: this.user.isAdmin
+			};
+			this.$root.put(url, 'EditUser_update', data);
 		},
 
 
@@ -28903,7 +29668,6 @@ exports.default = {
 
 		//show popup asking to confirm the kick, send event to Team if they do
 		kick: function kick(confirm) {
-
 			if (typeof confirm !== 'boolean') {
 				//they need to first confirm their decision to kick
 				this.confirm();
@@ -28916,7 +29680,13 @@ exports.default = {
 				return;
 			}
 
-			if (this.user.ghost) var msg = 'Ghost deleted';else if (this.isFan) var msg = 'Fan removed';else var msg = 'User kicked, replaced with ghost';
+			if (this.user.ghost) {
+				var msg = 'Ghost deleted';
+			} else if (this.user.isFan) {
+				var msg = 'Fan removed';
+			} else {
+				var msg = 'User kicked, replaced with ghost';
+			}
 
 			//tell server about new changes
 			var data = { user: this.user };
@@ -28944,12 +29714,12 @@ exports.default = {
 
 		//change the popup so they can confirm their kick on a player
 		confirm: function confirm() {
-			if (this.isFan) {
+			if (this.user.isFan) {
 				//this is a fan
 				this.kickMsg = 'Remove ' + this.user.firstname + ' as a fan?';
 				this.kickText = '';
 				this.kickButton = 'REMOVE';
-			} else if (this.ghost) {
+			} else if (this.user.isGhost) {
 				//they're a ghost, stats will be deleted too
 				this.kickMsg = 'Delete this ghost?';
 				this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
@@ -28962,42 +29732,6 @@ exports.default = {
 			}
 
 			this.confirmKick = true;
-		},
-		errorCheck: function errorCheck(input) {
-			var errors = 0;
-			var role = this.user.role;
-
-			if ((input === 'num' || input === 'all') && role <= 1) {
-				//check that the jersey number is between 00 - 99
-				if (!this.$root.validateJerseyNum(this.user.meta.num)) {
-					errors++;
-					this.errors.num = 'Not a valid number';
-				} else {
-					this.errors.num = '';
-				}
-			}
-
-			if ((input === 'email' || input === 'all') && (role === 1 || role === 3)) {
-				//check that the email is valid
-				if (this.user.meta.ghost.email.length && !this.$root.validateEmail(this.user.meta.ghost.email)) {
-					errors++;
-					this.errors.email = 'Not a valid email';
-				} else {
-					this.errors.email = '';
-				}
-			}
-
-			if ((input === 'name' || input === 'all') && this.user.ghost) {
-				//check that they've added a name
-				if (!this.user.meta.ghost.name.length) {
-					errors++;
-					this.errors.name = 'Enter a name';
-				} else {
-					this.errors.name = '';
-				}
-			}
-
-			return errors;
 		}
 	},
 
@@ -29019,7 +29753,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n\n\n\t\t<div v-show=\"confirmKick\" class=\"EditUser__confirm\">\n\t\t\t<!-- show this div when user is confirming a kick on someone -->\n\t\t\t<div class=\"row kick\">\n\t\t\t\t<h3>{{ kickMsg }}</h3>\n\t\t\t\t<p>{{ kickText }}</p>\n\t\t\t</div>\n\t\t\t<div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t    \t<a class=\"btn btn-delete btn-block btn-md\" @click=\"kick(true)\">{{ kickButton }}</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"kick(false)\">CANCEL</a>\n\t\t    </div>\n\t\t  </div>\n\t\t</div>\n\n    <form v-else=\"\" @submit.prevent=\"save()\">\n    \t<div v-if=\"!user.new\" class=\"row EditUser__role\">\n\t    \t<div v-if=\"user.role < 4\" class=\"col-xs-6\">\n\t        <label>Is a...</label>\n\t        <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" data-max-options=\"1\" v-model=\"user.role\" number=\"\">\n\t        \t<option v-if=\"user.ghost\" value=\"ghost_player\">Player</option>    \n\t          <option v-else=\"\" value=\"player\">Player</option>    \n\t          <option v-if=\"user.ghost\" value=\"ghost_coach\">Coach</option>    \n\t          <option v-else=\"\" value=\"coach\">Coach</option>    \n\t        </select>\n\t      </div>\n\t    </div>\n\t    <div v-if=\"user.role < 2\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.num}\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\" autocomplete=\"false\">\n          <span v-show=\"errors.num\" class=\"form-error\">{{ errors.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Primary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Secondary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.ghost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.ghost.name\" required=\"\" :class=\"{'form-error' : errors.name}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.name\" class=\"form-error\">{{ errors.name }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{ 'form-error' : this.errors.email }\" maxlength=\"100\" v-model=\"user.meta.ghost.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.email\" class=\"form-error\">{{ errors.email }}</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t<span v-show=\"!errors.email &amp;&amp; !ghostEmail\" class=\"input-info\">Sends an invitation to join the team</span>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"!user.ghost\" class=\"row\">\n        <div class=\"col-xs-6\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.ghost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n\n\n\t\t<div v-show=\"confirmKick\" class=\"EditUser__confirm\">\n\t\t\t<!-- show this div when user is confirming a kick on someone -->\n\t\t\t<div class=\"row kick\">\n\t\t\t\t<h3>{{ kickMsg }}</h3>\n\t\t\t\t<p>{{ kickText }}</p>\n\t\t\t</div>\n\t\t\t<div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t    \t<a class=\"btn btn-delete btn-block btn-md\" @click=\"kick(true)\">{{ kickButton }}</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"kick(false)\">CANCEL</a>\n\t\t    </div>\n\t\t  </div>\n\t\t</div>\n\n    <form v-else=\"\" @submit.prevent=\"save()\">\n    \t<div v-if=\"!user.new\" class=\"row EditUser__role\">\n\t    \t<div v-if=\"user.isCoach || user.isPlayer\" class=\"col-xs-6\">\n\t        <label>Is a...</label>\n\t        <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" data-max-options=\"1\" v-model=\"user.role\" number=\"\">\n\t        \t<option v-if=\"user.isGhost\" value=\"ghost_player\">Player</option>    \n\t          <option v-else=\"\" value=\"player\">Player</option>    \n\t          <option v-if=\"user.isGhost\" value=\"ghost_coach\">Coach</option>    \n\t          <option v-else=\"\" value=\"coach\">Coach</option>    \n\t        </select>\n\t      </div>\n\t    </div>\n\t    <div v-if=\"user.isPlayer\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.user.meta.num}\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\" autocomplete=\"false\" maxlength=\"2\">\n          <span v-show=\"errors.user.meta.num\" class=\"form-error\">{{ errors.user.meta.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Primary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"position[0]\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Secondary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"position[1]\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.isGhost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-6 col-sm-3\">\n  \t\t\t\t<label>First Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.firstname\" required=\"\" :class=\"{'form-error' : errors.user.meta.firstname}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.user.meta.firstname\" class=\"form-error\">{{ errors.user.meta.firstname }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-6 col-sm-3\">\n  \t\t\t\t<label>Last Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.lastname\" required=\"\" :class=\"{'form-error' : errors.user.meta.lastname}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.user.meta.lastname\" class=\"form-error\">{{ errors.user.meta.lastname }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{ 'form-error' : errors.user.meta.email }\" maxlength=\"100\" v-model=\"user.meta.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.user.meta.email\" class=\"form-error\">{{ errors.user.meta.email }}</span>\n\t\t\t\t\t<template v-else=\"\">\n\t\t\t\t\t\t<span v-show=\"ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t\t<span v-show=\"! ghostEmail\" class=\"input-info\">Invite someone to take this spot!</span>\n\t\t\t\t\t</template>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"! user.isGhost\" class=\"row\">\n        <div class=\"col-xs-6\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.isGhost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.isGhost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -29036,7 +29770,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],179:[function(require,module,exports){
+},{"./../mixins/Validator.js":196,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],183:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/GoogleTypeahead.vue", module);
 (function(){
 'use strict';
@@ -29075,9 +29809,8 @@ exports.default = {
 		//format the results into the necessary items
 
 		placeSelected: function placeSelected(place) {
-			var city = place.address_components[0].long_name;
-			var state = place.address_components[2].short_name;
-			this.city = city + ', ' + state;
+			var address = place.formatted_address.split(',');
+			this.city = address[0] + ', ' + address[1][1] + address[1][2];
 			this.lat = place.geometry.location.lat();
 			this.long = place.geometry.location.lng();
 			this.selected = true;
@@ -29117,7 +29850,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141}],180:[function(require,module,exports){
+},{"vue":171,"vue-hot-reload-api":145}],184:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/NewsFeed.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -29436,7 +30169,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],181:[function(require,module,exports){
+},{"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],185:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Roster.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -29530,11 +30263,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/json/stringify":5,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],182:[function(require,module,exports){
+},{"babel-runtime/core-js/json/stringify":5,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],186:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Stats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -7px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert("#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29558,7 +30291,6 @@ exports.default = {
 	},
 
 	data: function data() {
-
 		return {};
 	},
 
@@ -29569,17 +30301,23 @@ exports.default = {
 		stats: function stats() {
 			this.$broadcast('compileStats');
 		}
+	},
+
+	events: {
+		dataReady: function dataReady() {
+			this.$broadcast('compileStats');
+		}
 	}
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div>\n\n\t<div v-if=\"type === 'event' &amp;&amp; !stats.length\" class=\"Stats__title --noStats\">\n\t\t<p>This event's stats aren't posted yet... bug a team admin to post them!</p>\n\t</div>\n\t\n\t<basketball v-if=\"sport === 0 &amp;&amp; stats.length\" :type=\"type\" :event=\"event\" :players=\"players\" :raw-stats=\"stats\" :pagination=\"pagination\" :team-cols=\"teamCols\" :player-cols=\"playerCols\"></basketball>\t\n\n\n\n</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div>\n\n\t\t<div v-if=\"type === 'event' &amp;&amp; ! stats.length\" class=\"Stats__title --noStats\">\n\t\t\t<p>This event's stats aren't posted yet... bug a team admin to post them!</p>\n\t\t</div>\n\t\t\n\t\t<basketball v-if=\"sport === 'basketball'\" :type=\"type\" :event=\"event\" :players=\"players\" :raw-stats=\"stats\" :pagination=\"pagination\" :team-cols=\"teamCols\" :player-cols=\"playerCols\">\n  \t</basketball>\t\n\n\n\n\t</div>\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache["#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -7px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
+    __vueify_insert__.cache["#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -29590,7 +30328,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./BasketballStats.vue":173,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],183:[function(require,module,exports){
+},{"./BasketballStats.vue":177,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],187:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Team.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -29662,13 +30400,14 @@ exports.default = {
 			prefix: prefix + teamname,
 			requestFinished: false,
 			notFound: false,
+			auth: {},
 			team: {
 				meta: {}
 			},
 			isAdmin: false,
-			auth: {},
 			isFan: false,
-			isMember: false,
+			isPlayer: false,
+			isCoach: false,
 			hasBeenInvited: false,
 			hasRequestedToJoin: false,
 			isCreator: false,
@@ -29681,7 +30420,7 @@ exports.default = {
 			teamStatCols: [],
 			playerStatCols: [],
 			users: [],
-			tab: 'calendar',
+			tab: 'roster',
 			statsTab: 'teamRecent',
 			events: [],
 			stats: [],
@@ -29699,6 +30438,9 @@ exports.default = {
 	computed: {
 		numFans: function numFans() {
 			return this.fans.length;
+		},
+		isMember: function isMember() {
+			return this.isPlayer || this.isCoach;
 		},
 
 
@@ -29769,6 +30511,7 @@ exports.default = {
 
 			setTimeout(function () {
 				this.requestFinished = true;
+				this.$broadcast('dataReady');
 			}.bind(this), 100);
 		},
 
@@ -29777,6 +30520,16 @@ exports.default = {
 		Team_requestFail: function Team_requestFail(response) {
 			this.requestFinished = true;
 			this.notFound = true;
+		},
+
+
+		/**
+   * User has toggled their fan status
+   */
+		Team_toggleFan: function Team_toggleFan(response) {
+			this.updateFanStatus();
+			this.users = [];
+			this.formatUsers(response.data.members);
 		},
 
 
@@ -29841,36 +30594,14 @@ exports.default = {
 		},
 
 
-		// new user was created from EditUser
-		newUser: function newUser(user) {
-			// format raw data and add to array of users
-			this.formatUsers(user);
-		},
-
-
-		// user was updated from EditUser
-		updateUser: function updateUser(editedUser) {
-			// remove current version of this user
-			this.users = this.users.filter(function (user) {
-				return user.member_id !== editedUser.member_id;
-			});
-
-			// format raw data and add to array of users
-			this.formatUsers(editedUser);
-		},
-
-
-		// user was kicked from team from EditUser
-		deleteUser: function deleteUser(editedUser) {
-			// remove current version of user from users
-			this.users = this.users.filter(function (user) {
-				return user.member_id !== editedUser.member_id;
-			});
-
-			if (!editedUser.deleted) {
-				// if there's a ghost remaining, format raw data and add to array of users
-				this.formatUsers(editedUser);
-			}
+		/**
+   * A user was created/edited/deleted
+   *
+   * @param {array} members  The updated array of team members
+   */
+		Team_updated_members: function Team_updated_members(members) {
+			this.users = [];
+			this.formatUsers(members);
 		}
 	},
 
@@ -29882,7 +30613,6 @@ exports.default = {
 
 		// method for assigning data after ajax call finishes
 		compile: function compile(data) {
-
 			this.auth = this.$root.user;
 			this.team = data.team;
 
@@ -29939,6 +30669,16 @@ exports.default = {
 					user.meta = {};
 				}
 
+				if (this.auth.id === user.id) {
+					// save the logged-in users's data separately too
+					this.isAdmin = user.isAdmin;
+					this.isFan = user.isFan;
+					this.isPlayer = user.isPlayer;
+					this.isCoach = user.isCoach;
+					this.hasRequestedToJoin = user.hasRequestedToJoin;
+					this.hasBeenInvited = user.hasBeenInvited;
+				}
+
 				// mark which user is the creator
 				if (this.team.creator_id === user.id) {
 					user.isCreator = true;
@@ -29951,21 +30691,14 @@ exports.default = {
 
 		// user hit fan button
 		toggleFan: function toggleFan() {
-
 			var self = this;
 			var url = this.prefix + '/fan';
-			this.$http.post(url).then(function (response) {
-				if (response.data.ok) self.updateFanStatus();else throw response.data.error;
-			}).catch(function (error) {
-				self.$root.errorMsg(error);
-			});
+			this.$root.post(url, 'Team_toggleFan');
 		},
 
 
 		// successful request, change fan status
 		updateFanStatus: function updateFanStatus() {
-			var self = this;
-
 			if (this.isFan) {
 				// use decrement animation on counter
 				this.numFansTransition = 'number-tick-down';
@@ -29979,26 +30712,12 @@ exports.default = {
 			this.fansChanged = !this.fansChanged;
 
 			if (this.isFan) {
-				// is now a fan of this team
-				this.auth.role = 4;
-				this.auth.meta = {};
-				this.auth.admin = false;
-				this.isAdmin = false;
-				this.users.push(this.auth);
-
 				// tell App.vue to add this team to the nav dropdown
 				this.$dispatch('becameAFanOfTeam', this.team);
 				this.$root.banner('good', "You're now a fan");
 			} else {
-				// is no longer a fan
-				this.auth.role = null;
-				this.isAdmin = false;
-				this.users = this.users.filter(function (user) {
-					return user.id !== self.auth.id;
-				});
-
-				self.$dispatch('removedAsFanOfTeam', self.team.teamname);
-				self.$root.banner('good', "You're no longer a fan");
+				this.$dispatch('removedAsFanOfTeam', this.team.teamname);
+				this.$root.banner('good', "You're no longer a fan");
 			}
 		},
 
@@ -30105,7 +30824,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<div v-show=\"requestFinished\">\n\t<!-- container for template -->\n\n\t\t<!-- no results for team, show message -->\n\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"notFound\" class=\"f-el-fill text-center\">\n\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t<br>\n\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t</div>\n\n\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t<div v-cloak=\"\" v-else=\"\" class=\"Team for-blurring\">\n\t\t\n\n    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\n\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t{{ team.homefield + ', ' + team.city }}\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__fans\">\n\t\t\t\t\t\t\t\t<div class=\"Team__join_buttons\">\n\t\t\t\t\t\t\t\t\t<!-- buttons for joining team, accepting invitation -->\n\t\t\t\t\t\t\t\t\t<div class=\"Team__invite\">\n\t\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"requestToJoin('join')\">REQUEST TO JOIN</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-delete\" @click=\"requestToJoin('cancel')\">CANCEL REQUEST</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success\" @click=\"respondToInv()\">RESPOND TO INVITATION</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success --member\">YOU'RE A MEMBER</a>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"num-fans\">\n\t\t\t\t\t\t\t\t\t<div class=\"fan-count\" :class=\"numFansClass\">\n\t\t\t\t\t\t\t\t\t\t<!-- for animating a new fan counter, show numFans +- 1 -->\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"!fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"arrow-right --white\"></div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div v-show=\"!isFan\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/becomeFan.png\" width=\"35\" height=\"47\" alt=\"Become a fan\" id=\"becomeFan\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a fan\" id=\"isFan\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isMember\" class=\"fan-icon --member\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a member\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div> <!-- end  Team__fans -->\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" @click=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"calendarTab\">\n\t        \t\t\t\t<i class=\"material-icons\">date_range</i>CALENDAR\n\t\t            </a>\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" @click=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"statsTab\">\n\t        \t\t\t\t<i class=\"material-icons\">trending_up</i>STATS\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" @click=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"rosterTab\">\n\t        \t\t\t\t<i class=\"material-icons\">group</i>ROSTER\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" @click=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"settingsTab\">\n\t        \t\t\t\t<i class=\"material-icons\">settings</i>SETTINGS\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\n\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t  <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t        \t<rc-calendar :admin=\"isAdmin\" :events=\"events\"></rc-calendar>\n\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t    </ul>\n\t\t\t\t\t\t</div>\n\n\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n        \t\t</rc-stats>\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"isAdmin\">\n\t\t        </rc-roster>\t\t\n\n\t\t      </div>\n\t\t    </div>\n\n\n\t\t     <div class=\"row\">\n\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t        \t<h3>Settings</h3>\n\t        \t\n\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\t    </div>\n\n\t\t\t\n\t\t\t<div class=\"row\">\n\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t<!-- <rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed> -->\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<!-- include the footer at bottom -->\n\t\t\t<div class=\"Footer\">\n\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t</div>\n\n\t\t</div>\n\t  <!--  end of blurring wrapper --> \n\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n    <!-- inside here is complex logic handling what happens when an event is \n    \t\t\tclicked on from calendar or news feed -->\n\t\t<rc-view-event :admin=\"isAdmin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t</rc-view-event>\n\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Add an Event</h3>\n          </div>\n          <div class=\"modal-body\">\n            <div class=\"row\">\n                 \n\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n    <!-- modal for editing a player in the roster -->\n\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 v-show=\"(editUser.id || editUser.ghost) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 1\" class=\"modal-title\">Add a Player</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 3\" class=\"modal-title\">Add a Coach</h3>\n          </div>\n          <div class=\"modal-body\">\n          \t<div class=\"row\">\n            \n\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.id || editUser.new || editUser.ghost\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n\n <!-- end container for template -->\n  </div>  \n</div>\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<div v-show=\"requestFinished\">\n\t<!-- container for template -->\n\n\t\t<!-- no results for team, show message -->\n\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"notFound\" class=\"f-el-fill text-center\">\n\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t<br>\n\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t</div>\n\n\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t<div v-cloak=\"\" v-else=\"\" class=\"Team for-blurring\">\n\t\t\n\n    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\n\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t{{ team.homefield + ', ' + team.city }}\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__fans\">\n\t\t\t\t\t\t\t\t<div class=\"Team__join_buttons\">\n\t\t\t\t\t\t\t\t\t<!-- buttons for joining team, accepting invitation -->\n\t\t\t\t\t\t\t\t\t<div class=\"Team__invite\">\n\t\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"requestToJoin('join')\">REQUEST TO JOIN</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-delete\" @click=\"requestToJoin('cancel')\">CANCEL REQUEST</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success\" @click=\"respondToInv()\">RESPOND TO INVITATION</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success --member\">YOU'RE A MEMBER</a>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"num-fans\">\n\t\t\t\t\t\t\t\t\t<div class=\"fan-count\" :class=\"numFansClass\">\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"!fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"arrow-right --white\"></div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div v-show=\"!isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/becomeFan.png\" width=\"35\" height=\"47\" alt=\"Become a fan\" id=\"becomeFan\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a fan\" id=\"isFan\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isMember\" class=\"fan-icon --member\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a member\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div> <!-- end  Team__fans -->\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" @click=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"calendarTab\">\n\t        \t\t\t\t<i class=\"material-icons\">date_range</i>CALENDAR\n\t\t            </a>\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" @click=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"statsTab\">\n\t        \t\t\t\t<i class=\"material-icons\">trending_up</i>STATS\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" @click=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"rosterTab\">\n\t        \t\t\t\t<i class=\"material-icons\">group</i>ROSTER\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" @click=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"settingsTab\">\n\t        \t\t\t\t<i class=\"material-icons\">settings</i>SETTINGS\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\n\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t  <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t        \t<rc-calendar :admin=\"isAdmin\" :events=\"events\"></rc-calendar>\n\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t    </ul>\n\t\t\t\t\t\t</div>\n\n\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n        \t\t</rc-stats>\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"isAdmin\">\n\t\t        </rc-roster>\t\t\n\n\t\t      </div>\n\t\t    </div>\n\n\n\t\t     <div class=\"row\">\n\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t        \t<h3>Settings</h3>\n\t        \t\n\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\t    </div>\n\n\t\t\t\n\t\t\t<div class=\"row\">\n\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t<!-- <rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed> -->\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<!-- include the footer at bottom -->\n\t\t\t<div class=\"Footer\">\n\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t</div>\n\n\t\t</div>\n\t  <!--  end of blurring wrapper --> \n\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n    <!-- inside here is complex logic handling what happens when an event is \n    \t\t\tclicked on from calendar or news feed -->\n\t\t<rc-view-event :admin=\"isAdmin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t</rc-view-event>\n\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Add an Event</h3>\n          </div>\n          <div class=\"modal-body\">\n            <div class=\"row\">\n                 \n\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n    <!-- modal for editing a player in the roster -->\n\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 v-show=\"(editUser.member_id) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 1\" class=\"modal-title\">Add a Player</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 3\" class=\"modal-title\">Add a Coach</h3>\n          </div>\n          <div class=\"modal-body\">\n          \t<div class=\"row\">\n            \n\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.member_id || editUser.new\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n\n <!-- end container for template -->\n  </div>  \n</div>\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -30122,7 +30841,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./AddEvent.vue":170,"./Calendar.vue":174,"./EditUser.vue":178,"./NewsFeed.vue":180,"./Roster.vue":181,"./Stats.vue":182,"./ViewEvent.vue":184,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],184:[function(require,module,exports){
+},{"./AddEvent.vue":174,"./Calendar.vue":178,"./EditUser.vue":182,"./NewsFeed.vue":184,"./Roster.vue":185,"./Stats.vue":186,"./ViewEvent.vue":188,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],188:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/ViewEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -30180,132 +30899,131 @@ exports.default = {
 
 	watch: {
 		event: function event() {
-			//new event, reset this flag to hide EditEvent.vue
+			// new event, reset this flag to hide EditEvent.vue
 			this.editEvent = false;
 		}
 	},
 
 	computed: {
 
-		//FUTURE EVENTS
+		// FUTURE EVENTS
 
-		//event has NOT happened yet, user is admin
+		// event has NOT happened yet, user is admin
 
 		canEditEvent: function canEditEvent() {
 			return moment().isBefore(moment.unix(this.event.start)) && this.admin;
 		},
 
 
-		//event has NOT happened yet, user is NOT an admin
+		// event has NOT happened yet, user is NOT an admin
 		futureEvent: function futureEvent() {
 			return moment().isBefore(moment.unix(this.event.start)) && !this.admin;
 		},
 
 
-		//PAST EVENTS
+		// PAST EVENTS
 
-		//event has happened, user is admin, event was a game
+		// event has happened, user is admin, event was a game
 		canEditStats: function canEditStats() {
 			if (this.editEvent) {
-				//user wants to specifically edit the event regardless of date
+				// user wants to specifically edit the event regardless of date
 				return false;
-			} else return moment().isAfter(moment.unix(this.event.start)) && this.admin && (this.event.type === 1 || this.event.type === 2);
+			} else return moment().isAfter(moment.unix(this.event.start)) && this.admin && (this.event.type === 'home_game' || this.event.type === 'away_game');
 		},
 
 
-		//event has happened, user is an admin, event was NOT a game
+		// event has happened, user is an admin, event was NOT a game
 		pastEventNoStats: function pastEventNoStats() {
-			if (this.editEvent) return false;else return moment().isAfter(moment.unix(this.event.start)) && this.admin && this.event.type !== 1 && this.event.type !== 2;
+			if (this.editEvent) return false;else return moment().isAfter(moment.unix(this.event.start)) && this.admin && (this.event.type !== 'home_game' || this.event.type !== 'away_game');
 		},
 
 
-		//event has happened, user is NOT an admin, event was a game
+		// event has happened, user is NOT an admin, event was a game
 		pastEventStats: function pastEventStats() {
-			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && (this.event.type === 1 || this.event.type === 2);
+			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && (this.event.type === 'home_game' || this.event.type === 'away_game');
 		},
 
 
-		//event has happened, user is NOT an admin, event was NOT a game
+		// event has happened, user is NOT an admin, event was NOT a game
 		pastEvent: function pastEvent() {
 			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && !this.pastEventStats;
 		},
 
 
-		//SOME EXTRA LOGIC FOR CHOOSING WHAT TO SHOW
+		// SOME EXTRA LOGIC FOR CHOOSING WHAT TO SHOW
 
-		//only for choosing how wide to make the modal window
+		// only for choosing how wide to make the modal window
 		showStats: function showStats() {
 			if (this.editEvent) {
-				//user wants to specifically edit the event regardless of date
+				// user wants to specifically edit the event regardless of date
 				return false;
 			} else return this.pastEventStats || this.canEditStats;
 		},
 
 
-		//show basketball stats
+		// show basketball stats
 		basketball: function basketball() {
-			return this.team.sport === 0;
+			return this.team.sport === 'basketball';
 		}
 	},
 
 	methods: {
 
-		//find which event was clicked and display
+		// find which event was clicked and display
 
 		viewEvent: function viewEvent(id) {
-
-			//pass along event data
-			var event = this.events.filter(function (e) {
-				return e.id === id;
+			// pass along event data
+			var event = this.events.filter(function (event) {
+				return event.id === id;
 			});
 
-			//pass along any existing user stats for this event
-			var stats = this.stats.filter(function (e) {
-				return e.event_id === id;
+			// pass along any existing user stats for this event
+			var stats = this.stats.filter(function (stat) {
+				return stat.event_id === id;
 			});
 
 			this.event = event[0];
 
 			if (this.futureEvent || this.pastEvent) {
-				//if just showing info about the event to a non admin, pick CSS class for title
+				// if just showing info about the event to a non admin, pick CSS class for title
 				switch (this.event.type) {
 					case 0:
-						//practice
+						// practice
 						this.event.titleClass = 'practice';
 						break;
 					case 1:
-						//home game
+						// home game
 						this.event.titleClass = 'home';
 						break;
 					case 2:
-						//away game
+						// away game
 						this.event.titleClass = 'away';
 						break;
 					case 3:
-						//special event
-						this.event.titleClass = 'special';
+						// special event
+						this.event.titleClass = 'other';
 						break;
 				}
 			}
 
 			this.currStats = stats;
 
-			//show modal
+			// show modal
 			this.$root.showModal('viewEventModal');
 		}
 	},
 
 	ready: function ready() {
 
-		//attach jquery listeners for click on events
-		//wait long enough to ensure calendar is fully loaded
+		// attach jquery listeners for click on events
+		// wait long enough to ensure calendar is fully loaded
 		setTimeout(function () {
-			//for clicks on calendar events
+			// for clicks on calendar events
 			$('.Calendar__container').on('click touchstart', 'a.event-trigger', function (e) {
 				this.viewEvent($(e.target).data('event-id'));
 			}.bind(this));
 
-			//for clicks on news feed event links
+			// for clicks on news feed event links
 			$('.Feed').on('click touchstart', 'a.event-trigger', function (e) {
 				this.viewEvent($(e.target).data('event-id'));
 			}.bind(this));
@@ -30330,7 +31048,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./EditBasketballStats.vue":176,"./EditEvent.vue":177,"./Stats.vue":182,"vue":167,"vue-hot-reload-api":141,"vueify/lib/insert-css":168}],185:[function(require,module,exports){
+},{"./EditBasketballStats.vue":180,"./EditEvent.vue":181,"./Stats.vue":186,"vue":171,"vue-hot-reload-api":145,"vueify/lib/insert-css":172}],189:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/filters/BasketballStats.js", module);
 (function(){
 'use strict';
@@ -30361,7 +31079,7 @@ module.exports = function (val) {
 
 }).apply(this, arguments);
 
-},{}],186:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/filters/BasketballTooltips.js", module);
 (function(){
 'use strict';
@@ -30469,7 +31187,7 @@ module.exports = function (val) {
 
 }).apply(this, arguments);
 
-},{}],187:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/filters/FormatRepeatString.js", module);
 (function(){
 'use strict';
@@ -30536,7 +31254,7 @@ module.exports = function (string) {
 
 }).apply(this, arguments);
 
-},{}],188:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/filters/FormatTimeString.js", module);
 (function(){
 'use strict';
@@ -30568,7 +31286,7 @@ module.exports = function (start, end) {
 
 }).apply(this, arguments);
 
-},{}],189:[function(require,module,exports){
+},{}],193:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Requests.js", module);
 (function(){
 "use strict";
@@ -30686,7 +31404,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],190:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsScrollSpy.js", module);
 (function(){
 'use strict';
@@ -30738,7 +31456,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],191:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsSelection.js", module);
 (function(){
 'use strict';
@@ -30840,7 +31558,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],192:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Validator.js", module);
 (function(){
 'use strict';
@@ -30853,23 +31571,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 /**
  * Validator mixin inspired by Laravel's Validator API
- *
- * Example variables:
- * 		'players'
- * 		'location.city.zip'
- * 		'players.*.email'
- * 		'players.*.name.firstname'
- *
- * Example rules (definitions below):
- * 		'required|max:15'
- * 		'email'
- * 		'regex:/^[a-zA-Z]+$/'
  */
 exports.default = {
 	data: function data() {
 		return {
-			vars_: {},
 			errors: {},
+			vars_: {},
 			errMsg_: {},
 			validRules_: {
 				required: function required(args) {
@@ -30910,8 +31617,11 @@ exports.default = {
 				}, // the field must be a string with only alphanumeric characters
 				email: function email(args) {
 					return this.email_(args);
+				}, // the field must be a valid email
+				jersey: function jersey(args) {
+					return this.jersey_(args);
 				} },
-			// the field must be a valid email
+			// the field must be a valid jersey number
 			value_: null, // the value of the variable in question
 			path_: null, // the full path of the variable (e.g. user.name.firstname)
 			root_: null, // the name of the root of the variable (e.g. user)
@@ -31091,6 +31801,10 @@ exports.default = {
 		getErrorMessage: function getErrorMessage() {
 			if (!this.messages_.length) {
 				return "Invalid input";
+			}
+
+			if (typeof this.messages_ === 'string') {
+				return this.messages_;
 			}
 
 			if (this.count_ >= this.messages_.length) {
@@ -31444,6 +32158,7 @@ exports.default = {
 					this.$set('temp_.' + this.key_, error); // move error message to correct key
 
 					this.errors[this.root_].$set(this.arrayIndex_, this.temp_); // merge placeholder with this.errors
+					this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
 				}
 		},
 
@@ -31461,7 +32176,19 @@ exports.default = {
 					// store the contents of the placeholder, replacing only the necessary data
 					this.errors[this.root_][this.arrayIndex_][key] = this.temp_[key];
 				}
+
+				this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
 			}
+		},
+
+
+		/**
+   * Get rid of any previously existing error checking logic
+   */
+		clearErrorChecking: function clearErrorChecking() {
+			this.vars_ = {};
+			this.errors = {};
+			this.errMsg_ = {};
 		},
 
 
@@ -31667,13 +32394,25 @@ exports.default = {
 			} else {
 				return this.regex_(/^[a-zA-Z0-9]+$/);
 			}
+		},
+
+
+		/**
+   * The variable must be a valid jersey number
+   */
+		jersey_: function jersey_() {
+			if (typeof this.value_ === 'string' && !this.value_.length) {
+				return true;
+			} else {
+				return this.regex_(/^[0-9]{1,2}$/);
+			}
 		}
 	}
 };
 
 }).apply(this, arguments);
 
-},{}],193:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/routes.js", module);
 (function(){
 'use strict';
@@ -31774,11 +32513,11 @@ router.start(_App2.default, '#app');
 
 }).apply(this, arguments);
 
-},{"./components/App.vue":172,"./components/CreateTeam.vue":175,"./components/Team.vue":183,"./filters/BasketballStats.js":185,"./filters/BasketballTooltips.js":186,"./filters/FormatRepeatString.js":187,"./filters/FormatTimeString.js":188,"vue":167,"vue-autosize":140,"vue-resource":155,"vue-router":166}],1:[function(require,module,exports){
+},{"./components/App.vue":176,"./components/CreateTeam.vue":179,"./components/Team.vue":187,"./filters/BasketballStats.js":189,"./filters/BasketballTooltips.js":190,"./filters/FormatRepeatString.js":191,"./filters/FormatTimeString.js":192,"vue":171,"vue-autosize":144,"vue-resource":159,"vue-router":170}],1:[function(require,module,exports){
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":186,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":185,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":187,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":188,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":189,"hash":"HSTRFhYEbsYDiKfsD4Nq","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":191,"hash":"FZSki5eTAZiXZzCQXwa9","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":192,"hash":"RlyogKuDU3TX/WyrofXt","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":136,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":166,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":36,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":138,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":137,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":165,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":190,"hash":"oD1s4TuUoi2o5Kmr6KQx","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":141,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":134,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":135,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":159,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":140,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":37,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":167,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/baseSome.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":154,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":152,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isTypedArray.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":179,"hash":"8RK+WqevbXGRFrSZLsSH","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":156,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":158,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":161,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":162,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":163,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":150,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":142,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":153,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":148,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":157,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":164,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":160,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"resources/assets/js/components/CreateTeam.vue":{"index":175,"hash":"LuUO20k0BcuSCdrb6qqZ","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":168,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":144,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":151,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":145,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":147,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":146,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":143,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":149,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":155,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/object/keys.js","node_modules/lodash/lang/isArray.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"resources/assets/js/components/Alert.vue":{"index":171,"hash":"d7mbZOR4xjYqMelKmJuG","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":172,"hash":"2v3q0VLB74YNqOz0N1jB","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":174,"hash":"MVkBdM8QPZYwhUcCjGHw","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":170,"hash":"rnRobwVHiA76KbyW8lpN","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":178,"hash":"7b7BH6PLVNmFA9R7u6Cl","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":180,"hash":"TiFOS+7IBzfY9QZlMOgU","parents":["resources/assets/js/components/Team.vue"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":41,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":139,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":173,"hash":"Xv9XwQ0A+4SzNx6nPP8w","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":182,"hash":"hdrsCZ7drgF0eSroxwea","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":47,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":43,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":45,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":169,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":46,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":177,"hash":"sKKO36qcPRss9fTygzrD","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":44,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":42,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":40,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":39,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":38,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":181,"hash":"G+33BuzBy/toOik/mBUN","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":176,"hash":"9QkETHERRGBjDWddgm0R","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":184,"hash":"RvN5xZ9VmsIYpe8AIcjv","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":183,"hash":"oN6fpo3t4QPehJSJWa9y","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":193,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/BasketballTooltips.js":{"index":190,"hash":"jB6bWyM2muz4mXjynjET","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/BasketballStats.js":{"index":189,"hash":"28xcOEqOrbL9kBT3Fq9x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":192,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":191,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":130,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":193,"hash":"HSTRFhYEbsYDiKfsD4Nq","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":195,"hash":"FZSki5eTAZiXZzCQXwa9","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":196,"hash":"ivhcP4t3QbmJo+p09h+l","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditUser.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":133,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":138,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":170,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/parseuri/index.js":{"index":126,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":132,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/node_modules/debug/browser.js":{"index":134,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":53,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":142,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":141,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":169,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":54,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/has-binary/index.js","node_modules/socket.io-parser/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":56,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":110,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":194,"hash":"oD1s4TuUoi2o5Kmr6KQx","parents":["resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/lodash/internal/arrayEach.js":{"index":62,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":65,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":63,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":64,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":145,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":136,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":163,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/has-binary/index.js":{"index":51,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":131,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-parser/index.js":{"index":137,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":144,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":123,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/socket.io-client/node_modules/debug/debug.js","node_modules/socket.io-parser/node_modules/debug/debug.js","node_modules/engine.io-client/node_modules/debug/debug.js"]},"node_modules/socket.io-client/node_modules/debug/debug.js":{"index":135,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-client/node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":127,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":171,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":84,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":70,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":91,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":86,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":71,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":57,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":68,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":92,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":73,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":119,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":66,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":117,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/baseMap.js":{"index":78,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":99,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":59,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":158,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":156,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":121,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":103,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":104,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":100,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":69,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":67,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/lang/isObject.js":{"index":113,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/function/restParam.js":{"index":61,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":87,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":101,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":115,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":183,"hash":"Qp3iFfi7Tkfv7s8Wz3cT","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":160,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":162,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":165,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":166,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":167,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":154,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":146,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":157,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":152,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":90,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":96,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":83,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":55,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":81,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":161,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":168,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":164,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/socket.io-parser/node_modules/debug/debug.js":{"index":140,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-parser/node_modules/debug/browser.js"]},"node_modules/socket.io-parser/node_modules/debug/browser.js":{"index":139,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/lodash/internal/toObject.js":{"index":107,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":88,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":58,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":77,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":75,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":74,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":102,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":105,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":82,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":108,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":122,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":89,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":72,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"resources/assets/js/components/CreateTeam.vue":{"index":179,"hash":"sW1DlY2lkw/+vTVt3zHW","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":172,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/App.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/baseToString.js":{"index":85,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":148,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":155,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":149,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":151,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":150,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":147,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":153,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":159,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":124,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":125,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":120,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":97,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":79,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":111,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":112,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":98,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":109,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":118,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":106,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":116,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":94,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"resources/assets/js/components/Calendar.vue":{"index":178,"hash":"fyZH5ZfHRYq1ybYO90/f","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":174,"hash":"rnRobwVHiA76KbyW8lpN","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":182,"hash":"qJz0JbZ7nLh7KdeayugZ","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":184,"hash":"TiFOS+7IBzfY9QZlMOgU","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Alert.vue":{"index":175,"hash":"d7mbZOR4xjYqMelKmJuG","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":176,"hash":"aV8siXtJh5/ADYLKl+64","parents":["resources/assets/js/routes.js"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":39,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":95,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":93,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":114,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":76,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":80,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":60,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":143,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":177,"hash":"ngA2BgaTbbZ4EZaxkQJN","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":186,"hash":"1QU735UnPaSwjfuK0uOR","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/has-cors/index.js":{"index":52,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":45,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/node_modules/debug/debug.js":{"index":47,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/engine.io-client/node_modules/debug/browser.js"]},"node_modules/engine.io-client/node_modules/debug/browser.js":{"index":46,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":41,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":43,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":173,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":44,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":181,"hash":"sKKO36qcPRss9fTygzrD","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":42,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":40,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":38,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":37,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":36,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":129,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":128,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":185,"hash":"G+33BuzBy/toOik/mBUN","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":180,"hash":"L2oE8r/J2YKrlP1a2EB/","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":188,"hash":"/UGYv28Z1NUmKBC5QUnj","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":187,"hash":"Ld7y0RIhVTC4dmxTLtmh","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":197,"hash":"gvHMGMQiZrYPv5P2ZFBj","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";
@@ -31822,6 +32561,6 @@ router.start(_App2.default, '#app');
   arguments[3], arguments[4], arguments[5], arguments[6]
 );
 
-},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":128,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":193}]},{},[1]);
+},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":128,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":197}]},{},[1]);
 
 //# sourceMappingURL=routes.js.map

@@ -94,18 +94,6 @@ class ManagesTeamRolesTest extends TestCase
     }
 
 
-
-    /** @test */
-    public function an_api_exception_is_thrown_when_you_add_an_existing_role()
-    {
-        $this->setExpectedException('Exception');
-
-        $this->repo->addRole(new Player);
-        $this->repo->addRole(new Player);
-    }
-
-
-
     /** @test */
     public function all_roles_can_be_removed_from_a_member()
     {

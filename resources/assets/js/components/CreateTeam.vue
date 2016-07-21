@@ -74,9 +74,9 @@
 							<label>Sex</label>
 							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
 											CreateTeam="gender" v-model="gender">
-								<option value="male">Men's</option>
-								<option value="female">Women's</option>
-								<option value="coed">Coed</option>
+								<option value="male">Men</option>
+								<option value="female">Women</option>
+								<option value="coed">Co-ed</option>
 							</select>
 						</div>
 						
@@ -146,7 +146,7 @@
 					<div class="CreateTeam__inputs">
 
 						<div>
-							<label>Inputted by Admin</label>
+							<label>Inputted by team admin</label>
 							<select data-style="btn-select btn-lg" CreateTeam="userStats" class="selectpicker form-control show-tick"
 											 data-selected-text-format="count" multiple required 
 											 data-size="false" v-model="userSelected">
@@ -220,12 +220,16 @@
 						<div class="--name">
 							<label>First Name</label>
 							<input type="text" class="form-control" v-model="player.firstname" 
+											:class="{'form-error' : errors.players[$index].firstname}" 
 											:placeholder="dummy[$index].firstname" maxlength="100">
+							<span class="form-error">{{ errors.players[$index].firstname }}</span>
 						</div>
 						<div class="--name">	
 							<label>Last Name</label>
-							<input type="text" class="form-control" v-model="player.lastname" 
+							<input type="text" class="form-control" v-model="player.lastname"
+										:class="{'form-error' : errors.players[$index].lastname}"  
 											:placeholder="dummy[$index].lastname" maxlength="100">
+							<span class="form-error">{{ errors.players[$index].lastname }}</span>
 						</div>
 						<div class="--email">
 							<label>Email</label>
@@ -267,12 +271,16 @@
 						<div class="--name">
 							<label>First Name</label>
 							<input type="text" class="form-control" v-model="coach.firstname" 
+											:class="{'form-error' : errors.coaches[$index].firstname}" 
 											:placeholder="dummy[$index].firstname" maxlength="100">
+							<span class="form-error">{{ errors.coaches[$index].firstname }}</span>
 						</div>
 						<div class="--name">	
 							<label>Last Name</label>
-							<input type="text" class="form-control" v-model="coach.lastname" 
+							<input type="text" class="form-control" v-model="coach.lastname"
+										:class="{'form-error' : errors.coaches[$index].lastname}"  
 											:placeholder="dummy[$index].lastname" maxlength="100">
+							<span class="form-error">{{ errors.coaches[$index].lastname }}</span>
 						</div>
 						<div class="--email">
 							<label>Email</label>
@@ -361,23 +369,27 @@ export default  {
 			page: 'info',
 			name: '',
 			teamname: '',
-			slogan: '',
+			sport: 'basketball',
+			userIsA: 'fan',
 			gender: 'male',
 			homefield: '',
 			city: '',
 			long: '',
 			lat: '',
-			sport: 'basketball',
-			userIsA: 'fan',
-			location: {city: {zip: '24'}},
+			slogan: '',
 			players: [{firstname: '', lastname: '', email: ''}],
 			coaches: [{firstname: '', lastname: '', email: ''}],
 			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
 		}
 	}, 
 
-	methods: {
-
+	methods:
+	{
+		/**
+		 * Send request to server to create this team
+		 * 
+		 * @return Routes to /team/<teamname>
+		 */
 		save() {
 
 			if (this.errorCheck() > 0) {
@@ -409,12 +421,28 @@ export default  {
 		},
 
 
+		/**
+		 * User has clicked the "Next >" button
+		 * Error check and move the page forward
+		 *
+		 * @return {void}
+		 */
 		changePage()
 		{
-			var errors = this.errorCheck();
+			var errors = 0;
+
+			this.setPageError('Correct errors before continuing');
+
+			if (this.page === 'info') {
+				errors += this.errorCheck('name');
+				errors += this.errorCheck('teamname');
+				errors += this.errorCheck('city');
+			}
+			else if(this.page === 'roster') {
+				errors = this.errorCheck();
+			}
 
 			if (! errors) {
-
 				this.setPageError('');
 
 				if (this.page === 'info') {
@@ -424,30 +452,35 @@ export default  {
 					this.page = 'roster';
 				}
 			}
-			else {
-				this.setPageError('Correct errors before continuing');
-			}
 		},
 
-		// tell Validator.js which fields to error check
+		
+		/**
+		 * Tell Validator.js which variables to error check
+		 *
+		 * @return {void} 
+		 */
 		attachErrorChecking()
 		{
 			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers'];
 			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', msg);
-			this.registerErrorChecking('name', 'required', ['Enter a name']);
-			this.registerErrorChecking('city', 'required', ['Search for your city']);
+			this.registerErrorChecking('name', 'required', 'Enter a name');
+			this.registerErrorChecking('city', 'required', 'Search for your city');
 							
-			this.registerErrorChecking('players.*.email', 'email', ['Invalid email']);
-			this.registerErrorChecking('coaches.*.email', 'email', ['Invalid email']);
+			this.registerErrorChecking('players.*.email', 'email', 'Invalid email');
+			this.registerErrorChecking('players.*.firstname', 'required', 'Enter a first name');
+			this.registerErrorChecking('players.*.lastname', 'required', 'Enter a last name');
+			this.registerErrorChecking('coaches.*.email', 'email', 'Invalid email');
+			this.registerErrorChecking('coaches.*.firstname', 'required', 'Enter a first name');
+			this.registerErrorChecking('coaches.*.lastname', 'required', 'Enter a last name');
 
-			// register a few manual messages to set if need be
+			// will use these below the "Next >" button if error on the page
 			this.manualErrorChecking('page.info');
-			this.manualErrorChecking('page.stats');
 			this.manualErrorChecking('page.roster');
 		},
 
 		/**
-		 * Set an error below the "next" button
+		 * Set an error below the "Next >" button
 		 */
 		setPageError(error) 
 		{
@@ -457,13 +490,22 @@ export default  {
 
 	events:
 	{
-		// store dummy names and emails for placeholders
+		/**
+		 * Request returned with dummy data used as placeholders for ghosts
+		 *
+		 * @param {object} response
+		 */
 		CreateTeam_dummy(response)
 		{
 			this.dummy = response.data.dummy;
 		},
 
-		// was the teamname available?
+		
+		/**
+		 * Request returned whether or not this teamname is available
+		 *
+		 * @param {object} response
+		 */
 		CreateTeam_available(response)
 		{
 			if (response.data.available) {
@@ -474,7 +516,11 @@ export default  {
 			}
 		},
 
-		// route the user to the newly created team
+		/**
+		 * Request returned after creating the team
+		 *
+		 * @param {object} response 
+		 */
 		CreateTeam_submit(response)
 		{
 			// use a delay because it felt TOO fast without one
@@ -484,6 +530,9 @@ export default  {
 		},
 
 		
+		/**
+		 * Inititialze the selectpickers in the stats section
+		 */
 		initSelectPicker()
 		{
 			var userPicker = $('[CreateTeam="userStats"]');
@@ -492,8 +541,8 @@ export default  {
 			userPicker.selectpicker({});
 			rcPicker.selectpicker({});
 
-			userPicker.selectpicker('val', this.userSelected);
-			rcPicker.selectpicker('val', this.rcSelected);
+			userPicker.selectpicker('val', this.userSelected).selectpicker('refresh');
+			rcPicker.selectpicker('val', this.rcSelected).selectpicker('refresh');
 			userPicker.selectpicker('refresh');
 			rcPicker.selectpicker('refresh');
 
@@ -505,10 +554,11 @@ export default  {
 			rcPicker.on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
 				this.setDependencies();
 			}.bind(this))
-
-
 		},
 
+		/**
+		 * The stats selected have been changed, re-render the pickers
+		 */
 		renderSelectPicker()
 		{
 			var userPicker = $('[CreateTeam="userStats"]');
@@ -525,17 +575,25 @@ export default  {
 
 	watch:
 	{
-		// if they've changed the sport, update the stats associated with it too
+		/**
+		 * If the sport changed, change the stats in the pickers as well
+		 */
 		sport()
 		{
 			this.initSelections(this.sport);
 		},
 
+		/**
+		 * If the team's gender has changed, update the dummy names to be accurate
+		 */
 		gender()
 		{
 			this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
 		},
 
+		/**
+		 * If the teamname changed, ask the server if this name is in use yet
+		 */
 		teamname()
 		{
 			if (! this.errors.teamname && this.teamname.length) {

@@ -92,9 +92,9 @@
       </div>
     </nav>
 
-		<rc-alert :show="showAlert" transition="fade-fast"></rc-alert>
+		<rc-alert :show="alert" transition="fade-fast"></rc-alert>
 	
-		<router-view id="router" transition="fade-slow" class="router"></router-view>
+		<router-view id="router" transition="fade-md" transition-mode="out-in" class="router"></router-view>
 	
 	</div>
 	
@@ -126,7 +126,7 @@ export default  {
 			prefix: '/api/v1/',
 			user: {},
 			teams: [],
-			showAlert: false,
+			alert: false,
 			alertCounter: 0,
 			alertMessage:  "You better check yoself",
 			alertType: "info",
@@ -269,12 +269,12 @@ export default  {
 		banner(type, msg)
 		{
 			// always hide any existing alerts
-			this.showAlert = false;
+			this.alert = false;
 
 			// give some timeout so there's a noticeable gap between old and new alerts
 			var self = this;
 			setTimeout(function() {
-				self.showAlert = true;
+				self.alert = true;
 				self.$broadcast('displayAlert', type, msg);
 			}, 400);
 		},
