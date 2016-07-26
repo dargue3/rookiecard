@@ -8,14 +8,14 @@
 			<!-- coaches column -->
 			<div v-if="coaches.length" class="Roster__coaches">
 				<h2 class="Roster__header">Coaches</h2>
-				<a v-show="admin" class="Roster__add" @click="addUser('coach')">
+				<a v-show="isAdmin" class="Roster__add" @click="addUser('coach')">
           <i class="material-icons">person_add</i>
         </a>
 				<hr>
 				<div v-for="coach in coaches | orderBy 'lastname'">
 					<div class="Media">
 
-						<img v-if="!coach.ghost" :src="coach.pic" class="Media__thumbnail" width="60" height="60"
+						<img v-if="! coach.isGhost" :src="coach.pic" class="Media__thumbnail" width="60" height="60"
 									v-link="{name: 'user', params: {name: coach.username}}">
 		
 						<img v-else :src="coach.pic" class="Media__thumbnail --ghost" width="60" height="60">
@@ -23,7 +23,7 @@
 					
 						<div class="Media__text">
 							<div class="Media__title">
-								<a v-if="!coach.ghost" v-link="{name: 'user', params: {name: coach.username}}">
+								<a v-if="! coach.isGhost" v-link="{name: 'user', params: {name: coach.username}}">
 									{{ coach.firstname + ' ' + coach.lastname }}
 								</a>
 								<p v-else>
@@ -31,8 +31,8 @@
 								</p>
 							</div>
 							<div class="Media__details">
-								<i v-if="admin" @click="edit(coach)"  id="editIcon" class="material-icons">mode_edit</i>
-								<i v-if="coach.admin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+								<i v-if="isAdmin" @click="edit(coach)"  id="editIcon" class="material-icons">mode_edit</i>
+								<i v-if="coach.isAdmin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 							</div>
 						</div>
 					</div>
@@ -43,7 +43,7 @@
 			<!-- players column -->
 			<div v-if="players.length" class="Roster__players">
 				<h2 class="Roster__header">Players</h2>
-				<a v-show="admin" class="Roster__add" @click="addUser('player')">
+				<a v-show="isAdmin" class="Roster__add" @click="addUser('player')">
           <i class="material-icons">person_add</i>
         </a>
 				<hr>
@@ -51,7 +51,7 @@
 				<div v-for="player in players | orderBy 'lastname'">
 					<div class="Media">
 
-						<img v-if="!player.ghost" :src="player.pic" class="Media__thumbnail" width="60" height="60"
+						<img v-if="! player.isGhost" :src="player.pic" class="Media__thumbnail" width="60" height="60"
 									v-link="{name: 'user', params: {name: player.username}}">
 						<img v-else :src="player.pic" class="Media__thumbnail --ghost" width="60" height="60">
 			
@@ -60,7 +60,7 @@
 								<span v-show="player.meta.num" class="Media__number">
 										{{ player.meta.num }}<span class="Media__divider">|</span>
 								</span>
-								<a v-if="!player.ghost" v-link="{name: 'user', params: {name: player.username}}">
+								<a v-if="! player.isGhost" v-link="{name: 'user', params: {name: player.username}}">
 									{{ player.firstname + ' ' + player.lastname }}
 								</a>
 								<p v-else>
@@ -105,7 +105,7 @@
 					</div>
 					<div class="Media__details">
 						<i v-if="admin" @click="edit(fan)" id="editIcon" class="material-icons">mode_edit</i>
-						<i v-if="fan.admin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+						<i v-if="fan.isAdmin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 					</div>
 				</div>
 			</div>

@@ -627,12 +627,12 @@ export default  {
 				stats.event_id = data.event_id;
 
 				// if they included who this game was against
-				if (meta.event.class === 1) {
+				if (meta.event.type === 'home_game') {
 					// home game
 					stats.opp = 'vs. ' + meta.opp;
 					meta.home = 'vs.';
 				}
-				else if (meta.event.class === 2) {
+				else if (meta.event.type === 'away_game') {
 					// away game
 					stats.opp = '@ ' + meta.opp;
 					meta.home = '@';
