@@ -322,7 +322,7 @@ export default  {
 	img
 		border-top-right-radius 4px
 		border-top-left-radius 4px
-		border 1px solid darken(rc_lite_gray, 5%)
+		border 1px solid darken(rc_super_lite_gray, 5%)
 		border-bottom 0
 	&.--ghost-pic
 		display flex
@@ -333,7 +333,7 @@ export default  {
 		font-size 75px
 		background #D7ECF6
 		color rc_med_gray
-		border 1px solid darken(rc_lite_gray, 5%)
+		border 1px solid darken(rc_super_lite_gray, 5%)
 		border-bottom 0
 	&.--add-player
 		display flex
@@ -343,7 +343,7 @@ export default  {
 		border-top-right-radius 4px
 		border-top-left-radius 4px
 		color link_blue
-		border 1px solid darken(rc_lite_gray, 5%)
+		border 1px solid darken(rc_super_lite_gray, 5%)
 		border-bottom 0
 		.material-icons
 			font-size 100px
@@ -357,10 +357,10 @@ export default  {
 	flex-flow row
 	align-items center
 	padding 10px
-	background lighten(rc_lite_gray, 25%)
+	background rc_super_lite_gray
 	border-bottom-right-radius 4px
 	border-bottom-left-radius 4px
-	border 1px solid darken(rc_lite_gray, 5%)
+	border 1px solid darken(rc_super_lite_gray, 5%)
 	border-top 0
 	.details-text
 		font-size 18px

@@ -4,7 +4,7 @@
 
 <script>
 
-import Stats from '../mixins/Stats.js'
+import AbstractStat from '../mixins/AbstractStat.js'
 
 export default  {
 
@@ -13,7 +13,7 @@ export default  {
 	props: ['type', 'event', 'team', 'players', 'rawStats', 'cols', 'total', 'player',
 					'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
 
-	mixins: [ Stats ],
+	mixins: [ AbstractStat ],
 
 	data()
 	{

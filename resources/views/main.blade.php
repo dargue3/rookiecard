@@ -17,8 +17,7 @@
 	<script type="text/javascript" src="/js/jquery.min.js"></script>
 
 	{{-- fonts --}}
-	<link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
-	<link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Fira+Sans:400,500,700,300,400italic' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Monda' rel='stylesheet' type='text/css'>
 

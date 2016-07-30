@@ -56,13 +56,13 @@
 
 import StatsScrollSpy from '../mixins/StatsScrollSpy.js'
 import Basketball from './BasketballStats.vue'
-import StatFunctions from '../mixins/StatFunctions.js'
+import StatHelpers from '../mixins/StatHelpers.js'
 
 export default  {
 	
 	name: 'Stats',
 
-	mixins: [ StatsScrollSpy, StatFunctions ],
+	mixins: [ StatsScrollSpy, StatHelpers ],
 
 	props: ['sport', 'rawStats', 'players', 'player', 'type', 'team', 'event', 'total'],
 

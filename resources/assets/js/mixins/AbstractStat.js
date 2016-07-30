@@ -1,8 +1,8 @@
-import StatFunctions from './StatFunctions.js'
+import StatHelpers from './StatHelpers.js'
 
 export default
 {
-	mixins: [ StatFunctions ],
+	mixins: [ StatHelpers ],
 
 	events:
 	{
