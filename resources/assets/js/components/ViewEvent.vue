@@ -31,8 +31,8 @@
 							<!-- if showing edit stats, choose the correct sport -->
 							<div v-show="canEditStats">
 
-								<rc-basketball v-if="basketball" :stats="currStats" :players="players" :edit-event.sync="editEvent"
-														:event="event" :team="team" :team-cols="teamCols" :player-cols="playerCols"></rc-basketball>
+								<rc-basketball v-if="team.sport === 'basketball'" :stats="currStats" :players="players" 
+															:edit-event.sync="editEvent" :event="event" :team="team"></rc-basketball>
 							</div>		
 
 
@@ -186,12 +186,6 @@ export default  {
 			else
 				return this.pastEventStats || this.canEditStats;
 		},
-
-		// show basketball stats
-		basketball()
-		{
-			return this.team.sport === 'basketball';
-		}
 		
 	},
 

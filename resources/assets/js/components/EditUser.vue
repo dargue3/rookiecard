@@ -2,7 +2,6 @@
 <template>
 	<div class="col-xs-12 EditUser">
 
-
 		<div v-show="confirmKick" class="EditUser__confirm">
 			<!-- show this div when user is confirming a kick on someone -->
 			<div class="row kick">
@@ -11,19 +10,19 @@
 			</div>
 			<div class="row EditUser__buttons">
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2">
-		    	<a class="btn btn-delete btn-block btn-md" @click="kick(true)">{{ kickButton }}</a>
+		    	<a class="btn btn-delete btn-block btn-md" @click="confirm(true)">{{ kickButton }}</a>
 		    </div>
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
-		    	<a class="btn btn-cancel btn-block btn-md outline" @click="kick(false)">CANCEL</a>
+		    	<a class="btn btn-cancel btn-block btn-md outline" @click="confirm(false)">CANCEL</a>
 		    </div>
 		  </div>
 		</div>
 
     <form v-else @submit.prevent="save()">
-    	<div v-if="!user.new" class="row EditUser__role">
+    	<div v-if="! user.new" class="row EditUser__role">
 	    	<div v-if="user.isCoach || user.isPlayer" class="col-xs-6">
 	        <label>Is a...</label>
-	        <select data-style="btn-select btn-lg" EditUser class="selectpicker form-control show-tick"
+	        <select data-style="btn-select btn-lg" EditUser="role" class="selectpicker form-control show-tick"
 	        				data-max-options="1" v-model="user.role" number>
 	        	<option v-if="user.isGhost" value="ghost_player">Player</option>    
 	          <option v-else value="player">Player</option>    
@@ -36,19 +35,19 @@
         <div class="col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0">
           <label for="number">Jersey Number</label>
           <input type="text" class="form-control" :class="{'form-error' : errors.user.meta.num}"
-          				v-model="user.meta.num" @keyup="errorCheck('num')" autocomplete="false" maxlength="2">
+          				v-model="user.meta.num" autocomplete="false" maxlength="2">
           <span v-show="errors.user.meta.num" class="form-error">{{ errors.user.meta.num }}</span>
         </div>
         <div class="col-xs-6 col-sm-4">
           <label>Primary</label>
-          <select data-style="btn-select btn-lg" EditUser="position[0]" class="selectpicker form-control show-tick"
+          <select data-style="btn-select btn-lg" EditUser="positions[0]" class="selectpicker form-control show-tick"
           				multiple data-max-options="1" v-model="user.meta.positions[0]">
             <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
           </select>
         </div>
         <div class="col-xs-6 col-sm-4">
           <label>Secondary</label>
-          <select data-style="btn-select btn-lg" EditUser="position[1]" class="selectpicker form-control show-tick"
+          <select data-style="btn-select btn-lg" EditUser="positions[1]" class="selectpicker form-control show-tick"
           				multiple data-max-options="1" v-model="user.meta.positions[1]">
             <option v-for="position in positions" :value="position">{{ position | uppercase }}</option>    
           </select>
@@ -126,6 +125,7 @@ export default  {
 		
 		return {
 			ghostEmail: false,
+			originalRole: null,
 			adminOptions: {
 				state: this.user.isAdmin,
 				onText: 'YES',
@@ -143,7 +143,12 @@ export default  {
 
 	beforeCompile()
 	{
-			this.setErrorChecking();
+		this.setErrorChecking();
+	},
+
+	ready()
+	{
+		this.initialize();
 	},
 
 	computed: {
@@ -155,19 +160,18 @@ export default  {
 
 	watch: {
 
-		//if user changed, set inputs to correct new states
+		// if user changed, set inputs to correct new states
 		user()
 		{
+			this.originalRole = this.user.role
 			this.initialize();
 		},
 
-		//if role changed, set inputs to correct new states
+		// if role changed, set inputs to correct new states
 		role()
 		{
 			this.initialize();
 		},
-
-
 	},
 
 	events:
@@ -178,30 +182,60 @@ export default  {
 			this.$dispatch('Team_updated_members', response.data.members);
 			this.$root.banner('good', "User saved");
 		},
+
+		EditUser_new(response)
+		{
+			$('#rosterModal').modal('hide');
+			this.$dispatch('Team_updated_members', response.data.members);
+			this.$root.banner('good', "User created");	
+		},
+
+		EditUser_kick(response)
+		{
+			var msg = 'User kicked, replaced with ghost'
+			if(this.user.isGhost) {
+				msg = 'Ghost deleted';
+			}
+			else if(this.user.isFan) {
+				msg = 'Fan removed';
+			}
+
+			$('#rosterModal').modal('hide');
+			this.confirmKick = false;
+			this.$dispatch('Team_updated_members', response.data.members);
+			this.$root.banner('good', msg);	
+		},
 	},
 
 	methods: {
 
-		//whenever the data reloads, reset the input elements and some logic
+		// whenever the data reloads, reset the input elements and some logic
 		initialize()
 		{
 			this.confirmKick = false;
 
+			if (this.originalRole === null) this.originalRole = this.user.role
+
 			if(this.user.isGhost) {
-				if(this.user.meta.email) {
+				this.ghostEmail = false;
+				if(this.user.meta.email.length) {
 					this.ghostEmail = true;
-				}
-				else {
-					this.ghostEmail = false;
 				}
 			}
 
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.isAdmin);
+			if (this.user.role.includes('player')) {
+				this.user.isPlayer = true;
+				this.user.isCoach = false;
+			}
+			if (this.user.role.includes('coach')) {
+				this.user.isPlayer = false
+				this.user.isCoach = true;
+			}
 
-			$('.selectpicker[EditUser]').selectpicker({
-				noneSelectedText: 'None'
-			}).selectpicker('refresh');
+			setTimeout(function() {
+				this.renderPickers();
+			}.bind(this), 10)
+			
 
 			this.setErrorChecking();
 		},
@@ -210,7 +244,7 @@ export default  {
 		{
 			this.registerErrorChecking('user.meta.num', 'jersey', 'Choose between 00-99');
 
-			// extra details to check if editing a ghost
+			//  extra details to check if editing a ghost
 			if (this.user.isGhost) {
 				this.registerErrorChecking('user.meta.firstname', 'required', 'Enter a first name');
 				this.registerErrorChecking('user.meta.lastname', 'required', 'Enter a last name');
@@ -219,7 +253,19 @@ export default  {
 		},
 
 
-		//send ajax request to save data
+		renderPickers()
+		{
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.isAdmin);
+
+			$('.selectpicker[EditUser="role"]').selectpicker().selectpicker('render');
+
+			$('.selectpicker[EditUser="positions[0]"]').selectpicker({noneSelectedText: 'None'}).selectpicker('render');
+			$('.selectpicker[EditUser="positions[1]"]').selectpicker({noneSelectedText: 'None'}).selectpicker('render');
+		},
+
+
+		// send ajax request to save data
 		save()
 		{
 			if (this.errorCheck() > 0) {
@@ -235,42 +281,28 @@ export default  {
 		},
 
 
-		//send post request to server to save new user
+		// send post request to server to save new user
 		newUser()
 		{
 			var self = this;
 			var url = this.$parent.prefix + '/member'; 
-			var data = { 
-				name: this.user.meta.ghost.name,
-				email: this.user.meta.ghost.email,
-				role: this.user.role
-			};
-
-			this.$http.post(url, data)
-				.then(function(response) {
-					if(!response.data.ok)
-						throw response.data.error;
-				
-					$('#rosterModal').modal('hide');
-					self.$dispatch('newUser', response.data.user);
-					self.$root.banner('good', "User created");	
-				})
-				.catch(function(error) {
-					self.$root.errorMsg(error);
-				});
+			var data = {
+				firstname: this.user.meta.firstname,
+				lastname: this.user.meta.lastname,
+				email: this.user.meta.email,
+				role: this.user.role,
+			} 
+			
+			this.$root.post(url, 'EditUser_new', data);
 		},
 
 
-		//send put request to server to update user
+		// send put request to server to update user
 		updateUser()
 		{
-			$('#rosterModal').modal('hide');
-
-			var self = this;
 			var url = this.$parent.prefix + '/member/' + this.user.member_id;
 			var switchRole = false;
-			if (this.user.isPlayer && (this.user.role === 'coach' || this.user.role === 'ghost_coach')) switchRole = true;
-			if (this.user.isCoach && (this.user.role === 'player' || this.user.role === 'ghost_player')) switchRole = true;
+			if (this.user.role !== this.originalRole) switchRole = true;
 			var data = {
 				meta: this.user.meta,
 				isGhost: this.user.isGhost,
@@ -281,85 +313,56 @@ export default  {
 		},
 
 
-		//close modal
+		// close modal
 		cancel()
 		{
 			$('#rosterModal').modal('hide');
 		},
 
 
-		//show popup asking to confirm the kick, send event to Team if they do
-		kick(confirm)
+		/**
+		 * The user has confirmed their choice to kick a user
+		 *
+		 * @param {boolean} confirm
+		 */
+		confirm(confirm)
 		{
-			if(typeof confirm !== 'boolean') {
-				//they need to first confirm their decision to kick
-				this.confirm();
-				return;
-			}
-
-			if(!confirm) {
-				//they don't want to kick
+			if (! confirm) {
+				// they hit cancel
 				this.confirmKick = false;
 				return;
 			}
 
-			if(this.user.ghost) {
-				var msg = 'Ghost deleted';
-			}
-			else if(this.user.isFan) {
-				var msg = 'Fan removed';
-			}
-			else {
-				var msg = 'User kicked, replaced with ghost';
-			}
-
-			//tell server about new changes
-			var data = { user: this.user };
-			var self = this;
-			this.$http.delete(this.$parent.prefix + '/user', data)
-				.then(function(response) {
-					if(!response.data.ok) 
-						throw response.data.error;
-
-					var user = response.data.user;
-					if(!user) {
-						user = { deleted: true, member_id: self.user.member_id };
-					}
-
-					self.confirmKick = false;
-
-					self.$dispatch('deleteUser', user);
-					self.$root.banner('good', msg);
-					$('#rosterModal').modal('hide');
-					
-				})
-				.catch(function(error) {
-					self.$root.errorMsg(error);
-				});	
-
-				return;
+			this.$root.delete(this.$parent.prefix + '/member/' + this.user.member_id, 'EditUser_kick');
 		},
 
 
-		//change the popup so they can confirm their kick on a player
-		confirm()
+		// change the popup so they can confirm their kick on a player
+		kick()
 		{
-			if(this.user.isFan) {
-				//this is a fan
+			if (this.user.isFan) {
+				// they're a fan
 				this.kickMsg = 'Remove ' + this.user.firstname + ' as a fan?';
 				this.kickText = '';
 				this.kickButton = 'REMOVE';
 			}
 
-			else if(this.user.isGhost) {
-				//they're a ghost, stats will be deleted too
+			else if (this.user.isGhost) {
+				// they're a ghost, stats will be deleted too
 				this.kickMsg = 'Delete this ghost?';
-				this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
+
+				if (this.user.isPlayer) {
+					this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
+				}
+				else {
+					this.kickText = '';
+				}
+				
 				this.kickButton = 'DELETE';
 			}
 
 			else {
-				//they're kick a player
+				// they're a player
 				this.kickMsg = 'Kick ' + this.user.firstname + ' from the team?';
 				this.kickText = "They will be replaced with a ghost user";
 				this.kickButton = 'KICK';
@@ -367,27 +370,6 @@ export default  {
 
 			this.confirmKick = true;
 		},
-	},
-
-	//initialize inputs with jquery
-	ready() {
-
-		var self = this;
-
-		this.initialize();
-
-		$(function() {
-
-			$('.selectpicker[EditUser]').selectpicker({
-				noneSelectedText: 'None'
-			});
-
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(self.adminOptions);
-
-		});
-			
-
-
 	},
 
 };

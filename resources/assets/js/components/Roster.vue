@@ -1,112 +1,154 @@
 
 <template>
 	<div class="Roster">
+
+		<div class="TabButton">
+			<div class="first" :class="{'active' : tab === 'players'}" v-touch:tap="tab = 'players'">
+				<span>Players</span>
+			</div>
+			<div class="second" :class="{'active' : tab === 'coaches'}" v-touch:tap="tab = 'coaches'">
+				<span>Coaches</span>
+			</div>
+			<div class="third" :class="{'active' : tab === 'fans'}" v-touch:tap="tab = 'fans'">
+				<span>Fans</span>
+			</div>
+		</div>
 		
-		<div class="Roster__list">
-
-
-			<!-- coaches column -->
-			<div v-if="coaches.length" class="Roster__coaches">
-				<h2 class="Roster__header">Coaches</h2>
-				<a v-show="isAdmin" class="Roster__add" @click="addUser('coach')">
-          <i class="material-icons">person_add</i>
-        </a>
-				<hr>
-				<div v-for="coach in coaches | orderBy 'lastname'">
-					<div class="Media">
-
-						<img v-if="! coach.isGhost" :src="coach.pic" class="Media__thumbnail" width="60" height="60"
-									v-link="{name: 'user', params: {name: coach.username}}">
-		
-						<img v-else :src="coach.pic" class="Media__thumbnail --ghost" width="60" height="60">
-
-					
-						<div class="Media__text">
-							<div class="Media__title">
-								<a v-if="! coach.isGhost" v-link="{name: 'user', params: {name: coach.username}}">
-									{{ coach.firstname + ' ' + coach.lastname }}
-								</a>
-								<p v-else>
-									{{ coach.firstname + ' ' + coach.lastname }}
-								</p>
-							</div>
-							<div class="Media__details">
-								<i v-if="isAdmin" @click="edit(coach)"  id="editIcon" class="material-icons">mode_edit</i>
-								<i v-if="coach.isAdmin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
-							</div>
+		<div v-show="tab === 'players'" class="Roster__list">
+			<div class="Roster__users">
+				<div v-for="player in players | orderBy 'lastname'" class="User">
+					<div class="User__icons">
+						<div v-show="player.isAdmin" class="admin-icon">
+							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+						</div>
+						<div v-show="isAdmin" class="edit-icon" v-touch:tap="edit(player)">
+							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 						</div>
 					</div>
-				</div>	
-			</div>
-
-
-			<!-- players column -->
-			<div v-if="players.length" class="Roster__players">
-				<h2 class="Roster__header">Players</h2>
-				<a v-show="isAdmin" class="Roster__add" @click="addUser('player')">
-          <i class="material-icons">person_add</i>
-        </a>
-				<hr>
-				
-				<div v-for="player in players | orderBy 'lastname'">
-					<div class="Media">
-
-						<img v-if="! player.isGhost" :src="player.pic" class="Media__thumbnail" width="60" height="60"
-									v-link="{name: 'user', params: {name: player.username}}">
-						<img v-else :src="player.pic" class="Media__thumbnail --ghost" width="60" height="60">
-			
-						<div class="Media__text">
-							<div class="Media__title">
-								<span v-show="player.meta.num" class="Media__number">
-										{{ player.meta.num }}<span class="Media__divider">|</span>
-								</span>
-								<a v-if="! player.isGhost" v-link="{name: 'user', params: {name: player.username}}">
-									{{ player.firstname + ' ' + player.lastname }}
-								</a>
-								<p v-else>
-									{{ player.firstname + ' ' + player.lastname }}
-								</p>
+					<div class="User__pic" :class="{'--ghost-pic' : player.isGhost}">
+						<img v-if="! player.isGhost" :src="player.pic" :alt="player.name" height="200" width="200">
+						<div v-else>
+							<span>{{ player.firstname[0] }}</span>
+						</div>
+					</div>
+					<div class="User__details">
+						<div class="details-text">
+							<div class="User__name">
+								<span v-if="player.isGhost">{{ player.name }}</span>
+								<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
 							</div>
-
-							<div class="Media__details">
-								<i v-if="admin" @click="edit(player)" id="editIcon" class="material-icons">mode_edit</i>
-								<i v-if="player.admin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
-								<span class="positions">
-									<span v-for="position in player.meta.positions">
-										{{ position | uppercase }}  
-										<span v-show="$index !== (player.meta.positions.length - 1) && 
-																	player.meta.positions[$index+1].length"> | </span>
-									</span>
-								</span>
+							<div v-show="player.meta.positions.length" class="User__positions">
+								<span v-for="position in player.meta.positions">
+									{{ position | uppercase }}
+								</span>&nbsp;
 							</div>
-
+						</div>
+						<div class="details-num">
+							<div>
+								<span>{{ player.meta.num }}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 
+				<!-- add player placeholder -->
+				<div class="User" v-if="isAdmin">
+					<div class="User__pic --add-player" v-touch:tap="addUser('player')">
+						<div>
+							<i class="material-icons">add</i>
+						</div>
+					</div>
+					<div class="User__details">
+						<div class="details-text">
+							<div class="User__name">
+								<span>Add a Player</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div v-if="! isAdmin && ! players.length">
+					<h3>No players yet...</h3>
+				</div>
 			</div>
-		</div> <!-- end Roster__list -->
+		</div>
 
 
-		<!-- fans column -->
-		<div v-if="fans.length" class="Roster__fans">
-			<h2 class="Roster__header">Fans</h2>
-			<hr>
-			<div v-for="fan in fans | orderBy 'admin' -1" class="Media">
-
-				<img :src="fan.pic" class="Media__thumbnail" width="60" height="60"
-							v-link="{name: 'user', params: {name: fan.username}}">
-				
-				<div class="Media__text">
-					<div class="Media__title">
-						<a v-link="{name: 'user', params: {name: fan.username}}">
-							{{ fan.firstname + ' ' + fan.lastname }}
-						</a>
+		<div v-show="tab === 'coaches'" class="Roster__list">
+			<div class="Roster__users">
+				<div v-for="coach in coaches | orderBy 'lastname'" class="User">
+					<div class="User__icons">
+						<div v-show="coach.isAdmin" class="admin-icon">
+							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+						</div>
+						<div v-show="isAdmin" class="edit-icon" v-touch:tap="edit(coach)">
+							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
+						</div>
 					</div>
-					<div class="Media__details">
-						<i v-if="admin" @click="edit(fan)" id="editIcon" class="material-icons">mode_edit</i>
-						<i v-if="fan.isAdmin" id="adminIcon" class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+					<div class="User__pic" :class="{'--ghost-pic' : coach.isGhost}">
+						<img v-if="! coach.isGhost" :src="coach.pic" :alt="coach.name" height="200" width="200">
+						<div v-else>
+							<span>{{ coach.firstname[0] }}</span>
+						</div>
 					</div>
+					<div class="User__details">
+						<div class="details-text">
+							<div class="User__name">
+								<span v-if="coach.isGhost">{{ coach.name }}</span>
+								<a v-else v-link="{name: 'user', params: {name: coach.username}}">{{ coach.name }}</a>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- add coach placeholder -->
+				<div class="User" v-if="isAdmin">
+					<div class="User__pic --add-player" v-touch:tap="addUser('coach')">
+						<div>
+							<i class="material-icons">add</i>
+						</div>
+					</div>
+					<div class="User__details">
+						<div class="details-text">
+							<div class="User__name">
+								<span>Add a Coach</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div v-if="! isAdmin && ! coaches.length">
+					<h3>No coaches yet...</h3>
+				</div>
+			</div>
+		</div>
+
+
+		<div v-show="tab === 'fans'" class="Roster__list">
+			<div class="Roster__users">
+				<div v-for="fan in fans | orderBy 'lastname'" class="User">
+					<div class="User__icons">
+						<div v-show="fan.isAdmin" class="admin-icon">
+							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+						</div>
+						<div v-show="isAdmin" class="edit-icon" v-touch:tap="edit(fan)">
+							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
+						</div>
+					</div>
+					<div class="User__pic">
+						<img :src="fan.pic" :alt="fan.name" height="200" width="200">
+					</div>
+					<div class="User__details">
+						<div class="details-text">
+							<div class="User__name">
+								<a v-else v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
+							</div>
+							<div class="User__positions">
+								<span>Since {{ fan.since }}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div v-if="! fans.length">
+					<h3>No fans yet...</h3>
 				</div>
 			</div>
 		</div>
@@ -124,43 +166,63 @@ export default  {
 	
 	name: 'Roster',
 
-	props: ['players', 'coaches', 'fans', 'admin', 'editUser'],
+	props: ['players', 'coaches', 'fans', 'isAdmin', 'editUser'],
 
 
 	data() {
 		return {
-
+			tab: 'players',
 		};
 	},
 
 
 	methods: {
 		
-		//they clicked the edit button
-		//open modal to edit player
-		edit(user) {
+		/**
+		 * Open a modal to edit the given user
+		 * 
+		 * @param  {object} user 
+		 */
+		edit(user)
+		{
+			//make a copy of this player for reactivity
+			user = JSON.parse(JSON.stringify(user));
 
-			//make a copy of this player (not reactive with state in case not saved)
-			this.$set('editUser', JSON.parse(JSON.stringify(user)));
+			var role = '';
+			if (user.isGhost) role = 'ghost';
+			if (user.isPlayer) role += '_player'; 
+			if (user.isCoach) role += '_coach'; 
+			user.role = role;
+
+			this.$set('editUser', user);
 			this.$root.showModal('rosterModal');
-
 		},
 
 
 		//clicked the 'add user' button
-		addUser(role) {
-			if(role === 'player') var role = 1;
-			if(role === 'coach') var role = 3;
+		addUser(role)
+		{
+			if(role === 'player') {
+				var isPlayer = true;
+				var isCoach = false;
+				role = 'ghost_player'
+			}
+			if(role === 'coach') {
+				var isPlayer = false;
+				var isCoach = true;
+				role = 'ghost_coach'
+			}
 
 			var user = {
+				isGhost: true,
+				isPlayer: isPlayer,
+				isCoach: isCoach,
 				role: role,
-				ghost: true,
 				new: true,
 				meta: {
-					ghost: {
-						name: '',
-						email: '',
-					},
+					firstname: '',
+					lastname: '',
+					email: '',
 					positions: [],
 					num: '',
 				}
@@ -199,62 +261,140 @@ export default  {
 	margin 0 auto
 	max-width 775px
 	display flex
-	flex-flow row wrap
-	@media screen and (max-width 775px)
+	flex-flow column
+	@media (max-width 775px)
 		padding 0px 15px
+	.TabButton
+		justify-content center
 
 .Roster__header
 	margin-bottom -10px
-	
-.Roster__add
-	position absolute
-	right 0
-	top 5px
-	font-size 16px
-
+	@media (max-width 767px)
+		text-align center
 
 .Roster__list
 	flex 1
-	@media screen and (max-width 550px)
-		flex-basis 100%
-		
-.Roster__coaches
-	position relative
 	
-.Roster__players
-	margin-top 25px
-	position relative
-
-.Roster__fans
-	flex 1
-	padding-left 3em
-	@media screen and (max-width 550px)
-		padding 0
-		flex-basis 100%
-
-
-#adminIcon
-	color rc_lite_gray
-#editIcon
-	color link_blue
-	&:hover
-		color link_blue_hover
-		cursor pointer
-#saveIcon
-	position absolute
-	left 35px
-	top 9px
-	color white
-	margin 0
-	line-height 0.2
-		
-.jersey
+.Roster__users
 	display flex
-	flex-flow column
-	max-width 75px	
-	display inline-block	
+	flex-flow row wrap
+	justify-content center
+		
+.User
+	position relative
+	display flex
+	flex-flow column wrap
+	width 200px
+	margin 20px 20px
+	@media (max-width 767px)
+		margin 10px 20px
+	&:hover
+		.User__icons
+			opacity 1
+			transition opacity 0.3s ease
+	
+.User__icons
+	display flex
+	position absolute
+	top 0
+	left 0
+	padding-right 5px
+	flex-flow row
+	align-items middle
+	background rgba(255,255,255,0.7)
+	border-top-left-radius 4px
+	border-bottom-right-radius 4px
+	opacity 0
+	transition opacity 0.3s ease
+	@media (max-width 767px)
+		opacity 1
 	div
-		flex 1
+		display flex
+		align-items middle
+		color black
+		margin 5px 0px 2px 5px
+	
+		
+	
+.User__pic
+	flex-basis 200px
+	height 200px
+	img
+		border-top-right-radius 4px
+		border-top-left-radius 4px
+		border 1px solid darken(rc_lite_gray, 5%)
+		border-bottom 0
+	&.--ghost-pic
+		display flex
+		justify-content center
+		align-items center
+		border-top-right-radius 4px
+		border-top-left-radius 4px
+		font-size 75px
+		background #D7ECF6
+		color rc_med_gray
+		border 1px solid darken(rc_lite_gray, 5%)
+		border-bottom 0
+	&.--add-player
+		display flex
+		justify-content center
+		align-items center
+		background rc_lite_gray
+		border-top-right-radius 4px
+		border-top-left-radius 4px
+		color link_blue
+		border 1px solid darken(rc_lite_gray, 5%)
+		border-bottom 0
+		.material-icons
+			font-size 100px
+		&:hover
+			color link_blue_hover
+	
+	
+.User__details
+	flex 1
+	display flex
+	flex-flow row
+	align-items center
+	padding 10px
+	background lighten(rc_lite_gray, 25%)
+	border-bottom-right-radius 4px
+	border-bottom-left-radius 4px
+	border 1px solid darken(rc_lite_gray, 5%)
+	border-top 0
+	.details-text
+		font-size 18px
+		width 175px
+	.details-num
+		font-size 25px
+		align-self center
+		color rc_red
+		width 25px
+		
+.User__positions
+	font-size 14px
+	margin-top 5px
+	color rc_dark_gray
+	
+.Roster__coaches
+	@media (max-width 767px)
+		text-align center
+	ul
+		padding-left 0
+		list-style none
+		font-size 18px
+		.edit-icon
+			visibility hidden
+			@media (max-width 767px)
+				visibility visible
+			&:hover
+				cursor pointer
+		li:hover
+			.edit-icon
+				visibility visible
+	.add-coach
+		font-size 18px
+		
 
 
 </style>

@@ -184,41 +184,41 @@ export default  {
 
 	computed:
 	{
-		newPlayerCols()
-		{
-			var index;
-			var newCols = JSON.parse(JSON.stringify(this.playerCols));
+		// newPlayerCols()
+		// {
+		// 	var index;
+		// 	var newCols = JSON.parse(JSON.stringify(this.playerCols));
 
-			var ditch = ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff', 'dd2', 'td3'];
-			ditch.forEach(function(stat) {
-				var index = newCols.indexOf(stat);
-				if (index !== -1) {
-					newCols.splice(index, 1);
-				}
-			});
+		// 	var ditch = ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff', 'dd2', 'td3'];
+		// 	ditch.forEach(function(stat) {
+		// 		var index = newCols.indexOf(stat);
+		// 		if (index !== -1) {
+		// 			newCols.splice(index, 1);
+		// 		}
+		// 	});
 
-			return newCols;
-		},
+		// 	return newCols;
+		// },
 
-		newTeamCols()
-		{
-			var index;
-			var newCols = [];
+		// newTeamCols()
+		// {
+		// 	var index;
+		// 	var newCols = [];
 
-			this.newPlayerCols.forEach(function(val) {
-				newCols.push(val);
-			});
+		// 	this.newPlayerCols.forEach(function(val) {
+		// 		newCols.push(val);
+		// 	});
 
-			var ditch = ['name', 'dnp'];
-			ditch.forEach(function(stat) {
-				var index = newCols.indexOf(stat);
-				if (index !== -1) {
-					newCols.splice(index, 1);
-				}
-			});
+		// 	var ditch = ['name', 'dnp'];
+		// 	ditch.forEach(function(stat) {
+		// 		var index = newCols.indexOf(stat);
+		// 		if (index !== -1) {
+		// 			newCols.splice(index, 1);
+		// 		}
+		// 	});
 
-			return newCols;
-		},
+		// 	return newCols;
+		// },
 		
 
 	},

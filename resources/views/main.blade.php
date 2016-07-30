@@ -19,6 +19,7 @@
 	{{-- fonts --}}
 	<link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 	<link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Fira+Sans:400,500,700,300,400italic' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Monda' rel='stylesheet' type='text/css'>
 
     <!-- css -->
@@ -42,7 +43,6 @@
     <script src="/js/jstz-1.0.4.min.js"></script>
     <script src="/js/bootstrap-switch.js"></script>
     <script src="/js/bootstrap-select.min.js"></script> 
-    <script src='/js/nav.js'></script>
     <script src='/js/pace.js'></script>
     <script src='/js/dropzone.js'></script>
     <script src="/bower_components/moment/moment.js"></script>

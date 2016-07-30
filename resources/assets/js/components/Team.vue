@@ -38,75 +38,65 @@
 									<div class="Team__location">
 										<span>
 											<i class="material-icons no-highlight">place</i>
-											{{ team.homefield + ', ' + team.city }}
+											<span v-if="team.homefield">{{ team.homefield  + ', '}}</span>
+											<span>{{ team.city }}</span>
 										</span>
 									</div>	
 								</div>
 
-								<div class="Team__fans">
-									<div class="Team__join_buttons">
-										<!-- buttons for joining team, accepting invitation -->
-										<div class="Team__invite">
-											<a  
-													class="btn btn-primary" @click="requestToJoin('join')">REQUEST TO JOIN</a>
-
-											<a v-show="false" 
-													class="btn btn-delete" @click="requestToJoin('cancel')">CANCEL REQUEST</a>
-
-											<a v-show="false" class="btn btn-success" @click="respondToInv()">RESPOND TO INVITATION</a>
-
-											<a v-show="false" class="btn btn-success --member">YOU'RE A MEMBER</a>
-										</div>
-									</div>
-									<div class="num-fans">
-										<div class="fan-count" :class="numFansClass">
-											<span v-if="!fansChanged" :transition="numFansTransition">{{ numFans }}</span>
-											<span v-if="fansChanged" :transition="numFansTransition">{{ numFans }}</span>
-										</div>
-										<div class="arrow-right --white"></div>
+								<div class="Team__buttons">
+									<div class="btn-counter --members">
+										<template v-if="! isMember">
+											<span v-show="hasBeenInvited" class="btn-text --icon --green" @click="join('accept')">
+												<i class="material-icons">drafts</i><span>ACCEPT INVITE</span>
+											</span>
+											<span v-show="hasRequestedToJoin" class="btn-text --icon --red" @click="join('cancel')">
+												<i class="material-icons">clear</i><span>CANCEL</span>
+											</span>
+											<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text --icon --blue" @click="join('request')">
+												<i class="material-icons">person_add</i><span>ASK TO JOIN</span>
+											</span>
+										</template>
+										<span v-else class="btn-text --icon --not-a-button">
+											<i class="material-icons">grade</i><span>MEMBERS</span>
+										</span>
+										<span class="btn-count">
+											<span>{{ players.length + coaches.length }}</span>
+										</span>
 									</div>
 
-									<div v-show="!isFan && !isMember" class="fan-icon" @click="toggleFan">
-										<img src="/images/becomeFan.png" width="35" height="47" alt="Become a fan" id="becomeFan">
+									<div class="btn-counter --fans">
+										<template v-if="! isMember">
+											<span v-show="! isFan" class="btn-text --icon --blue" @click="toggleFan">
+												<i class="material-icons">favorite</i><span>FAN</span>
+											</span>
+											<span v-show="isFan" class="btn-text --icon --blue" @click="toggleFan">
+												<i class="material-icons">favorite_border</i><span>UNFAN</span>
+											</span>
+										</template>
+										<span v-else class="btn-text --icon --not-a-button">
+											<i class="material-icons">favorite</i><span>FANS</span>
+										</span>
+										<span class="btn-count" v-touch:tap="$root.showModal('fansModal')">
+											<span>{{ fans.length }}</span>
+										</span>
 									</div>
-									<div v-show="isFan && !isMember" class="fan-icon" @click="toggleFan">
-										<img src="/images/isFan.png" width="35" height="47"  alt="You're a fan" id="isFan">
-									</div>
-									<div v-show="isMember" class="fan-icon --member">
-										<img src="/images/isFan.png" width="35" height="47"  alt="You're a member">
-									</div>
-								</div> <!-- end  Team__fans -->
+								</div> <!-- end  Team__buttons -->
 								
-							</div>
+							</div> <!-- end Team__info -->
 
 							<div class="Team__tabs">
-								<div class="tab" :class="{'--active' : tab === 'calendar'}"
-											@click="tab = 'calendar'">
-									<div class="tab-box"></div>
-									<a id="calendarTab">
-		        				<i class="material-icons">date_range</i>CALENDAR
-			            </a>			
+								<div class="tab" :class="{'--active' : tab === 'calendar'}" @click="tab = 'calendar'">
+									<a>CALENDAR</a>			
 								</div>
-								<div class="tab" :class="{'--active' : tab === 'stats'}"
-											@click="tab = 'stats'">
-									<div class="tab-box"></div>
-									<a id="statsTab">
-		        				<i class="material-icons">trending_up</i>STATS
-			            </a>	
+								<div class="tab" :class="{'--active' : tab === 'stats'}" @click="tab = 'stats'">
+									<a>STATS</a>	
 								</div>
-								<div class="tab" :class="{'--active' : tab === 'roster'}"
-											@click="tab = 'roster'">
-									<div class="tab-box"></div>
-									<a id="rosterTab">
-		        				<i class="material-icons">group</i>ROSTER
-			            </a>	
+								<div class="tab" :class="{'--active' : tab === 'roster'}" @click="tab = 'roster'">
+									<a>ROSTER</a>	
 								</div>
-								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}"
-											@click="tab = 'settings'">
-									<div class="tab-box"></div>
-									<a id="settingsTab">
-		        				<i class="material-icons">settings</i>SETTINGS
-			            </a>	
+								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}" @click="tab = 'settings'">
+									<a>SETTINGS</a>	
 								</div>
 							</div>	
 						</div>
@@ -133,32 +123,38 @@
 			    <div class="row">
 			      <div class="col-xs-12 text-center Team__stats" v-show="tab === 'stats'">
 
-			      	<!-- links for switching tabs -->
-							<div class="Tab__container">
-								<ul class="Tab__list">
-						      <li>
-						        <a :class="['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']" 
-						        		@click="statsTab = 'teamRecent'">RECENT
-						        </a>
-						      </li>
-						      <li>
-						        <a :class="['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']"
-						        		@click="statsTab = 'playerSeason'">PLAYER
-						        </a>
-						      </li>
-						      <li>
-						        <a :class="['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']"
-						        		@click="statsTab = 'teamSeason'">SEASON
-						        </a>
-						      </li>
-						    </ul>
+			      	<div class="TabButton">
+								<div class="first" :class="{'active' : statsTab === 'teamRecent'}" v-touch:tap="statsTab = 'teamRecent'">
+									<span>Recent</span>
+								</div>
+								<div class="second" :class="{'active' : statsTab === 'playerSeason'}" v-touch:tap="statsTab = 'playerSeason'">
+									<span>Player</span>
+								</div>
+								<div class="third" :class="{'active' : statsTab === 'teamSeason'}" v-touch:tap="statsTab = 'teamSeason'">
+									<span>Season</span>
+								</div>
 							</div>
 
-		        	<rc-stats :type="statsTab" 
-		        						:stats="stats" :sport="team.sport"
-	        							:players="players" pagination="false" 
-	        							:team-cols="teamStatCols":player-cols="playerStatCols">
-	        		</rc-stats>
+							<div v-show="statsTab === 'teamRecent'">
+								<rc-stats type="teamRecent" :team="team" :sport="team.sport"
+													:raw-stats="stats" :players="players">
+		        		</rc-stats>
+							</div>
+							
+
+							<div v-show="statsTab === 'teamSeason'">
+								<div class="TabButton --just-two --small">
+									<div class="first" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
+										<span>Totals</span>
+									</div>
+									<div class="second" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
+										<span>Averages</span>
+									</div>
+								</div>
+			        	<rc-stats type="teamSeason" :team="team" :total="showStatTotals" 
+			        						:sport="team.sport" :raw-stats="stats" :players="players">
+		        		</rc-stats>
+		        	</div>
 			        	
 			      </div>
 			    </div>
@@ -171,7 +167,7 @@
 
 			        <rc-roster :players="players" :coaches="coaches" 
 			        						:fans="fans" :edit-user.sync="editUser" 
-			        						:admin="isAdmin">
+			        						:is-admin="isAdmin">
 			        </rc-roster>		
 
 			      </div>
@@ -228,11 +224,11 @@
 
 	    <!-- inside here is complex logic handling what happens when an event is 
 	    			clicked on from calendar or news feed -->
-			<rc-view-event :admin="isAdmin" :events="events" 
+			<!-- <rc-view-event :admin="isAdmin" :events="events" 
 											:stats="stats" :team="team" 
 											:auth="auth" :players="players"
 											:team-cols="teamStatCols" :player-cols="playerStatCols">
-			</rc-view-event>
+			</rc-view-event> -->
 
 
 
@@ -256,6 +252,32 @@
 	    </div>
 
 
+	    <!-- modal window for adding events -->
+	    <div class="modal" id="fansModal" role="dialog" aria-hidden="true">
+	      <div class="modal-dialog">
+	        <div class="modal-content">
+	          <div class="modal-header">
+	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	            <h3 class="modal-title">Fans</h3>
+	          </div>
+	          <div class="modal-body">
+	            <div class="row">
+	                 
+								<div class="col-xs-12 Team__fans">
+									<ul>
+										<li v-for="fan in fans">
+											<a v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
+										</li>
+									</ul>
+								</div>
+
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+
+
 
 	    <!-- modal for editing a player in the roster -->
 			<div class="modal" id="rosterModal" role="dialog" aria-hidden="true">
@@ -264,8 +286,8 @@
 	          <div class="modal-header">
 	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 	            <h3 v-show="(editUser.member_id) && !editUser.new" class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
-	            <h3 v-show="editUser.new && editUser.role === 1" class="modal-title">Add a Player</h3>
-	            <h3 v-show="editUser.new && editUser.role === 3" class="modal-title">Add a Coach</h3>
+	            <h3 v-show="editUser.new && editUser.isPlayer" class="modal-title">Add a Player</h3>
+	            <h3 v-show="editUser.new && editUser.isCoach" class="modal-title">Add a Coach</h3>
 	          </div>
 	          <div class="modal-body">
 	          	<div class="row">
@@ -333,6 +355,7 @@ export default  {
 		document.title = teamname;
 
 		return {
+			temp: 1,
 			prefix: prefix + teamname,
 			requestFinished: false,
 			notFound: false,
@@ -347,22 +370,20 @@ export default  {
 			hasBeenInvited: false,
 			hasRequestedToJoin: false,
 			isCreator: false,
+			joinAction: null,
 			editUser: {
 				firstname: '',
 				lastname: '',
 				meta: {},
 			},
+			showStatTotals: false,
 			positions: [],
-			teamStatCols: [],
-			playerStatCols: [],
 			users: [],
-			tab: 'roster',
-			statsTab: 'teamRecent',
+			tab: 'stats',
+			statsTab: 'playerSeason',
 			events: [], 
 			stats: [], 
 			feed: [],
-			fansChanged: false,
-			numFansTransition: 'number-tick-up',
 		}
 	},
 
@@ -374,40 +395,21 @@ export default  {
 
 	computed: {
 
-		numFans()
-		{
-			return this.fans.length;
-		},
-
 		isMember()
 		{
 			return this.isPlayer || this.isCoach;
 		},
 
-		// makes fan counter div wider with larger numFans
-		numFansClass()
-		{
-			if (this.fans.length >= 1000)
-				return '--thousandsOfFans';
-
-			else if (this.fans.length >= 100)
-				return '--hundredsOfFans';
-
-			else if (this.fans.length >= 10)
-				return '--tensOfFans';
-
-			else
-				return '';
-		},
-
-		// the following three functions pick which of the fan icons to display
+		/**
+		 * The following three properties pick which of the fan icons to display
+		 */
 		showRemoveFan()
 		{
-			return !this.isFan && !this.isMember;
+			return this.isFan && !this.isMember;
 		},
 		showBecomeFan()
 		{
-			return this.isFan && !this.isAdmin;
+			return !this.isFan && !this.isAdmin;
 		},
 		showIsFan()
 		{
@@ -416,10 +418,12 @@ export default  {
 		},
 
 
-		// the following four functions pick which of the membership buttons to display
-		showYoureAMember()
+		/**
+		 * The following four properties pick which of the membership buttons to display
+		 */
+		showJoinButton()
 		{
-			return this.isMember || this.isCreator;
+			return this.showRequestToJoin || this.showCancelRequest || this.showRespondToInvitation;
 		},
 		showRequestToJoin()
 		{
@@ -436,7 +440,9 @@ export default  {
 
 
 
-		// create list of players from users
+		/**
+		 * Create list of players from users
+		 */
 		players()
 		{
 			return this.users.filter(function(user) {
@@ -444,7 +450,9 @@ export default  {
 			})
 		},
 
-		// create list of coaches from users
+		/**
+		 * Create list of coaches from users
+		 */
 		coaches()
 		{
 			return this.users.filter(function(user) {
@@ -452,11 +460,23 @@ export default  {
 			})
 		},
 
-		// create list of fans from users
+		/**
+		 * Create list of fans from users
+		 */
 		fans()
 		{
 			return this.users.filter(function(user) {
 				return user.isFan;
+			})
+		},
+
+		/**
+		 * Create a list of users that have requested to join the team
+		 */
+		usersThatWantToJoin()
+		{
+			return this.users.filter(function(user) {
+				return user.hasRequestedToJoin;
 			})
 		},
 
@@ -485,14 +505,42 @@ export default  {
 		},
 
 		/**
-		 * User has toggled their fan status
+		 * Successful toggleFan request to server
 		 */
 		Team_toggleFan(response)
 		{
-			this.updateFanStatus();
+			this.isFan = !this.isFan;
+
+			if (this.isFan) {
+				// tell App.vue to add this team to the nav dropdown
+				this.$dispatch('App_becameAFan', this.team);
+				this.$root.banner('good', "You're now a fan");
+			}
+			else {
+				this.$dispatch('App_notAFan', this.team);
+				this.$root.banner('good', "You're no longer a fan");	
+			}
+
 			this.users = [];
 			this.formatUsers(response.data.members);
-			
+		},
+
+
+		Team_join(response)
+		{
+			if (this.joinAction === 'request') {
+				this.hasRequestedToJoin = true;
+				this.$root.banner('good', "Request sent");
+			}
+			else if (this.joinAction === 'cancel') {
+				this.hasRequestedToJoin = false;
+				this.$root.banner('good', "Request canceled");
+			}
+			else if (this.joinAction === 'accept') {
+				this.users = [];
+				this.formatUsers(response.data.members);
+				this.$root.banner('good', "You've joined this team");
+			}
 		},
 
 
@@ -599,9 +647,7 @@ export default  {
 			this.formatUsers(data.members);
 			
 			// store meta data about team
-			var meta = JSON.parse(data.team.meta);		
-			this.teamStatCols = meta.stats.teamCols;
-			this.playerStatCols = meta.stats.playerCols;
+			var meta = JSON.parse(data.team.meta);
 			this.team.slogan = meta.slogan;
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
@@ -668,132 +714,26 @@ export default  {
 		},
 
 
-
-		// user hit fan button
+		/**
+		 * User hit the 'FAN'/'UNFAN' button
+		 */
 		toggleFan()
 		{
-			var self = this;
-			var url = this.prefix + '/fan';
-			this.$root.post(url, 'Team_toggleFan');
+			this.$root.post(this.prefix + '/fan', 'Team_toggleFan');
 		},
 
 
-
-		// successful request, change fan status
-		updateFanStatus()
+		/**
+		 * User hit the 'ASK TO JOIN' or 'ACCEPT INVITATION' button
+		 * 
+		 * @param  {string} action  Either 'request', 'cancel', or 'accept'
+		 */
+		join(action)
 		{
-			if (this.isFan) {
-				// use decrement animation on counter
-				this.numFansTransition = 'number-tick-down'
-			}
-			else {
-				// increment
-				this.numFansTransition = 'number-tick-up'
-			}
-
-			// swap the fan status
-			this.isFan = !this.isFan;
-			this.fansChanged = !this.fansChanged;
-
-			if (this.isFan) {
-				// tell App.vue to add this team to the nav dropdown
-				this.$dispatch('becameAFanOfTeam', this.team);
-				this.$root.banner('good', "You're now a fan");
-			}
-
-			else {
-				this.$dispatch('removedAsFanOfTeam', this.team.teamname);
-				this.$root.banner('good', "You're no longer a fan");	
-			}
+			this.joinAction = action;
+			this.$root.post(this.prefix + '/join', 'Team_join', { action: action });
 		},
 
-
-
-		// the player wants to send a request to join this team
-		requestToJoin(action) {
-			var self = this;
-			var url = this.prefix + '/join';
-			this.$http.post(url)
-				.then(function(response) {
-					if (!response.data.ok)
-						throw response.data.error;
-
-					if (action === 'join') {
-						self.hasRequestedToJoin = true;
-						self.$root.banner('good', "Request sent to team admin");
-					}
-					else if (action === 'cancel') {
-						self.hasRequestedToJoin = false
-						self.$root.banner('good', "Request cancelled");
-					}
-				})
-				.catch(function(error) {
-					self.$root.errorMsg(error);
-				});
-		},
-
-
-
-
-		// they were invited, make them a for-real member now
-		respondToInv(outcome) {
-			var self = this;
-			// first they should confirm whether they want to accept the invite or not
-			// only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
-			if (typeof outcome !== 'boolean') {
-				if (this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
-				if (this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
-				var text = "You've been invited to join this team as a " + role;
-				swal({   
-					title: 'Respond to Invitation',
-					text: text,
-					type: "info",
-					showCancelButton: true,
-					confirmButtonColor: '#1179C9',
-					cancelButtonColor: 'whitesmoke',
-					confirmButtonText: 'JOIN',
-					cancelButtonText: 'NO THANKS',
-					closeOnConfirm: true
-				}, function(confirm) {
-					// call this function with boolean response
-					if (confirm) {
-						self.respondToInv(true);
-					}
-					else {
-						self.respondToInv(false);
-					}
-				});
-
-				// they will be back after confirming
-				return;
-			}
-
-			var url = this.prefix + '/join';
-			data = { accept: outcome };
-			this.$http.post(url, data)
-				.then(function(response) {
-					// check there were no authorization errors
-					if (!response.data.ok) {
-						throw response.data.error;
-					}
-
-					self.hasBeenInvited = false;
-
-					if (outcome) {
-						// add them to the team
-						self.formatUsers(response.data.users);
-						self.$root.banner('good', "You've joined this team");
-						self.isFan = false;
-					}
-					else {
-						self.$root.banner('good', "Invitation denied");
-					}
-				})
-				.catch(function(error) {
-					self.$root.errorMsg(error);
-				});
-
-		},
 	}, // end methods
 
 	ready() {
@@ -803,20 +743,6 @@ export default  {
 			$('div.modal').on('hide.bs.modal', function() {
 				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 		    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
-			});
-
-			$('#becomeFan').on('mouseover', function() {
-				$(this).attr('src', '/images/becomeFanHover.png');
-			});
-			$('#becomeFan').on('mouseout', function() {
-				$(this).attr('src', '/images/becomeFan.png');
-			});
-
-			$('#isFan').on('mouseover', function() {
-				$(this).attr('src', '/images/isFanHover.png');
-			});
-			$('#isFan').on('mouseout', function() {
-				$(this).attr('src', '/images/isFan.png');
 			});
 
 		});
@@ -840,18 +766,22 @@ export default  {
 	display flex
 	flex-flow column
 	margin-bottom 35px
-	padding 110px 0 0 0px 
 	background-size cover
 	background-attachment fixed
 
 .Team__pic
 	flex 1
-	padding-left 40px
-	max-width 290px
+	max-width 270px
+	padding-left 20px
 	transform translate(0, 125px)
+	@media screen and (max-width 1000px)
+		margin 10px
+		transform translate(0, 0px)
+		align-self center
+		padding 0
 	img
 		border-radius 50%
-		border 3px solid white
+		border 5px solid white
 		
 .black-container
 	display flex
@@ -859,6 +789,10 @@ export default  {
 	background rgba(0,0,0,0.70)
 	.filler
 		flex 1
+		min-width 290px
+		@media screen and (max-width 1000px)
+			flex 0
+			min-width 0px
 	
 .Team__info__tabs
 	display flex
@@ -866,20 +800,28 @@ export default  {
 	justify-content flex-start
 	flex 3
 	padding 0
+	@media screen and (max-width 1000px)
+		justify-content center
+		flex-flow column
+		flex 1
+		.filler
+			flex 0
 	
 .Team__info
 	display flex
 	flex-flow row
+	@media screen and (max-width 1000px)
+		justify-content center
+		flex-flow column
 	
 .Team__text
 	flex 1
 	display flex
-	flex-flow column wrap
+	flex-flow column
 	color white
-
-.Team__tabs
-	display flex
-	flex-flow row
+	@media screen and (max-width 1000px)
+		justify-content center
+		text-align center
 	
 .Team__name		
 	flex-basis 1
@@ -899,122 +841,48 @@ export default  {
 		top -2px
 		
 .Team__slogan
-	flex-basis 1
+	flex 1
 	margin-top 15px
 	font-size 16px
 
-.Team__fans
+.Team__buttons
 	flex 1
 	display flex
 	flex-flow row
 	align-items flex-end
-	margin-top 20px
-	.num-fans
-		position relative
-		display flex
-		flex-flow row
-		overflow hidden
-		height 44px
-		width 70px
-		.fan-count
-			display flex
-			flex-flow row
-			justify-content center
-			align-items center
-			background-color white
-			min-width 61px
-			height 44px
-			font-size 17px	
-			border-radius 10%
-			color rc_dark_gray
-			span
-				position absolute
-				top 8px	
-				right 33px
-			&.--tensOfFans
-				span
-					right 30px
-			&.--hundredsOfFans
-				span
-					right 24px
-			&.--thousandsOfFans
-				span
-					right 19px			
-		.arrow-right
-			position absolute
-			top 5px
-			right 4px
-			margin-top 9px
-			height 0
-			width 0
-			border-bottom 6px solid transparent		
-			border-top 6px solid transparent
-			border-left 6px solid white
-	.fan-icon
-		margin-left 2px
-		&:hover
-			cursor pointer
-		&.--member:hover
-			cursor default
+	margin-top 35px
+	.--members
+		margin-right 5px
+	.--fans
+		margin-left 5px
+	@media screen and (max-width 1000px)
+		justify-content center
 			
-.Team__invite
-	background white
-	border-radius 5px
-	margin-right 15px
-	a.btn.outline
-	a.btn
-		border 0
-		margin 0
-		&:hover
-			border 0
-		&.--member:hover
-			cursor default
-			color white
-			background-color rc_bright_green
-		
 			
 .Team__tabs
-	margin-top 25px
-	height 45px
+	display flex
+	flex-flow row
 	padding 0
-	overflow visible
+	margin-top 35px
+	font-size 17px
+	@media screen and (max-width 1000px)
+		justify-content center
 	.tab
-		width 200px
-		position relative
-		height 45px
-		float left
-		overflow hidden
-		margin 0 -15px 0 0
-		.tab-box
-			height 53px
-			background #CCC
-			border-radius 6px
-			border 1px solid rc_lite_gray
-			border-bottom 9px solid rc_lite_gray
-			margin 0 7px 0
-			box-shadow 0 0 2px white inset
-			transform perspective(100px) rotateX(23deg)
-			transition background 0.3s, border-bottom 0.05s
+		flex-basis 110px
+		display flex
+		align-items center
+		justify-content center
+		background-color rgba(255,255,255,0.7)
+		margin-right 5px
+		border-top-left-radius 3px
+		border-top-right-radius 3px
 		a
 			color link_blue
-			transition color 0.3s
+			padding 7px 8px
 		&:hover
 			cursor pointer
-			.tab-box
-				background white
-				transition background 0.3s
-			a
-				color link_blue_hover
-				transition color 0.3s
 		&.--active
-			z-index 40
-			position relative
-			padding-bottom 1px
-			.tab-box
-				background-color whitesmoke
-				border-bottom 0
-				transition border-bottom 0.05s
-				box-shadow 0 0 2px white inset
+			background-color whitesmoke
 			a
 			&:hover
 				cursor default
@@ -1030,6 +898,18 @@ export default  {
 		
 .Team__stats
 	padding 0 2em
+	.TabButton
+		justify-content center
+	.TabButton.--just-two
+		justify-content flex-start
+		margin-bottom 15px
+	
+.Team__fans
+	ul
+		list-style none
+		font-size 16px
+		text-align center
+		padding-left 0
 
 #calendarTab
 	position absolute

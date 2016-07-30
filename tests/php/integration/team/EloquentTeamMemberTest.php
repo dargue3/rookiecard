@@ -408,18 +408,31 @@ class EloquentTeamMemberTest extends TestCase
     }
 
 
-
     /** @test */
     public function an_exception_is_thrown_if_a_non_member_is_deleted_from_the_team()
     {
         $member = TeamMember::create(['user_id' => 1, 'team_id' => 2]);
 
         $this->repo->using($member);
-        $this->repo->addRole(new Fan);
+        $this->repo->addRole(new Admin);
         
         $this->setExpectedException('Exception');
 
         $this->repo->deleteMember($member->id);
+    }
+
+
+    /** @test */
+    public function it_can_delete_a_fan_from_a_team()
+    {
+        $member = TeamMember::create(['user_id' => 1, 'team_id' => 2]);
+
+        $this->repo->using($member);
+        $this->repo->addRole(new Fan);
+
+        $this->repo->deleteMember($member->id);
+
+        $this->assertCount(0, TeamMember::all());
     }
 
 

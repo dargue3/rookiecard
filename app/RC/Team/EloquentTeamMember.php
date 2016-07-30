@@ -58,7 +58,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
 		}
 
 		// it could be just their id
-		else if (is_integer($member)) {
+		else if (is_integer(intval($member))) {
 			$this->member = TeamMember::findOrFail($member);
 		}
 
@@ -607,6 +607,11 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     public function deleteMember($member_id)
     {
     	$this->using($member_id);
+
+        if ($this->isFan()) {
+            $this->member->delete();
+            return $this;
+        }
 
         if (! $this->isMember()) {
             throw new Exception("This user is not a member of this team");

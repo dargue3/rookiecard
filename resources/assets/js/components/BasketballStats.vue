@@ -1,862 +1,294 @@
-
 <template>
-	
-	<div class="stats-container">
-
-		<!-- tell the user there aren't any stats here -->
-		<div v-if="noStats" class="Stats__title">
-			<div class="text-center">
-				<h3>There aren't any stats here yet...</h3>
-			</div>
-		</div>
-
-		<!-- if this is an event, show the outcome and opponent -->
-		<div v-if="type === 'event'" class="Stats__title">
-			<div class="text-center">
-				<h1>
-					<span v-if="meta.teamScore > meta.oppScore" class="win">Win</span>
-					<span v-if="meta.teamScore < meta.oppScore" class="loss">Loss</span>
-					<span v-if="meta.teamScore === meta.oppScore" class="win">Tie</span>
-					<span class="versus">{{ meta.home }} </span>{{ meta.opp }}
-				</h1>
-				<h1>{{ meta.teamScore }} - {{ meta.oppScore }}</h1>
-			</div>
-		</div>
-
-	
-
-    
-
-		<!-- team recent stats -->
-		<h3 v-show="type === 'event' && !noStats" class="Stats__header">Team Stats</h3>	
-    <div v-show="type === 'teamRecent' || type === 'event'">
-    	<div v-if="overflowed.teamRecent" class="Stats__overflow">
-				<span class="--left" v-show="overflowed.teamRecent.first">
-					<i class="material-icons">chevron_left</i>SCROLL
-				</span>
-				<span class="--right" v-show="overflowed.teamRecent.last">
-					SCROLL<i class="material-icons">chevron_right</i>
-				</span>
-			</div>	
-			<div id="teamRecentDiv" class='table-responsive'>
-				<table v-show="teamRecentStats" class="table table-striped stats-table">
-					<thead>
-			    	<tr class="no-highlight">
-			      	<th v-for="key in teamRecentCols" class="stat-columns text-center"
-			      			:class="[teamSortKey === key ? 'col-sort' : '', key === 'opp' ? 'opp' : '']" @click="teamSortBy(key)"
-			      				data-toggle="tooltip" :title="key | basketballTooltips">
-			      		{{ key | basketballStats }}
-			      		<br><span class="caret" :class="teamSortOrders[key] > 0  ? 'asc' : 'desc'"></span>	      	
-			      	</th>
-			    	</tr>
-			  	</thead>
-			  	<tbody>
-			    	<tr v-show="statShown($index)" v-for="val in teamRecentStats | orderBy teamSortKey teamSortOrders[teamSortKey]">
-				      <td v-for="key in teamRecentCols" class="stat-entries" :class="[key === 'win' ? winLossClass(val[key]) : '']">
-				      	<span v-show="val[key] == null">-</span>
-				        {{ val[key] }}
-				      </td>
-			    	</tr>
-			  	</tbody>
-				</table>
-				<div v-else class="text-center">
-					<p>No stats here yet...</p>
-				</div>
-			</div>
-		</div>
-
-
-		<!-- team season stats -->
-		<div v-show="type === 'teamSeason'">
-			<div v-if="overflowed.teamSeason" class="Stats__overflow">
-				<span class="--left" v-show="overflowed.teamSeason.first">
-					<i class="material-icons">chevron_left</i>SCROLL
-				</span>
-				<span class="--right" v-show="overflowed.teamSeason.last">
-					SCROLL<i class="material-icons">chevron_right</i>
-				</span>
-			</div>
-			<div id="teamSeasonDiv" class='table-responsive'>
-				<table v-show="teamSeasonStats" class="table table-striped stats-table">
-					<thead>
-			    	<tr class="no-highlight">
-			      	<th v-for="key in teamSeasonCols" class="stat-columns text-center"
-			      			data-toggle="tooltip" :title="key | basketballTooltips">
-			      		{{ key | basketballStats }}	
-			      	</th>
-			    	</tr>
-			  	</thead>
-			  	<tbody>
-			    	<tr>
-				      <td v-for="key in teamSeasonCols" class="stat-entries">
-				      	<span v-show="teamSeasonStats[key] === null">-</span>
-				        {{ teamSeasonStats[key] }}
-				      </td>
-			    	</tr>
-			  	</tbody>
-				</table>
-				<div v-else class="text-center">
-					<p>No stats here yet...</p>
-				</div>
-			</div>
-		</div>
-
-
-		<!-- player season stats -->
-		<div v-show="type === 'playerSeason'">
-			<div v-if="overflowed.playerSeason" class="Stats__overflow">
-				<span class="--left" v-show="overflowed.playerSeason.first">
-					<i class="material-icons">chevron_left</i>SCROLL
-				</span>
-				<span class="--right" v-show="overflowed.playerSeason.last">
-					SCROLL<i class="material-icons">chevron_right</i>
-				</span>
-			</div>	
-			<div id="playerSeasonDiv" class='table-responsive'>
-				<table v-show="playerSeasonStats" class="table table-striped stats-table">
-					<thead>
-			    	<tr class="no-highlight">
-			      	<th v-for="key in playerSeasonCols" class="stat-columns text-center"
-			      			:class="[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '', 
-			      								(playerSortKey === 'lastname' && key === 'name') ? 'col-sort' : '']" 
-			      			@click="playerSortBy(key)" data-toggle="tooltip" :title="key | basketballTooltips">
-			      		{{ key | basketballStats }}
-			      		<br><span class="caret" :class="playerSortOrders[key] > 0  ? 'asc' : 'desc'"></span>	      	
-			      	</th>
-			    	</tr>
-			  	</thead>
-			  	<tbody>
-			    	<tr v-show="statShown($index)" v-for="val in playerSeasonStats | orderBy playerSortKey playerSortOrders[playerSortKey]">
-				      <td v-for="key in playerSeasonCols" class="stat-entries">
-				      	<span v-show="val[key] == null">-</span>
-				        {{ val[key] }}
-				      </td>
-			    	</tr>
-			  	</tbody>
-				</table>
-				<div v-else class="text-center">
-					<p>No stats here yet...</p>
-				</div>
-			</div>
-		</div>
-
-
-		<!-- player recent stats -->
-		<div v-show="type === 'playerRecent' || type === 'event'">
-			<h3 v-show="type === 'event' && !noStats" class="Stats__header">Player Stats</h3>
-			<div v-if="overflowed.playerRecent" class="Stats__overflow">
-				<span class="--left" v-show="overflowed.playerRecent.first">
-					<i class="material-icons">chevron_left</i>SCROLL
-				</span>
-				<span class="--right" v-show="overflowed.playerRecent.last">
-					SCROLL<i class="material-icons">chevron_right</i>
-				</span>
-			</div>	
-			<div id="playerRecentDiv" >
-				<div class='table-responsive'>
-					<table v-show="playerRecentStats" class="table table-striped stats-table">
-						<thead>
-				    	<tr class="no-highlight">
-				      	<th v-for="key in playerRecentCols" class="stat-columns text-center"
-				      			:class="[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '',
-				      								(playerSortKey === 'lastname' && key === 'name') ? 'col-sort' : '']" 
-				      			@click="playerSortBy(key)" data-toggle="tooltip" :title="key | basketballTooltips">
-				      		{{ key | basketballStats }}
-				      		<br><span class="caret" :class="playerSortOrders[key] > 0  ? 'asc' : 'desc'"></span>	      	
-				      	</th>
-				    	</tr>
-				  	</thead>
-				  	<tbody>
-				    	<tr v-show="statShown($index)" v-for="val in playerRecentStats | orderBy playerSortKey playerSortOrders[playerSortKey]">
-					      <td v-for="key in playerRecentCols" class="stat-entries">
-					      	<span v-show="val[key] == null">-</span>
-					        {{ val[key] }}
-					      </td>
-				    	</tr>
-				  	</tbody>
-					</table>
-					<div v-else class="text-center">
-						<p>No stats here yet...</p>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div v-show="ifPagination" class="pagination text-center">
-			<ul class="pagination">
-				<li :class="{active: n === pagActive}" v-for="n in pagCount">
-					<a @click="switchPag(n)">{{ n + 1 }}</a>
-				</li>
-			</ul>
-		</div>
-
-
-	</div>
-
+	<div></div>
 </template>
-
-
-
 
 <script>
 
-
-import StatsScrollSpy 	from '../mixins/StatsScrollSpy.js'
-
+import Stats from '../mixins/Stats.js'
 
 export default  {
 
 	name: 'BasketballStats',
 
-	props: ['type', 'rawStats', 'pagination', 'event', 'players', 'teamCols', 'playerCols'],
+	props: ['type', 'event', 'team', 'players', 'rawStats', 'cols', 'total', 'player',
+					'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
 
-	mixins: [StatsScrollSpy],
-
+	mixins: [ Stats ],
 
 	data()
-	{	
-    if (!this.pagination) this.pagination = false;
-
-    // if single-event stats are being viewed, remove unnecessary columns
-    if (this.type === 'event') {
-    	this.formatForEvent();
-    }
- 	
+	{
 		return {
-			pagActive: 0,
-			pagCount: 1,
-			rowsPerPage: 10,
-			playerSeasonStats: [],
-			playerRecentStats: [],
-			teamRecentStats: [],
-			teamSeasonStats: [],
-			meta: {},
-			noStats: false,
-			teamSortKey: 'date',
-			playerSortKey: 'pts',
-			teamSortOrders: {},
-			playerSortOrders: {},
-		}
-
-	},
-
-	computed:
-	{
-		ifPagination()
-		{
-			return this.pagCount > 1 && this.pagination
-		},
-
-		// gets rid of the stat categories that aren't useful for team season stats
-		teamSeasonCols()
-		{
-			var index;
-			var teamCols = [];
-			// make a non-reactive copy of cols
-			this.teamCols.forEach(function(val) {
-				teamCols.push(val);
-			});
-
-			index = teamCols.indexOf('date');
-			if (index !== -1)
-				teamCols.splice(index, 1);
-
-			index = teamCols.indexOf('win');
-			if (index !== -1)
-				teamCols.splice(index, 1);
-
-			index = teamCols.indexOf('opp');
-			if (index !== -1)
-				teamCols.splice(index, 1);
-
-			return teamCols;
-		},
-
-		// use all team stats for recent stats
-		teamRecentCols()
-		{
-			return this.teamCols;
-		},
-
-		// gets rid of the stat categories that aren't useful for player season stats
-		playerSeasonCols()
-		{
-			var index;
-			var playerCols = [];
-			// make a non-reactive copy of cols
-			this.playerCols.forEach(function(val) {
-				playerCols.push(val);
-			});
-
-			var ditch = ['date', 'win', 'opp'];
-			ditch.forEach(function(stat) {
-				var index = playerCols.indexOf(stat);
-				if (index !== -1) {
-					playerCols.splice(index, 1);
-				}
-			});
-
-			return playerCols;
-		},
-
-		// gets rid of the stat categories that aren't useful for recent player stats
-		playerRecentCols()
-		{
-			var index;
-			var playerCols = [];
-			// make a non-reactive copy of cols
-			this.playerCols.forEach(function(val) {
-				playerCols.push(val);
-			});
-
-			var ditch = ['name', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff'];
-			ditch.forEach(function(stat) {
-				var index = playerCols.indexOf(stat);
-				if (index !== -1) {
-					playerCols.splice(index, 1);
-				}
-			});
-
-			return playerCols;
-		}
-	},
-
-	events:
-	{
-		compileStats()
-		{
-			this.compile();
+			ignoredCols: { // which stat keys should not be shown for each type?
+				teamRecent: ['gp'],
+				teamSeason: ['date', 'opp'],
+				playerRecent: ['name', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff'],
+				playerSeason: ['date', 'win', 'opp'],
+			},
+			totalStats: [],
+			avgStats: [],
 		}
 	},
 
 	watch:
 	{
-		type()
+		/**
+		 * Whether to view the totals for a season or an average
+		 */
+		total(val)
 		{
-			this.initScrollSpy();
-		}
+			if (val) {
+				this.done(this.totalStats);
+			}
+			else {
+				this.done(this.avgStats);
+			}
+		},
 	},
 
 	methods:
 	{
-		// initializes variables when stats request arrives
-		compile()
+		/**
+		 * Build stats array into the team's recent stats
+		 */
+		teamRecent()
 		{
-			var pagCount = 1;
-			var rawTeamStats = [];
-			var rawPlayerStats = [];
+			var recentStats = [];
+			for (var x = 0; x < this.teamStats.length; x++) {
+				recentStats.push(this.defaultTeamRecent(this.teamStats[x]));
+			}
+			
+			this.done(recentStats);
+		},
+		
 
-			if (this.rawStats.length) {
+		/**
+		 * Calculate the team's season stats to date
+		 * This step amasses the stats into one object of key totals
+		 */
+		teamSeason()
+		{
+			// the keys to not include in the totaling
+			var ignored = [];
 
-				// separate the data into player and team stats arrays
-				for (var x = 0; x < this.rawStats.length; x++) {
+			// the keys that should not be averaged
+			var noAvg = ['wins', 'losses', 'gp'];
 
-					// team stats
-					if (this.rawStats[x].type === 'team') {
-						rawTeamStats.push(this.rawStats[x]);
-					}
+			this.done(this.defaultTeamSeason(ignored, noAvg));
+		},
 
-					// player stats
-					if (this.rawStats[x].type === 'player') {
-						rawPlayerStats.push(this.rawStats[x]);
+
+		/**
+		 * Calculate who won based on the given data
+		 *
+		 * @param {object} stats  The stats
+		 * @param {object} meta   The stats' meta data
+		 */
+		whoWon(stats, meta)
+		{
+			if (meta.oppScore > stats.pts) {
+				// they lost
+				return 0;
+			}
+			if (meta.oppScore < stats.pts) {
+				// they won
+				return 1;
+			}
+			else {
+				return null;
+			}
+		},
+
+
+		lookupValues(key)
+		{
+			if (key === 'date') {
+				return function(val) { return moment.unix(val).format('M/D') };
+			}
+			if (key === 'win') {
+				if (this.type.includes('Recent')) {
+					return function(val) {
+						if (val === 0) return 'L'
+						if (val === 1) return 'W'
+						return ''
 					}
 				}
-
-				// format stats for table
-				this.makeTeamRecentStats(rawTeamStats);
-				this.makePlayerSeasonStats(rawPlayerStats);
-				this.makeTeamSeasonStats(rawTeamStats);
-
+				else {
+					return function(val, key, stats) {
+						if (this.total) {
+							return stats.wins
+						}
+						else {
+							return this.percentage(stats.wins, stats.gp);
+						}
+					}
+				}
+			}
+			if (key === 'opp') {
+				return function(val) {
+					if (val.includes('***', -3)) return 'vs. ' + val.slice(0, -3);
+					if (val.includes('^^^', -3)) return '@ ' + val.slice(0, -3);
+					return val;
+				}
+			}
+			if (key.includes('_', -1)) {
+				// percentage key being calculated
+				return function(val, key, stats) {
+					var prefix = key.slice(0, -1); // e.g. prefix of fg_ is fg
+					var makes = stats[prefix + 'm']; // fgm
+					var attempts = stats[prefix + 'a']; // fga
+					if (! makes || ! attempts) return null
+					return this.percentage(makes, attempts);
+				}
+			}
 				
-				// initialize the sorting order on columns to be descending
-				var teamSortOrders = {};
-				this.teamCols.forEach(function(key) {
-					teamSortOrders[key] = -1;
-				});
-				var playerSortOrders = {};
-				this.playerCols.forEach(function(key) {
-					playerSortOrders[key] = -1;
-				});
-				playerSortOrders['lastname'] = -1;
+			else {
+				return function(val, key, stats) { return this.round(val) };
+			}	
+		},
 
-				// number of pages
-				pagCount = Math.ceil(this.teamRecentStats.length / this.rowsPerPage);
-
-				this.pagCount = pagCount;
-				this.teamSortOrders = teamSortOrders;
-				this.playerSortOrders = playerSortOrders;
-
+		lookupValClasses(key)
+		{
+			if (key === 'win') {
+				return function(val) { 
+					if (val === 0) return ['loss']
+					if (val === 1) return ['win']
+					return ['']
+				}
 			}
 
 			else {
-				// error occurred getting data, create placeholder data
-				this.playerSeasonStats 	= this.markEmpty(0);
-				this.playerRecentStats 	= this.markEmpty(0);
-				this.teamRecentStats 		= this.markEmpty(1);
-				this.teamSeasonStats 		= this.markEmpty(1);
-				
+				return function(val) { return [''] };
 			}
-
-			this.initScrollSpy();
 		},
 
-
-		// prepare listeners for showing "SCROLL >" indicators
-		initScrollSpy()
+		lookupKeyClasses(key)
 		{
-			if (this.type === 'teamSeason') 
-				this.attachScrollListener('#teamSeasonDiv', 'teamSeason');
+			if (key === 'opp') {
+				return function() { return ['opp'] };
+			}
 
-			if (this.type === 'teamRecent') 
-				this.attachScrollListener('#teamRecentDiv', 'teamRecent');
-
-			if (this.type === 'playerSeason') 
-				this.attachScrollListener('#playerSeasonDiv', 'playerSeason');
-
-			if (this.type === 'event' || this.type === 'playerRecent') 
-				this.attachScrollListener('#playerRecentDiv', 'playerRecent');
+			else {
+				return function() { return [''] };
+			}
 		},
 
+		lookupTooltips(key) {
+			switch (key) {
+				case 'date':
+					return function() { return 'Date of Game'; }
+				case 'opp':
+					return function() { return 'Opponent'; }
+				case 'win':
+					return function() {
+						if (this.type.includes('Season')) {
+							if (this.total) {
+								return 'Wins'
+							}
+							else {
+								return 'Win Percentage'
+							}
+						}
+						else {
+							return 'Win or Loss';		
+						}
+					}
+				case 'gs':
+					return function() { return 'Games Started'; };
+				case 'gp':
+					return function() { return 'Games Played'; };
+				case 'min':
+					return function() { return 'Minutes Played'; };
+				case 'dnp':
+					return function() { return 'Did Not Play'; };
+				case 'pts':
+					return function() { return 'Points'; };
+				case 'fgm':
+					return function() { return 'Field Goals Made'; };
+				case 'fga':
+					return function() { return 'Field Goals Attempted'; };
+				case 'fg_':
+					return function() { return 'Field Goal Percentage'; };
+				case 'threepm':
+					return function() { return 'Three Pointers Made'; };
+				case 'threepa':
+					return function() { return 'Three Pointers Attempted'; };
+				case 'threep_':
+					return function() { return 'Three Point Percentage'; };
+				case 'ftm':
+					return function() { return 'Free Throws Made'; };
+				case 'fta':
+					return function() { return 'Free Throws Attempted'; };
+				case 'ft_':
+					return function() { return 'Free Throw Percentage'; };
+				case 'ast':
+					return function() { return 'Assists'; };
+				case 'reb':
+					return function() { return 'Rebounds'; };
+				case 'oreb':
+					return function() { return 'Offensive Rebounds'; };
+				case 'stl':
+					return function() { return 'Steals'; };
+				case 'blk':
+					return function() { return 'Blocks'; };
+				case 'to':
+					return function() { return 'Turnovers'; };
+				case 'pf':
+					return function() { return 'Personal Fouls'; };
+				case 'dd2':
+					return function() { return 'Double Doubles'; };
+				case 'td3':
+					return function() { return 'Triple Doubles'; };
+				case 'efg_':
+					return function() { return 'Effective Field Goal Percentage'; };
+				case 'ts_':
+					return function() { return 'True Shooting Percentage'; };
+				case 'astto':
+					return function() { return 'Assist to Turnover Ratio'; };
+				case 'eff':
+					return function() { return 'Player Efficiency'; };
+				default:
+					return function() { return '';	 };
+			}
+		},
 
-		// compiles averages for the season for each player
-		// fair warning: this function is sort of a monster
-		makePlayerSeasonStats(rawData)
+		lookupNames(key)
 		{
-			var statsArray = [];
-			var IDs = [];
-			var playerStats = [];
-
-			// start by grouping all the stats by player
-			for (var x = 0; x < rawData.length; x++) {
-				var data = rawData[x];
-				var userStats = [];
-
-				// if this player hasn't had their stats grouped yet
-				if (IDs.indexOf(data.member_id) === -1) {
-					// find all of this player's stats in rawData
-					userStats = rawData.filter(function(stat) {
-						return stat.member_id === data.member_id && stat.type === 'player';
-					});
-					// add them to the list of already sorted
-					IDs.push(data.member_id);
-					statsArray.push(userStats);
-				}
-			}
-
-
-			// now loop through each players' stats and average
-			for (var x = 0; x < statsArray.length; x++) {
-
-				// init object of compiled player's stats
-				// length of this array === number of games played
-				var totalStats = {};
-				this.playerSeasonCols.forEach(function(key) {
-					totalStats[key] = 0;
-				});
-				totalStats.gp = statsArray[x].length
-				var thisPlayer = this.players.filter(function(player) {
-					return player.member_id === statsArray[x][0].member_id;
-				});
-				totalStats.lastname = thisPlayer[0].lastname;
-				totalStats.name = thisPlayer[0].abbrName;
-				
-
-				// loop through each stats object belonging to this user
-				for (var y = 0; y < statsArray[x].length; y++) {
-					// store the stats for this event
-					var stats = JSON.parse(statsArray[x][y].stats);
-					var doubleDigits = 0;
-
-					for (var key in stats) {
-						if (stats.hasOwnProperty(key)) {
-
-							if (key[key.length - 1] === '_')
-								continue; // leave the percentages (e.g. fg_) for later
-
-							if (isNaN(stats[key])){
-								totalStats[key] = stats[key]; // not something that needs averaging
-								continue;
-							}
-
-							if (key === 'starter') {
-								// rename 'starter' to be 'gs'
-								totalStats.gs++;
-								continue;
-							}
-
-							// make a counter for double and triple doubles
-							// double double = 2 stat categories in double digits
-							if (stats[key] >= 10) {
-								if (key === 'ast' || key === 'reb' || key === 'stl' || key === 'blk' || key === 'pts') {
-									doubleDigits++;
-								}
-							}
-
-							// add the these stats to the total
-							totalStats[key] = totalStats[key] + stats[key];	
-						}
+			// if key is 'win', return 'W/L'
+			if (key === 'win') {
+				return function() {
+					if (this.total) {
+						return 'WINS'
 					}
-
-					// if two categories in double digits, they get a double double
-					// a triple double counts as both
-					if (doubleDigits == 2) {
-						totalStats.dd2++;
-					}
-					if (doubleDigits > 2) {
-						totalStats.dd2++;
-						totalStats.td3++;
-					}
+					return 'W/L';
 				}
-
-				// depending on what sport this team is, do the correct stat crunching
-				playerStats.push(this.crunchStats(totalStats));
-
 			}
-
-			if (!playerStats.length) {
-				playerStats = this.markEmpty(0);
+			if (key === 'astto') {
+				return function() {
+					return 'AST/TO';
+				}
 			}
-
-			// finally done
-			this.playerSeasonStats = playerStats;
-		},
-
-		crunchStats(totals) {
-			var crunched = {};
-
-			// loop through each key
-			for (var key in totals) {
-				if (totals.hasOwnProperty(key)) {
-					// key exists
-
-					// keys not needing averaging
-					if (key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
-						crunched[key] = totals[key];
-						continue;
-					}
-
-					// special cases, aren't averaged
-					if (key === 'gs' || key === 'gp') {
-						if (totals[key] === true)
-							crunched[key] = 1;
-						else if (totals[key] === false)
-							crunched[key] = 0;
-						else
-							crunched[key] = totals[key];
-						continue;
-					}
-
-					// average by number of games played, round to nearest tenth
-					crunched[key] = Math.round((totals[key] / totals['gp']) * 10) / 10;
+			if (key === 'opp') {
+				return function() {
+					return 'OPPONENT';
 				}
 			}
 
-			// calculate the percentages
-			// field goal, 3 pointers, free throws
-			var prefixes = ['fg', 'threep', 'ft'];
-			for (var x = 0; x < prefixes.length; x++) {
-				var makes = prefixes[x] + 'm';
-				var attempts = prefixes[x] + 'a';
-				var percentage = prefixes[x] + '_';
+			else {
+				return function(key) {
+					// everywhere with a _ becomes a %
+					key = key.replace(/_/g , '%');
 
-				if (crunched[makes] && crunched[attempts]) {
-					var percent = crunched[makes] / crunched[attempts];
-					if (isNaN(percent)) {
-						crunched[percentage] = 0;
-						continue;
-					}
-					// convert to percentages and round to nearest tenth
-					crunched[percentage] = Math.round((percent * 100) * 10) / 10;
-				}
-				else {
-					crunched[percentage] = 0;
+					// everywhere there's a 'three' becomes a '3'
+					key = key.replace(/three/g, '3');
+
+					// and also return all capitalized
+					return key.toUpperCase();
 				}
 			}
-
-
-			// calculate special stats
-
-			if (this.playerSeasonCols.includes('eff')) {
-				crunched['eff'] = this.efficiency(totals);
-			}
-
-			if (this.playerSeasonCols.includes('efg_')) {
-				var efg = (totals['fgm'] + 0.5 * totals['threepm']) / totals['fga'];
-				crunched['efg_'] = Math.round((efg * 100) * 10) / 10;
-			}
-
-			if (this.playerSeasonCols.includes('ts_')) {
-				var ts = totals['pts'] / (2 * (totals['fga'] + (0.44 * totals['fta'])));
-				crunched['ts_'] = Math.round((ts * 100) * 10) / 10;
-			}
-
-			if (this.playerSeasonCols.includes('astto')) {
-				var astto = totals['ast'] / totals['to'];
-				crunched['astto'] = Math.round(astto * 10) / 10;
-			}
-
-			return crunched;
 		},
 
-		// calculates a players season efficiency rating
-		efficiency(totals) {
-			var eff =  (totals['pts'] + totals['reb'] + totals['ast'] + totals['stl'] +
-						totals['blk'] - (totals['fga'] - totals['fgm']) - (totals['fta'] - totals['ftm']) - 
-						totals['to']) / totals['gp'];
-
-			return Math.round(eff * 100) / 100;
-		},
-
-
-		// compiles raw stats into a list of stats by event
-		makeTeamRecentStats(rawData) {
-			var teamStats = [];
-
-			// for each event, parse some info
-			for (var x = 0; x < rawData.length; x++) {
-				var data = rawData[x];
-
-				var stats = JSON.parse(data.stats);
-				var meta = JSON.parse(data.meta);
-
-				// format date of event like 1/31
-				var date = moment.utc(meta.event.start * 1000).local().format('M/D');
-
-				stats.date 		 = date;
-				stats.id 			 = data.id;
-				stats.event_id = data.event_id;
-
-				// if they included who this game was against
-				if (meta.event.type === 'home_game') {
-					// home game
-					stats.opp = 'vs. ' + meta.opp;
-					meta.home = 'vs.';
-				}
-				else if (meta.event.type === 'away_game') {
-					// away game
-					stats.opp = '@ ' + meta.opp;
-					meta.home = '@';
-				}
-				else {
-					// unspecified
-					stats.opp = meta.opp;
-				}
-				
-
-
-				if (meta.oppScore < stats.pts) {
-					// they won
-					stats.win = 'W';
-				}
-				else if (meta.oppScore > stats.pts) {
-					// they lost
-					stats.win = 'L';
-				}
-				else if (meta.oppScore === stats.pts) {
-					// tie
-					stats.win = 'TIE';
-				}
-
-
-				teamStats.push(stats);
-			}
-
-			if (!teamStats.length)
-				teamStats = this.markEmpty(1)
-
-			this.teamRecentStats = teamStats;
-			this.meta = meta;
-
-		},
-
-
-		makeTeamSeasonStats(rawData) {
-
-			var totalStats = {
-				gp: rawData.length,
-			};
-			
-			for (var x = 0; x < rawData.length; x++) {
-	
-				// store the stats for this event
-				var stats = JSON.parse(rawData[x].stats);
-				var meta = JSON.parse(rawData[x].meta);
-				var doubleDigits = 0;
-
-				for (var key in stats) {
-					if (stats.hasOwnProperty(key)) {
-
-						if (key.includes('_')) {
-							totalStats[key] = '-';
-							continue; // leave the percentages (e.g. fg_) for later
-						}
-
-						if (isNaN(stats[key])) {
-							totalStats[key] = stats[key]; // not something that needs averaging
-							continue;
-						}
-						
-						// if this key already exists, add the numbers
-						if (totalStats[key]) 
-							totalStats[key] = totalStats[key] + stats[key];
-						else 
-							totalStats[key] = stats[key];
-					}
-				}
-
-					
-			}
-
-			this.teamSeasonStats = this.crunchStats(totalStats);
-		
-		},
-
-		// if stats are being viewed for a single event, cut out unnecessary columns
-		formatForEvent() {
-
-			var index = this.teamCols.indexOf('win');
-			this.teamCols.splice(index, 1);
-			index = this.teamCols.indexOf('date');
-			this.teamCols.splice(index, 1);
-			index = this.teamCols.indexOf('opp');
-			this.teamCols.splice(index, 1);
-
-
-			index = this.playerCols.indexOf('gs');
-			this.playerCols.splice(index, 1);
-			index = this.playerCols.indexOf('gp');
-			this.playerCols.splice(index, 1);
-			index = this.playerCols.indexOf('dd2');
-			this.playerCols.splice(index, 1);
-			index = this.playerCols.indexOf('td3');
-			this.playerCols.splice(index, 1);
-		},
-
-
-		// decides whether or not this row is shown
-		// based on which pagination page is active
-		statShown(index) {
-			return this.pagActive === Math.floor(index / this.rowsPerPage) || !this.pagination;
-		},
-
-		// returns 'win' or 'loss' for formatting class on W/L column
-		winLossClass(val) {
-			if (val === 'W')
-				return 'win';
-			else if (val === 'L')
-				return 'loss';
-			else if (val === 'TIE')
-				return 'versus';
-			else
-				return '';
-		},
-
-		// new pagination link was clicked
-		switchPag(clicked) {
-			this.pagActive = clicked;
-		},
-
-		// set the clicked header as the sort key
-		// invert ascending / descending
-		playerSortBy(key) {
-
-			if (key === 'name') {
-				// if sorting by name, really sort by hidden lastname field
-				key = 'lastname'; 
-				if (key === this.playerSortKey)
-					this.playerSortOrders['name']  = this.playerSortOrders['name'] * -1;
-				else
-					this.playerSortKey = 'lastname';
-
-				return;
-			}
-
-			if (key === this.playerSortKey)
-				this.playerSortOrders[key]  = this.playerSortOrders[key] * -1;
-			else
-				this.playerSortKey = key;
-		},
-
-		teamSortBy(key) {
-			if (key === this.teamSortKey)
-				this.teamSortOrders[key]  = this.teamSortOrders[key] * -1;
-			else
-				this.teamSortKey = key;
-		},
-
-
-		// instead of an empty stats row, fill with '-'
-		markEmpty(type) {
-			var stats = [{}];
-
-			if (type === 'player') {
-				// player stats
-				this.playerCols.forEach(function(key) {
-					stats[key] = '-';
-				});
-			}
-			else if (type === 'team') {
-				// team stats
-				this.teamCols.forEach(function(key) {
-					stats[key] = '-';
-				});
-			}
-			return stats;
-		},
-
-	},
-
-	ready() {
-
-		$(function() {
-
-			$('[data-toggle="tooltip"').tooltip({
-				container: 'body',
-				delay: {show: 400, hide: 0},
-			});
-		});
-
-	}
-
+	}, // end methods
 };
 
 
-
-
 </script>
-
-
-
-
-<style lang="stylus">
-
-@import '/resources/assets/stylus/variables.styl'
-
-.Stats__title
-	display flex
-	flex-flow row
-	margin-bottom 4em
-	div
-		flex 1
-		justify-content center
-		align-items center
-	h1
-		@media screen and (max-width 767px)
-			font-size 25px	
-		
-	.versus
-		color rc_light_gray
-	.win
-		color rc_win
-	.loss
-		color rc_loss
-		
-.Stats__header
-	margin-bottom 15px
-	@media screen and (max-width 767px)
-			font-size 20px	
-
-</style>
-
-
-

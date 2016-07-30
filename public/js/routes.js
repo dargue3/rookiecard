@@ -1,6 +1,77 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({2:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/after/index.js", module);
+(function(){
+module.exports = after
+
+function after(count, callback, err_cb) {
+    var bail = false
+    err_cb = err_cb || noop
+    proxy.count = count
+
+    return (count === 0) ? callback() : proxy
+
+    function proxy(err, result) {
+        if (proxy.count <= 0) {
+            throw new Error('after called too many times')
+        }
+        --proxy.count
+
+        // after first error, rest are passed to err_cb
+        if (err) {
+            bail = true
+            callback(err)
+            // future error callbacks will go to error handler
+            callback = err_cb
+        } else if (proxy.count === 0 && !bail) {
+            callback(null, result)
+        }
+    }
+}
+
+function noop() {}
+
+}).apply(this, arguments);
+
+},{}],3:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/arraybuffer.slice/index.js", module);
+(function(){
+/**
+ * An abstraction for slicing an arraybuffer even when
+ * ArrayBuffer.prototype.slice is not supported
+ *
+ * @api public
+ */
+
+module.exports = function(arraybuffer, start, end) {
+  var bytes = arraybuffer.byteLength;
+  start = start || 0;
+  end = end || bytes;
+
+  if (arraybuffer.slice) { return arraybuffer.slice(start, end); }
+
+  if (start < 0) { start += bytes; }
+  if (end < 0) { end += bytes; }
+  if (end > bytes) { end = bytes; }
+
+  if (start >= bytes || start >= end || bytes === 0) {
+    return new ArrayBuffer(0);
+  }
+
+  var abv = new Uint8Array(arraybuffer);
+  var result = new Uint8Array(end - start);
+  for (var i = start, ii = 0; i < end; i++, ii++) {
+    result[ii] = abv[i];
+  }
+  return result.buffer;
+};
+
+}).apply(this, arguments);
+
+},{}],4:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/autosize/dist/autosize.js", module);
+(function(){
 /*!
-	Autosize 3.0.16
+	Autosize 3.0.15
 	license: MIT
 	http://www.jacklmoore.com/autosize
 */
@@ -109,25 +180,10 @@
 			resize();
 		}
 
-		function getParentOverflows(el) {
-			var arr = [];
-
-			while (el && el.parentNode && el.parentNode instanceof Element) {
-				if (el.parentNode.scrollTop) {
-					arr.push({
-						node: el.parentNode,
-						scrollTop: el.parentNode.scrollTop });
-				}
-				el = el.parentNode;
-			}
-
-			return arr;
-		}
-
 		function resize() {
+			var htmlTop = window.pageYOffset;
+			var bodyTop = document.body.scrollTop;
 			var originalHeight = ta.style.height;
-			var overflows = getParentOverflows(ta);
-			var docTop = document.documentElement && document.documentElement.scrollTop; // Needed for Mobile IE (ticket #240)
 
 			ta.style.height = 'auto';
 
@@ -145,13 +201,8 @@
 			clientWidth = ta.clientWidth;
 
 			// prevents scroll-position jumping
-			overflows.forEach(function (el) {
-				el.node.scrollTop = el.scrollTop;
-			});
-
-			if (docTop) {
-				document.documentElement.scrollTop = docTop;
-			}
+			document.documentElement.scrollTop = htmlTop;
+			document.body.scrollTop = bodyTop;
 		}
 
 		function update() {
@@ -273,34 +324,66 @@
 
 	module.exports = autosize;
 });
-},{}],2:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],5:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/core-js/json/stringify.js", module);
+(function(){
 module.exports = { "default": require("core-js/library/fn/json/stringify"), __esModule: true };
-},{"core-js/library/fn/json/stringify":4}],3:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"core-js/library/fn/json/stringify":7}],6:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/core-js/number/is-integer.js", module);
+(function(){
 module.exports = { "default": require("core-js/library/fn/number/is-integer"), __esModule: true };
-},{"core-js/library/fn/number/is-integer":5}],4:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"core-js/library/fn/number/is-integer":8}],7:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js", module);
+(function(){
 var core  = require('../../modules/_core')
   , $JSON = core.JSON || (core.JSON = {stringify: JSON.stringify});
 module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
   return $JSON.stringify.apply($JSON, arguments);
 };
-},{"../../modules/_core":8}],5:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../../modules/_core":11}],8:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js", module);
+(function(){
 require('../../modules/es6.number.is-integer');
 module.exports = require('../../modules/_core').Number.isInteger;
-},{"../../modules/_core":8,"../../modules/es6.number.is-integer":22}],6:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../../modules/_core":11,"../../modules/es6.number.is-integer":25}],9:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js", module);
+(function(){
 module.exports = function(it){
   if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
-},{}],7:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],10:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js", module);
+(function(){
 var isObject = require('./_is-object');
 module.exports = function(it){
   if(!isObject(it))throw TypeError(it + ' is not an object!');
   return it;
 };
-},{"./_is-object":18}],8:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_is-object":21}],11:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js", module);
+(function(){
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-},{}],9:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],12:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js", module);
+(function(){
 // optional / simple context binding
 var aFunction = require('./_a-function');
 module.exports = function(fn, that, length){
@@ -321,12 +404,20 @@ module.exports = function(fn, that, length){
     return fn.apply(that, arguments);
   };
 };
-},{"./_a-function":6}],10:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_a-function":9}],13:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js", module);
+(function(){
 // Thank's IE8 for his funny defineProperty
 module.exports = !require('./_fails')(function(){
   return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_fails":13}],11:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_fails":16}],14:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js", module);
+(function(){
 var isObject = require('./_is-object')
   , document = require('./_global').document
   // in old IE typeof document.createElement is 'object'
@@ -334,7 +425,11 @@ var isObject = require('./_is-object')
 module.exports = function(it){
   return is ? document.createElement(it) : {};
 };
-},{"./_global":14,"./_is-object":18}],12:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_global":17,"./_is-object":21}],15:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js", module);
+(function(){
 var global    = require('./_global')
   , core      = require('./_core')
   , ctx       = require('./_ctx')
@@ -396,7 +491,11 @@ $export.W = 32;  // wrap
 $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library` 
 module.exports = $export;
-},{"./_core":8,"./_ctx":9,"./_global":14,"./_hide":15}],13:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_core":11,"./_ctx":12,"./_global":17,"./_hide":18}],16:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js", module);
+(function(){
 module.exports = function(exec){
   try {
     return !!exec();
@@ -404,12 +503,20 @@ module.exports = function(exec){
     return true;
   }
 };
-},{}],14:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],17:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js", module);
+(function(){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-},{}],15:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],18:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js", module);
+(function(){
 var dP         = require('./_object-dp')
   , createDesc = require('./_property-desc');
 module.exports = require('./_descriptors') ? function(object, key, value){
@@ -418,22 +525,38 @@ module.exports = require('./_descriptors') ? function(object, key, value){
   object[key] = value;
   return object;
 };
-},{"./_descriptors":10,"./_object-dp":19,"./_property-desc":20}],16:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_descriptors":13,"./_object-dp":22,"./_property-desc":23}],19:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js", module);
+(function(){
 module.exports = !require('./_descriptors') && !require('./_fails')(function(){
   return Object.defineProperty(require('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_descriptors":10,"./_dom-create":11,"./_fails":13}],17:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_descriptors":13,"./_dom-create":14,"./_fails":16}],20:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js", module);
+(function(){
 // 20.1.2.3 Number.isInteger(number)
 var isObject = require('./_is-object')
   , floor    = Math.floor;
 module.exports = function isInteger(it){
   return !isObject(it) && isFinite(it) && floor(it) === it;
 };
-},{"./_is-object":18}],18:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_is-object":21}],21:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js", module);
+(function(){
 module.exports = function(it){
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
-},{}],19:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],22:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js", module);
+(function(){
 var anObject       = require('./_an-object')
   , IE8_DOM_DEFINE = require('./_ie8-dom-define')
   , toPrimitive    = require('./_to-primitive')
@@ -450,7 +573,11 @@ exports.f = require('./_descriptors') ? Object.defineProperty : function defineP
   if('value' in Attributes)O[P] = Attributes.value;
   return O;
 };
-},{"./_an-object":7,"./_descriptors":10,"./_ie8-dom-define":16,"./_to-primitive":21}],20:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_an-object":10,"./_descriptors":13,"./_ie8-dom-define":19,"./_to-primitive":24}],23:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js", module);
+(function(){
 module.exports = function(bitmap, value){
   return {
     enumerable  : !(bitmap & 1),
@@ -459,7 +586,11 @@ module.exports = function(bitmap, value){
     value       : value
   };
 };
-},{}],21:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],24:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js", module);
+(function(){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = require('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
@@ -472,49 +603,10260 @@ module.exports = function(it, S){
   if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
   throw TypeError("Can't convert object to primitive value");
 };
-},{"./_is-object":18}],22:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_is-object":21}],25:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js", module);
+(function(){
 // 20.1.2.3 Number.isInteger(number)
 var $export = require('./_export');
 
 $export($export.S, 'Number', {isInteger: require('./_is-integer')});
-},{"./_export":12,"./_is-integer":17}],23:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./_export":15,"./_is-integer":20}],26:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/backo2/index.js", module);
+(function(){
+
+/**
+ * Expose `Backoff`.
+ */
+
+module.exports = Backoff;
+
+/**
+ * Initialize backoff timer with `opts`.
+ *
+ * - `min` initial timeout in milliseconds [100]
+ * - `max` max timeout [10000]
+ * - `jitter` [0]
+ * - `factor` [2]
+ *
+ * @param {Object} opts
+ * @api public
+ */
+
+function Backoff(opts) {
+  opts = opts || {};
+  this.ms = opts.min || 100;
+  this.max = opts.max || 10000;
+  this.factor = opts.factor || 2;
+  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
+  this.attempts = 0;
+}
+
+/**
+ * Return the backoff duration.
+ *
+ * @return {Number}
+ * @api public
+ */
+
+Backoff.prototype.duration = function(){
+  var ms = this.ms * Math.pow(this.factor, this.attempts++);
+  if (this.jitter) {
+    var rand =  Math.random();
+    var deviation = Math.floor(rand * this.jitter * ms);
+    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
+  }
+  return Math.min(ms, this.max) | 0;
+};
+
+/**
+ * Reset the number of attempts.
+ *
+ * @api public
+ */
+
+Backoff.prototype.reset = function(){
+  this.attempts = 0;
+};
+
+/**
+ * Set the minimum duration
+ *
+ * @api public
+ */
+
+Backoff.prototype.setMin = function(min){
+  this.ms = min;
+};
+
+/**
+ * Set the maximum duration
+ *
+ * @api public
+ */
+
+Backoff.prototype.setMax = function(max){
+  this.max = max;
+};
+
+/**
+ * Set the jitter
+ *
+ * @api public
+ */
+
+Backoff.prototype.setJitter = function(jitter){
+  this.jitter = jitter;
+};
+
+
+}).apply(this, arguments);
+
+},{}],27:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/base64-arraybuffer/lib/base64-arraybuffer.js", module);
+(function(){
+/*
+ * base64-arraybuffer
+ * https://github.com/niklasvh/base64-arraybuffer
+ *
+ * Copyright (c) 2012 Niklas von Hertzen
+ * Licensed under the MIT license.
+ */
+(function(chars){
+  "use strict";
+
+  exports.encode = function(arraybuffer) {
+    var bytes = new Uint8Array(arraybuffer),
+    i, len = bytes.length, base64 = "";
+
+    for (i = 0; i < len; i+=3) {
+      base64 += chars[bytes[i] >> 2];
+      base64 += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
+      base64 += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
+      base64 += chars[bytes[i + 2] & 63];
+    }
+
+    if ((len % 3) === 2) {
+      base64 = base64.substring(0, base64.length - 1) + "=";
+    } else if (len % 3 === 1) {
+      base64 = base64.substring(0, base64.length - 2) + "==";
+    }
+
+    return base64;
+  };
+
+  exports.decode =  function(base64) {
+    var bufferLength = base64.length * 0.75,
+    len = base64.length, i, p = 0,
+    encoded1, encoded2, encoded3, encoded4;
+
+    if (base64[base64.length - 1] === "=") {
+      bufferLength--;
+      if (base64[base64.length - 2] === "=") {
+        bufferLength--;
+      }
+    }
+
+    var arraybuffer = new ArrayBuffer(bufferLength),
+    bytes = new Uint8Array(arraybuffer);
+
+    for (i = 0; i < len; i+=4) {
+      encoded1 = chars.indexOf(base64[i]);
+      encoded2 = chars.indexOf(base64[i+1]);
+      encoded3 = chars.indexOf(base64[i+2]);
+      encoded4 = chars.indexOf(base64[i+3]);
+
+      bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
+      bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+      bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
+    }
+
+    return arraybuffer;
+  };
+})("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+
+}).apply(this, arguments);
+
+},{}],28:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/blob/index.js", module);
+(function(){
+(function (global){
+/**
+ * Create a blob builder even when vendor prefixes exist
+ */
+
+var BlobBuilder = global.BlobBuilder
+  || global.WebKitBlobBuilder
+  || global.MSBlobBuilder
+  || global.MozBlobBuilder;
+
+/**
+ * Check if Blob constructor is supported
+ */
+
+var blobSupported = (function() {
+  try {
+    var a = new Blob(['hi']);
+    return a.size === 2;
+  } catch(e) {
+    return false;
+  }
+})();
+
+/**
+ * Check if Blob constructor supports ArrayBufferViews
+ * Fails in Safari 6, so we need to map to ArrayBuffers there.
+ */
+
+var blobSupportsArrayBufferView = blobSupported && (function() {
+  try {
+    var b = new Blob([new Uint8Array([1,2])]);
+    return b.size === 2;
+  } catch(e) {
+    return false;
+  }
+})();
+
+/**
+ * Check if BlobBuilder is supported
+ */
+
+var blobBuilderSupported = BlobBuilder
+  && BlobBuilder.prototype.append
+  && BlobBuilder.prototype.getBlob;
+
+/**
+ * Helper function that maps ArrayBufferViews to ArrayBuffers
+ * Used by BlobBuilder constructor and old browsers that didn't
+ * support it in the Blob constructor.
+ */
+
+function mapArrayBufferViews(ary) {
+  for (var i = 0; i < ary.length; i++) {
+    var chunk = ary[i];
+    if (chunk.buffer instanceof ArrayBuffer) {
+      var buf = chunk.buffer;
+
+      // if this is a subarray, make a copy so we only
+      // include the subarray region from the underlying buffer
+      if (chunk.byteLength !== buf.byteLength) {
+        var copy = new Uint8Array(chunk.byteLength);
+        copy.set(new Uint8Array(buf, chunk.byteOffset, chunk.byteLength));
+        buf = copy.buffer;
+      }
+
+      ary[i] = buf;
+    }
+  }
+}
+
+function BlobBuilderConstructor(ary, options) {
+  options = options || {};
+
+  var bb = new BlobBuilder();
+  mapArrayBufferViews(ary);
+
+  for (var i = 0; i < ary.length; i++) {
+    bb.append(ary[i]);
+  }
+
+  return (options.type) ? bb.getBlob(options.type) : bb.getBlob();
+};
+
+function BlobConstructor(ary, options) {
+  mapArrayBufferViews(ary);
+  return new Blob(ary, options || {});
+};
+
+module.exports = (function() {
+  if (blobSupported) {
+    return blobSupportsArrayBufferView ? global.Blob : BlobConstructor;
+  } else if (blobBuilderSupported) {
+    return BlobBuilderConstructor;
+  } else {
+    return undefined;
+  }
+})();
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{}],29:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/browser-resolve/empty.js", module);
+(function(){
+
+}).apply(this, arguments);
+
+},{}],30:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/browserify-hmr/inc/index.js", module);
+(function(){
+(function (global){
+'use strict';
+
+var has = require('../lib/has');
+var StrSet = require('../lib/str-set');
+var forEach = require('lodash/collection/forEach');
+var some = require('lodash/collection/some');
+var map = require('lodash/collection/map');
+var filter = require('lodash/collection/filter');
+var zipObject = require('lodash/array/zipObject');
+var forOwn = require('lodash/object/forOwn');
+var mapValues = require('lodash/object/mapValues');
+var assign = require('lodash/object/assign');
+
+function emitError(err) {
+  setTimeout(function() {
+    throw err;
+  }, 0);
+}
+
+function makeModuleIndexesToNames(moduleMeta) {
+  var moduleIndexesToNames = {};
+  forOwn(moduleMeta, function(value, name) {
+    moduleIndexesToNames[value.index] = name;
+  });
+  return moduleIndexesToNames;
+}
+
+var console = global.console ? global.console : {
+  error: function(){}, log: function() {}
+};
+
+function main(
+  moduleDefs, cachedModules, moduleMeta, updateUrl,
+  updateMode, supportModes, ignoreUnaccepted, updateCacheBust, bundleKey,
+  socketio,
+  bundle__filename, bundle__dirname
+) {
+  var moduleIndexesToNames = makeModuleIndexesToNames(moduleMeta);
+
+  var socket;
+  var name, i, len;
+
+  if (!global._hmr[bundleKey].setStatus) {
+    var runtimeModuleInfo = {};
+    var createInfoEntry = function(name) {
+      runtimeModuleInfo[name] = {
+        index: moduleMeta[name].index,
+        hash: moduleMeta[name].hash,
+        parents: new StrSet(moduleMeta[name].parents),
+        module: null,
+        disposeData: null,
+        accepters: new StrSet(),
+        accepting: new StrSet(),
+        decliners: new StrSet(),
+        declining: new StrSet(),
+        selfAcceptCbs: [], // may contain null. nonzero length means module is self-accepting
+        disposeHandlers: []
+      };
+    };
+    for (name in moduleMeta) {
+      if (has(moduleMeta, name)) {
+        createInfoEntry(name);
+      }
+    }
+
+    // loaders take a callback(err, data). They may give null for data if they
+    // know there hasn't been an update.
+    var fileReloaders = {
+      fs: function(cb) {
+        var fs;
+        try {
+          fs = require('f'+'s');
+        } catch(e) {
+          cb(e);
+          return;
+        }
+        fs.readFile(localHmr.updateUrl || bundle__filename, 'utf8', cb);
+      },
+      ajax: function(cb) {
+        var xhr;
+        try {
+          xhr = new XMLHttpRequest();
+        } catch(e) {
+          cb(e);
+          return;
+        }
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              cb(null, xhr.responseText);
+            } else {
+              cb(new Error("Request had response "+xhr.status));
+            }
+          }
+        };
+        var url = localHmr.updateUrl + (updateCacheBust?'?_v='+(+new Date()):'');
+        xhr.open('GET', url, true);
+        xhr.send();
+      }
+    };
+
+    var lastScriptData = null;
+
+    // cb(err, expectUpdate)
+    var reloadAndRunScript = function(cb) {
+      if (!has(fileReloaders, localHmr.updateMode)) {
+        cb(new Error("updateMode "+localHmr.updateMode+" not implemented"));
+        return;
+      }
+      var reloader = fileReloaders[localHmr.updateMode];
+      reloader(function(err, data) {
+        if (err || !data || lastScriptData === data) {
+          cb(err, false);
+          return;
+        }
+        lastScriptData = data;
+        localHmr.newLoad = null;
+        try {
+          //jshint evil:true
+          if (bundle__filename || bundle__dirname) {
+            new Function('require', '__filename', '__dirname', data)(require, bundle__filename, bundle__dirname);
+          } else {
+            new Function('require', data)(require);
+          }
+          // running the file sets _hmr.newLoad
+        } catch (err2) {
+          localHmr.newLoad = null;
+          cb(err2);
+          return;
+        }
+        if (!localHmr.newLoad) {
+          cb(new Error("Reloaded script did not set hot module reload data"));
+          return;
+        }
+        cb(null, true);
+      });
+    };
+
+    var getOutdatedModules = function() {
+      var outdated = [];
+      var name;
+      // add changed and deleted modules
+      for (name in runtimeModuleInfo) {
+        if (has(runtimeModuleInfo, name)) {
+          if (
+            !has(localHmr.newLoad.moduleMeta, name) ||
+            runtimeModuleInfo[name].hash !== localHmr.newLoad.moduleMeta[name].hash
+          ) {
+            outdated.push(name);
+          }
+        }
+      }
+      // add brand new modules
+      for (name in localHmr.newLoad.moduleMeta) {
+        if (has(localHmr.newLoad.moduleMeta, name)) {
+          if (!has(runtimeModuleInfo, name)) {
+            outdated.push(name);
+          }
+        }
+      }
+      // add modules that are non-accepting/declining parents of outdated modules.
+      // important: if outdated has new elements added during the loop,
+      // then we iterate over them too.
+      for (var i=0; i<outdated.length; i++) {
+        name = outdated[i];
+        //jshint -W083
+        if (has(runtimeModuleInfo, name)) {
+          runtimeModuleInfo[name].parents.forEach(function(parentName) {
+            if (
+              runtimeModuleInfo[name].selfAcceptCbs.length === 0 &&
+              !runtimeModuleInfo[name].accepters.has(parentName) &&
+              !runtimeModuleInfo[name].decliners.has(parentName) &&
+              outdated.indexOf(parentName) === -1
+            ) {
+              outdated.push(parentName);
+            }
+          });
+        }
+      }
+      return outdated;
+    };
+
+    var moduleHotCheck = function(autoApply, cb) {
+      if (typeof autoApply === 'function') {
+        cb = autoApply;
+        autoApply = false;
+      }
+      if (!cb) {
+        throw new Error("module.hot.check callback parameter required");
+      }
+      if (localHmr.status !== 'idle') {
+        cb(new Error("module.hot.check can only be called while status is idle"));
+        return;
+      }
+      if (updateMode === 'websocket') {
+        cb(new Error("module.hot.check can't be used when update mode is websocket"));
+        return;
+      }
+
+      localHmr.setStatus('check');
+      reloadAndRunScript(function(err, expectUpdate) {
+        if (err || !expectUpdate) {
+          localHmr.setStatus('idle');
+          cb(err, null);
+          return;
+        }
+        var outdatedModules = getOutdatedModules();
+        if (outdatedModules.length === 0) {
+          localHmr.setStatus('idle');
+          cb(null, null);
+        } else {
+          localHmr.setStatus('ready');
+          if (autoApply) {
+            moduleHotApply(autoApply, cb);
+          } else {
+            cb(null, outdatedModules);
+          }
+        }
+      });
+    };
+
+    var moduleHotApply = function(options, cb) {
+      if (typeof options === 'function') {
+        cb = options;
+        options = null;
+      }
+      if (!cb) {
+        throw new Error("module.hot.apply callback parameter required");
+      }
+      var ignoreUnaccepted = !!(options && options.ignoreUnaccepted);
+      if (localHmr.status !== 'ready') {
+        cb(new Error("module.hot.apply can only be called while status is ready"));
+        return;
+      }
+
+      var outdatedModules = getOutdatedModules();
+      var isValueNotInOutdatedModules = function(value) {
+        return outdatedModules.indexOf(value) === -1;
+      };
+      var i, len;
+      var acceptedUpdates = filter(outdatedModules, function(name) {
+        if (has(runtimeModuleInfo, name)) {
+          if (
+            runtimeModuleInfo[name].decliners.some(isValueNotInOutdatedModules) ||
+            (
+              runtimeModuleInfo[name].accepters.size() === 0 &&
+              runtimeModuleInfo[name].selfAcceptCbs.length === 0 &&
+              runtimeModuleInfo[name].parents.some(isValueNotInOutdatedModules)
+            )
+          ) {
+            return false;
+          }
+        }
+        return true;
+      });
+      if (!ignoreUnaccepted && outdatedModules.length !== acceptedUpdates.length) {
+        localHmr.setStatus('idle');
+        cb(new Error("Some updates were declined"));
+        return;
+      }
+      var an;
+      for (i=0, len=acceptedUpdates.length; i<len; i++) {
+        an = acceptedUpdates[i];
+        if (has(runtimeModuleInfo, an)) {
+          runtimeModuleInfo[an].disposeData = {};
+          for (var j=0; j<runtimeModuleInfo[an].disposeHandlers.length; j++) {
+            try {
+              runtimeModuleInfo[an].disposeHandlers[j].call(null, runtimeModuleInfo[an].disposeData);
+            } catch(e) {
+              localHmr.setStatus('idle');
+              cb(e || new Error("Unknown dispose callback error"));
+              return;
+            }
+          }
+        }
+      }
+      var selfAccepters = [];
+      for (i=0, len=acceptedUpdates.length; i<len; i++) {
+        an = acceptedUpdates[i];
+        //jshint -W083
+        if (!has(runtimeModuleInfo, an)) {
+          // new modules
+          runtimeModuleInfo[an] = {
+            index: an,
+            hash: localHmr.newLoad.moduleMeta[an].hash,
+            parents: new StrSet(localHmr.newLoad.moduleMeta[an].parents),
+            module: null,
+            disposeData: null,
+            accepters: new StrSet(),
+            accepting: new StrSet(),
+            decliners: new StrSet(),
+            declining: new StrSet(),
+            selfAcceptCbs: [],
+            disposeHandlers: []
+          };
+        } else if (!has(localHmr.newLoad.moduleMeta, an)) {
+          // removed modules
+          delete cachedModules[runtimeModuleInfo[an].index];
+          delete runtimeModuleInfo[an];
+          continue;
+        } else {
+          // updated modules
+          runtimeModuleInfo[an].hash = localHmr.newLoad.moduleMeta[an].hash;
+          runtimeModuleInfo[an].parents = new StrSet(localHmr.newLoad.moduleMeta[an].parents);
+          runtimeModuleInfo[an].module = null;
+          runtimeModuleInfo[an].accepting.forEach(function(accepted) {
+            runtimeModuleInfo[accepted].accepters.del(an);
+          });
+          runtimeModuleInfo[an].accepting = new StrSet();
+          runtimeModuleInfo[an].declining.forEach(function(accepted) {
+            runtimeModuleInfo[accepted].decliners.del(an);
+          });
+          runtimeModuleInfo[an].declining = new StrSet();
+          forEach(runtimeModuleInfo[an].selfAcceptCbs, function(cb) {
+            selfAccepters.push({name: an, cb: cb});
+          });
+          runtimeModuleInfo[an].selfAcceptCbs = [];
+          runtimeModuleInfo[an].disposeHandlers = [];
+        }
+
+        moduleDefs[runtimeModuleInfo[an].index] = [
+          // module function
+          localHmr.newLoad.moduleDefs[localHmr.newLoad.moduleMeta[an].index][0],
+          // module deps
+          mapValues(localHmr.newLoad.moduleDefs[localHmr.newLoad.moduleMeta[an].index][1], function(depIndex, depRef) {
+            var depName = localHmr.newLoad.moduleIndexesToNames[depIndex];
+            if (has(localHmr.runtimeModuleInfo, depName)) {
+              return localHmr.runtimeModuleInfo[depName].index;
+            } else {
+              return depName;
+            }
+          })
+        ];
+        cachedModules[runtimeModuleInfo[an].index] = null;
+      }
+
+      // Update the accept handlers list and call the right ones
+      var errCanWait = null;
+      var updatedNames = new StrSet(acceptedUpdates);
+      var oldUpdateHandlers = localHmr.updateHandlers;
+      var relevantUpdateHandlers = [];
+      var newUpdateHandlers = [];
+      for (i=0, len=oldUpdateHandlers.length; i<len; i++) {
+        if (!updatedNames.has(oldUpdateHandlers[i].accepter)) {
+          newUpdateHandlers.push(oldUpdateHandlers[i]);
+        }
+        if (updatedNames.hasIntersection(oldUpdateHandlers[i].deps)) {
+          relevantUpdateHandlers.push(oldUpdateHandlers[i]);
+        }
+      }
+      localHmr.updateHandlers = newUpdateHandlers;
+      for (i=0, len=relevantUpdateHandlers.length; i<len; i++) {
+        try {
+          relevantUpdateHandlers[i].cb.call(null, acceptedUpdates);
+        } catch(e) {
+          if (errCanWait) emitError(errCanWait);
+          errCanWait = e;
+        }
+      }
+
+      // Call the self-accepting modules
+      forEach(selfAccepters, function(obj) {
+        try {
+          require(runtimeModuleInfo[obj.name].index);
+        } catch(e) {
+          if (obj.cb) {
+            obj.cb.call(null, e);
+          } else {
+            if (errCanWait) emitError(errCanWait);
+            errCanWait = e;
+          }
+        }
+      });
+
+      localHmr.setStatus('idle');
+      cb(errCanWait, acceptedUpdates);
+    };
+
+    var moduleHotSetUpdateMode = function(mode, options) {
+      options = options || {};
+
+      if (supportModes.indexOf(mode) === -1) {
+        throw new Error("Mode "+mode+" not in supportModes. Please check the Browserify-HMR plugin options.");
+      }
+      if (mode === 'ajax' && !options.url) {
+        throw new Error("url required for ajax update mode");
+      }
+      if (localHmr.status !== 'idle') {
+        throw new Error("module.hot.setUpdateMode can only be called while status is idle");
+      }
+
+      localHmr.newLoad = null;
+      localHmr.updateMode = updateMode = mode;
+      localHmr.updateUrl = updateUrl = options.url;
+      updateCacheBust = options.cacheBust;
+      ignoreUnaccepted = has(options, 'ignoreUnaccepted') ? options.ignoreUnaccepted : true;
+
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+      }
+      if (mode === 'websocket') {
+        socket = setupSocket();
+      }
+    };
+
+    var setupSocket = function() {
+      var url = updateUrl || 'http://localhost:3123';
+      var socket = socketio(url, {'force new connection': true});
+      console.log('[HMR] Attempting websocket connection to', url);
+
+      var isAcceptingMessages = false;
+      socket.on('connect', function() {
+        isAcceptingMessages = false;
+        var syncMsg = mapValues(runtimeModuleInfo, function(value, name) {
+          return {
+            hash: value.hash
+          };
+        });
+        socket.emit('sync', syncMsg);
+      });
+      var isUpdating = false;
+      var queuedUpdateMessages = [];
+      socket.on('sync confirm', function() {
+        console.log('[HMR] Websocket connection successful.');
+        isAcceptingMessages = true;
+        queuedUpdateMessages = [];
+      });
+      socket.on('disconnect', function() {
+        console.log('[HMR] Websocket connection lost.');
+      });
+      var acceptNewModules = function(msg) {
+        // Make sure we don't accept new modules before we've synced ourselves.
+        if (!isAcceptingMessages) return;
+        if (isUpdating) {
+          queuedUpdateMessages.push(msg);
+          return;
+        }
+        // Take the message and create a localHmr.newLoad value as if the
+        // bundle had been re-executed, then call moduleHotApply.
+        isUpdating = true;
+
+        // random id so we can make the normally unnamed args have random names
+        var rid = String(Math.random()).replace(/[^0-9]/g, '');
+
+        var newModuleDefs = localHmr.newLoad ? localHmr.newLoad.moduleDefs : assign({}, moduleDefs);
+        var newModuleMeta = localHmr.newLoad ?
+          localHmr.newLoad.moduleMeta : mapValues(runtimeModuleInfo, function(value, key) {
+            return {
+              index: value.index,
+              hash: value.hash,
+              parents: value.parents.toArray()
+            };
+          });
+        forOwn(msg.newModuleData, function(value, key) {
+          newModuleMeta[key] = {
+            index: value.index,
+            hash: value.hash,
+            parents: value.parents
+          };
+        });
+        forEach(msg.removedModules, function(removedName) {
+          delete newModuleDefs[runtimeModuleInfo[removedName].index];
+          delete newModuleMeta[removedName];
+        });
+        var newModuleIndexesToNames = makeModuleIndexesToNames(newModuleMeta);
+        forOwn(msg.newModuleData, function(value, key) {
+          // this part needs to run after newModuleMeta and
+          // newModuleIndexesToNames are populated.
+          var newModuleFunction = (function() {
+            var fn;
+            //jshint evil:true
+            if (bundle__filename || bundle__dirname) {
+              fn = new Function('require', 'module', 'exports', '_u1'+rid, '_u2'+rid, '__u3'+rid, '__u4'+rid, '__filename', '__dirname', value.source);
+              return function(require, module, exports, _u1, _u2, _u3, _u4) {
+                global._hmr[bundleKey].initModule(key, module);
+                fn.call(this, require, module, exports, _u1, _u2, _u3, _u4, bundle__filename, bundle__dirname);
+              };
+            } else {
+              fn = new Function('require', 'module', 'exports',  '_u1'+rid, '_u2'+rid, '__u3'+rid, '__u4'+rid, value.source);
+              return function(require, module, exports, _u1, _u2, _u3, _u4) {
+                global._hmr[bundleKey].initModule(key, module);
+                fn.call(this, require, module, exports, _u1, _u2, _u3, _u4);
+              };
+            }
+          })();
+
+          newModuleDefs[newModuleMeta[key].index] = [
+            // module function
+            newModuleFunction,
+            // module deps
+            mapValues(value.deps, function(depIndex, depRef) {
+              var depName = newModuleIndexesToNames[depIndex];
+              if (has(newModuleMeta, depName)) {
+                return newModuleMeta[depName].index;
+              } else {
+                return depName;
+              }
+            })
+          ];
+        });
+        localHmr.newLoad = {
+          moduleDefs: newModuleDefs,
+          moduleMeta: newModuleMeta,
+          moduleIndexesToNames: newModuleIndexesToNames
+        };
+        localHmr.setStatus('ready');
+        var outdatedModules = getOutdatedModules();
+        moduleHotApply({ignoreUnaccepted: ignoreUnaccepted}, function(err, updatedNames) {
+          if (err) {
+            console.error('[HMR] Error applying update', err);
+          }
+          if (updatedNames) {
+            console.log('[HMR] Updated modules', updatedNames);
+            if (outdatedModules.length !== updatedNames.length) {
+              var notUpdatedNames = filter(outdatedModules, function(name) {
+                return updatedNames.indexOf(name) === -1;
+              });
+              console.log('[HMR] Some modules were not updated', notUpdatedNames);
+            }
+          }
+          isUpdating = false;
+          var queuedMsg;
+          while ((queuedMsg = queuedUpdateMessages.shift())) {
+            acceptNewModules(queuedMsg);
+          }
+        });
+      };
+      socket.on('new modules', acceptNewModules);
+      return socket;
+    };
+
+    var localHmr = {
+      updateUrl: updateUrl,
+      updateMode: updateMode,
+      runtimeModuleInfo: runtimeModuleInfo,
+
+      status: "idle",
+      setStatus: function(status) {
+        this.status = status;
+        var statusHandlers = this.statusHandlers.slice();
+        for (var i=0, len=statusHandlers.length; i<len; i++) {
+          statusHandlers[i].call(null, status);
+        }
+      },
+      statusHandlers: [],
+      updateHandlers: [],
+
+      // during a reload this is set to an object with moduleDefs,
+      // moduleMeta, and moduleIndexesToNames properties
+      newLoad: null,
+
+      initModule: function(name, module) {
+        runtimeModuleInfo[name].module = module;
+        module.hot = {
+          accept: function(deps, cb) {
+            if (!cb && (!deps || typeof deps === 'function')) { // self
+              cb = deps;
+              deps = null;
+              runtimeModuleInfo[name].selfAcceptCbs.push(cb);
+            } else {
+              if (typeof deps === 'string') {
+                deps = [deps];
+              }
+              var depNames = new StrSet();
+              for (var i=0, depsLen=deps.length; i<depsLen; i++) {
+                var depIndex = moduleDefs[runtimeModuleInfo[name].index][1][deps[i]];
+                if (depIndex === undefined || !has(moduleIndexesToNames, depIndex)) {
+                  throw new Error("File does not use dependency: "+deps[i]);
+                }
+                depNames.add(moduleIndexesToNames[depIndex]);
+              }
+              deps = null;
+              depNames.forEach(function(depName) {
+                runtimeModuleInfo[depName].accepters.add(name);
+                runtimeModuleInfo[name].accepting.add(depName);
+              });
+              if (cb) {
+                localHmr.updateHandlers.push({
+                  accepter: name,
+                  deps: depNames,
+                  cb: cb
+                });
+              }
+            }
+          },
+          decline: function(deps) {
+            if (!deps) { // self
+              runtimeModuleInfo[name].decliners.add(name);
+              runtimeModuleInfo[name].declining.add(name);
+            } else {
+              if (typeof deps === 'string') {
+                deps = [deps];
+              }
+              for (var i=0, depsLen=deps.length; i<depsLen; i++) {
+                var depIndex = moduleDefs[runtimeModuleInfo[name].index][1][deps[i]];
+                if (depIndex === undefined || !has(moduleIndexesToNames, depIndex)) {
+                  throw new Error("File does not use dependency: "+deps[i]);
+                }
+                var depName = moduleIndexesToNames[depIndex];
+                runtimeModuleInfo[depName].decliners.add(name);
+                runtimeModuleInfo[name].declining.add(depName);
+              }
+            }
+          },
+          data: runtimeModuleInfo[name].disposeData,
+          dispose: function(cb) {
+            return this.addDisposeHandler(cb);
+          },
+          addDisposeHandler: function(cb) {
+            runtimeModuleInfo[name].disposeHandlers.push(cb);
+          },
+          removeDisposeHandler: function(cb) {
+            var ix = runtimeModuleInfo[name].disposeHandlers.indexOf(cb);
+            if (ix !== -1) {
+              runtimeModuleInfo[name].disposeHandlers.splice(ix, 1);
+            }
+          },
+
+          // Management
+          check: moduleHotCheck,
+          apply: moduleHotApply,
+          status: function(cb) {
+            if (cb) {
+              return this.addStatusHandler(cb);
+            }
+            return localHmr.status;
+          },
+          addStatusHandler: function(cb) {
+            localHmr.statusHandlers.push(cb);
+          },
+          removeStatusHandler: function(cb) {
+            var ix = localHmr.statusHandlers.indexOf(cb);
+            if (ix !== -1) {
+              localHmr.statusHandlers.splice(ix, 1);
+            }
+          },
+          setUpdateMode: moduleHotSetUpdateMode
+        };
+      }
+    };
+    global._hmr[bundleKey] = localHmr;
+
+    if (updateMode === 'websocket') {
+      socket = setupSocket();
+    }
+    return true;
+  } else { // We're in a reload!
+    global._hmr[bundleKey].newLoad = {
+      moduleDefs: moduleDefs,
+      moduleMeta: moduleMeta,
+      moduleIndexesToNames: moduleIndexesToNames
+    };
+    return false;
+  }
+}
+
+module.exports = main;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"../lib/has":31,"../lib/str-set":32,"lodash/array/zipObject":57,"lodash/collection/filter":58,"lodash/collection/forEach":59,"lodash/collection/map":60,"lodash/collection/some":61,"lodash/object/assign":116,"lodash/object/forOwn":117,"lodash/object/mapValues":120}],31:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/browserify-hmr/lib/has.js", module);
+(function(){
+'use strict';
+
+function has(object, propName) {
+  return Object.prototype.hasOwnProperty.call(object, propName);
+}
+module.exports = has;
+
+}).apply(this, arguments);
+
+},{}],32:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/browserify-hmr/lib/str-set.js", module);
+(function(){
+'use strict';
+
+var has = require('./has');
+
+function StrSet(other) {
+  this._map = {};
+  this._size = 0;
+  if (other) {
+    for (var i=0,len=other.length; i<len; i++) {
+      this.add(other[i]);
+    }
+  }
+}
+StrSet.prototype.add = function(value) {
+  if (!this.has(value)) {
+    this._map[value] = true;
+    this._size++;
+  }
+};
+StrSet.prototype.has = function(value) {
+  return has(this._map, value);
+};
+StrSet.prototype.del = function(value) {
+  if (this.has(value)) {
+    delete this._map[value];
+    this._size--;
+  }
+};
+StrSet.prototype.size = function() {
+  return this._size;
+};
+StrSet.prototype.forEach = function(cb) {
+  for (var value in this._map) {
+    if (has(this._map, value)) {
+      cb(value);
+    }
+  }
+};
+StrSet.prototype.some = function(cb) {
+  for (var value in this._map) {
+    if (has(this._map, value)) {
+      if (cb(value)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+StrSet.prototype.every = function(cb) {
+  return !this.some(function(x) {
+    return !cb(x);
+  });
+};
+StrSet.prototype.hasIntersection = function(otherStrSet) {
+  var value;
+  if (this._size < otherStrSet._size) {
+    return this.some(function(value) {
+      return otherStrSet.has(value);
+    });
+  } else {
+    var self = this;
+    return otherStrSet.some(function(value) {
+      return self.has(value);
+    });
+  }
+};
+StrSet.prototype.toArray = function() {
+  var arr = [];
+  this.forEach(function(value) {
+    arr.push(value);
+  });
+  return arr;
+};
+
+module.exports = StrSet;
+
+}).apply(this, arguments);
+
+},{"./has":31}],33:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/component-bind/index.js", module);
+(function(){
+/**
+ * Slice reference.
+ */
+
+var slice = [].slice;
+
+/**
+ * Bind `obj` to `fn`.
+ *
+ * @param {Object} obj
+ * @param {Function|String} fn or string
+ * @return {Function}
+ * @api public
+ */
+
+module.exports = function(obj, fn){
+  if ('string' == typeof fn) fn = obj[fn];
+  if ('function' != typeof fn) throw new Error('bind() requires a function');
+  var args = slice.call(arguments, 2);
+  return function(){
+    return fn.apply(obj, args.concat(slice.call(arguments)));
+  }
+};
+
+}).apply(this, arguments);
+
+},{}],34:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/component-emitter/index.js", module);
+(function(){
+
+/**
+ * Expose `Emitter`.
+ */
+
+module.exports = Emitter;
+
+/**
+ * Initialize a new `Emitter`.
+ *
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
+};
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Listen on the given `event` with `fn`.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks[event] = this._callbacks[event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  var self = this;
+  this._callbacks = this._callbacks || {};
+
+  function on() {
+    self.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  on.fn = fn;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks[event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks[event];
+    return this;
+  }
+
+  // remove specific handler
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
+    }
+  }
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+  var args = [].slice.call(arguments, 1)
+    , callbacks = this._callbacks[event];
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks[event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
+
+}).apply(this, arguments);
+
+},{}],35:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/component-inherit/index.js", module);
+(function(){
+
+module.exports = function(a, b){
+  var fn = function(){};
+  fn.prototype = b.prototype;
+  a.prototype = new fn;
+  a.prototype.constructor = a;
+};
+}).apply(this, arguments);
+
+},{}],36:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/index.js", module);
+(function(){
+
+module.exports =  require('./lib/');
+
+}).apply(this, arguments);
+
+},{"./lib/":37}],37:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/index.js", module);
+(function(){
+
+module.exports = require('./socket');
+
+/**
+ * Exports parser
+ *
+ * @api public
+ *
+ */
+module.exports.parser = require('engine.io-parser');
+
+}).apply(this, arguments);
+
+},{"./socket":38,"engine.io-parser":48}],38:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/socket.js", module);
+(function(){
+(function (global){
+/**
+ * Module dependencies.
+ */
+
+var transports = require('./transports');
+var Emitter = require('component-emitter');
+var debug = require('debug')('engine.io-client:socket');
+var index = require('indexof');
+var parser = require('engine.io-parser');
+var parseuri = require('parseuri');
+var parsejson = require('parsejson');
+var parseqs = require('parseqs');
+
+/**
+ * Module exports.
+ */
+
+module.exports = Socket;
+
+/**
+ * Noop function.
+ *
+ * @api private
+ */
+
+function noop(){}
+
+/**
+ * Socket constructor.
+ *
+ * @param {String|Object} uri or options
+ * @param {Object} options
+ * @api public
+ */
+
+function Socket(uri, opts){
+  if (!(this instanceof Socket)) return new Socket(uri, opts);
+
+  opts = opts || {};
+
+  if (uri && 'object' == typeof uri) {
+    opts = uri;
+    uri = null;
+  }
+
+  if (uri) {
+    uri = parseuri(uri);
+    opts.hostname = uri.host;
+    opts.secure = uri.protocol == 'https' || uri.protocol == 'wss';
+    opts.port = uri.port;
+    if (uri.query) opts.query = uri.query;
+  } else if (opts.host) {
+    opts.hostname = parseuri(opts.host).host;
+  }
+
+  this.secure = null != opts.secure ? opts.secure :
+    (global.location && 'https:' == location.protocol);
+
+  if (opts.hostname && !opts.port) {
+    // if no port is specified manually, use the protocol default
+    opts.port = this.secure ? '443' : '80';
+  }
+
+  this.agent = opts.agent || false;
+  this.hostname = opts.hostname ||
+    (global.location ? location.hostname : 'localhost');
+  this.port = opts.port || (global.location && location.port ?
+       location.port :
+       (this.secure ? 443 : 80));
+  this.query = opts.query || {};
+  if ('string' == typeof this.query) this.query = parseqs.decode(this.query);
+  this.upgrade = false !== opts.upgrade;
+  this.path = (opts.path || '/engine.io').replace(/\/$/, '') + '/';
+  this.forceJSONP = !!opts.forceJSONP;
+  this.jsonp = false !== opts.jsonp;
+  this.forceBase64 = !!opts.forceBase64;
+  this.enablesXDR = !!opts.enablesXDR;
+  this.timestampParam = opts.timestampParam || 't';
+  this.timestampRequests = opts.timestampRequests;
+  this.transports = opts.transports || ['polling', 'websocket'];
+  this.readyState = '';
+  this.writeBuffer = [];
+  this.policyPort = opts.policyPort || 843;
+  this.rememberUpgrade = opts.rememberUpgrade || false;
+  this.binaryType = null;
+  this.onlyBinaryUpgrades = opts.onlyBinaryUpgrades;
+  this.perMessageDeflate = false !== opts.perMessageDeflate ? (opts.perMessageDeflate || {}) : false;
+
+  if (true === this.perMessageDeflate) this.perMessageDeflate = {};
+  if (this.perMessageDeflate && null == this.perMessageDeflate.threshold) {
+    this.perMessageDeflate.threshold = 1024;
+  }
+
+  // SSL options for Node.js client
+  this.pfx = opts.pfx || null;
+  this.key = opts.key || null;
+  this.passphrase = opts.passphrase || null;
+  this.cert = opts.cert || null;
+  this.ca = opts.ca || null;
+  this.ciphers = opts.ciphers || null;
+  this.rejectUnauthorized = opts.rejectUnauthorized === undefined ? null : opts.rejectUnauthorized;
+
+  // other options for Node.js client
+  var freeGlobal = typeof global == 'object' && global;
+  if (freeGlobal.global === freeGlobal) {
+    if (opts.extraHeaders && Object.keys(opts.extraHeaders).length > 0) {
+      this.extraHeaders = opts.extraHeaders;
+    }
+  }
+
+  this.open();
+}
+
+Socket.priorWebsocketSuccess = false;
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Socket.prototype);
+
+/**
+ * Protocol version.
+ *
+ * @api public
+ */
+
+Socket.protocol = parser.protocol; // this is an int
+
+/**
+ * Expose deps for legacy compatibility
+ * and standalone browser access.
+ */
+
+Socket.Socket = Socket;
+Socket.Transport = require('./transport');
+Socket.transports = require('./transports');
+Socket.parser = require('engine.io-parser');
+
+/**
+ * Creates transport of the given type.
+ *
+ * @param {String} transport name
+ * @return {Transport}
+ * @api private
+ */
+
+Socket.prototype.createTransport = function (name) {
+  debug('creating transport "%s"', name);
+  var query = clone(this.query);
+
+  // append engine.io protocol identifier
+  query.EIO = parser.protocol;
+
+  // transport name
+  query.transport = name;
+
+  // session id if we already have one
+  if (this.id) query.sid = this.id;
+
+  var transport = new transports[name]({
+    agent: this.agent,
+    hostname: this.hostname,
+    port: this.port,
+    secure: this.secure,
+    path: this.path,
+    query: query,
+    forceJSONP: this.forceJSONP,
+    jsonp: this.jsonp,
+    forceBase64: this.forceBase64,
+    enablesXDR: this.enablesXDR,
+    timestampRequests: this.timestampRequests,
+    timestampParam: this.timestampParam,
+    policyPort: this.policyPort,
+    socket: this,
+    pfx: this.pfx,
+    key: this.key,
+    passphrase: this.passphrase,
+    cert: this.cert,
+    ca: this.ca,
+    ciphers: this.ciphers,
+    rejectUnauthorized: this.rejectUnauthorized,
+    perMessageDeflate: this.perMessageDeflate,
+    extraHeaders: this.extraHeaders
+  });
+
+  return transport;
+};
+
+function clone (obj) {
+  var o = {};
+  for (var i in obj) {
+    if (obj.hasOwnProperty(i)) {
+      o[i] = obj[i];
+    }
+  }
+  return o;
+}
+
+/**
+ * Initializes transport to use and starts probe.
+ *
+ * @api private
+ */
+Socket.prototype.open = function () {
+  var transport;
+  if (this.rememberUpgrade && Socket.priorWebsocketSuccess && this.transports.indexOf('websocket') != -1) {
+    transport = 'websocket';
+  } else if (0 === this.transports.length) {
+    // Emit error on next tick so it can be listened to
+    var self = this;
+    setTimeout(function() {
+      self.emit('error', 'No transports available');
+    }, 0);
+    return;
+  } else {
+    transport = this.transports[0];
+  }
+  this.readyState = 'opening';
+
+  // Retry with the next transport if the transport is disabled (jsonp: false)
+  try {
+    transport = this.createTransport(transport);
+  } catch (e) {
+    this.transports.shift();
+    this.open();
+    return;
+  }
+
+  transport.open();
+  this.setTransport(transport);
+};
+
+/**
+ * Sets the current transport. Disables the existing one (if any).
+ *
+ * @api private
+ */
+
+Socket.prototype.setTransport = function(transport){
+  debug('setting transport %s', transport.name);
+  var self = this;
+
+  if (this.transport) {
+    debug('clearing existing transport %s', this.transport.name);
+    this.transport.removeAllListeners();
+  }
+
+  // set up transport
+  this.transport = transport;
+
+  // set up transport listeners
+  transport
+  .on('drain', function(){
+    self.onDrain();
+  })
+  .on('packet', function(packet){
+    self.onPacket(packet);
+  })
+  .on('error', function(e){
+    self.onError(e);
+  })
+  .on('close', function(){
+    self.onClose('transport close');
+  });
+};
+
+/**
+ * Probes a transport.
+ *
+ * @param {String} transport name
+ * @api private
+ */
+
+Socket.prototype.probe = function (name) {
+  debug('probing transport "%s"', name);
+  var transport = this.createTransport(name, { probe: 1 })
+    , failed = false
+    , self = this;
+
+  Socket.priorWebsocketSuccess = false;
+
+  function onTransportOpen(){
+    if (self.onlyBinaryUpgrades) {
+      var upgradeLosesBinary = !this.supportsBinary && self.transport.supportsBinary;
+      failed = failed || upgradeLosesBinary;
+    }
+    if (failed) return;
+
+    debug('probe transport "%s" opened', name);
+    transport.send([{ type: 'ping', data: 'probe' }]);
+    transport.once('packet', function (msg) {
+      if (failed) return;
+      if ('pong' == msg.type && 'probe' == msg.data) {
+        debug('probe transport "%s" pong', name);
+        self.upgrading = true;
+        self.emit('upgrading', transport);
+        if (!transport) return;
+        Socket.priorWebsocketSuccess = 'websocket' == transport.name;
+
+        debug('pausing current transport "%s"', self.transport.name);
+        self.transport.pause(function () {
+          if (failed) return;
+          if ('closed' == self.readyState) return;
+          debug('changing transport and sending upgrade packet');
+
+          cleanup();
+
+          self.setTransport(transport);
+          transport.send([{ type: 'upgrade' }]);
+          self.emit('upgrade', transport);
+          transport = null;
+          self.upgrading = false;
+          self.flush();
+        });
+      } else {
+        debug('probe transport "%s" failed', name);
+        var err = new Error('probe error');
+        err.transport = transport.name;
+        self.emit('upgradeError', err);
+      }
+    });
+  }
+
+  function freezeTransport() {
+    if (failed) return;
+
+    // Any callback called by transport should be ignored since now
+    failed = true;
+
+    cleanup();
+
+    transport.close();
+    transport = null;
+  }
+
+  //Handle any error that happens while probing
+  function onerror(err) {
+    var error = new Error('probe error: ' + err);
+    error.transport = transport.name;
+
+    freezeTransport();
+
+    debug('probe transport "%s" failed because of error: %s', name, err);
+
+    self.emit('upgradeError', error);
+  }
+
+  function onTransportClose(){
+    onerror("transport closed");
+  }
+
+  //When the socket is closed while we're probing
+  function onclose(){
+    onerror("socket closed");
+  }
+
+  //When the socket is upgraded while we're probing
+  function onupgrade(to){
+    if (transport && to.name != transport.name) {
+      debug('"%s" works - aborting "%s"', to.name, transport.name);
+      freezeTransport();
+    }
+  }
+
+  //Remove all listeners on the transport and on self
+  function cleanup(){
+    transport.removeListener('open', onTransportOpen);
+    transport.removeListener('error', onerror);
+    transport.removeListener('close', onTransportClose);
+    self.removeListener('close', onclose);
+    self.removeListener('upgrading', onupgrade);
+  }
+
+  transport.once('open', onTransportOpen);
+  transport.once('error', onerror);
+  transport.once('close', onTransportClose);
+
+  this.once('close', onclose);
+  this.once('upgrading', onupgrade);
+
+  transport.open();
+
+};
+
+/**
+ * Called when connection is deemed open.
+ *
+ * @api public
+ */
+
+Socket.prototype.onOpen = function () {
+  debug('socket open');
+  this.readyState = 'open';
+  Socket.priorWebsocketSuccess = 'websocket' == this.transport.name;
+  this.emit('open');
+  this.flush();
+
+  // we check for `readyState` in case an `open`
+  // listener already closed the socket
+  if ('open' == this.readyState && this.upgrade && this.transport.pause) {
+    debug('starting upgrade probes');
+    for (var i = 0, l = this.upgrades.length; i < l; i++) {
+      this.probe(this.upgrades[i]);
+    }
+  }
+};
+
+/**
+ * Handles a packet.
+ *
+ * @api private
+ */
+
+Socket.prototype.onPacket = function (packet) {
+  if ('opening' == this.readyState || 'open' == this.readyState) {
+    debug('socket receive: type "%s", data "%s"', packet.type, packet.data);
+
+    this.emit('packet', packet);
+
+    // Socket is live - any packet counts
+    this.emit('heartbeat');
+
+    switch (packet.type) {
+      case 'open':
+        this.onHandshake(parsejson(packet.data));
+        break;
+
+      case 'pong':
+        this.setPing();
+        this.emit('pong');
+        break;
+
+      case 'error':
+        var err = new Error('server error');
+        err.code = packet.data;
+        this.onError(err);
+        break;
+
+      case 'message':
+        this.emit('data', packet.data);
+        this.emit('message', packet.data);
+        break;
+    }
+  } else {
+    debug('packet received with socket readyState "%s"', this.readyState);
+  }
+};
+
+/**
+ * Called upon handshake completion.
+ *
+ * @param {Object} handshake obj
+ * @api private
+ */
+
+Socket.prototype.onHandshake = function (data) {
+  this.emit('handshake', data);
+  this.id = data.sid;
+  this.transport.query.sid = data.sid;
+  this.upgrades = this.filterUpgrades(data.upgrades);
+  this.pingInterval = data.pingInterval;
+  this.pingTimeout = data.pingTimeout;
+  this.onOpen();
+  // In case open handler closes socket
+  if  ('closed' == this.readyState) return;
+  this.setPing();
+
+  // Prolong liveness of socket on heartbeat
+  this.removeListener('heartbeat', this.onHeartbeat);
+  this.on('heartbeat', this.onHeartbeat);
+};
+
+/**
+ * Resets ping timeout.
+ *
+ * @api private
+ */
+
+Socket.prototype.onHeartbeat = function (timeout) {
+  clearTimeout(this.pingTimeoutTimer);
+  var self = this;
+  self.pingTimeoutTimer = setTimeout(function () {
+    if ('closed' == self.readyState) return;
+    self.onClose('ping timeout');
+  }, timeout || (self.pingInterval + self.pingTimeout));
+};
+
+/**
+ * Pings server every `this.pingInterval` and expects response
+ * within `this.pingTimeout` or closes connection.
+ *
+ * @api private
+ */
+
+Socket.prototype.setPing = function () {
+  var self = this;
+  clearTimeout(self.pingIntervalTimer);
+  self.pingIntervalTimer = setTimeout(function () {
+    debug('writing ping packet - expecting pong within %sms', self.pingTimeout);
+    self.ping();
+    self.onHeartbeat(self.pingTimeout);
+  }, self.pingInterval);
+};
+
+/**
+* Sends a ping packet.
+*
+* @api private
+*/
+
+Socket.prototype.ping = function () {
+  var self = this;
+  this.sendPacket('ping', function(){
+    self.emit('ping');
+  });
+};
+
+/**
+ * Called on `drain` event
+ *
+ * @api private
+ */
+
+Socket.prototype.onDrain = function() {
+  this.writeBuffer.splice(0, this.prevBufferLen);
+
+  // setting prevBufferLen = 0 is very important
+  // for example, when upgrading, upgrade packet is sent over,
+  // and a nonzero prevBufferLen could cause problems on `drain`
+  this.prevBufferLen = 0;
+
+  if (0 === this.writeBuffer.length) {
+    this.emit('drain');
+  } else {
+    this.flush();
+  }
+};
+
+/**
+ * Flush write buffers.
+ *
+ * @api private
+ */
+
+Socket.prototype.flush = function () {
+  if ('closed' != this.readyState && this.transport.writable &&
+    !this.upgrading && this.writeBuffer.length) {
+    debug('flushing %d packets in socket', this.writeBuffer.length);
+    this.transport.send(this.writeBuffer);
+    // keep track of current length of writeBuffer
+    // splice writeBuffer and callbackBuffer on `drain`
+    this.prevBufferLen = this.writeBuffer.length;
+    this.emit('flush');
+  }
+};
+
+/**
+ * Sends a message.
+ *
+ * @param {String} message.
+ * @param {Function} callback function.
+ * @param {Object} options.
+ * @return {Socket} for chaining.
+ * @api public
+ */
+
+Socket.prototype.write =
+Socket.prototype.send = function (msg, options, fn) {
+  this.sendPacket('message', msg, options, fn);
+  return this;
+};
+
+/**
+ * Sends a packet.
+ *
+ * @param {String} packet type.
+ * @param {String} data.
+ * @param {Object} options.
+ * @param {Function} callback function.
+ * @api private
+ */
+
+Socket.prototype.sendPacket = function (type, data, options, fn) {
+  if('function' == typeof data) {
+    fn = data;
+    data = undefined;
+  }
+
+  if ('function' == typeof options) {
+    fn = options;
+    options = null;
+  }
+
+  if ('closing' == this.readyState || 'closed' == this.readyState) {
+    return;
+  }
+
+  options = options || {};
+  options.compress = false !== options.compress;
+
+  var packet = {
+    type: type,
+    data: data,
+    options: options
+  };
+  this.emit('packetCreate', packet);
+  this.writeBuffer.push(packet);
+  if (fn) this.once('flush', fn);
+  this.flush();
+};
+
+/**
+ * Closes the connection.
+ *
+ * @api private
+ */
+
+Socket.prototype.close = function () {
+  if ('opening' == this.readyState || 'open' == this.readyState) {
+    this.readyState = 'closing';
+
+    var self = this;
+
+    if (this.writeBuffer.length) {
+      this.once('drain', function() {
+        if (this.upgrading) {
+          waitForUpgrade();
+        } else {
+          close();
+        }
+      });
+    } else if (this.upgrading) {
+      waitForUpgrade();
+    } else {
+      close();
+    }
+  }
+
+  function close() {
+    self.onClose('forced close');
+    debug('socket closing - telling transport to close');
+    self.transport.close();
+  }
+
+  function cleanupAndClose() {
+    self.removeListener('upgrade', cleanupAndClose);
+    self.removeListener('upgradeError', cleanupAndClose);
+    close();
+  }
+
+  function waitForUpgrade() {
+    // wait for upgrade to finish since we can't send packets while pausing a transport
+    self.once('upgrade', cleanupAndClose);
+    self.once('upgradeError', cleanupAndClose);
+  }
+
+  return this;
+};
+
+/**
+ * Called upon transport error
+ *
+ * @api private
+ */
+
+Socket.prototype.onError = function (err) {
+  debug('socket error %j', err);
+  Socket.priorWebsocketSuccess = false;
+  this.emit('error', err);
+  this.onClose('transport error', err);
+};
+
+/**
+ * Called upon transport close.
+ *
+ * @api private
+ */
+
+Socket.prototype.onClose = function (reason, desc) {
+  if ('opening' == this.readyState || 'open' == this.readyState || 'closing' == this.readyState) {
+    debug('socket close with reason: "%s"', reason);
+    var self = this;
+
+    // clear timers
+    clearTimeout(this.pingIntervalTimer);
+    clearTimeout(this.pingTimeoutTimer);
+
+    // stop event from firing again for transport
+    this.transport.removeAllListeners('close');
+
+    // ensure transport won't stay open
+    this.transport.close();
+
+    // ignore further transport communication
+    this.transport.removeAllListeners();
+
+    // set ready state
+    this.readyState = 'closed';
+
+    // clear session id
+    this.id = null;
+
+    // emit close event
+    this.emit('close', reason, desc);
+
+    // clean buffers after, so users can still
+    // grab the buffers on `close` event
+    self.writeBuffer = [];
+    self.prevBufferLen = 0;
+  }
+};
+
+/**
+ * Filters upgrades, returning only those matching client transports.
+ *
+ * @param {Array} server upgrades
+ * @api private
+ *
+ */
+
+Socket.prototype.filterUpgrades = function (upgrades) {
+  var filteredUpgrades = [];
+  for (var i = 0, j = upgrades.length; i<j; i++) {
+    if (~index(this.transports, upgrades[i])) filteredUpgrades.push(upgrades[i]);
+  }
+  return filteredUpgrades;
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"./transport":39,"./transports":40,"component-emitter":34,"debug":46,"engine.io-parser":48,"indexof":54,"parsejson":125,"parseqs":126,"parseuri":127}],39:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transport.js", module);
+(function(){
+/**
+ * Module dependencies.
+ */
+
+var parser = require('engine.io-parser');
+var Emitter = require('component-emitter');
+
+/**
+ * Module exports.
+ */
+
+module.exports = Transport;
+
+/**
+ * Transport abstract constructor.
+ *
+ * @param {Object} options.
+ * @api private
+ */
+
+function Transport (opts) {
+  this.path = opts.path;
+  this.hostname = opts.hostname;
+  this.port = opts.port;
+  this.secure = opts.secure;
+  this.query = opts.query;
+  this.timestampParam = opts.timestampParam;
+  this.timestampRequests = opts.timestampRequests;
+  this.readyState = '';
+  this.agent = opts.agent || false;
+  this.socket = opts.socket;
+  this.enablesXDR = opts.enablesXDR;
+
+  // SSL options for Node.js client
+  this.pfx = opts.pfx;
+  this.key = opts.key;
+  this.passphrase = opts.passphrase;
+  this.cert = opts.cert;
+  this.ca = opts.ca;
+  this.ciphers = opts.ciphers;
+  this.rejectUnauthorized = opts.rejectUnauthorized;
+
+  // other options for Node.js client
+  this.extraHeaders = opts.extraHeaders;
+}
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Transport.prototype);
+
+/**
+ * Emits an error.
+ *
+ * @param {String} str
+ * @return {Transport} for chaining
+ * @api public
+ */
+
+Transport.prototype.onError = function (msg, desc) {
+  var err = new Error(msg);
+  err.type = 'TransportError';
+  err.description = desc;
+  this.emit('error', err);
+  return this;
+};
+
+/**
+ * Opens the transport.
+ *
+ * @api public
+ */
+
+Transport.prototype.open = function () {
+  if ('closed' == this.readyState || '' == this.readyState) {
+    this.readyState = 'opening';
+    this.doOpen();
+  }
+
+  return this;
+};
+
+/**
+ * Closes the transport.
+ *
+ * @api private
+ */
+
+Transport.prototype.close = function () {
+  if ('opening' == this.readyState || 'open' == this.readyState) {
+    this.doClose();
+    this.onClose();
+  }
+
+  return this;
+};
+
+/**
+ * Sends multiple packets.
+ *
+ * @param {Array} packets
+ * @api private
+ */
+
+Transport.prototype.send = function(packets){
+  if ('open' == this.readyState) {
+    this.write(packets);
+  } else {
+    throw new Error('Transport not open');
+  }
+};
+
+/**
+ * Called upon open
+ *
+ * @api private
+ */
+
+Transport.prototype.onOpen = function () {
+  this.readyState = 'open';
+  this.writable = true;
+  this.emit('open');
+};
+
+/**
+ * Called with data.
+ *
+ * @param {String} data
+ * @api private
+ */
+
+Transport.prototype.onData = function(data){
+  var packet = parser.decodePacket(data, this.socket.binaryType);
+  this.onPacket(packet);
+};
+
+/**
+ * Called with a decoded packet.
+ */
+
+Transport.prototype.onPacket = function (packet) {
+  this.emit('packet', packet);
+};
+
+/**
+ * Called upon close.
+ *
+ * @api private
+ */
+
+Transport.prototype.onClose = function () {
+  this.readyState = 'closed';
+  this.emit('close');
+};
+
+}).apply(this, arguments);
+
+},{"component-emitter":34,"engine.io-parser":48}],40:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/index.js", module);
+(function(){
+(function (global){
+/**
+ * Module dependencies
+ */
+
+var XMLHttpRequest = require('xmlhttprequest-ssl');
+var XHR = require('./polling-xhr');
+var JSONP = require('./polling-jsonp');
+var websocket = require('./websocket');
+
+/**
+ * Export transports.
+ */
+
+exports.polling = polling;
+exports.websocket = websocket;
+
+/**
+ * Polling transport polymorphic constructor.
+ * Decides on xhr vs jsonp based on feature detection.
+ *
+ * @api private
+ */
+
+function polling(opts){
+  var xhr;
+  var xd = false;
+  var xs = false;
+  var jsonp = false !== opts.jsonp;
+
+  if (global.location) {
+    var isSSL = 'https:' == location.protocol;
+    var port = location.port;
+
+    // some user agents have empty `location.port`
+    if (!port) {
+      port = isSSL ? 443 : 80;
+    }
+
+    xd = opts.hostname != location.hostname || port != opts.port;
+    xs = opts.secure != isSSL;
+  }
+
+  opts.xdomain = xd;
+  opts.xscheme = xs;
+  xhr = new XMLHttpRequest(opts);
+
+  if ('open' in xhr && !opts.forceJSONP) {
+    return new XHR(opts);
+  } else {
+    if (!jsonp) throw new Error('JSONP disabled');
+    return new JSONP(opts);
+  }
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"./polling-jsonp":41,"./polling-xhr":42,"./websocket":44,"xmlhttprequest-ssl":45}],41:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-jsonp.js", module);
+(function(){
+(function (global){
+
+/**
+ * Module requirements.
+ */
+
+var Polling = require('./polling');
+var inherit = require('component-inherit');
+
+/**
+ * Module exports.
+ */
+
+module.exports = JSONPPolling;
+
+/**
+ * Cached regular expressions.
+ */
+
+var rNewline = /\n/g;
+var rEscapedNewline = /\\n/g;
+
+/**
+ * Global JSONP callbacks.
+ */
+
+var callbacks;
+
+/**
+ * Callbacks count.
+ */
+
+var index = 0;
+
+/**
+ * Noop.
+ */
+
+function empty () { }
+
+/**
+ * JSONP Polling constructor.
+ *
+ * @param {Object} opts.
+ * @api public
+ */
+
+function JSONPPolling (opts) {
+  Polling.call(this, opts);
+
+  this.query = this.query || {};
+
+  // define global callbacks array if not present
+  // we do this here (lazily) to avoid unneeded global pollution
+  if (!callbacks) {
+    // we need to consider multiple engines in the same page
+    if (!global.___eio) global.___eio = [];
+    callbacks = global.___eio;
+  }
+
+  // callback identifier
+  this.index = callbacks.length;
+
+  // add callback to jsonp global
+  var self = this;
+  callbacks.push(function (msg) {
+    self.onData(msg);
+  });
+
+  // append to query string
+  this.query.j = this.index;
+
+  // prevent spurious errors from being emitted when the window is unloaded
+  if (global.document && global.addEventListener) {
+    global.addEventListener('beforeunload', function () {
+      if (self.script) self.script.onerror = empty;
+    }, false);
+  }
+}
+
+/**
+ * Inherits from Polling.
+ */
+
+inherit(JSONPPolling, Polling);
+
+/*
+ * JSONP only supports binary as base64 encoded strings
+ */
+
+JSONPPolling.prototype.supportsBinary = false;
+
+/**
+ * Closes the socket.
+ *
+ * @api private
+ */
+
+JSONPPolling.prototype.doClose = function () {
+  if (this.script) {
+    this.script.parentNode.removeChild(this.script);
+    this.script = null;
+  }
+
+  if (this.form) {
+    this.form.parentNode.removeChild(this.form);
+    this.form = null;
+    this.iframe = null;
+  }
+
+  Polling.prototype.doClose.call(this);
+};
+
+/**
+ * Starts a poll cycle.
+ *
+ * @api private
+ */
+
+JSONPPolling.prototype.doPoll = function () {
+  var self = this;
+  var script = document.createElement('script');
+
+  if (this.script) {
+    this.script.parentNode.removeChild(this.script);
+    this.script = null;
+  }
+
+  script.async = true;
+  script.src = this.uri();
+  script.onerror = function(e){
+    self.onError('jsonp poll error',e);
+  };
+
+  var insertAt = document.getElementsByTagName('script')[0];
+  if (insertAt) {
+    insertAt.parentNode.insertBefore(script, insertAt);
+  }
+  else {
+    (document.head || document.body).appendChild(script);
+  }
+  this.script = script;
+
+  var isUAgecko = 'undefined' != typeof navigator && /gecko/i.test(navigator.userAgent);
+  
+  if (isUAgecko) {
+    setTimeout(function () {
+      var iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      document.body.removeChild(iframe);
+    }, 100);
+  }
+};
+
+/**
+ * Writes with a hidden iframe.
+ *
+ * @param {String} data to send
+ * @param {Function} called upon flush.
+ * @api private
+ */
+
+JSONPPolling.prototype.doWrite = function (data, fn) {
+  var self = this;
+
+  if (!this.form) {
+    var form = document.createElement('form');
+    var area = document.createElement('textarea');
+    var id = this.iframeId = 'eio_iframe_' + this.index;
+    var iframe;
+
+    form.className = 'socketio';
+    form.style.position = 'absolute';
+    form.style.top = '-1000px';
+    form.style.left = '-1000px';
+    form.target = id;
+    form.method = 'POST';
+    form.setAttribute('accept-charset', 'utf-8');
+    area.name = 'd';
+    form.appendChild(area);
+    document.body.appendChild(form);
+
+    this.form = form;
+    this.area = area;
+  }
+
+  this.form.action = this.uri();
+
+  function complete () {
+    initIframe();
+    fn();
+  }
+
+  function initIframe () {
+    if (self.iframe) {
+      try {
+        self.form.removeChild(self.iframe);
+      } catch (e) {
+        self.onError('jsonp polling iframe removal error', e);
+      }
+    }
+
+    try {
+      // ie6 dynamic iframes with target="" support (thanks Chris Lambacher)
+      var html = '<iframe src="javascript:0" name="'+ self.iframeId +'">';
+      iframe = document.createElement(html);
+    } catch (e) {
+      iframe = document.createElement('iframe');
+      iframe.name = self.iframeId;
+      iframe.src = 'javascript:0';
+    }
+
+    iframe.id = self.iframeId;
+
+    self.form.appendChild(iframe);
+    self.iframe = iframe;
+  }
+
+  initIframe();
+
+  // escape \n to prevent it from being converted into \r\n by some UAs
+  // double escaping is required for escaped new lines because unescaping of new lines can be done safely on server-side
+  data = data.replace(rEscapedNewline, '\\\n');
+  this.area.value = data.replace(rNewline, '\\n');
+
+  try {
+    this.form.submit();
+  } catch(e) {}
+
+  if (this.iframe.attachEvent) {
+    this.iframe.onreadystatechange = function(){
+      if (self.iframe.readyState == 'complete') {
+        complete();
+      }
+    };
+  } else {
+    this.iframe.onload = complete;
+  }
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"./polling":43,"component-inherit":35}],42:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-xhr.js", module);
+(function(){
+(function (global){
+/**
+ * Module requirements.
+ */
+
+var XMLHttpRequest = require('xmlhttprequest-ssl');
+var Polling = require('./polling');
+var Emitter = require('component-emitter');
+var inherit = require('component-inherit');
+var debug = require('debug')('engine.io-client:polling-xhr');
+
+/**
+ * Module exports.
+ */
+
+module.exports = XHR;
+module.exports.Request = Request;
+
+/**
+ * Empty function
+ */
+
+function empty(){}
+
+/**
+ * XHR Polling constructor.
+ *
+ * @param {Object} opts
+ * @api public
+ */
+
+function XHR(opts){
+  Polling.call(this, opts);
+
+  if (global.location) {
+    var isSSL = 'https:' == location.protocol;
+    var port = location.port;
+
+    // some user agents have empty `location.port`
+    if (!port) {
+      port = isSSL ? 443 : 80;
+    }
+
+    this.xd = opts.hostname != global.location.hostname ||
+      port != opts.port;
+    this.xs = opts.secure != isSSL;
+  } else {
+    this.extraHeaders = opts.extraHeaders;
+  }
+}
+
+/**
+ * Inherits from Polling.
+ */
+
+inherit(XHR, Polling);
+
+/**
+ * XHR supports binary
+ */
+
+XHR.prototype.supportsBinary = true;
+
+/**
+ * Creates a request.
+ *
+ * @param {String} method
+ * @api private
+ */
+
+XHR.prototype.request = function(opts){
+  opts = opts || {};
+  opts.uri = this.uri();
+  opts.xd = this.xd;
+  opts.xs = this.xs;
+  opts.agent = this.agent || false;
+  opts.supportsBinary = this.supportsBinary;
+  opts.enablesXDR = this.enablesXDR;
+
+  // SSL options for Node.js client
+  opts.pfx = this.pfx;
+  opts.key = this.key;
+  opts.passphrase = this.passphrase;
+  opts.cert = this.cert;
+  opts.ca = this.ca;
+  opts.ciphers = this.ciphers;
+  opts.rejectUnauthorized = this.rejectUnauthorized;
+
+  // other options for Node.js client
+  opts.extraHeaders = this.extraHeaders;
+
+  return new Request(opts);
+};
+
+/**
+ * Sends data.
+ *
+ * @param {String} data to send.
+ * @param {Function} called upon flush.
+ * @api private
+ */
+
+XHR.prototype.doWrite = function(data, fn){
+  var isBinary = typeof data !== 'string' && data !== undefined;
+  var req = this.request({ method: 'POST', data: data, isBinary: isBinary });
+  var self = this;
+  req.on('success', fn);
+  req.on('error', function(err){
+    self.onError('xhr post error', err);
+  });
+  this.sendXhr = req;
+};
+
+/**
+ * Starts a poll cycle.
+ *
+ * @api private
+ */
+
+XHR.prototype.doPoll = function(){
+  debug('xhr poll');
+  var req = this.request();
+  var self = this;
+  req.on('data', function(data){
+    self.onData(data);
+  });
+  req.on('error', function(err){
+    self.onError('xhr poll error', err);
+  });
+  this.pollXhr = req;
+};
+
+/**
+ * Request constructor
+ *
+ * @param {Object} options
+ * @api public
+ */
+
+function Request(opts){
+  this.method = opts.method || 'GET';
+  this.uri = opts.uri;
+  this.xd = !!opts.xd;
+  this.xs = !!opts.xs;
+  this.async = false !== opts.async;
+  this.data = undefined != opts.data ? opts.data : null;
+  this.agent = opts.agent;
+  this.isBinary = opts.isBinary;
+  this.supportsBinary = opts.supportsBinary;
+  this.enablesXDR = opts.enablesXDR;
+
+  // SSL options for Node.js client
+  this.pfx = opts.pfx;
+  this.key = opts.key;
+  this.passphrase = opts.passphrase;
+  this.cert = opts.cert;
+  this.ca = opts.ca;
+  this.ciphers = opts.ciphers;
+  this.rejectUnauthorized = opts.rejectUnauthorized;
+
+  // other options for Node.js client
+  this.extraHeaders = opts.extraHeaders;
+
+  this.create();
+}
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Request.prototype);
+
+/**
+ * Creates the XHR object and sends the request.
+ *
+ * @api private
+ */
+
+Request.prototype.create = function(){
+  var opts = { agent: this.agent, xdomain: this.xd, xscheme: this.xs, enablesXDR: this.enablesXDR };
+
+  // SSL options for Node.js client
+  opts.pfx = this.pfx;
+  opts.key = this.key;
+  opts.passphrase = this.passphrase;
+  opts.cert = this.cert;
+  opts.ca = this.ca;
+  opts.ciphers = this.ciphers;
+  opts.rejectUnauthorized = this.rejectUnauthorized;
+
+  var xhr = this.xhr = new XMLHttpRequest(opts);
+  var self = this;
+
+  try {
+    debug('xhr open %s: %s', this.method, this.uri);
+    xhr.open(this.method, this.uri, this.async);
+    try {
+      if (this.extraHeaders) {
+        xhr.setDisableHeaderCheck(true);
+        for (var i in this.extraHeaders) {
+          if (this.extraHeaders.hasOwnProperty(i)) {
+            xhr.setRequestHeader(i, this.extraHeaders[i]);
+          }
+        }
+      }
+    } catch (e) {}
+    if (this.supportsBinary) {
+      // This has to be done after open because Firefox is stupid
+      // http://stackoverflow.com/questions/13216903/get-binary-data-with-xmlhttprequest-in-a-firefox-extension
+      xhr.responseType = 'arraybuffer';
+    }
+
+    if ('POST' == this.method) {
+      try {
+        if (this.isBinary) {
+          xhr.setRequestHeader('Content-type', 'application/octet-stream');
+        } else {
+          xhr.setRequestHeader('Content-type', 'text/plain;charset=UTF-8');
+        }
+      } catch (e) {}
+    }
+
+    // ie6 check
+    if ('withCredentials' in xhr) {
+      xhr.withCredentials = true;
+    }
+
+    if (this.hasXDR()) {
+      xhr.onload = function(){
+        self.onLoad();
+      };
+      xhr.onerror = function(){
+        self.onError(xhr.responseText);
+      };
+    } else {
+      xhr.onreadystatechange = function(){
+        if (4 != xhr.readyState) return;
+        if (200 == xhr.status || 1223 == xhr.status) {
+          self.onLoad();
+        } else {
+          // make sure the `error` event handler that's user-set
+          // does not throw in the same tick and gets caught here
+          setTimeout(function(){
+            self.onError(xhr.status);
+          }, 0);
+        }
+      };
+    }
+
+    debug('xhr data %s', this.data);
+    xhr.send(this.data);
+  } catch (e) {
+    // Need to defer since .create() is called directly fhrom the constructor
+    // and thus the 'error' event can only be only bound *after* this exception
+    // occurs.  Therefore, also, we cannot throw here at all.
+    setTimeout(function() {
+      self.onError(e);
+    }, 0);
+    return;
+  }
+
+  if (global.document) {
+    this.index = Request.requestsCount++;
+    Request.requests[this.index] = this;
+  }
+};
+
+/**
+ * Called upon successful response.
+ *
+ * @api private
+ */
+
+Request.prototype.onSuccess = function(){
+  this.emit('success');
+  this.cleanup();
+};
+
+/**
+ * Called if we have data.
+ *
+ * @api private
+ */
+
+Request.prototype.onData = function(data){
+  this.emit('data', data);
+  this.onSuccess();
+};
+
+/**
+ * Called upon error.
+ *
+ * @api private
+ */
+
+Request.prototype.onError = function(err){
+  this.emit('error', err);
+  this.cleanup(true);
+};
+
+/**
+ * Cleans up house.
+ *
+ * @api private
+ */
+
+Request.prototype.cleanup = function(fromError){
+  if ('undefined' == typeof this.xhr || null === this.xhr) {
+    return;
+  }
+  // xmlhttprequest
+  if (this.hasXDR()) {
+    this.xhr.onload = this.xhr.onerror = empty;
+  } else {
+    this.xhr.onreadystatechange = empty;
+  }
+
+  if (fromError) {
+    try {
+      this.xhr.abort();
+    } catch(e) {}
+  }
+
+  if (global.document) {
+    delete Request.requests[this.index];
+  }
+
+  this.xhr = null;
+};
+
+/**
+ * Called upon load.
+ *
+ * @api private
+ */
+
+Request.prototype.onLoad = function(){
+  var data;
+  try {
+    var contentType;
+    try {
+      contentType = this.xhr.getResponseHeader('Content-Type').split(';')[0];
+    } catch (e) {}
+    if (contentType === 'application/octet-stream') {
+      data = this.xhr.response;
+    } else {
+      if (!this.supportsBinary) {
+        data = this.xhr.responseText;
+      } else {
+        try {
+          data = String.fromCharCode.apply(null, new Uint8Array(this.xhr.response));
+        } catch (e) {
+          var ui8Arr = new Uint8Array(this.xhr.response);
+          var dataArray = [];
+          for (var idx = 0, length = ui8Arr.length; idx < length; idx++) {
+            dataArray.push(ui8Arr[idx]);
+          }
+
+          data = String.fromCharCode.apply(null, dataArray);
+        }
+      }
+    }
+  } catch (e) {
+    this.onError(e);
+  }
+  if (null != data) {
+    this.onData(data);
+  }
+};
+
+/**
+ * Check if it has XDomainRequest.
+ *
+ * @api private
+ */
+
+Request.prototype.hasXDR = function(){
+  return 'undefined' !== typeof global.XDomainRequest && !this.xs && this.enablesXDR;
+};
+
+/**
+ * Aborts the request.
+ *
+ * @api public
+ */
+
+Request.prototype.abort = function(){
+  this.cleanup();
+};
+
+/**
+ * Aborts pending requests when unloading the window. This is needed to prevent
+ * memory leaks (e.g. when using IE) and to ensure that no spurious error is
+ * emitted.
+ */
+
+if (global.document) {
+  Request.requestsCount = 0;
+  Request.requests = {};
+  if (global.attachEvent) {
+    global.attachEvent('onunload', unloadHandler);
+  } else if (global.addEventListener) {
+    global.addEventListener('beforeunload', unloadHandler, false);
+  }
+}
+
+function unloadHandler() {
+  for (var i in Request.requests) {
+    if (Request.requests.hasOwnProperty(i)) {
+      Request.requests[i].abort();
+    }
+  }
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"./polling":43,"component-emitter":34,"component-inherit":35,"debug":46,"xmlhttprequest-ssl":45}],43:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling.js", module);
+(function(){
+/**
+ * Module dependencies.
+ */
+
+var Transport = require('../transport');
+var parseqs = require('parseqs');
+var parser = require('engine.io-parser');
+var inherit = require('component-inherit');
+var yeast = require('yeast');
+var debug = require('debug')('engine.io-client:polling');
+
+/**
+ * Module exports.
+ */
+
+module.exports = Polling;
+
+/**
+ * Is XHR2 supported?
+ */
+
+var hasXHR2 = (function() {
+  var XMLHttpRequest = require('xmlhttprequest-ssl');
+  var xhr = new XMLHttpRequest({ xdomain: false });
+  return null != xhr.responseType;
+})();
+
+/**
+ * Polling interface.
+ *
+ * @param {Object} opts
+ * @api private
+ */
+
+function Polling(opts){
+  var forceBase64 = (opts && opts.forceBase64);
+  if (!hasXHR2 || forceBase64) {
+    this.supportsBinary = false;
+  }
+  Transport.call(this, opts);
+}
+
+/**
+ * Inherits from Transport.
+ */
+
+inherit(Polling, Transport);
+
+/**
+ * Transport name.
+ */
+
+Polling.prototype.name = 'polling';
+
+/**
+ * Opens the socket (triggers polling). We write a PING message to determine
+ * when the transport is open.
+ *
+ * @api private
+ */
+
+Polling.prototype.doOpen = function(){
+  this.poll();
+};
+
+/**
+ * Pauses polling.
+ *
+ * @param {Function} callback upon buffers are flushed and transport is paused
+ * @api private
+ */
+
+Polling.prototype.pause = function(onPause){
+  var pending = 0;
+  var self = this;
+
+  this.readyState = 'pausing';
+
+  function pause(){
+    debug('paused');
+    self.readyState = 'paused';
+    onPause();
+  }
+
+  if (this.polling || !this.writable) {
+    var total = 0;
+
+    if (this.polling) {
+      debug('we are currently polling - waiting to pause');
+      total++;
+      this.once('pollComplete', function(){
+        debug('pre-pause polling complete');
+        --total || pause();
+      });
+    }
+
+    if (!this.writable) {
+      debug('we are currently writing - waiting to pause');
+      total++;
+      this.once('drain', function(){
+        debug('pre-pause writing complete');
+        --total || pause();
+      });
+    }
+  } else {
+    pause();
+  }
+};
+
+/**
+ * Starts polling cycle.
+ *
+ * @api public
+ */
+
+Polling.prototype.poll = function(){
+  debug('polling');
+  this.polling = true;
+  this.doPoll();
+  this.emit('poll');
+};
+
+/**
+ * Overloads onData to detect payloads.
+ *
+ * @api private
+ */
+
+Polling.prototype.onData = function(data){
+  var self = this;
+  debug('polling got data %s', data);
+  var callback = function(packet, index, total) {
+    // if its the first message we consider the transport open
+    if ('opening' == self.readyState) {
+      self.onOpen();
+    }
+
+    // if its a close packet, we close the ongoing requests
+    if ('close' == packet.type) {
+      self.onClose();
+      return false;
+    }
+
+    // otherwise bypass onData and handle the message
+    self.onPacket(packet);
+  };
+
+  // decode payload
+  parser.decodePayload(data, this.socket.binaryType, callback);
+
+  // if an event did not trigger closing
+  if ('closed' != this.readyState) {
+    // if we got data we're not polling
+    this.polling = false;
+    this.emit('pollComplete');
+
+    if ('open' == this.readyState) {
+      this.poll();
+    } else {
+      debug('ignoring poll - transport state "%s"', this.readyState);
+    }
+  }
+};
+
+/**
+ * For polling, send a close packet.
+ *
+ * @api private
+ */
+
+Polling.prototype.doClose = function(){
+  var self = this;
+
+  function close(){
+    debug('writing close packet');
+    self.write([{ type: 'close' }]);
+  }
+
+  if ('open' == this.readyState) {
+    debug('transport open - closing');
+    close();
+  } else {
+    // in case we're trying to close while
+    // handshaking is in progress (GH-164)
+    debug('transport not open - deferring close');
+    this.once('open', close);
+  }
+};
+
+/**
+ * Writes a packets payload.
+ *
+ * @param {Array} data packets
+ * @param {Function} drain callback
+ * @api private
+ */
+
+Polling.prototype.write = function(packets){
+  var self = this;
+  this.writable = false;
+  var callbackfn = function() {
+    self.writable = true;
+    self.emit('drain');
+  };
+
+  var self = this;
+  parser.encodePayload(packets, this.supportsBinary, function(data) {
+    self.doWrite(data, callbackfn);
+  });
+};
+
+/**
+ * Generates uri for connection.
+ *
+ * @api private
+ */
+
+Polling.prototype.uri = function(){
+  var query = this.query || {};
+  var schema = this.secure ? 'https' : 'http';
+  var port = '';
+
+  // cache busting is forced
+  if (false !== this.timestampRequests) {
+    query[this.timestampParam] = yeast();
+  }
+
+  if (!this.supportsBinary && !query.sid) {
+    query.b64 = 1;
+  }
+
+  query = parseqs.encode(query);
+
+  // avoid port if default for schema
+  if (this.port && (('https' == schema && this.port != 443) ||
+     ('http' == schema && this.port != 80))) {
+    port = ':' + this.port;
+  }
+
+  // prepend ? to query
+  if (query.length) {
+    query = '?' + query;
+  }
+
+  var ipv6 = this.hostname.indexOf(':') !== -1;
+  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
+};
+
+}).apply(this, arguments);
+
+},{"../transport":39,"component-inherit":35,"debug":46,"engine.io-parser":48,"parseqs":126,"xmlhttprequest-ssl":45,"yeast":175}],44:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/websocket.js", module);
+(function(){
+(function (global){
+/**
+ * Module dependencies.
+ */
+
+var Transport = require('../transport');
+var parser = require('engine.io-parser');
+var parseqs = require('parseqs');
+var inherit = require('component-inherit');
+var yeast = require('yeast');
+var debug = require('debug')('engine.io-client:websocket');
+var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
+
+/**
+ * Get either the `WebSocket` or `MozWebSocket` globals
+ * in the browser or try to resolve WebSocket-compatible
+ * interface exposed by `ws` for Node-like environment.
+ */
+
+var WebSocket = BrowserWebSocket;
+if (!WebSocket && typeof window === 'undefined') {
+  try {
+    WebSocket = require('ws');
+  } catch (e) { }
+}
+
+/**
+ * Module exports.
+ */
+
+module.exports = WS;
+
+/**
+ * WebSocket transport constructor.
+ *
+ * @api {Object} connection options
+ * @api public
+ */
+
+function WS(opts){
+  var forceBase64 = (opts && opts.forceBase64);
+  if (forceBase64) {
+    this.supportsBinary = false;
+  }
+  this.perMessageDeflate = opts.perMessageDeflate;
+  Transport.call(this, opts);
+}
+
+/**
+ * Inherits from Transport.
+ */
+
+inherit(WS, Transport);
+
+/**
+ * Transport name.
+ *
+ * @api public
+ */
+
+WS.prototype.name = 'websocket';
+
+/*
+ * WebSockets support binary
+ */
+
+WS.prototype.supportsBinary = true;
+
+/**
+ * Opens socket.
+ *
+ * @api private
+ */
+
+WS.prototype.doOpen = function(){
+  if (!this.check()) {
+    // let probe timeout
+    return;
+  }
+
+  var self = this;
+  var uri = this.uri();
+  var protocols = void(0);
+  var opts = {
+    agent: this.agent,
+    perMessageDeflate: this.perMessageDeflate
+  };
+
+  // SSL options for Node.js client
+  opts.pfx = this.pfx;
+  opts.key = this.key;
+  opts.passphrase = this.passphrase;
+  opts.cert = this.cert;
+  opts.ca = this.ca;
+  opts.ciphers = this.ciphers;
+  opts.rejectUnauthorized = this.rejectUnauthorized;
+  if (this.extraHeaders) {
+    opts.headers = this.extraHeaders;
+  }
+
+  this.ws = BrowserWebSocket ? new WebSocket(uri) : new WebSocket(uri, protocols, opts);
+
+  if (this.ws.binaryType === undefined) {
+    this.supportsBinary = false;
+  }
+
+  if (this.ws.supports && this.ws.supports.binary) {
+    this.supportsBinary = true;
+    this.ws.binaryType = 'buffer';
+  } else {
+    this.ws.binaryType = 'arraybuffer';
+  }
+
+  this.addEventListeners();
+};
+
+/**
+ * Adds event listeners to the socket
+ *
+ * @api private
+ */
+
+WS.prototype.addEventListeners = function(){
+  var self = this;
+
+  this.ws.onopen = function(){
+    self.onOpen();
+  };
+  this.ws.onclose = function(){
+    self.onClose();
+  };
+  this.ws.onmessage = function(ev){
+    self.onData(ev.data);
+  };
+  this.ws.onerror = function(e){
+    self.onError('websocket error', e);
+  };
+};
+
+/**
+ * Override `onData` to use a timer on iOS.
+ * See: https://gist.github.com/mloughran/2052006
+ *
+ * @api private
+ */
+
+if ('undefined' != typeof navigator
+  && /iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+  WS.prototype.onData = function(data){
+    var self = this;
+    setTimeout(function(){
+      Transport.prototype.onData.call(self, data);
+    }, 0);
+  };
+}
+
+/**
+ * Writes data to socket.
+ *
+ * @param {Array} array of packets.
+ * @api private
+ */
+
+WS.prototype.write = function(packets){
+  var self = this;
+  this.writable = false;
+
+  // encodePacket efficient as it uses WS framing
+  // no need for encodePayload
+  var total = packets.length;
+  for (var i = 0, l = total; i < l; i++) {
+    (function(packet) {
+      parser.encodePacket(packet, self.supportsBinary, function(data) {
+        if (!BrowserWebSocket) {
+          // always create a new object (GH-437)
+          var opts = {};
+          if (packet.options) {
+            opts.compress = packet.options.compress;
+          }
+
+          if (self.perMessageDeflate) {
+            var len = 'string' == typeof data ? global.Buffer.byteLength(data) : data.length;
+            if (len < self.perMessageDeflate.threshold) {
+              opts.compress = false;
+            }
+          }
+        }
+
+        //Sometimes the websocket has already been closed but the browser didn't
+        //have a chance of informing us about it yet, in that case send will
+        //throw an error
+        try {
+          if (BrowserWebSocket) {
+            // TypeError is thrown when passing the second argument on Safari
+            self.ws.send(data);
+          } else {
+            self.ws.send(data, opts);
+          }
+        } catch (e){
+          debug('websocket closed before onclose event');
+        }
+
+        --total || done();
+      });
+    })(packets[i]);
+  }
+
+  function done(){
+    self.emit('flush');
+
+    // fake drain
+    // defer to next tick to allow Socket to clear writeBuffer
+    setTimeout(function(){
+      self.writable = true;
+      self.emit('drain');
+    }, 0);
+  }
+};
+
+/**
+ * Called upon close
+ *
+ * @api private
+ */
+
+WS.prototype.onClose = function(){
+  Transport.prototype.onClose.call(this);
+};
+
+/**
+ * Closes socket.
+ *
+ * @api private
+ */
+
+WS.prototype.doClose = function(){
+  if (typeof this.ws !== 'undefined') {
+    this.ws.close();
+  }
+};
+
+/**
+ * Generates uri for connection.
+ *
+ * @api private
+ */
+
+WS.prototype.uri = function(){
+  var query = this.query || {};
+  var schema = this.secure ? 'wss' : 'ws';
+  var port = '';
+
+  // avoid port if default for schema
+  if (this.port && (('wss' == schema && this.port != 443)
+    || ('ws' == schema && this.port != 80))) {
+    port = ':' + this.port;
+  }
+
+  // append timestamp to URI
+  if (this.timestampRequests) {
+    query[this.timestampParam] = yeast();
+  }
+
+  // communicate binary support capabilities
+  if (!this.supportsBinary) {
+    query.b64 = 1;
+  }
+
+  query = parseqs.encode(query);
+
+  // prepend ? to query
+  if (query.length) {
+    query = '?' + query;
+  }
+
+  var ipv6 = this.hostname.indexOf(':') !== -1;
+  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
+};
+
+/**
+ * Feature detection for WebSocket.
+ *
+ * @return {Boolean} whether this transport is available.
+ * @api public
+ */
+
+WS.prototype.check = function(){
+  return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"../transport":39,"component-inherit":35,"debug":46,"engine.io-parser":48,"parseqs":126,"ws":29,"yeast":175}],45:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/xmlhttprequest.js", module);
+(function(){
+// browser shim for xmlhttprequest module
+var hasCORS = require('has-cors');
+
+module.exports = function(opts) {
+  var xdomain = opts.xdomain;
+
+  // scheme must be same when usign XDomainRequest
+  // http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+  var xscheme = opts.xscheme;
+
+  // XDomainRequest has a flow of not sending cookie, therefore it should be disabled as a default.
+  // https://github.com/Automattic/engine.io-client/pull/217
+  var enablesXDR = opts.enablesXDR;
+
+  // XMLHttpRequest can be disabled on IE
+  try {
+    if ('undefined' != typeof XMLHttpRequest && (!xdomain || hasCORS)) {
+      return new XMLHttpRequest();
+    }
+  } catch (e) { }
+
+  // Use XDomainRequest for IE8 if enablesXDR is true
+  // because loading bar keeps flashing when using jsonp-polling
+  // https://github.com/yujiosaka/socke.io-ie8-loading-example
+  try {
+    if ('undefined' != typeof XDomainRequest && !xscheme && enablesXDR) {
+      return new XDomainRequest();
+    }
+  } catch (e) { }
+
+  if (!xdomain) {
+    try {
+      return new ActiveXObject('Microsoft.XMLHTTP');
+    } catch(e) { }
+  }
+}
+
+}).apply(this, arguments);
+
+},{"has-cors":53}],46:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":47}],47:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":124}],48:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/browser.js", module);
+(function(){
+(function (global){
+/**
+ * Module dependencies.
+ */
+
+var keys = require('./keys');
+var hasBinary = require('has-binary');
+var sliceBuffer = require('arraybuffer.slice');
+var base64encoder = require('base64-arraybuffer');
+var after = require('after');
+var utf8 = require('utf8');
+
+/**
+ * Check if we are running an android browser. That requires us to use
+ * ArrayBuffer with polling transports...
+ *
+ * http://ghinda.net/jpeg-blob-ajax-android/
+ */
+
+var isAndroid = navigator.userAgent.match(/Android/i);
+
+/**
+ * Check if we are running in PhantomJS.
+ * Uploading a Blob with PhantomJS does not work correctly, as reported here:
+ * https://github.com/ariya/phantomjs/issues/11395
+ * @type boolean
+ */
+var isPhantomJS = /PhantomJS/i.test(navigator.userAgent);
+
+/**
+ * When true, avoids using Blobs to encode payloads.
+ * @type boolean
+ */
+var dontSendBlobs = isAndroid || isPhantomJS;
+
+/**
+ * Current protocol version.
+ */
+
+exports.protocol = 3;
+
+/**
+ * Packet types.
+ */
+
+var packets = exports.packets = {
+    open:     0    // non-ws
+  , close:    1    // non-ws
+  , ping:     2
+  , pong:     3
+  , message:  4
+  , upgrade:  5
+  , noop:     6
+};
+
+var packetslist = keys(packets);
+
+/**
+ * Premade error packet.
+ */
+
+var err = { type: 'error', data: 'parser error' };
+
+/**
+ * Create a blob api even for blob builder when vendor prefixes exist
+ */
+
+var Blob = require('blob');
+
+/**
+ * Encodes a packet.
+ *
+ *     <packet type id> [ <data> ]
+ *
+ * Example:
+ *
+ *     5hello world
+ *     3
+ *     4
+ *
+ * Binary is encoded in an identical principle
+ *
+ * @api private
+ */
+
+exports.encodePacket = function (packet, supportsBinary, utf8encode, callback) {
+  if ('function' == typeof supportsBinary) {
+    callback = supportsBinary;
+    supportsBinary = false;
+  }
+
+  if ('function' == typeof utf8encode) {
+    callback = utf8encode;
+    utf8encode = null;
+  }
+
+  var data = (packet.data === undefined)
+    ? undefined
+    : packet.data.buffer || packet.data;
+
+  if (global.ArrayBuffer && data instanceof ArrayBuffer) {
+    return encodeArrayBuffer(packet, supportsBinary, callback);
+  } else if (Blob && data instanceof global.Blob) {
+    return encodeBlob(packet, supportsBinary, callback);
+  }
+
+  // might be an object with { base64: true, data: dataAsBase64String }
+  if (data && data.base64) {
+    return encodeBase64Object(packet, callback);
+  }
+
+  // Sending data as a utf-8 string
+  var encoded = packets[packet.type];
+
+  // data fragment is optional
+  if (undefined !== packet.data) {
+    encoded += utf8encode ? utf8.encode(String(packet.data)) : String(packet.data);
+  }
+
+  return callback('' + encoded);
+
+};
+
+function encodeBase64Object(packet, callback) {
+  // packet data is an object { base64: true, data: dataAsBase64String }
+  var message = 'b' + exports.packets[packet.type] + packet.data.data;
+  return callback(message);
+}
+
+/**
+ * Encode packet helpers for binary types
+ */
+
+function encodeArrayBuffer(packet, supportsBinary, callback) {
+  if (!supportsBinary) {
+    return exports.encodeBase64Packet(packet, callback);
+  }
+
+  var data = packet.data;
+  var contentArray = new Uint8Array(data);
+  var resultBuffer = new Uint8Array(1 + data.byteLength);
+
+  resultBuffer[0] = packets[packet.type];
+  for (var i = 0; i < contentArray.length; i++) {
+    resultBuffer[i+1] = contentArray[i];
+  }
+
+  return callback(resultBuffer.buffer);
+}
+
+function encodeBlobAsArrayBuffer(packet, supportsBinary, callback) {
+  if (!supportsBinary) {
+    return exports.encodeBase64Packet(packet, callback);
+  }
+
+  var fr = new FileReader();
+  fr.onload = function() {
+    packet.data = fr.result;
+    exports.encodePacket(packet, supportsBinary, true, callback);
+  };
+  return fr.readAsArrayBuffer(packet.data);
+}
+
+function encodeBlob(packet, supportsBinary, callback) {
+  if (!supportsBinary) {
+    return exports.encodeBase64Packet(packet, callback);
+  }
+
+  if (dontSendBlobs) {
+    return encodeBlobAsArrayBuffer(packet, supportsBinary, callback);
+  }
+
+  var length = new Uint8Array(1);
+  length[0] = packets[packet.type];
+  var blob = new Blob([length.buffer, packet.data]);
+
+  return callback(blob);
+}
+
+/**
+ * Encodes a packet with binary data in a base64 string
+ *
+ * @param {Object} packet, has `type` and `data`
+ * @return {String} base64 encoded message
+ */
+
+exports.encodeBase64Packet = function(packet, callback) {
+  var message = 'b' + exports.packets[packet.type];
+  if (Blob && packet.data instanceof global.Blob) {
+    var fr = new FileReader();
+    fr.onload = function() {
+      var b64 = fr.result.split(',')[1];
+      callback(message + b64);
+    };
+    return fr.readAsDataURL(packet.data);
+  }
+
+  var b64data;
+  try {
+    b64data = String.fromCharCode.apply(null, new Uint8Array(packet.data));
+  } catch (e) {
+    // iPhone Safari doesn't let you apply with typed arrays
+    var typed = new Uint8Array(packet.data);
+    var basic = new Array(typed.length);
+    for (var i = 0; i < typed.length; i++) {
+      basic[i] = typed[i];
+    }
+    b64data = String.fromCharCode.apply(null, basic);
+  }
+  message += global.btoa(b64data);
+  return callback(message);
+};
+
+/**
+ * Decodes a packet. Changes format to Blob if requested.
+ *
+ * @return {Object} with `type` and `data` (if any)
+ * @api private
+ */
+
+exports.decodePacket = function (data, binaryType, utf8decode) {
+  // String data
+  if (typeof data == 'string' || data === undefined) {
+    if (data.charAt(0) == 'b') {
+      return exports.decodeBase64Packet(data.substr(1), binaryType);
+    }
+
+    if (utf8decode) {
+      try {
+        data = utf8.decode(data);
+      } catch (e) {
+        return err;
+      }
+    }
+    var type = data.charAt(0);
+
+    if (Number(type) != type || !packetslist[type]) {
+      return err;
+    }
+
+    if (data.length > 1) {
+      return { type: packetslist[type], data: data.substring(1) };
+    } else {
+      return { type: packetslist[type] };
+    }
+  }
+
+  var asArray = new Uint8Array(data);
+  var type = asArray[0];
+  var rest = sliceBuffer(data, 1);
+  if (Blob && binaryType === 'blob') {
+    rest = new Blob([rest]);
+  }
+  return { type: packetslist[type], data: rest };
+};
+
+/**
+ * Decodes a packet encoded in a base64 string
+ *
+ * @param {String} base64 encoded message
+ * @return {Object} with `type` and `data` (if any)
+ */
+
+exports.decodeBase64Packet = function(msg, binaryType) {
+  var type = packetslist[msg.charAt(0)];
+  if (!global.ArrayBuffer) {
+    return { type: type, data: { base64: true, data: msg.substr(1) } };
+  }
+
+  var data = base64encoder.decode(msg.substr(1));
+
+  if (binaryType === 'blob' && Blob) {
+    data = new Blob([data]);
+  }
+
+  return { type: type, data: data };
+};
+
+/**
+ * Encodes multiple messages (payload).
+ *
+ *     <length>:data
+ *
+ * Example:
+ *
+ *     11:hello world2:hi
+ *
+ * If any contents are binary, they will be encoded as base64 strings. Base64
+ * encoded strings are marked with a b before the length specifier
+ *
+ * @param {Array} packets
+ * @api private
+ */
+
+exports.encodePayload = function (packets, supportsBinary, callback) {
+  if (typeof supportsBinary == 'function') {
+    callback = supportsBinary;
+    supportsBinary = null;
+  }
+
+  var isBinary = hasBinary(packets);
+
+  if (supportsBinary && isBinary) {
+    if (Blob && !dontSendBlobs) {
+      return exports.encodePayloadAsBlob(packets, callback);
+    }
+
+    return exports.encodePayloadAsArrayBuffer(packets, callback);
+  }
+
+  if (!packets.length) {
+    return callback('0:');
+  }
+
+  function setLengthHeader(message) {
+    return message.length + ':' + message;
+  }
+
+  function encodeOne(packet, doneCallback) {
+    exports.encodePacket(packet, !isBinary ? false : supportsBinary, true, function(message) {
+      doneCallback(null, setLengthHeader(message));
+    });
+  }
+
+  map(packets, encodeOne, function(err, results) {
+    return callback(results.join(''));
+  });
+};
+
+/**
+ * Async array map using after
+ */
+
+function map(ary, each, done) {
+  var result = new Array(ary.length);
+  var next = after(ary.length, done);
+
+  var eachWithIndex = function(i, el, cb) {
+    each(el, function(error, msg) {
+      result[i] = msg;
+      cb(error, result);
+    });
+  };
+
+  for (var i = 0; i < ary.length; i++) {
+    eachWithIndex(i, ary[i], next);
+  }
+}
+
+/*
+ * Decodes data when a payload is maybe expected. Possible binary contents are
+ * decoded from their base64 representation
+ *
+ * @param {String} data, callback method
+ * @api public
+ */
+
+exports.decodePayload = function (data, binaryType, callback) {
+  if (typeof data != 'string') {
+    return exports.decodePayloadAsBinary(data, binaryType, callback);
+  }
+
+  if (typeof binaryType === 'function') {
+    callback = binaryType;
+    binaryType = null;
+  }
+
+  var packet;
+  if (data == '') {
+    // parser error - ignoring payload
+    return callback(err, 0, 1);
+  }
+
+  var length = ''
+    , n, msg;
+
+  for (var i = 0, l = data.length; i < l; i++) {
+    var chr = data.charAt(i);
+
+    if (':' != chr) {
+      length += chr;
+    } else {
+      if ('' == length || (length != (n = Number(length)))) {
+        // parser error - ignoring payload
+        return callback(err, 0, 1);
+      }
+
+      msg = data.substr(i + 1, n);
+
+      if (length != msg.length) {
+        // parser error - ignoring payload
+        return callback(err, 0, 1);
+      }
+
+      if (msg.length) {
+        packet = exports.decodePacket(msg, binaryType, true);
+
+        if (err.type == packet.type && err.data == packet.data) {
+          // parser error in individual packet - ignoring payload
+          return callback(err, 0, 1);
+        }
+
+        var ret = callback(packet, i + n, l);
+        if (false === ret) return;
+      }
+
+      // advance cursor
+      i += n;
+      length = '';
+    }
+  }
+
+  if (length != '') {
+    // parser error - ignoring payload
+    return callback(err, 0, 1);
+  }
+
+};
+
+/**
+ * Encodes multiple messages (payload) as binary.
+ *
+ * <1 = binary, 0 = string><number from 0-9><number from 0-9>[...]<number
+ * 255><data>
+ *
+ * Example:
+ * 1 3 255 1 2 3, if the binary contents are interpreted as 8 bit integers
+ *
+ * @param {Array} packets
+ * @return {ArrayBuffer} encoded payload
+ * @api private
+ */
+
+exports.encodePayloadAsArrayBuffer = function(packets, callback) {
+  if (!packets.length) {
+    return callback(new ArrayBuffer(0));
+  }
+
+  function encodeOne(packet, doneCallback) {
+    exports.encodePacket(packet, true, true, function(data) {
+      return doneCallback(null, data);
+    });
+  }
+
+  map(packets, encodeOne, function(err, encodedPackets) {
+    var totalLength = encodedPackets.reduce(function(acc, p) {
+      var len;
+      if (typeof p === 'string'){
+        len = p.length;
+      } else {
+        len = p.byteLength;
+      }
+      return acc + len.toString().length + len + 2; // string/binary identifier + separator = 2
+    }, 0);
+
+    var resultArray = new Uint8Array(totalLength);
+
+    var bufferIndex = 0;
+    encodedPackets.forEach(function(p) {
+      var isString = typeof p === 'string';
+      var ab = p;
+      if (isString) {
+        var view = new Uint8Array(p.length);
+        for (var i = 0; i < p.length; i++) {
+          view[i] = p.charCodeAt(i);
+        }
+        ab = view.buffer;
+      }
+
+      if (isString) { // not true binary
+        resultArray[bufferIndex++] = 0;
+      } else { // true binary
+        resultArray[bufferIndex++] = 1;
+      }
+
+      var lenStr = ab.byteLength.toString();
+      for (var i = 0; i < lenStr.length; i++) {
+        resultArray[bufferIndex++] = parseInt(lenStr[i]);
+      }
+      resultArray[bufferIndex++] = 255;
+
+      var view = new Uint8Array(ab);
+      for (var i = 0; i < view.length; i++) {
+        resultArray[bufferIndex++] = view[i];
+      }
+    });
+
+    return callback(resultArray.buffer);
+  });
+};
+
+/**
+ * Encode as Blob
+ */
+
+exports.encodePayloadAsBlob = function(packets, callback) {
+  function encodeOne(packet, doneCallback) {
+    exports.encodePacket(packet, true, true, function(encoded) {
+      var binaryIdentifier = new Uint8Array(1);
+      binaryIdentifier[0] = 1;
+      if (typeof encoded === 'string') {
+        var view = new Uint8Array(encoded.length);
+        for (var i = 0; i < encoded.length; i++) {
+          view[i] = encoded.charCodeAt(i);
+        }
+        encoded = view.buffer;
+        binaryIdentifier[0] = 0;
+      }
+
+      var len = (encoded instanceof ArrayBuffer)
+        ? encoded.byteLength
+        : encoded.size;
+
+      var lenStr = len.toString();
+      var lengthAry = new Uint8Array(lenStr.length + 1);
+      for (var i = 0; i < lenStr.length; i++) {
+        lengthAry[i] = parseInt(lenStr[i]);
+      }
+      lengthAry[lenStr.length] = 255;
+
+      if (Blob) {
+        var blob = new Blob([binaryIdentifier.buffer, lengthAry.buffer, encoded]);
+        doneCallback(null, blob);
+      }
+    });
+  }
+
+  map(packets, encodeOne, function(err, results) {
+    return callback(new Blob(results));
+  });
+};
+
+/*
+ * Decodes data when a payload is maybe expected. Strings are decoded by
+ * interpreting each byte as a key code for entries marked to start with 0. See
+ * description of encodePayloadAsBinary
+ *
+ * @param {ArrayBuffer} data, callback method
+ * @api public
+ */
+
+exports.decodePayloadAsBinary = function (data, binaryType, callback) {
+  if (typeof binaryType === 'function') {
+    callback = binaryType;
+    binaryType = null;
+  }
+
+  var bufferTail = data;
+  var buffers = [];
+
+  var numberTooLong = false;
+  while (bufferTail.byteLength > 0) {
+    var tailArray = new Uint8Array(bufferTail);
+    var isString = tailArray[0] === 0;
+    var msgLength = '';
+
+    for (var i = 1; ; i++) {
+      if (tailArray[i] == 255) break;
+
+      if (msgLength.length > 310) {
+        numberTooLong = true;
+        break;
+      }
+
+      msgLength += tailArray[i];
+    }
+
+    if(numberTooLong) return callback(err, 0, 1);
+
+    bufferTail = sliceBuffer(bufferTail, 2 + msgLength.length);
+    msgLength = parseInt(msgLength);
+
+    var msg = sliceBuffer(bufferTail, 0, msgLength);
+    if (isString) {
+      try {
+        msg = String.fromCharCode.apply(null, new Uint8Array(msg));
+      } catch (e) {
+        // iPhone Safari doesn't let you apply to typed arrays
+        var typed = new Uint8Array(msg);
+        msg = '';
+        for (var i = 0; i < typed.length; i++) {
+          msg += String.fromCharCode(typed[i]);
+        }
+      }
+    }
+
+    buffers.push(msg);
+    bufferTail = sliceBuffer(bufferTail, msgLength);
+  }
+
+  var total = buffers.length;
+  buffers.forEach(function(buffer, i) {
+    callback(exports.decodePacket(buffer, binaryType, true), i, total);
+  });
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"./keys":49,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":27,"blob":28,"has-binary":50,"utf8":144}],49:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/keys.js", module);
+(function(){
+
+/**
+ * Gets the keys for an object.
+ *
+ * @return {Array} keys
+ * @api private
+ */
+
+module.exports = Object.keys || function keys (obj){
+  var arr = [];
+  var has = Object.prototype.hasOwnProperty;
+
+  for (var i in obj) {
+    if (has.call(obj, i)) {
+      arr.push(i);
+    }
+  }
+  return arr;
+};
+
+}).apply(this, arguments);
+
+},{}],50:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-parser/node_modules/has-binary/index.js", module);
+(function(){
+(function (global){
+
+/*
+ * Module requirements.
+ */
+
+var isArray = require('isarray');
+
+/**
+ * Module exports.
+ */
+
+module.exports = hasBinary;
+
+/**
+ * Checks for binary data.
+ *
+ * Right now only Buffer and ArrayBuffer are supported..
+ *
+ * @param {Object} anything
+ * @api public
+ */
+
+function hasBinary(data) {
+
+  function _hasBinary(obj) {
+    if (!obj) return false;
+
+    if ( (global.Buffer && global.Buffer.isBuffer(obj)) ||
+         (global.ArrayBuffer && obj instanceof ArrayBuffer) ||
+         (global.Blob && obj instanceof Blob) ||
+         (global.File && obj instanceof File)
+        ) {
+      return true;
+    }
+
+    if (isArray(obj)) {
+      for (var i = 0; i < obj.length; i++) {
+          if (_hasBinary(obj[i])) {
+              return true;
+          }
+      }
+    } else if (obj && 'object' == typeof obj) {
+      if (obj.toJSON) {
+        obj = obj.toJSON();
+      }
+
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key) && _hasBinary(obj[key])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  return _hasBinary(data);
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"isarray":55}],51:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/hammerjs/hammer.js", module);
+(function(){
+/*! Hammer.JS - v2.0.7 - 2016-04-22
+ * http://hammerjs.github.io/
+ *
+ * Copyright (c) 2016 Jorik Tangelder;
+ * Licensed under the MIT license */
+(function(window, document, exportName, undefined) {
+  'use strict';
+
+var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
+var TEST_ELEMENT = document.createElement('div');
+
+var TYPE_FUNCTION = 'function';
+
+var round = Math.round;
+var abs = Math.abs;
+var now = Date.now;
+
+/**
+ * set a timeout with a given scope
+ * @param {Function} fn
+ * @param {Number} timeout
+ * @param {Object} context
+ * @returns {number}
+ */
+function setTimeoutContext(fn, timeout, context) {
+    return setTimeout(bindFn(fn, context), timeout);
+}
+
+/**
+ * if the argument is an array, we want to execute the fn on each entry
+ * if it aint an array we don't want to do a thing.
+ * this is used by all the methods that accept a single and array argument.
+ * @param {*|Array} arg
+ * @param {String} fn
+ * @param {Object} [context]
+ * @returns {Boolean}
+ */
+function invokeArrayArg(arg, fn, context) {
+    if (Array.isArray(arg)) {
+        each(arg, context[fn], context);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * walk objects and arrays
+ * @param {Object} obj
+ * @param {Function} iterator
+ * @param {Object} context
+ */
+function each(obj, iterator, context) {
+    var i;
+
+    if (!obj) {
+        return;
+    }
+
+    if (obj.forEach) {
+        obj.forEach(iterator, context);
+    } else if (obj.length !== undefined) {
+        i = 0;
+        while (i < obj.length) {
+            iterator.call(context, obj[i], i, obj);
+            i++;
+        }
+    } else {
+        for (i in obj) {
+            obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
+        }
+    }
+}
+
+/**
+ * wrap a method with a deprecation warning and stack trace
+ * @param {Function} method
+ * @param {String} name
+ * @param {String} message
+ * @returns {Function} A new function wrapping the supplied method.
+ */
+function deprecate(method, name, message) {
+    var deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
+    return function() {
+        var e = new Error('get-stack-trace');
+        var stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+            .replace(/^\s+at\s+/gm, '')
+            .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@') : 'Unknown Stack Trace';
+
+        var log = window.console && (window.console.warn || window.console.log);
+        if (log) {
+            log.call(window.console, deprecationMessage, stack);
+        }
+        return method.apply(this, arguments);
+    };
+}
+
+/**
+ * extend object.
+ * means that properties in dest will be overwritten by the ones in src.
+ * @param {Object} target
+ * @param {...Object} objects_to_assign
+ * @returns {Object} target
+ */
+var assign;
+if (typeof Object.assign !== 'function') {
+    assign = function assign(target) {
+        if (target === undefined || target === null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        var output = Object(target);
+        for (var index = 1; index < arguments.length; index++) {
+            var source = arguments[index];
+            if (source !== undefined && source !== null) {
+                for (var nextKey in source) {
+                    if (source.hasOwnProperty(nextKey)) {
+                        output[nextKey] = source[nextKey];
+                    }
+                }
+            }
+        }
+        return output;
+    };
+} else {
+    assign = Object.assign;
+}
+
+/**
+ * extend object.
+ * means that properties in dest will be overwritten by the ones in src.
+ * @param {Object} dest
+ * @param {Object} src
+ * @param {Boolean} [merge=false]
+ * @returns {Object} dest
+ */
+var extend = deprecate(function extend(dest, src, merge) {
+    var keys = Object.keys(src);
+    var i = 0;
+    while (i < keys.length) {
+        if (!merge || (merge && dest[keys[i]] === undefined)) {
+            dest[keys[i]] = src[keys[i]];
+        }
+        i++;
+    }
+    return dest;
+}, 'extend', 'Use `assign`.');
+
+/**
+ * merge the values from src in the dest.
+ * means that properties that exist in dest will not be overwritten by src
+ * @param {Object} dest
+ * @param {Object} src
+ * @returns {Object} dest
+ */
+var merge = deprecate(function merge(dest, src) {
+    return extend(dest, src, true);
+}, 'merge', 'Use `assign`.');
+
+/**
+ * simple class inheritance
+ * @param {Function} child
+ * @param {Function} base
+ * @param {Object} [properties]
+ */
+function inherit(child, base, properties) {
+    var baseP = base.prototype,
+        childP;
+
+    childP = child.prototype = Object.create(baseP);
+    childP.constructor = child;
+    childP._super = baseP;
+
+    if (properties) {
+        assign(childP, properties);
+    }
+}
+
+/**
+ * simple function bind
+ * @param {Function} fn
+ * @param {Object} context
+ * @returns {Function}
+ */
+function bindFn(fn, context) {
+    return function boundFn() {
+        return fn.apply(context, arguments);
+    };
+}
+
+/**
+ * let a boolean value also be a function that must return a boolean
+ * this first item in args will be used as the context
+ * @param {Boolean|Function} val
+ * @param {Array} [args]
+ * @returns {Boolean}
+ */
+function boolOrFn(val, args) {
+    if (typeof val == TYPE_FUNCTION) {
+        return val.apply(args ? args[0] || undefined : undefined, args);
+    }
+    return val;
+}
+
+/**
+ * use the val2 when val1 is undefined
+ * @param {*} val1
+ * @param {*} val2
+ * @returns {*}
+ */
+function ifUndefined(val1, val2) {
+    return (val1 === undefined) ? val2 : val1;
+}
+
+/**
+ * addEventListener with multiple events at once
+ * @param {EventTarget} target
+ * @param {String} types
+ * @param {Function} handler
+ */
+function addEventListeners(target, types, handler) {
+    each(splitStr(types), function(type) {
+        target.addEventListener(type, handler, false);
+    });
+}
+
+/**
+ * removeEventListener with multiple events at once
+ * @param {EventTarget} target
+ * @param {String} types
+ * @param {Function} handler
+ */
+function removeEventListeners(target, types, handler) {
+    each(splitStr(types), function(type) {
+        target.removeEventListener(type, handler, false);
+    });
+}
+
+/**
+ * find if a node is in the given parent
+ * @method hasParent
+ * @param {HTMLElement} node
+ * @param {HTMLElement} parent
+ * @return {Boolean} found
+ */
+function hasParent(node, parent) {
+    while (node) {
+        if (node == parent) {
+            return true;
+        }
+        node = node.parentNode;
+    }
+    return false;
+}
+
+/**
+ * small indexOf wrapper
+ * @param {String} str
+ * @param {String} find
+ * @returns {Boolean} found
+ */
+function inStr(str, find) {
+    return str.indexOf(find) > -1;
+}
+
+/**
+ * split string on whitespace
+ * @param {String} str
+ * @returns {Array} words
+ */
+function splitStr(str) {
+    return str.trim().split(/\s+/g);
+}
+
+/**
+ * find if a array contains the object using indexOf or a simple polyFill
+ * @param {Array} src
+ * @param {String} find
+ * @param {String} [findByKey]
+ * @return {Boolean|Number} false when not found, or the index
+ */
+function inArray(src, find, findByKey) {
+    if (src.indexOf && !findByKey) {
+        return src.indexOf(find);
+    } else {
+        var i = 0;
+        while (i < src.length) {
+            if ((findByKey && src[i][findByKey] == find) || (!findByKey && src[i] === find)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+}
+
+/**
+ * convert array-like objects to real arrays
+ * @param {Object} obj
+ * @returns {Array}
+ */
+function toArray(obj) {
+    return Array.prototype.slice.call(obj, 0);
+}
+
+/**
+ * unique array with objects based on a key (like 'id') or just by the array's value
+ * @param {Array} src [{id:1},{id:2},{id:1}]
+ * @param {String} [key]
+ * @param {Boolean} [sort=False]
+ * @returns {Array} [{id:1},{id:2}]
+ */
+function uniqueArray(src, key, sort) {
+    var results = [];
+    var values = [];
+    var i = 0;
+
+    while (i < src.length) {
+        var val = key ? src[i][key] : src[i];
+        if (inArray(values, val) < 0) {
+            results.push(src[i]);
+        }
+        values[i] = val;
+        i++;
+    }
+
+    if (sort) {
+        if (!key) {
+            results = results.sort();
+        } else {
+            results = results.sort(function sortUniqueArray(a, b) {
+                return a[key] > b[key];
+            });
+        }
+    }
+
+    return results;
+}
+
+/**
+ * get the prefixed property
+ * @param {Object} obj
+ * @param {String} property
+ * @returns {String|Undefined} prefixed
+ */
+function prefixed(obj, property) {
+    var prefix, prop;
+    var camelProp = property[0].toUpperCase() + property.slice(1);
+
+    var i = 0;
+    while (i < VENDOR_PREFIXES.length) {
+        prefix = VENDOR_PREFIXES[i];
+        prop = (prefix) ? prefix + camelProp : property;
+
+        if (prop in obj) {
+            return prop;
+        }
+        i++;
+    }
+    return undefined;
+}
+
+/**
+ * get a unique id
+ * @returns {number} uniqueId
+ */
+var _uniqueId = 1;
+function uniqueId() {
+    return _uniqueId++;
+}
+
+/**
+ * get the window object of an element
+ * @param {HTMLElement} element
+ * @returns {DocumentView|Window}
+ */
+function getWindowForElement(element) {
+    var doc = element.ownerDocument || element;
+    return (doc.defaultView || doc.parentWindow || window);
+}
+
+var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
+
+var SUPPORT_TOUCH = ('ontouchstart' in window);
+var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
+var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
+
+var INPUT_TYPE_TOUCH = 'touch';
+var INPUT_TYPE_PEN = 'pen';
+var INPUT_TYPE_MOUSE = 'mouse';
+var INPUT_TYPE_KINECT = 'kinect';
+
+var COMPUTE_INTERVAL = 25;
+
+var INPUT_START = 1;
+var INPUT_MOVE = 2;
+var INPUT_END = 4;
+var INPUT_CANCEL = 8;
+
+var DIRECTION_NONE = 1;
+var DIRECTION_LEFT = 2;
+var DIRECTION_RIGHT = 4;
+var DIRECTION_UP = 8;
+var DIRECTION_DOWN = 16;
+
+var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
+var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
+
+var PROPS_XY = ['x', 'y'];
+var PROPS_CLIENT_XY = ['clientX', 'clientY'];
+
+/**
+ * create new input type manager
+ * @param {Manager} manager
+ * @param {Function} callback
+ * @returns {Input}
+ * @constructor
+ */
+function Input(manager, callback) {
+    var self = this;
+    this.manager = manager;
+    this.callback = callback;
+    this.element = manager.element;
+    this.target = manager.options.inputTarget;
+
+    // smaller wrapper around the handler, for the scope and the enabled state of the manager,
+    // so when disabled the input events are completely bypassed.
+    this.domHandler = function(ev) {
+        if (boolOrFn(manager.options.enable, [manager])) {
+            self.handler(ev);
+        }
+    };
+
+    this.init();
+
+}
+
+Input.prototype = {
+    /**
+     * should handle the inputEvent data and trigger the callback
+     * @virtual
+     */
+    handler: function() { },
+
+    /**
+     * bind the events
+     */
+    init: function() {
+        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    },
+
+    /**
+     * unbind the events
+     */
+    destroy: function() {
+        this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    }
+};
+
+/**
+ * create new input type manager
+ * called by the Manager constructor
+ * @param {Hammer} manager
+ * @returns {Input}
+ */
+function createInputInstance(manager) {
+    var Type;
+    var inputClass = manager.options.inputClass;
+
+    if (inputClass) {
+        Type = inputClass;
+    } else if (SUPPORT_POINTER_EVENTS) {
+        Type = PointerEventInput;
+    } else if (SUPPORT_ONLY_TOUCH) {
+        Type = TouchInput;
+    } else if (!SUPPORT_TOUCH) {
+        Type = MouseInput;
+    } else {
+        Type = TouchMouseInput;
+    }
+    return new (Type)(manager, inputHandler);
+}
+
+/**
+ * handle input events
+ * @param {Manager} manager
+ * @param {String} eventType
+ * @param {Object} input
+ */
+function inputHandler(manager, eventType, input) {
+    var pointersLen = input.pointers.length;
+    var changedPointersLen = input.changedPointers.length;
+    var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
+    var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (pointersLen - changedPointersLen === 0));
+
+    input.isFirst = !!isFirst;
+    input.isFinal = !!isFinal;
+
+    if (isFirst) {
+        manager.session = {};
+    }
+
+    // source event is the normalized value of the domEvents
+    // like 'touchstart, mouseup, pointerdown'
+    input.eventType = eventType;
+
+    // compute scale, rotation etc
+    computeInputData(manager, input);
+
+    // emit secret event
+    manager.emit('hammer.input', input);
+
+    manager.recognize(input);
+    manager.session.prevInput = input;
+}
+
+/**
+ * extend the data with some usable properties like scale, rotate, velocity etc
+ * @param {Object} manager
+ * @param {Object} input
+ */
+function computeInputData(manager, input) {
+    var session = manager.session;
+    var pointers = input.pointers;
+    var pointersLength = pointers.length;
+
+    // store the first input to calculate the distance and direction
+    if (!session.firstInput) {
+        session.firstInput = simpleCloneInputData(input);
+    }
+
+    // to compute scale and rotation we need to store the multiple touches
+    if (pointersLength > 1 && !session.firstMultiple) {
+        session.firstMultiple = simpleCloneInputData(input);
+    } else if (pointersLength === 1) {
+        session.firstMultiple = false;
+    }
+
+    var firstInput = session.firstInput;
+    var firstMultiple = session.firstMultiple;
+    var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+
+    var center = input.center = getCenter(pointers);
+    input.timeStamp = now();
+    input.deltaTime = input.timeStamp - firstInput.timeStamp;
+
+    input.angle = getAngle(offsetCenter, center);
+    input.distance = getDistance(offsetCenter, center);
+
+    computeDeltaXY(session, input);
+    input.offsetDirection = getDirection(input.deltaX, input.deltaY);
+
+    var overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
+    input.overallVelocityX = overallVelocity.x;
+    input.overallVelocityY = overallVelocity.y;
+    input.overallVelocity = (abs(overallVelocity.x) > abs(overallVelocity.y)) ? overallVelocity.x : overallVelocity.y;
+
+    input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+    input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+
+    input.maxPointers = !session.prevInput ? input.pointers.length : ((input.pointers.length >
+        session.prevInput.maxPointers) ? input.pointers.length : session.prevInput.maxPointers);
+
+    computeIntervalInputData(session, input);
+
+    // find the correct target
+    var target = manager.element;
+    if (hasParent(input.srcEvent.target, target)) {
+        target = input.srcEvent.target;
+    }
+    input.target = target;
+}
+
+function computeDeltaXY(session, input) {
+    var center = input.center;
+    var offset = session.offsetDelta || {};
+    var prevDelta = session.prevDelta || {};
+    var prevInput = session.prevInput || {};
+
+    if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
+        prevDelta = session.prevDelta = {
+            x: prevInput.deltaX || 0,
+            y: prevInput.deltaY || 0
+        };
+
+        offset = session.offsetDelta = {
+            x: center.x,
+            y: center.y
+        };
+    }
+
+    input.deltaX = prevDelta.x + (center.x - offset.x);
+    input.deltaY = prevDelta.y + (center.y - offset.y);
+}
+
+/**
+ * velocity is calculated every x ms
+ * @param {Object} session
+ * @param {Object} input
+ */
+function computeIntervalInputData(session, input) {
+    var last = session.lastInterval || input,
+        deltaTime = input.timeStamp - last.timeStamp,
+        velocity, velocityX, velocityY, direction;
+
+    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
+        var deltaX = input.deltaX - last.deltaX;
+        var deltaY = input.deltaY - last.deltaY;
+
+        var v = getVelocity(deltaTime, deltaX, deltaY);
+        velocityX = v.x;
+        velocityY = v.y;
+        velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
+        direction = getDirection(deltaX, deltaY);
+
+        session.lastInterval = input;
+    } else {
+        // use latest velocity info if it doesn't overtake a minimum period
+        velocity = last.velocity;
+        velocityX = last.velocityX;
+        velocityY = last.velocityY;
+        direction = last.direction;
+    }
+
+    input.velocity = velocity;
+    input.velocityX = velocityX;
+    input.velocityY = velocityY;
+    input.direction = direction;
+}
+
+/**
+ * create a simple clone from the input used for storage of firstInput and firstMultiple
+ * @param {Object} input
+ * @returns {Object} clonedInputData
+ */
+function simpleCloneInputData(input) {
+    // make a simple copy of the pointers because we will get a reference if we don't
+    // we only need clientXY for the calculations
+    var pointers = [];
+    var i = 0;
+    while (i < input.pointers.length) {
+        pointers[i] = {
+            clientX: round(input.pointers[i].clientX),
+            clientY: round(input.pointers[i].clientY)
+        };
+        i++;
+    }
+
+    return {
+        timeStamp: now(),
+        pointers: pointers,
+        center: getCenter(pointers),
+        deltaX: input.deltaX,
+        deltaY: input.deltaY
+    };
+}
+
+/**
+ * get the center of all the pointers
+ * @param {Array} pointers
+ * @return {Object} center contains `x` and `y` properties
+ */
+function getCenter(pointers) {
+    var pointersLength = pointers.length;
+
+    // no need to loop when only one touch
+    if (pointersLength === 1) {
+        return {
+            x: round(pointers[0].clientX),
+            y: round(pointers[0].clientY)
+        };
+    }
+
+    var x = 0, y = 0, i = 0;
+    while (i < pointersLength) {
+        x += pointers[i].clientX;
+        y += pointers[i].clientY;
+        i++;
+    }
+
+    return {
+        x: round(x / pointersLength),
+        y: round(y / pointersLength)
+    };
+}
+
+/**
+ * calculate the velocity between two points. unit is in px per ms.
+ * @param {Number} deltaTime
+ * @param {Number} x
+ * @param {Number} y
+ * @return {Object} velocity `x` and `y`
+ */
+function getVelocity(deltaTime, x, y) {
+    return {
+        x: x / deltaTime || 0,
+        y: y / deltaTime || 0
+    };
+}
+
+/**
+ * get the direction between two points
+ * @param {Number} x
+ * @param {Number} y
+ * @return {Number} direction
+ */
+function getDirection(x, y) {
+    if (x === y) {
+        return DIRECTION_NONE;
+    }
+
+    if (abs(x) >= abs(y)) {
+        return x < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+    }
+    return y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
+}
+
+/**
+ * calculate the absolute distance between two points
+ * @param {Object} p1 {x, y}
+ * @param {Object} p2 {x, y}
+ * @param {Array} [props] containing x and y keys
+ * @return {Number} distance
+ */
+function getDistance(p1, p2, props) {
+    if (!props) {
+        props = PROPS_XY;
+    }
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+
+    return Math.sqrt((x * x) + (y * y));
+}
+
+/**
+ * calculate the angle between two coordinates
+ * @param {Object} p1
+ * @param {Object} p2
+ * @param {Array} [props] containing x and y keys
+ * @return {Number} angle
+ */
+function getAngle(p1, p2, props) {
+    if (!props) {
+        props = PROPS_XY;
+    }
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+    return Math.atan2(y, x) * 180 / Math.PI;
+}
+
+/**
+ * calculate the rotation degrees between two pointersets
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} rotation
+ */
+function getRotation(start, end) {
+    return getAngle(end[1], end[0], PROPS_CLIENT_XY) + getAngle(start[1], start[0], PROPS_CLIENT_XY);
+}
+
+/**
+ * calculate the scale factor between two pointersets
+ * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} scale
+ */
+function getScale(start, end) {
+    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
+}
+
+var MOUSE_INPUT_MAP = {
+    mousedown: INPUT_START,
+    mousemove: INPUT_MOVE,
+    mouseup: INPUT_END
+};
+
+var MOUSE_ELEMENT_EVENTS = 'mousedown';
+var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
+
+/**
+ * Mouse events input
+ * @constructor
+ * @extends Input
+ */
+function MouseInput() {
+    this.evEl = MOUSE_ELEMENT_EVENTS;
+    this.evWin = MOUSE_WINDOW_EVENTS;
+
+    this.pressed = false; // mousedown state
+
+    Input.apply(this, arguments);
+}
+
+inherit(MouseInput, Input, {
+    /**
+     * handle mouse events
+     * @param {Object} ev
+     */
+    handler: function MEhandler(ev) {
+        var eventType = MOUSE_INPUT_MAP[ev.type];
+
+        // on start we want to have the left mouse button down
+        if (eventType & INPUT_START && ev.button === 0) {
+            this.pressed = true;
+        }
+
+        if (eventType & INPUT_MOVE && ev.which !== 1) {
+            eventType = INPUT_END;
+        }
+
+        // mouse must be down
+        if (!this.pressed) {
+            return;
+        }
+
+        if (eventType & INPUT_END) {
+            this.pressed = false;
+        }
+
+        this.callback(this.manager, eventType, {
+            pointers: [ev],
+            changedPointers: [ev],
+            pointerType: INPUT_TYPE_MOUSE,
+            srcEvent: ev
+        });
+    }
+});
+
+var POINTER_INPUT_MAP = {
+    pointerdown: INPUT_START,
+    pointermove: INPUT_MOVE,
+    pointerup: INPUT_END,
+    pointercancel: INPUT_CANCEL,
+    pointerout: INPUT_CANCEL
+};
+
+// in IE10 the pointer types is defined as an enum
+var IE10_POINTER_TYPE_ENUM = {
+    2: INPUT_TYPE_TOUCH,
+    3: INPUT_TYPE_PEN,
+    4: INPUT_TYPE_MOUSE,
+    5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
+};
+
+var POINTER_ELEMENT_EVENTS = 'pointerdown';
+var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
+
+// IE10 has prefixed support, and case-sensitive
+if (window.MSPointerEvent && !window.PointerEvent) {
+    POINTER_ELEMENT_EVENTS = 'MSPointerDown';
+    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
+}
+
+/**
+ * Pointer events input
+ * @constructor
+ * @extends Input
+ */
+function PointerEventInput() {
+    this.evEl = POINTER_ELEMENT_EVENTS;
+    this.evWin = POINTER_WINDOW_EVENTS;
+
+    Input.apply(this, arguments);
+
+    this.store = (this.manager.session.pointerEvents = []);
+}
+
+inherit(PointerEventInput, Input, {
+    /**
+     * handle mouse events
+     * @param {Object} ev
+     */
+    handler: function PEhandler(ev) {
+        var store = this.store;
+        var removePointer = false;
+
+        var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
+        var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+        var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
+
+        var isTouch = (pointerType == INPUT_TYPE_TOUCH);
+
+        // get index of the event in the store
+        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
+
+        // start and mouse must be down
+        if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
+            if (storeIndex < 0) {
+                store.push(ev);
+                storeIndex = store.length - 1;
+            }
+        } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+            removePointer = true;
+        }
+
+        // it not found, so the pointer hasn't been down (so it's probably a hover)
+        if (storeIndex < 0) {
+            return;
+        }
+
+        // update the event in the store
+        store[storeIndex] = ev;
+
+        this.callback(this.manager, eventType, {
+            pointers: store,
+            changedPointers: [ev],
+            pointerType: pointerType,
+            srcEvent: ev
+        });
+
+        if (removePointer) {
+            // remove from the store
+            store.splice(storeIndex, 1);
+        }
+    }
+});
+
+var SINGLE_TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+};
+
+var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
+var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
+
+/**
+ * Touch events input
+ * @constructor
+ * @extends Input
+ */
+function SingleTouchInput() {
+    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
+    this.started = false;
+
+    Input.apply(this, arguments);
+}
+
+inherit(SingleTouchInput, Input, {
+    handler: function TEhandler(ev) {
+        var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
+
+        // should we handle the touch events?
+        if (type === INPUT_START) {
+            this.started = true;
+        }
+
+        if (!this.started) {
+            return;
+        }
+
+        var touches = normalizeSingleTouches.call(this, ev, type);
+
+        // when done, reset the started state
+        if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+            this.started = false;
+        }
+
+        this.callback(this.manager, type, {
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
+            srcEvent: ev
+        });
+    }
+});
+
+/**
+ * @this {TouchInput}
+ * @param {Object} ev
+ * @param {Number} type flag
+ * @returns {undefined|Array} [all, changed]
+ */
+function normalizeSingleTouches(ev, type) {
+    var all = toArray(ev.touches);
+    var changed = toArray(ev.changedTouches);
+
+    if (type & (INPUT_END | INPUT_CANCEL)) {
+        all = uniqueArray(all.concat(changed), 'identifier', true);
+    }
+
+    return [all, changed];
+}
+
+var TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+};
+
+var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
+
+/**
+ * Multi-user touch events input
+ * @constructor
+ * @extends Input
+ */
+function TouchInput() {
+    this.evTarget = TOUCH_TARGET_EVENTS;
+    this.targetIds = {};
+
+    Input.apply(this, arguments);
+}
+
+inherit(TouchInput, Input, {
+    handler: function MTEhandler(ev) {
+        var type = TOUCH_INPUT_MAP[ev.type];
+        var touches = getTouches.call(this, ev, type);
+        if (!touches) {
+            return;
+        }
+
+        this.callback(this.manager, type, {
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
+            srcEvent: ev
+        });
+    }
+});
+
+/**
+ * @this {TouchInput}
+ * @param {Object} ev
+ * @param {Number} type flag
+ * @returns {undefined|Array} [all, changed]
+ */
+function getTouches(ev, type) {
+    var allTouches = toArray(ev.touches);
+    var targetIds = this.targetIds;
+
+    // when there is only one touch, the process can be simplified
+    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+        targetIds[allTouches[0].identifier] = true;
+        return [allTouches, allTouches];
+    }
+
+    var i,
+        targetTouches,
+        changedTouches = toArray(ev.changedTouches),
+        changedTargetTouches = [],
+        target = this.target;
+
+    // get target touches from touches
+    targetTouches = allTouches.filter(function(touch) {
+        return hasParent(touch.target, target);
+    });
+
+    // collect touches
+    if (type === INPUT_START) {
+        i = 0;
+        while (i < targetTouches.length) {
+            targetIds[targetTouches[i].identifier] = true;
+            i++;
+        }
+    }
+
+    // filter changed touches to only contain touches that exist in the collected target ids
+    i = 0;
+    while (i < changedTouches.length) {
+        if (targetIds[changedTouches[i].identifier]) {
+            changedTargetTouches.push(changedTouches[i]);
+        }
+
+        // cleanup removed touches
+        if (type & (INPUT_END | INPUT_CANCEL)) {
+            delete targetIds[changedTouches[i].identifier];
+        }
+        i++;
+    }
+
+    if (!changedTargetTouches.length) {
+        return;
+    }
+
+    return [
+        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
+        changedTargetTouches
+    ];
+}
+
+/**
+ * Combined touch and mouse input
+ *
+ * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
+ * This because touch devices also emit mouse events while doing a touch.
+ *
+ * @constructor
+ * @extends Input
+ */
+
+var DEDUP_TIMEOUT = 2500;
+var DEDUP_DISTANCE = 25;
+
+function TouchMouseInput() {
+    Input.apply(this, arguments);
+
+    var handler = bindFn(this.handler, this);
+    this.touch = new TouchInput(this.manager, handler);
+    this.mouse = new MouseInput(this.manager, handler);
+
+    this.primaryTouch = null;
+    this.lastTouches = [];
+}
+
+inherit(TouchMouseInput, Input, {
+    /**
+     * handle mouse and touch events
+     * @param {Hammer} manager
+     * @param {String} inputEvent
+     * @param {Object} inputData
+     */
+    handler: function TMEhandler(manager, inputEvent, inputData) {
+        var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
+            isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
+
+        if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
+            return;
+        }
+
+        // when we're in a touch event, record touches to  de-dupe synthetic mouse event
+        if (isTouch) {
+            recordTouches.call(this, inputEvent, inputData);
+        } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
+            return;
+        }
+
+        this.callback(manager, inputEvent, inputData);
+    },
+
+    /**
+     * remove the event listeners
+     */
+    destroy: function destroy() {
+        this.touch.destroy();
+        this.mouse.destroy();
+    }
+});
+
+function recordTouches(eventType, eventData) {
+    if (eventType & INPUT_START) {
+        this.primaryTouch = eventData.changedPointers[0].identifier;
+        setLastTouch.call(this, eventData);
+    } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+        setLastTouch.call(this, eventData);
+    }
+}
+
+function setLastTouch(eventData) {
+    var touch = eventData.changedPointers[0];
+
+    if (touch.identifier === this.primaryTouch) {
+        var lastTouch = {x: touch.clientX, y: touch.clientY};
+        this.lastTouches.push(lastTouch);
+        var lts = this.lastTouches;
+        var removeLastTouch = function() {
+            var i = lts.indexOf(lastTouch);
+            if (i > -1) {
+                lts.splice(i, 1);
+            }
+        };
+        setTimeout(removeLastTouch, DEDUP_TIMEOUT);
+    }
+}
+
+function isSyntheticEvent(eventData) {
+    var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
+    for (var i = 0; i < this.lastTouches.length; i++) {
+        var t = this.lastTouches[i];
+        var dx = Math.abs(x - t.x), dy = Math.abs(y - t.y);
+        if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
+            return true;
+        }
+    }
+    return false;
+}
+
+var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
+var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
+
+// magical touchAction value
+var TOUCH_ACTION_COMPUTE = 'compute';
+var TOUCH_ACTION_AUTO = 'auto';
+var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
+var TOUCH_ACTION_NONE = 'none';
+var TOUCH_ACTION_PAN_X = 'pan-x';
+var TOUCH_ACTION_PAN_Y = 'pan-y';
+var TOUCH_ACTION_MAP = getTouchActionProps();
+
+/**
+ * Touch Action
+ * sets the touchAction property or uses the js alternative
+ * @param {Manager} manager
+ * @param {String} value
+ * @constructor
+ */
+function TouchAction(manager, value) {
+    this.manager = manager;
+    this.set(value);
+}
+
+TouchAction.prototype = {
+    /**
+     * set the touchAction value on the element or enable the polyfill
+     * @param {String} value
+     */
+    set: function(value) {
+        // find out the touch-action by the event handlers
+        if (value == TOUCH_ACTION_COMPUTE) {
+            value = this.compute();
+        }
+
+        if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
+            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+        }
+        this.actions = value.toLowerCase().trim();
+    },
+
+    /**
+     * just re-set the touchAction value
+     */
+    update: function() {
+        this.set(this.manager.options.touchAction);
+    },
+
+    /**
+     * compute the value for the touchAction property based on the recognizer's settings
+     * @returns {String} value
+     */
+    compute: function() {
+        var actions = [];
+        each(this.manager.recognizers, function(recognizer) {
+            if (boolOrFn(recognizer.options.enable, [recognizer])) {
+                actions = actions.concat(recognizer.getTouchAction());
+            }
+        });
+        return cleanTouchActions(actions.join(' '));
+    },
+
+    /**
+     * this method is called on each input cycle and provides the preventing of the browser behavior
+     * @param {Object} input
+     */
+    preventDefaults: function(input) {
+        var srcEvent = input.srcEvent;
+        var direction = input.offsetDirection;
+
+        // if the touch action did prevented once this session
+        if (this.manager.session.prevented) {
+            srcEvent.preventDefault();
+            return;
+        }
+
+        var actions = this.actions;
+        var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
+        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
+        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
+
+        if (hasNone) {
+            //do not prevent defaults if this is a tap gesture
+
+            var isTapPointer = input.pointers.length === 1;
+            var isTapMovement = input.distance < 2;
+            var isTapTouchTime = input.deltaTime < 250;
+
+            if (isTapPointer && isTapMovement && isTapTouchTime) {
+                return;
+            }
+        }
+
+        if (hasPanX && hasPanY) {
+            // `pan-x pan-y` means browser handles all scrolling/panning, do not prevent
+            return;
+        }
+
+        if (hasNone ||
+            (hasPanY && direction & DIRECTION_HORIZONTAL) ||
+            (hasPanX && direction & DIRECTION_VERTICAL)) {
+            return this.preventSrc(srcEvent);
+        }
+    },
+
+    /**
+     * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
+     * @param {Object} srcEvent
+     */
+    preventSrc: function(srcEvent) {
+        this.manager.session.prevented = true;
+        srcEvent.preventDefault();
+    }
+};
+
+/**
+ * when the touchActions are collected they are not a valid value, so we need to clean things up. *
+ * @param {String} actions
+ * @returns {*}
+ */
+function cleanTouchActions(actions) {
+    // none
+    if (inStr(actions, TOUCH_ACTION_NONE)) {
+        return TOUCH_ACTION_NONE;
+    }
+
+    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+
+    // if both pan-x and pan-y are set (different recognizers
+    // for different directions, e.g. horizontal pan but vertical swipe?)
+    // we need none (as otherwise with pan-x pan-y combined none of these
+    // recognizers will work, since the browser would handle all panning
+    if (hasPanX && hasPanY) {
+        return TOUCH_ACTION_NONE;
+    }
+
+    // pan-x OR pan-y
+    if (hasPanX || hasPanY) {
+        return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+    }
+
+    // manipulation
+    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+        return TOUCH_ACTION_MANIPULATION;
+    }
+
+    return TOUCH_ACTION_AUTO;
+}
+
+function getTouchActionProps() {
+    if (!NATIVE_TOUCH_ACTION) {
+        return false;
+    }
+    var touchMap = {};
+    var cssSupports = window.CSS && window.CSS.supports;
+    ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
+
+        // If css.supports is not supported but there is native touch-action assume it supports
+        // all values. This is the case for IE 10 and 11.
+        touchMap[val] = cssSupports ? window.CSS.supports('touch-action', val) : true;
+    });
+    return touchMap;
+}
+
+/**
+ * Recognizer flow explained; *
+ * All recognizers have the initial state of POSSIBLE when a input session starts.
+ * The definition of a input session is from the first input until the last input, with all it's movement in it. *
+ * Example session for mouse-input: mousedown -> mousemove -> mouseup
+ *
+ * On each recognizing cycle (see Manager.recognize) the .recognize() method is executed
+ * which determines with state it should be.
+ *
+ * If the recognizer has the state FAILED, CANCELLED or RECOGNIZED (equals ENDED), it is reset to
+ * POSSIBLE to give it another change on the next cycle.
+ *
+ *               Possible
+ *                  |
+ *            +-----+---------------+
+ *            |                     |
+ *      +-----+-----+               |
+ *      |           |               |
+ *   Failed      Cancelled          |
+ *                          +-------+------+
+ *                          |              |
+ *                      Recognized       Began
+ *                                         |
+ *                                      Changed
+ *                                         |
+ *                                  Ended/Recognized
+ */
+var STATE_POSSIBLE = 1;
+var STATE_BEGAN = 2;
+var STATE_CHANGED = 4;
+var STATE_ENDED = 8;
+var STATE_RECOGNIZED = STATE_ENDED;
+var STATE_CANCELLED = 16;
+var STATE_FAILED = 32;
+
+/**
+ * Recognizer
+ * Every recognizer needs to extend from this class.
+ * @constructor
+ * @param {Object} options
+ */
+function Recognizer(options) {
+    this.options = assign({}, this.defaults, options || {});
+
+    this.id = uniqueId();
+
+    this.manager = null;
+
+    // default is enable true
+    this.options.enable = ifUndefined(this.options.enable, true);
+
+    this.state = STATE_POSSIBLE;
+
+    this.simultaneous = {};
+    this.requireFail = [];
+}
+
+Recognizer.prototype = {
+    /**
+     * @virtual
+     * @type {Object}
+     */
+    defaults: {},
+
+    /**
+     * set options
+     * @param {Object} options
+     * @return {Recognizer}
+     */
+    set: function(options) {
+        assign(this.options, options);
+
+        // also update the touchAction, in case something changed about the directions/enabled state
+        this.manager && this.manager.touchAction.update();
+        return this;
+    },
+
+    /**
+     * recognize simultaneous with an other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    recognizeWith: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'recognizeWith', this)) {
+            return this;
+        }
+
+        var simultaneous = this.simultaneous;
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        if (!simultaneous[otherRecognizer.id]) {
+            simultaneous[otherRecognizer.id] = otherRecognizer;
+            otherRecognizer.recognizeWith(this);
+        }
+        return this;
+    },
+
+    /**
+     * drop the simultaneous link. it doesnt remove the link on the other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRecognizeWith: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'dropRecognizeWith', this)) {
+            return this;
+        }
+
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        delete this.simultaneous[otherRecognizer.id];
+        return this;
+    },
+
+    /**
+     * recognizer can only run when an other is failing
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    requireFailure: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'requireFailure', this)) {
+            return this;
+        }
+
+        var requireFail = this.requireFail;
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        if (inArray(requireFail, otherRecognizer) === -1) {
+            requireFail.push(otherRecognizer);
+            otherRecognizer.requireFailure(this);
+        }
+        return this;
+    },
+
+    /**
+     * drop the requireFailure link. it does not remove the link on the other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRequireFailure: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'dropRequireFailure', this)) {
+            return this;
+        }
+
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        var index = inArray(this.requireFail, otherRecognizer);
+        if (index > -1) {
+            this.requireFail.splice(index, 1);
+        }
+        return this;
+    },
+
+    /**
+     * has require failures boolean
+     * @returns {boolean}
+     */
+    hasRequireFailures: function() {
+        return this.requireFail.length > 0;
+    },
+
+    /**
+     * if the recognizer can recognize simultaneous with an other recognizer
+     * @param {Recognizer} otherRecognizer
+     * @returns {Boolean}
+     */
+    canRecognizeWith: function(otherRecognizer) {
+        return !!this.simultaneous[otherRecognizer.id];
+    },
+
+    /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
+     * @param {Object} input
+     */
+    emit: function(input) {
+        var self = this;
+        var state = this.state;
+
+        function emit(event) {
+            self.manager.emit(event, input);
+        }
+
+        // 'panstart' and 'panmove'
+        if (state < STATE_ENDED) {
+            emit(self.options.event + stateStr(state));
+        }
+
+        emit(self.options.event); // simple 'eventName' events
+
+        if (input.additionalEvent) { // additional event(panleft, panright, pinchin, pinchout...)
+            emit(input.additionalEvent);
+        }
+
+        // panend and pancancel
+        if (state >= STATE_ENDED) {
+            emit(self.options.event + stateStr(state));
+        }
+    },
+
+    /**
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+        if (this.canEmit()) {
+            return this.emit(input);
+        }
+        // it's failing anyway
+        this.state = STATE_FAILED;
+    },
+
+    /**
+     * can we emit?
+     * @returns {boolean}
+     */
+    canEmit: function() {
+        var i = 0;
+        while (i < this.requireFail.length) {
+            if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
+                return false;
+            }
+            i++;
+        }
+        return true;
+    },
+
+    /**
+     * update the recognizer
+     * @param {Object} inputData
+     */
+    recognize: function(inputData) {
+        // make a new copy of the inputData
+        // so we can change the inputData without messing up the other recognizers
+        var inputDataClone = assign({}, inputData);
+
+        // is is enabled and allow recognizing?
+        if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
+            this.reset();
+            this.state = STATE_FAILED;
+            return;
+        }
+
+        // reset when we've reached the end
+        if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+            this.state = STATE_POSSIBLE;
+        }
+
+        this.state = this.process(inputDataClone);
+
+        // the recognizer has recognized a gesture
+        // so trigger an event
+        if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
+            this.tryEmit(inputDataClone);
+        }
+    },
+
+    /**
+     * return the state of the recognizer
+     * the actual recognizing happens in this method
+     * @virtual
+     * @param {Object} inputData
+     * @returns {Const} STATE
+     */
+    process: function(inputData) { }, // jshint ignore:line
+
+    /**
+     * return the preferred touch-action
+     * @virtual
+     * @returns {Array}
+     */
+    getTouchAction: function() { },
+
+    /**
+     * called when the gesture isn't allowed to recognize
+     * like when another is being recognized or it is disabled
+     * @virtual
+     */
+    reset: function() { }
+};
+
+/**
+ * get a usable string, used as event postfix
+ * @param {Const} state
+ * @returns {String} state
+ */
+function stateStr(state) {
+    if (state & STATE_CANCELLED) {
+        return 'cancel';
+    } else if (state & STATE_ENDED) {
+        return 'end';
+    } else if (state & STATE_CHANGED) {
+        return 'move';
+    } else if (state & STATE_BEGAN) {
+        return 'start';
+    }
+    return '';
+}
+
+/**
+ * direction cons to string
+ * @param {Const} direction
+ * @returns {String}
+ */
+function directionStr(direction) {
+    if (direction == DIRECTION_DOWN) {
+        return 'down';
+    } else if (direction == DIRECTION_UP) {
+        return 'up';
+    } else if (direction == DIRECTION_LEFT) {
+        return 'left';
+    } else if (direction == DIRECTION_RIGHT) {
+        return 'right';
+    }
+    return '';
+}
+
+/**
+ * get a recognizer by name if it is bound to a manager
+ * @param {Recognizer|String} otherRecognizer
+ * @param {Recognizer} recognizer
+ * @returns {Recognizer}
+ */
+function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
+    var manager = recognizer.manager;
+    if (manager) {
+        return manager.get(otherRecognizer);
+    }
+    return otherRecognizer;
+}
+
+/**
+ * This recognizer is just used as a base for the simple attribute recognizers.
+ * @constructor
+ * @extends Recognizer
+ */
+function AttrRecognizer() {
+    Recognizer.apply(this, arguments);
+}
+
+inherit(AttrRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof AttrRecognizer
+     */
+    defaults: {
+        /**
+         * @type {Number}
+         * @default 1
+         */
+        pointers: 1
+    },
+
+    /**
+     * Used to check if it the recognizer receives valid input, like input.distance > 10.
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {Boolean} recognized
+     */
+    attrTest: function(input) {
+        var optionPointers = this.options.pointers;
+        return optionPointers === 0 || input.pointers.length === optionPointers;
+    },
+
+    /**
+     * Process the input and return the state for the recognizer
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {*} State
+     */
+    process: function(input) {
+        var state = this.state;
+        var eventType = input.eventType;
+
+        var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
+        var isValid = this.attrTest(input);
+
+        // on cancel input and we've recognized before, return STATE_CANCELLED
+        if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
+            return state | STATE_CANCELLED;
+        } else if (isRecognized || isValid) {
+            if (eventType & INPUT_END) {
+                return state | STATE_ENDED;
+            } else if (!(state & STATE_BEGAN)) {
+                return STATE_BEGAN;
+            }
+            return state | STATE_CHANGED;
+        }
+        return STATE_FAILED;
+    }
+});
+
+/**
+ * Pan
+ * Recognized when the pointer is down and moved in the allowed direction.
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function PanRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+
+    this.pX = null;
+    this.pY = null;
+}
+
+inherit(PanRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PanRecognizer
+     */
+    defaults: {
+        event: 'pan',
+        threshold: 10,
+        pointers: 1,
+        direction: DIRECTION_ALL
+    },
+
+    getTouchAction: function() {
+        var direction = this.options.direction;
+        var actions = [];
+        if (direction & DIRECTION_HORIZONTAL) {
+            actions.push(TOUCH_ACTION_PAN_Y);
+        }
+        if (direction & DIRECTION_VERTICAL) {
+            actions.push(TOUCH_ACTION_PAN_X);
+        }
+        return actions;
+    },
+
+    directionTest: function(input) {
+        var options = this.options;
+        var hasMoved = true;
+        var distance = input.distance;
+        var direction = input.direction;
+        var x = input.deltaX;
+        var y = input.deltaY;
+
+        // lock to axis?
+        if (!(direction & options.direction)) {
+            if (options.direction & DIRECTION_HORIZONTAL) {
+                direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+                hasMoved = x != this.pX;
+                distance = Math.abs(input.deltaX);
+            } else {
+                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+                hasMoved = y != this.pY;
+                distance = Math.abs(input.deltaY);
+            }
+        }
+        input.direction = direction;
+        return hasMoved && distance > options.threshold && direction & options.direction;
+    },
+
+    attrTest: function(input) {
+        return AttrRecognizer.prototype.attrTest.call(this, input) &&
+            (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
+    },
+
+    emit: function(input) {
+
+        this.pX = input.deltaX;
+        this.pY = input.deltaY;
+
+        var direction = directionStr(input.direction);
+
+        if (direction) {
+            input.additionalEvent = this.options.event + direction;
+        }
+        this._super.emit.call(this, input);
+    }
+});
+
+/**
+ * Pinch
+ * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function PinchRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+}
+
+inherit(PinchRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
+    defaults: {
+        event: 'pinch',
+        threshold: 0,
+        pointers: 2
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_NONE];
+    },
+
+    attrTest: function(input) {
+        return this._super.attrTest.call(this, input) &&
+            (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
+    },
+
+    emit: function(input) {
+        if (input.scale !== 1) {
+            var inOut = input.scale < 1 ? 'in' : 'out';
+            input.additionalEvent = this.options.event + inOut;
+        }
+        this._super.emit.call(this, input);
+    }
+});
+
+/**
+ * Press
+ * Recognized when the pointer is down for x ms without any movement.
+ * @constructor
+ * @extends Recognizer
+ */
+function PressRecognizer() {
+    Recognizer.apply(this, arguments);
+
+    this._timer = null;
+    this._input = null;
+}
+
+inherit(PressRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PressRecognizer
+     */
+    defaults: {
+        event: 'press',
+        pointers: 1,
+        time: 251, // minimal time of the pointer to be pressed
+        threshold: 9 // a minimal movement is ok, but keep it low
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_AUTO];
+    },
+
+    process: function(input) {
+        var options = this.options;
+        var validPointers = input.pointers.length === options.pointers;
+        var validMovement = input.distance < options.threshold;
+        var validTime = input.deltaTime > options.time;
+
+        this._input = input;
+
+        // we only allow little movement
+        // and we've reached an end event, so a tap is possible
+        if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
+            this.reset();
+        } else if (input.eventType & INPUT_START) {
+            this.reset();
+            this._timer = setTimeoutContext(function() {
+                this.state = STATE_RECOGNIZED;
+                this.tryEmit();
+            }, options.time, this);
+        } else if (input.eventType & INPUT_END) {
+            return STATE_RECOGNIZED;
+        }
+        return STATE_FAILED;
+    },
+
+    reset: function() {
+        clearTimeout(this._timer);
+    },
+
+    emit: function(input) {
+        if (this.state !== STATE_RECOGNIZED) {
+            return;
+        }
+
+        if (input && (input.eventType & INPUT_END)) {
+            this.manager.emit(this.options.event + 'up', input);
+        } else {
+            this._input.timeStamp = now();
+            this.manager.emit(this.options.event, this._input);
+        }
+    }
+});
+
+/**
+ * Rotate
+ * Recognized when two or more pointer are moving in a circular motion.
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function RotateRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+}
+
+inherit(RotateRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof RotateRecognizer
+     */
+    defaults: {
+        event: 'rotate',
+        threshold: 0,
+        pointers: 2
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_NONE];
+    },
+
+    attrTest: function(input) {
+        return this._super.attrTest.call(this, input) &&
+            (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+    }
+});
+
+/**
+ * Swipe
+ * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function SwipeRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+}
+
+inherit(SwipeRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof SwipeRecognizer
+     */
+    defaults: {
+        event: 'swipe',
+        threshold: 10,
+        velocity: 0.3,
+        direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
+        pointers: 1
+    },
+
+    getTouchAction: function() {
+        return PanRecognizer.prototype.getTouchAction.call(this);
+    },
+
+    attrTest: function(input) {
+        var direction = this.options.direction;
+        var velocity;
+
+        if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
+            velocity = input.overallVelocity;
+        } else if (direction & DIRECTION_HORIZONTAL) {
+            velocity = input.overallVelocityX;
+        } else if (direction & DIRECTION_VERTICAL) {
+            velocity = input.overallVelocityY;
+        }
+
+        return this._super.attrTest.call(this, input) &&
+            direction & input.offsetDirection &&
+            input.distance > this.options.threshold &&
+            input.maxPointers == this.options.pointers &&
+            abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
+    },
+
+    emit: function(input) {
+        var direction = directionStr(input.offsetDirection);
+        if (direction) {
+            this.manager.emit(this.options.event + direction, input);
+        }
+
+        this.manager.emit(this.options.event, input);
+    }
+});
+
+/**
+ * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
+ * between the given interval and position. The delay option can be used to recognize multi-taps without firing
+ * a single tap.
+ *
+ * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
+ * multi-taps being recognized.
+ * @constructor
+ * @extends Recognizer
+ */
+function TapRecognizer() {
+    Recognizer.apply(this, arguments);
+
+    // previous time and center,
+    // used for tap counting
+    this.pTime = false;
+    this.pCenter = false;
+
+    this._timer = null;
+    this._input = null;
+    this.count = 0;
+}
+
+inherit(TapRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
+    defaults: {
+        event: 'tap',
+        pointers: 1,
+        taps: 1,
+        interval: 300, // max time between the multi-tap taps
+        time: 250, // max time of the pointer to be down (like finger on the screen)
+        threshold: 9, // a minimal movement is ok, but keep it low
+        posThreshold: 10 // a multi-tap can be a bit off the initial position
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_MANIPULATION];
+    },
+
+    process: function(input) {
+        var options = this.options;
+
+        var validPointers = input.pointers.length === options.pointers;
+        var validMovement = input.distance < options.threshold;
+        var validTouchTime = input.deltaTime < options.time;
+
+        this.reset();
+
+        if ((input.eventType & INPUT_START) && (this.count === 0)) {
+            return this.failTimeout();
+        }
+
+        // we only allow little movement
+        // and we've reached an end event, so a tap is possible
+        if (validMovement && validTouchTime && validPointers) {
+            if (input.eventType != INPUT_END) {
+                return this.failTimeout();
+            }
+
+            var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+
+            this.pTime = input.timeStamp;
+            this.pCenter = input.center;
+
+            if (!validMultiTap || !validInterval) {
+                this.count = 1;
+            } else {
+                this.count += 1;
+            }
+
+            this._input = input;
+
+            // if tap count matches we have recognized it,
+            // else it has began recognizing...
+            var tapCount = this.count % options.taps;
+            if (tapCount === 0) {
+                // no failing requirements, immediately trigger the tap event
+                // or wait as long as the multitap interval to trigger
+                if (!this.hasRequireFailures()) {
+                    return STATE_RECOGNIZED;
+                } else {
+                    this._timer = setTimeoutContext(function() {
+                        this.state = STATE_RECOGNIZED;
+                        this.tryEmit();
+                    }, options.interval, this);
+                    return STATE_BEGAN;
+                }
+            }
+        }
+        return STATE_FAILED;
+    },
+
+    failTimeout: function() {
+        this._timer = setTimeoutContext(function() {
+            this.state = STATE_FAILED;
+        }, this.options.interval, this);
+        return STATE_FAILED;
+    },
+
+    reset: function() {
+        clearTimeout(this._timer);
+    },
+
+    emit: function() {
+        if (this.state == STATE_RECOGNIZED) {
+            this._input.tapCount = this.count;
+            this.manager.emit(this.options.event, this._input);
+        }
+    }
+});
+
+/**
+ * Simple way to create a manager with a default set of recognizers.
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Hammer(element, options) {
+    options = options || {};
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
+    return new Manager(element, options);
+}
+
+/**
+ * @const {string}
+ */
+Hammer.VERSION = '2.0.7';
+
+/**
+ * default settings
+ * @namespace
+ */
+Hammer.defaults = {
+    /**
+     * set if DOM events are being triggered.
+     * But this is slower and unused by simple implementations, so disabled by default.
+     * @type {Boolean}
+     * @default false
+     */
+    domEvents: false,
+
+    /**
+     * The value for the touchAction property/fallback.
+     * When set to `compute` it will magically set the correct value based on the added recognizers.
+     * @type {String}
+     * @default compute
+     */
+    touchAction: TOUCH_ACTION_COMPUTE,
+
+    /**
+     * @type {Boolean}
+     * @default true
+     */
+    enable: true,
+
+    /**
+     * EXPERIMENTAL FEATURE -- can be removed/changed
+     * Change the parent input target element.
+     * If Null, then it is being set the to main element.
+     * @type {Null|EventTarget}
+     * @default null
+     */
+    inputTarget: null,
+
+    /**
+     * force an input class
+     * @type {Null|Function}
+     * @default null
+     */
+    inputClass: null,
+
+    /**
+     * Default recognizer setup when calling `Hammer()`
+     * When creating a new Manager these will be skipped.
+     * @type {Array}
+     */
+    preset: [
+        // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
+        [RotateRecognizer, {enable: false}],
+        [PinchRecognizer, {enable: false}, ['rotate']],
+        [SwipeRecognizer, {direction: DIRECTION_HORIZONTAL}],
+        [PanRecognizer, {direction: DIRECTION_HORIZONTAL}, ['swipe']],
+        [TapRecognizer],
+        [TapRecognizer, {event: 'doubletap', taps: 2}, ['tap']],
+        [PressRecognizer]
+    ],
+
+    /**
+     * Some CSS properties can be used to improve the working of Hammer.
+     * Add them to this method and they will be set when creating a new Manager.
+     * @namespace
+     */
+    cssProps: {
+        /**
+         * Disables text selection to improve the dragging gesture. Mainly for desktop browsers.
+         * @type {String}
+         * @default 'none'
+         */
+        userSelect: 'none',
+
+        /**
+         * Disable the Windows Phone grippers when pressing an element.
+         * @type {String}
+         * @default 'none'
+         */
+        touchSelect: 'none',
+
+        /**
+         * Disables the default callout shown when you touch and hold a touch target.
+         * On iOS, when you touch and hold a touch target such as a link, Safari displays
+         * a callout containing information about the link. This property allows you to disable that callout.
+         * @type {String}
+         * @default 'none'
+         */
+        touchCallout: 'none',
+
+        /**
+         * Specifies whether zooming is enabled. Used by IE10>
+         * @type {String}
+         * @default 'none'
+         */
+        contentZooming: 'none',
+
+        /**
+         * Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+         * @type {String}
+         * @default 'none'
+         */
+        userDrag: 'none',
+
+        /**
+         * Overrides the highlight color shown when the user taps a link or a JavaScript
+         * clickable element in iOS. This property obeys the alpha value, if specified.
+         * @type {String}
+         * @default 'rgba(0,0,0,0)'
+         */
+        tapHighlightColor: 'rgba(0,0,0,0)'
+    }
+};
+
+var STOP = 1;
+var FORCED_STOP = 2;
+
+/**
+ * Manager
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Manager(element, options) {
+    this.options = assign({}, Hammer.defaults, options || {});
+
+    this.options.inputTarget = this.options.inputTarget || element;
+
+    this.handlers = {};
+    this.session = {};
+    this.recognizers = [];
+    this.oldCssProps = {};
+
+    this.element = element;
+    this.input = createInputInstance(this);
+    this.touchAction = new TouchAction(this, this.options.touchAction);
+
+    toggleCssProps(this, true);
+
+    each(this.options.recognizers, function(item) {
+        var recognizer = this.add(new (item[0])(item[1]));
+        item[2] && recognizer.recognizeWith(item[2]);
+        item[3] && recognizer.requireFailure(item[3]);
+    }, this);
+}
+
+Manager.prototype = {
+    /**
+     * set options
+     * @param {Object} options
+     * @returns {Manager}
+     */
+    set: function(options) {
+        assign(this.options, options);
+
+        // Options that need a little more setup
+        if (options.touchAction) {
+            this.touchAction.update();
+        }
+        if (options.inputTarget) {
+            // Clean up existing event listeners and reinitialize
+            this.input.destroy();
+            this.input.target = options.inputTarget;
+            this.input.init();
+        }
+        return this;
+    },
+
+    /**
+     * stop recognizing for this session.
+     * This session will be discarded, when a new [input]start event is fired.
+     * When forced, the recognizer cycle is stopped immediately.
+     * @param {Boolean} [force]
+     */
+    stop: function(force) {
+        this.session.stopped = force ? FORCED_STOP : STOP;
+    },
+
+    /**
+     * run the recognizers!
+     * called by the inputHandler function on every movement of the pointers (touches)
+     * it walks through all the recognizers and tries to detect the gesture that is being made
+     * @param {Object} inputData
+     */
+    recognize: function(inputData) {
+        var session = this.session;
+        if (session.stopped) {
+            return;
+        }
+
+        // run the touch-action polyfill
+        this.touchAction.preventDefaults(inputData);
+
+        var recognizer;
+        var recognizers = this.recognizers;
+
+        // this holds the recognizer that is being recognized.
+        // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
+        // if no recognizer is detecting a thing, it is set to `null`
+        var curRecognizer = session.curRecognizer;
+
+        // reset when the last recognizer is recognized
+        // or when we're in a new session
+        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+            curRecognizer = session.curRecognizer = null;
+        }
+
+        var i = 0;
+        while (i < recognizers.length) {
+            recognizer = recognizers[i];
+
+            // find out if we are allowed try to recognize the input for this one.
+            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+            //      that is being recognized.
+            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+            //      this can be setup with the `recognizeWith()` method on the recognizer.
+            if (session.stopped !== FORCED_STOP && ( // 1
+                    !curRecognizer || recognizer == curRecognizer || // 2
+                    recognizer.canRecognizeWith(curRecognizer))) { // 3
+                recognizer.recognize(inputData);
+            } else {
+                recognizer.reset();
+            }
+
+            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+            // current active recognizer. but only if we don't already have an active recognizer
+            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+                curRecognizer = session.curRecognizer = recognizer;
+            }
+            i++;
+        }
+    },
+
+    /**
+     * get a recognizer by its event name.
+     * @param {Recognizer|String} recognizer
+     * @returns {Recognizer|Null}
+     */
+    get: function(recognizer) {
+        if (recognizer instanceof Recognizer) {
+            return recognizer;
+        }
+
+        var recognizers = this.recognizers;
+        for (var i = 0; i < recognizers.length; i++) {
+            if (recognizers[i].options.event == recognizer) {
+                return recognizers[i];
+            }
+        }
+        return null;
+    },
+
+    /**
+     * add a recognizer to the manager
+     * existing recognizers with the same event name will be removed
+     * @param {Recognizer} recognizer
+     * @returns {Recognizer|Manager}
+     */
+    add: function(recognizer) {
+        if (invokeArrayArg(recognizer, 'add', this)) {
+            return this;
+        }
+
+        // remove existing
+        var existing = this.get(recognizer.options.event);
+        if (existing) {
+            this.remove(existing);
+        }
+
+        this.recognizers.push(recognizer);
+        recognizer.manager = this;
+
+        this.touchAction.update();
+        return recognizer;
+    },
+
+    /**
+     * remove a recognizer by name or instance
+     * @param {Recognizer|String} recognizer
+     * @returns {Manager}
+     */
+    remove: function(recognizer) {
+        if (invokeArrayArg(recognizer, 'remove', this)) {
+            return this;
+        }
+
+        recognizer = this.get(recognizer);
+
+        // let's make sure this recognizer exists
+        if (recognizer) {
+            var recognizers = this.recognizers;
+            var index = inArray(recognizers, recognizer);
+
+            if (index !== -1) {
+                recognizers.splice(index, 1);
+                this.touchAction.update();
+            }
+        }
+
+        return this;
+    },
+
+    /**
+     * bind event
+     * @param {String} events
+     * @param {Function} handler
+     * @returns {EventEmitter} this
+     */
+    on: function(events, handler) {
+        if (events === undefined) {
+            return;
+        }
+        if (handler === undefined) {
+            return;
+        }
+
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);
+        });
+        return this;
+    },
+
+    /**
+     * unbind event, leave emit blank to remove all handlers
+     * @param {String} events
+     * @param {Function} [handler]
+     * @returns {EventEmitter} this
+     */
+    off: function(events, handler) {
+        if (events === undefined) {
+            return;
+        }
+
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            if (!handler) {
+                delete handlers[event];
+            } else {
+                handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
+            }
+        });
+        return this;
+    },
+
+    /**
+     * emit event to the listeners
+     * @param {String} event
+     * @param {Object} data
+     */
+    emit: function(event, data) {
+        // we also want to trigger dom events
+        if (this.options.domEvents) {
+            triggerDomEvent(event, data);
+        }
+
+        // no handlers, so skip it all
+        var handlers = this.handlers[event] && this.handlers[event].slice();
+        if (!handlers || !handlers.length) {
+            return;
+        }
+
+        data.type = event;
+        data.preventDefault = function() {
+            data.srcEvent.preventDefault();
+        };
+
+        var i = 0;
+        while (i < handlers.length) {
+            handlers[i](data);
+            i++;
+        }
+    },
+
+    /**
+     * destroy the manager and unbinds all events
+     * it doesn't unbind dom events, that is the user own responsibility
+     */
+    destroy: function() {
+        this.element && toggleCssProps(this, false);
+
+        this.handlers = {};
+        this.session = {};
+        this.input.destroy();
+        this.element = null;
+    }
+};
+
+/**
+ * add/remove the css properties as defined in manager.options.cssProps
+ * @param {Manager} manager
+ * @param {Boolean} add
+ */
+function toggleCssProps(manager, add) {
+    var element = manager.element;
+    if (!element.style) {
+        return;
+    }
+    var prop;
+    each(manager.options.cssProps, function(value, name) {
+        prop = prefixed(element.style, name);
+        if (add) {
+            manager.oldCssProps[prop] = element.style[prop];
+            element.style[prop] = value;
+        } else {
+            element.style[prop] = manager.oldCssProps[prop] || '';
+        }
+    });
+    if (!add) {
+        manager.oldCssProps = {};
+    }
+}
+
+/**
+ * trigger dom event
+ * @param {String} event
+ * @param {Object} data
+ */
+function triggerDomEvent(event, data) {
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent.gesture = data;
+    data.target.dispatchEvent(gestureEvent);
+}
+
+assign(Hammer, {
+    INPUT_START: INPUT_START,
+    INPUT_MOVE: INPUT_MOVE,
+    INPUT_END: INPUT_END,
+    INPUT_CANCEL: INPUT_CANCEL,
+
+    STATE_POSSIBLE: STATE_POSSIBLE,
+    STATE_BEGAN: STATE_BEGAN,
+    STATE_CHANGED: STATE_CHANGED,
+    STATE_ENDED: STATE_ENDED,
+    STATE_RECOGNIZED: STATE_RECOGNIZED,
+    STATE_CANCELLED: STATE_CANCELLED,
+    STATE_FAILED: STATE_FAILED,
+
+    DIRECTION_NONE: DIRECTION_NONE,
+    DIRECTION_LEFT: DIRECTION_LEFT,
+    DIRECTION_RIGHT: DIRECTION_RIGHT,
+    DIRECTION_UP: DIRECTION_UP,
+    DIRECTION_DOWN: DIRECTION_DOWN,
+    DIRECTION_HORIZONTAL: DIRECTION_HORIZONTAL,
+    DIRECTION_VERTICAL: DIRECTION_VERTICAL,
+    DIRECTION_ALL: DIRECTION_ALL,
+
+    Manager: Manager,
+    Input: Input,
+    TouchAction: TouchAction,
+
+    TouchInput: TouchInput,
+    MouseInput: MouseInput,
+    PointerEventInput: PointerEventInput,
+    TouchMouseInput: TouchMouseInput,
+    SingleTouchInput: SingleTouchInput,
+
+    Recognizer: Recognizer,
+    AttrRecognizer: AttrRecognizer,
+    Tap: TapRecognizer,
+    Pan: PanRecognizer,
+    Swipe: SwipeRecognizer,
+    Pinch: PinchRecognizer,
+    Rotate: RotateRecognizer,
+    Press: PressRecognizer,
+
+    on: addEventListeners,
+    off: removeEventListeners,
+    each: each,
+    merge: merge,
+    extend: extend,
+    assign: assign,
+    inherit: inherit,
+    bindFn: bindFn,
+    prefixed: prefixed
+});
+
+// this prevents errors when Hammer is loaded in the presence of an AMD
+//  style loader but by script tag, not by the loader.
+var freeGlobal = (typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {})); // jshint ignore:line
+freeGlobal.Hammer = Hammer;
+
+if (typeof define === 'function' && define.amd) {
+    define(function() {
+        return Hammer;
+    });
+} else if (typeof module != 'undefined' && module.exports) {
+    module.exports = Hammer;
+} else {
+    window[exportName] = Hammer;
+}
+
+})(window, document, 'Hammer');
+
+}).apply(this, arguments);
+
+},{}],52:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/has-binary/index.js", module);
+(function(){
+(function (global){
+
+/*
+ * Module requirements.
+ */
+
+var isArray = require('isarray');
+
+/**
+ * Module exports.
+ */
+
+module.exports = hasBinary;
+
+/**
+ * Checks for binary data.
+ *
+ * Right now only Buffer and ArrayBuffer are supported..
+ *
+ * @param {Object} anything
+ * @api public
+ */
+
+function hasBinary(data) {
+
+  function _hasBinary(obj) {
+    if (!obj) return false;
+
+    if ( (global.Buffer && global.Buffer.isBuffer && global.Buffer.isBuffer(obj)) ||
+         (global.ArrayBuffer && obj instanceof ArrayBuffer) ||
+         (global.Blob && obj instanceof Blob) ||
+         (global.File && obj instanceof File)
+        ) {
+      return true;
+    }
+
+    if (isArray(obj)) {
+      for (var i = 0; i < obj.length; i++) {
+          if (_hasBinary(obj[i])) {
+              return true;
+          }
+      }
+    } else if (obj && 'object' == typeof obj) {
+      // see: https://github.com/Automattic/has-binary/pull/4
+      if (obj.toJSON && 'function' == typeof obj.toJSON) {
+        obj = obj.toJSON();
+      }
+
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key) && _hasBinary(obj[key])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  return _hasBinary(data);
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"isarray":55}],53:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/has-cors/index.js", module);
+(function(){
+
+/**
+ * Module exports.
+ *
+ * Logic borrowed from Modernizr:
+ *
+ *   - https://github.com/Modernizr/Modernizr/blob/master/feature-detects/cors.js
+ */
+
+try {
+  module.exports = typeof XMLHttpRequest !== 'undefined' &&
+    'withCredentials' in new XMLHttpRequest();
+} catch (err) {
+  // if XMLHttp support is disabled in IE then it will throw
+  // when trying to create
+  module.exports = false;
+}
+
+}).apply(this, arguments);
+
+},{}],54:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/indexof/index.js", module);
+(function(){
+
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+}).apply(this, arguments);
+
+},{}],55:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/isarray/index.js", module);
+(function(){
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+}).apply(this, arguments);
+
+},{}],56:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/array/last.js", module);
+(function(){
+/**
+ * Gets the last element of `array`.
+ *
+ * @static
+ * @memberOf _
+ * @category Array
+ * @param {Array} array The array to query.
+ * @returns {*} Returns the last element of `array`.
+ * @example
+ *
+ * _.last([1, 2, 3]);
+ * // => 3
+ */
+function last(array) {
+  var length = array ? array.length : 0;
+  return length ? array[length - 1] : undefined;
+}
+
+module.exports = last;
+
+}).apply(this, arguments);
+
+},{}],57:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/array/zipObject.js", module);
+(function(){
+var isArray = require('../lang/isArray');
+
+/**
+ * The inverse of `_.pairs`; this method returns an object composed from arrays
+ * of property names and values. Provide either a single two dimensional array,
+ * e.g. `[[key1, value1], [key2, value2]]` or two arrays, one of property names
+ * and one of corresponding values.
+ *
+ * @static
+ * @memberOf _
+ * @alias object
+ * @category Array
+ * @param {Array} props The property names.
+ * @param {Array} [values=[]] The property values.
+ * @returns {Object} Returns the new object.
+ * @example
+ *
+ * _.zipObject([['fred', 30], ['barney', 40]]);
+ * // => { 'fred': 30, 'barney': 40 }
+ *
+ * _.zipObject(['fred', 'barney'], [30, 40]);
+ * // => { 'fred': 30, 'barney': 40 }
+ */
+function zipObject(props, values) {
+  var index = -1,
+      length = props ? props.length : 0,
+      result = {};
+
+  if (length && !values && !isArray(props[0])) {
+    values = [];
+  }
+  while (++index < length) {
+    var key = props[index];
+    if (values) {
+      result[key] = values[index];
+    } else if (key) {
+      result[key[0]] = key[1];
+    }
+  }
+  return result;
+}
+
+module.exports = zipObject;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":111}],58:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/filter.js", module);
+(function(){
+var arrayFilter = require('../internal/arrayFilter'),
+    baseCallback = require('../internal/baseCallback'),
+    baseFilter = require('../internal/baseFilter'),
+    isArray = require('../lang/isArray');
+
+/**
+ * Iterates over elements of `collection`, returning an array of all elements
+ * `predicate` returns truthy for. The predicate is bound to `thisArg` and
+ * invoked with three arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `predicate` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `predicate` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @alias select
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [predicate=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `predicate`.
+ * @returns {Array} Returns the new filtered array.
+ * @example
+ *
+ * _.filter([4, 5, 6], function(n) {
+ *   return n % 2 == 0;
+ * });
+ * // => [4, 6]
+ *
+ * var users = [
+ *   { 'user': 'barney', 'age': 36, 'active': true },
+ *   { 'user': 'fred',   'age': 40, 'active': false }
+ * ];
+ *
+ * // using the `_.matches` callback shorthand
+ * _.pluck(_.filter(users, { 'age': 36, 'active': true }), 'user');
+ * // => ['barney']
+ *
+ * // using the `_.matchesProperty` callback shorthand
+ * _.pluck(_.filter(users, 'active', false), 'user');
+ * // => ['fred']
+ *
+ * // using the `_.property` callback shorthand
+ * _.pluck(_.filter(users, 'active'), 'user');
+ * // => ['barney']
+ */
+function filter(collection, predicate, thisArg) {
+  var func = isArray(collection) ? arrayFilter : baseFilter;
+  predicate = baseCallback(predicate, thisArg, 3);
+  return func(collection, predicate);
+}
+
+module.exports = filter;
+
+}).apply(this, arguments);
+
+},{"../internal/arrayFilter":64,"../internal/baseCallback":69,"../internal/baseFilter":72,"../lang/isArray":111}],59:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/forEach.js", module);
+(function(){
+var arrayEach = require('../internal/arrayEach'),
+    baseEach = require('../internal/baseEach'),
+    createForEach = require('../internal/createForEach');
+
+/**
+ * Iterates over elements of `collection` invoking `iteratee` for each element.
+ * The `iteratee` is bound to `thisArg` and invoked with three arguments:
+ * (value, index|key, collection). Iteratee functions may exit iteration early
+ * by explicitly returning `false`.
+ *
+ * **Note:** As with other "Collections" methods, objects with a "length" property
+ * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+ * may be used for object iteration.
+ *
+ * @static
+ * @memberOf _
+ * @alias each
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Array|Object|string} Returns `collection`.
+ * @example
+ *
+ * _([1, 2]).forEach(function(n) {
+ *   console.log(n);
+ * }).value();
+ * // => logs each value from left to right and returns the array
+ *
+ * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
+ *   console.log(n, key);
+ * });
+ * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
+ */
+var forEach = createForEach(arrayEach, baseEach);
+
+module.exports = forEach;
+
+}).apply(this, arguments);
+
+},{"../internal/arrayEach":63,"../internal/baseEach":71,"../internal/createForEach":91}],60:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/map.js", module);
+(function(){
+var arrayMap = require('../internal/arrayMap'),
+    baseCallback = require('../internal/baseCallback'),
+    baseMap = require('../internal/baseMap'),
+    isArray = require('../lang/isArray');
+
+/**
+ * Creates an array of values by running each element in `collection` through
+ * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
+ * arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `iteratee` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `iteratee` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * Many lodash methods are guarded to work as iteratees for methods like
+ * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
+ *
+ * The guarded methods are:
+ * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`,
+ * `drop`, `dropRight`, `every`, `fill`, `flatten`, `invert`, `max`, `min`,
+ * `parseInt`, `slice`, `sortBy`, `take`, `takeRight`, `template`, `trim`,
+ * `trimLeft`, `trimRight`, `trunc`, `random`, `range`, `sample`, `some`,
+ * `sum`, `uniq`, and `words`
+ *
+ * @static
+ * @memberOf _
+ * @alias collect
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Array} Returns the new mapped array.
+ * @example
+ *
+ * function timesThree(n) {
+ *   return n * 3;
+ * }
+ *
+ * _.map([1, 2], timesThree);
+ * // => [3, 6]
+ *
+ * _.map({ 'a': 1, 'b': 2 }, timesThree);
+ * // => [3, 6] (iteration order is not guaranteed)
+ *
+ * var users = [
+ *   { 'user': 'barney' },
+ *   { 'user': 'fred' }
+ * ];
+ *
+ * // using the `_.property` callback shorthand
+ * _.map(users, 'user');
+ * // => ['barney', 'fred']
+ */
+function map(collection, iteratee, thisArg) {
+  var func = isArray(collection) ? arrayMap : baseMap;
+  iteratee = baseCallback(iteratee, thisArg, 3);
+  return func(collection, iteratee);
+}
+
+module.exports = map;
+
+}).apply(this, arguments);
+
+},{"../internal/arrayMap":65,"../internal/baseCallback":69,"../internal/baseMap":79,"../lang/isArray":111}],61:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/some.js", module);
+(function(){
+var arraySome = require('../internal/arraySome'),
+    baseCallback = require('../internal/baseCallback'),
+    baseSome = require('../internal/baseSome'),
+    isArray = require('../lang/isArray'),
+    isIterateeCall = require('../internal/isIterateeCall');
+
+/**
+ * Checks if `predicate` returns truthy for **any** element of `collection`.
+ * The function returns as soon as it finds a passing value and does not iterate
+ * over the entire collection. The predicate is bound to `thisArg` and invoked
+ * with three arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `predicate` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `predicate` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @alias any
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [predicate=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `predicate`.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ * @example
+ *
+ * _.some([null, 0, 'yes', false], Boolean);
+ * // => true
+ *
+ * var users = [
+ *   { 'user': 'barney', 'active': true },
+ *   { 'user': 'fred',   'active': false }
+ * ];
+ *
+ * // using the `_.matches` callback shorthand
+ * _.some(users, { 'user': 'barney', 'active': false });
+ * // => false
+ *
+ * // using the `_.matchesProperty` callback shorthand
+ * _.some(users, 'active', false);
+ * // => true
+ *
+ * // using the `_.property` callback shorthand
+ * _.some(users, 'active');
+ * // => true
+ */
+function some(collection, predicate, thisArg) {
+  var func = isArray(collection) ? arraySome : baseSome;
+  if (thisArg && isIterateeCall(collection, predicate, thisArg)) {
+    predicate = undefined;
+  }
+  if (typeof predicate != 'function' || thisArg !== undefined) {
+    predicate = baseCallback(predicate, thisArg, 3);
+  }
+  return func(collection, predicate);
+}
+
+module.exports = some;
+
+}).apply(this, arguments);
+
+},{"../internal/arraySome":66,"../internal/baseCallback":69,"../internal/baseSome":85,"../internal/isIterateeCall":102,"../lang/isArray":111}],62:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/function/restParam.js", module);
+(function(){
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max;
+
+/**
+ * Creates a function that invokes `func` with the `this` binding of the
+ * created function and arguments from `start` and beyond provided as an array.
+ *
+ * **Note:** This method is based on the [rest parameter](https://developer.mozilla.org/Web/JavaScript/Reference/Functions/rest_parameters).
+ *
+ * @static
+ * @memberOf _
+ * @category Function
+ * @param {Function} func The function to apply a rest parameter to.
+ * @param {number} [start=func.length-1] The start position of the rest parameter.
+ * @returns {Function} Returns the new function.
+ * @example
+ *
+ * var say = _.restParam(function(what, names) {
+ *   return what + ' ' + _.initial(names).join(', ') +
+ *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
+ * });
+ *
+ * say('hello', 'fred', 'barney', 'pebbles');
+ * // => 'hello fred, barney, & pebbles'
+ */
+function restParam(func, start) {
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  start = nativeMax(start === undefined ? (func.length - 1) : (+start || 0), 0);
+  return function() {
+    var args = arguments,
+        index = -1,
+        length = nativeMax(args.length - start, 0),
+        rest = Array(length);
+
+    while (++index < length) {
+      rest[index] = args[start + index];
+    }
+    switch (start) {
+      case 0: return func.call(this, rest);
+      case 1: return func.call(this, args[0], rest);
+      case 2: return func.call(this, args[0], args[1], rest);
+    }
+    var otherArgs = Array(start + 1);
+    index = -1;
+    while (++index < start) {
+      otherArgs[index] = args[index];
+    }
+    otherArgs[start] = rest;
+    return func.apply(this, otherArgs);
+  };
+}
+
+module.exports = restParam;
+
+}).apply(this, arguments);
+
+},{}],63:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayEach.js", module);
+(function(){
+/**
+ * A specialized version of `_.forEach` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns `array`.
+ */
+function arrayEach(array, iteratee) {
+  var index = -1,
+      length = array.length;
+
+  while (++index < length) {
+    if (iteratee(array[index], index, array) === false) {
+      break;
+    }
+  }
+  return array;
+}
+
+module.exports = arrayEach;
+
+}).apply(this, arguments);
+
+},{}],64:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayFilter.js", module);
+(function(){
+/**
+ * A specialized version of `_.filter` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {Array} Returns the new filtered array.
+ */
+function arrayFilter(array, predicate) {
+  var index = -1,
+      length = array.length,
+      resIndex = -1,
+      result = [];
+
+  while (++index < length) {
+    var value = array[index];
+    if (predicate(value, index, array)) {
+      result[++resIndex] = value;
+    }
+  }
+  return result;
+}
+
+module.exports = arrayFilter;
+
+}).apply(this, arguments);
+
+},{}],65:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayMap.js", module);
+(function(){
+/**
+ * A specialized version of `_.map` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array.length,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+module.exports = arrayMap;
+
+}).apply(this, arguments);
+
+},{}],66:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arraySome.js", module);
+(function(){
+/**
+ * A specialized version of `_.some` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ */
+function arraySome(array, predicate) {
+  var index = -1,
+      length = array.length;
+
+  while (++index < length) {
+    if (predicate(array[index], index, array)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+module.exports = arraySome;
+
+}).apply(this, arguments);
+
+},{}],67:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/assignWith.js", module);
+(function(){
+var keys = require('../object/keys');
+
+/**
+ * A specialized version of `_.assign` for customizing assigned values without
+ * support for argument juggling, multiple sources, and `this` binding `customizer`
+ * functions.
+ *
+ * @private
+ * @param {Object} object The destination object.
+ * @param {Object} source The source object.
+ * @param {Function} customizer The function to customize assigned values.
+ * @returns {Object} Returns `object`.
+ */
+function assignWith(object, source, customizer) {
+  var index = -1,
+      props = keys(source),
+      length = props.length;
+
+  while (++index < length) {
+    var key = props[index],
+        value = object[key],
+        result = customizer(value, source[key], key, object, source);
+
+    if ((result === result ? (result !== value) : (value === value)) ||
+        (value === undefined && !(key in object))) {
+      object[key] = result;
+    }
+  }
+  return object;
+}
+
+module.exports = assignWith;
+
+}).apply(this, arguments);
+
+},{"../object/keys":118}],68:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseAssign.js", module);
+(function(){
+var baseCopy = require('./baseCopy'),
+    keys = require('../object/keys');
+
+/**
+ * The base implementation of `_.assign` without support for argument juggling,
+ * multiple sources, and `customizer` functions.
+ *
+ * @private
+ * @param {Object} object The destination object.
+ * @param {Object} source The source object.
+ * @returns {Object} Returns `object`.
+ */
+function baseAssign(object, source) {
+  return source == null
+    ? object
+    : baseCopy(source, keys(source), object);
+}
+
+module.exports = baseAssign;
+
+}).apply(this, arguments);
+
+},{"../object/keys":118,"./baseCopy":70}],69:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseCallback.js", module);
+(function(){
+var baseMatches = require('./baseMatches'),
+    baseMatchesProperty = require('./baseMatchesProperty'),
+    bindCallback = require('./bindCallback'),
+    identity = require('../utility/identity'),
+    property = require('../utility/property');
+
+/**
+ * The base implementation of `_.callback` which supports specifying the
+ * number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {*} [func=_.identity] The value to convert to a callback.
+ * @param {*} [thisArg] The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function baseCallback(func, thisArg, argCount) {
+  var type = typeof func;
+  if (type == 'function') {
+    return thisArg === undefined
+      ? func
+      : bindCallback(func, thisArg, argCount);
+  }
+  if (func == null) {
+    return identity;
+  }
+  if (type == 'object') {
+    return baseMatches(func);
+  }
+  return thisArg === undefined
+    ? property(func)
+    : baseMatchesProperty(func, thisArg);
+}
+
+module.exports = baseCallback;
+
+}).apply(this, arguments);
+
+},{"../utility/identity":122,"../utility/property":123,"./baseMatches":80,"./baseMatchesProperty":81,"./bindCallback":87}],70:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseCopy.js", module);
+(function(){
+/**
+ * Copies properties of `source` to `object`.
+ *
+ * @private
+ * @param {Object} source The object to copy properties from.
+ * @param {Array} props The property names to copy.
+ * @param {Object} [object={}] The object to copy properties to.
+ * @returns {Object} Returns `object`.
+ */
+function baseCopy(source, props, object) {
+  object || (object = {});
+
+  var index = -1,
+      length = props.length;
+
+  while (++index < length) {
+    var key = props[index];
+    object[key] = source[key];
+  }
+  return object;
+}
+
+module.exports = baseCopy;
+
+}).apply(this, arguments);
+
+},{}],71:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseEach.js", module);
+(function(){
+var baseForOwn = require('./baseForOwn'),
+    createBaseEach = require('./createBaseEach');
+
+/**
+ * The base implementation of `_.forEach` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array|Object|string} Returns `collection`.
+ */
+var baseEach = createBaseEach(baseForOwn);
+
+module.exports = baseEach;
+
+}).apply(this, arguments);
+
+},{"./baseForOwn":74,"./createBaseEach":89}],72:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseFilter.js", module);
+(function(){
+var baseEach = require('./baseEach');
+
+/**
+ * The base implementation of `_.filter` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {Array} Returns the new filtered array.
+ */
+function baseFilter(collection, predicate) {
+  var result = [];
+  baseEach(collection, function(value, index, collection) {
+    if (predicate(value, index, collection)) {
+      result.push(value);
+    }
+  });
+  return result;
+}
+
+module.exports = baseFilter;
+
+}).apply(this, arguments);
+
+},{"./baseEach":71}],73:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseFor.js", module);
+(function(){
+var createBaseFor = require('./createBaseFor');
+
+/**
+ * The base implementation of `baseForIn` and `baseForOwn` which iterates
+ * over `object` properties returned by `keysFunc` invoking `iteratee` for
+ * each property. Iteratee functions may exit iteration early by explicitly
+ * returning `false`.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @param {Function} keysFunc The function to get the keys of `object`.
+ * @returns {Object} Returns `object`.
+ */
+var baseFor = createBaseFor();
+
+module.exports = baseFor;
+
+}).apply(this, arguments);
+
+},{"./createBaseFor":90}],74:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseForOwn.js", module);
+(function(){
+var baseFor = require('./baseFor'),
+    keys = require('../object/keys');
+
+/**
+ * The base implementation of `_.forOwn` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Object} Returns `object`.
+ */
+function baseForOwn(object, iteratee) {
+  return baseFor(object, iteratee, keys);
+}
+
+module.exports = baseForOwn;
+
+}).apply(this, arguments);
+
+},{"../object/keys":118,"./baseFor":73}],75:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseGet.js", module);
+(function(){
+var toObject = require('./toObject');
+
+/**
+ * The base implementation of `get` without support for string paths
+ * and default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array} path The path of the property to get.
+ * @param {string} [pathKey] The key representation of path.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path, pathKey) {
+  if (object == null) {
+    return;
+  }
+  if (pathKey !== undefined && pathKey in toObject(object)) {
+    path = [pathKey];
+  }
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[path[index++]];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+module.exports = baseGet;
+
+}).apply(this, arguments);
+
+},{"./toObject":108}],76:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsEqual.js", module);
+(function(){
+var baseIsEqualDeep = require('./baseIsEqualDeep'),
+    isObject = require('../lang/isObject'),
+    isObjectLike = require('./isObjectLike');
+
+/**
+ * The base implementation of `_.isEqual` without support for `this` binding
+ * `customizer` functions.
+ *
+ * @private
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @param {Function} [customizer] The function to customize comparing values.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ */
+function baseIsEqual(value, other, customizer, isLoose, stackA, stackB) {
+  if (value === other) {
+    return true;
+  }
+  if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
+    return value !== value && other !== other;
+  }
+  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isLoose, stackA, stackB);
+}
+
+module.exports = baseIsEqual;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":114,"./baseIsEqualDeep":77,"./isObjectLike":105}],77:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsEqualDeep.js", module);
+(function(){
+var equalArrays = require('./equalArrays'),
+    equalByTag = require('./equalByTag'),
+    equalObjects = require('./equalObjects'),
+    isArray = require('../lang/isArray'),
+    isTypedArray = require('../lang/isTypedArray');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    objectTag = '[object Object]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * A specialized version of `baseIsEqual` for arrays and objects which performs
+ * deep comparisons and tracks traversed objects enabling objects with circular
+ * references to be compared.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing objects.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA=[]] Tracks traversed `value` objects.
+ * @param {Array} [stackB=[]] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function baseIsEqualDeep(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var objIsArr = isArray(object),
+      othIsArr = isArray(other),
+      objTag = arrayTag,
+      othTag = arrayTag;
+
+  if (!objIsArr) {
+    objTag = objToString.call(object);
+    if (objTag == argsTag) {
+      objTag = objectTag;
+    } else if (objTag != objectTag) {
+      objIsArr = isTypedArray(object);
+    }
+  }
+  if (!othIsArr) {
+    othTag = objToString.call(other);
+    if (othTag == argsTag) {
+      othTag = objectTag;
+    } else if (othTag != objectTag) {
+      othIsArr = isTypedArray(other);
+    }
+  }
+  var objIsObj = objTag == objectTag,
+      othIsObj = othTag == objectTag,
+      isSameTag = objTag == othTag;
+
+  if (isSameTag && !(objIsArr || objIsObj)) {
+    return equalByTag(object, other, objTag);
+  }
+  if (!isLoose) {
+    var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+        othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+    if (objIsWrapped || othIsWrapped) {
+      return equalFunc(objIsWrapped ? object.value() : object, othIsWrapped ? other.value() : other, customizer, isLoose, stackA, stackB);
+    }
+  }
+  if (!isSameTag) {
+    return false;
+  }
+  // Assume cyclic values are equal.
+  // For more information on detecting circular references see https://es5.github.io/#JO.
+  stackA || (stackA = []);
+  stackB || (stackB = []);
+
+  var length = stackA.length;
+  while (length--) {
+    if (stackA[length] == object) {
+      return stackB[length] == other;
+    }
+  }
+  // Add `object` and `other` to the stack of traversed objects.
+  stackA.push(object);
+  stackB.push(other);
+
+  var result = (objIsArr ? equalArrays : equalObjects)(object, other, equalFunc, customizer, isLoose, stackA, stackB);
+
+  stackA.pop();
+  stackB.pop();
+
+  return result;
+}
+
+module.exports = baseIsEqualDeep;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":111,"../lang/isTypedArray":115,"./equalArrays":94,"./equalByTag":95,"./equalObjects":96}],78:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsMatch.js", module);
+(function(){
+var baseIsEqual = require('./baseIsEqual'),
+    toObject = require('./toObject');
+
+/**
+ * The base implementation of `_.isMatch` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to inspect.
+ * @param {Array} matchData The propery names, values, and compare flags to match.
+ * @param {Function} [customizer] The function to customize comparing objects.
+ * @returns {boolean} Returns `true` if `object` is a match, else `false`.
+ */
+function baseIsMatch(object, matchData, customizer) {
+  var index = matchData.length,
+      length = index,
+      noCustomizer = !customizer;
+
+  if (object == null) {
+    return !length;
+  }
+  object = toObject(object);
+  while (index--) {
+    var data = matchData[index];
+    if ((noCustomizer && data[2])
+          ? data[1] !== object[data[0]]
+          : !(data[0] in object)
+        ) {
+      return false;
+    }
+  }
+  while (++index < length) {
+    data = matchData[index];
+    var key = data[0],
+        objValue = object[key],
+        srcValue = data[1];
+
+    if (noCustomizer && data[2]) {
+      if (objValue === undefined && !(key in object)) {
+        return false;
+      }
+    } else {
+      var result = customizer ? customizer(objValue, srcValue, key) : undefined;
+      if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, true) : result)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+module.exports = baseIsMatch;
+
+}).apply(this, arguments);
+
+},{"./baseIsEqual":76,"./toObject":108}],79:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMap.js", module);
+(function(){
+var baseEach = require('./baseEach'),
+    isArrayLike = require('./isArrayLike');
+
+/**
+ * The base implementation of `_.map` without support for callback shorthands
+ * and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function baseMap(collection, iteratee) {
+  var index = -1,
+      result = isArrayLike(collection) ? Array(collection.length) : [];
+
+  baseEach(collection, function(value, key, collection) {
+    result[++index] = iteratee(value, key, collection);
+  });
+  return result;
+}
+
+module.exports = baseMap;
+
+}).apply(this, arguments);
+
+},{"./baseEach":71,"./isArrayLike":100}],80:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMatches.js", module);
+(function(){
+var baseIsMatch = require('./baseIsMatch'),
+    getMatchData = require('./getMatchData'),
+    toObject = require('./toObject');
+
+/**
+ * The base implementation of `_.matches` which does not clone `source`.
+ *
+ * @private
+ * @param {Object} source The object of property values to match.
+ * @returns {Function} Returns the new function.
+ */
+function baseMatches(source) {
+  var matchData = getMatchData(source);
+  if (matchData.length == 1 && matchData[0][2]) {
+    var key = matchData[0][0],
+        value = matchData[0][1];
+
+    return function(object) {
+      if (object == null) {
+        return false;
+      }
+      return object[key] === value && (value !== undefined || (key in toObject(object)));
+    };
+  }
+  return function(object) {
+    return baseIsMatch(object, matchData);
+  };
+}
+
+module.exports = baseMatches;
+
+}).apply(this, arguments);
+
+},{"./baseIsMatch":78,"./getMatchData":98,"./toObject":108}],81:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMatchesProperty.js", module);
+(function(){
+var baseGet = require('./baseGet'),
+    baseIsEqual = require('./baseIsEqual'),
+    baseSlice = require('./baseSlice'),
+    isArray = require('../lang/isArray'),
+    isKey = require('./isKey'),
+    isStrictComparable = require('./isStrictComparable'),
+    last = require('../array/last'),
+    toObject = require('./toObject'),
+    toPath = require('./toPath');
+
+/**
+ * The base implementation of `_.matchesProperty` which does not clone `srcValue`.
+ *
+ * @private
+ * @param {string} path The path of the property to get.
+ * @param {*} srcValue The value to compare.
+ * @returns {Function} Returns the new function.
+ */
+function baseMatchesProperty(path, srcValue) {
+  var isArr = isArray(path),
+      isCommon = isKey(path) && isStrictComparable(srcValue),
+      pathKey = (path + '');
+
+  path = toPath(path);
+  return function(object) {
+    if (object == null) {
+      return false;
+    }
+    var key = pathKey;
+    object = toObject(object);
+    if ((isArr || !isCommon) && !(key in object)) {
+      object = path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
+      if (object == null) {
+        return false;
+      }
+      key = last(path);
+      object = toObject(object);
+    }
+    return object[key] === srcValue
+      ? (srcValue !== undefined || (key in object))
+      : baseIsEqual(srcValue, object[key], undefined, true);
+  };
+}
+
+module.exports = baseMatchesProperty;
+
+}).apply(this, arguments);
+
+},{"../array/last":56,"../lang/isArray":111,"./baseGet":75,"./baseIsEqual":76,"./baseSlice":84,"./isKey":103,"./isStrictComparable":106,"./toObject":108,"./toPath":109}],82:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseProperty.js", module);
+(function(){
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+module.exports = baseProperty;
+
+}).apply(this, arguments);
+
+},{}],83:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/basePropertyDeep.js", module);
+(function(){
+var baseGet = require('./baseGet'),
+    toPath = require('./toPath');
+
+/**
+ * A specialized version of `baseProperty` which supports deep paths.
+ *
+ * @private
+ * @param {Array|string} path The path of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function basePropertyDeep(path) {
+  var pathKey = (path + '');
+  path = toPath(path);
+  return function(object) {
+    return baseGet(object, path, pathKey);
+  };
+}
+
+module.exports = basePropertyDeep;
+
+}).apply(this, arguments);
+
+},{"./baseGet":75,"./toPath":109}],84:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseSlice.js", module);
+(function(){
+/**
+ * The base implementation of `_.slice` without an iteratee call guard.
+ *
+ * @private
+ * @param {Array} array The array to slice.
+ * @param {number} [start=0] The start position.
+ * @param {number} [end=array.length] The end position.
+ * @returns {Array} Returns the slice of `array`.
+ */
+function baseSlice(array, start, end) {
+  var index = -1,
+      length = array.length;
+
+  start = start == null ? 0 : (+start || 0);
+  if (start < 0) {
+    start = -start > length ? 0 : (length + start);
+  }
+  end = (end === undefined || end > length) ? length : (+end || 0);
+  if (end < 0) {
+    end += length;
+  }
+  length = start > end ? 0 : ((end - start) >>> 0);
+  start >>>= 0;
+
+  var result = Array(length);
+  while (++index < length) {
+    result[index] = array[index + start];
+  }
+  return result;
+}
+
+module.exports = baseSlice;
+
+}).apply(this, arguments);
+
+},{}],85:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseSome.js", module);
+(function(){
+var baseEach = require('./baseEach');
+
+/**
+ * The base implementation of `_.some` without support for callback shorthands
+ * and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ */
+function baseSome(collection, predicate) {
+  var result;
+
+  baseEach(collection, function(value, index, collection) {
+    result = predicate(value, index, collection);
+    return !result;
+  });
+  return !!result;
+}
+
+module.exports = baseSome;
+
+}).apply(this, arguments);
+
+},{"./baseEach":71}],86:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseToString.js", module);
+(function(){
+/**
+ * Converts `value` to a string if it's not one. An empty string is returned
+ * for `null` or `undefined` values.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  return value == null ? '' : (value + '');
+}
+
+module.exports = baseToString;
+
+}).apply(this, arguments);
+
+},{}],87:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/bindCallback.js", module);
+(function(){
+var identity = require('../utility/identity');
+
+/**
+ * A specialized version of `baseCallback` which only supports `this` binding
+ * and specifying the number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {Function} func The function to bind.
+ * @param {*} thisArg The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function bindCallback(func, thisArg, argCount) {
+  if (typeof func != 'function') {
+    return identity;
+  }
+  if (thisArg === undefined) {
+    return func;
+  }
+  switch (argCount) {
+    case 1: return function(value) {
+      return func.call(thisArg, value);
+    };
+    case 3: return function(value, index, collection) {
+      return func.call(thisArg, value, index, collection);
+    };
+    case 4: return function(accumulator, value, index, collection) {
+      return func.call(thisArg, accumulator, value, index, collection);
+    };
+    case 5: return function(value, other, key, object, source) {
+      return func.call(thisArg, value, other, key, object, source);
+    };
+  }
+  return function() {
+    return func.apply(thisArg, arguments);
+  };
+}
+
+module.exports = bindCallback;
+
+}).apply(this, arguments);
+
+},{"../utility/identity":122}],88:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createAssigner.js", module);
+(function(){
+var bindCallback = require('./bindCallback'),
+    isIterateeCall = require('./isIterateeCall'),
+    restParam = require('../function/restParam');
+
+/**
+ * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
+ *
+ * @private
+ * @param {Function} assigner The function to assign values.
+ * @returns {Function} Returns the new assigner function.
+ */
+function createAssigner(assigner) {
+  return restParam(function(object, sources) {
+    var index = -1,
+        length = object == null ? 0 : sources.length,
+        customizer = length > 2 ? sources[length - 2] : undefined,
+        guard = length > 2 ? sources[2] : undefined,
+        thisArg = length > 1 ? sources[length - 1] : undefined;
+
+    if (typeof customizer == 'function') {
+      customizer = bindCallback(customizer, thisArg, 5);
+      length -= 2;
+    } else {
+      customizer = typeof thisArg == 'function' ? thisArg : undefined;
+      length -= (customizer ? 1 : 0);
+    }
+    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+      customizer = length < 3 ? undefined : customizer;
+      length = 1;
+    }
+    while (++index < length) {
+      var source = sources[index];
+      if (source) {
+        assigner(object, source, customizer);
+      }
+    }
+    return object;
+  });
+}
+
+module.exports = createAssigner;
+
+}).apply(this, arguments);
+
+},{"../function/restParam":62,"./bindCallback":87,"./isIterateeCall":102}],89:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createBaseEach.js", module);
+(function(){
+var getLength = require('./getLength'),
+    isLength = require('./isLength'),
+    toObject = require('./toObject');
+
+/**
+ * Creates a `baseEach` or `baseEachRight` function.
+ *
+ * @private
+ * @param {Function} eachFunc The function to iterate over a collection.
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseEach(eachFunc, fromRight) {
+  return function(collection, iteratee) {
+    var length = collection ? getLength(collection) : 0;
+    if (!isLength(length)) {
+      return eachFunc(collection, iteratee);
+    }
+    var index = fromRight ? length : -1,
+        iterable = toObject(collection);
+
+    while ((fromRight ? index-- : ++index < length)) {
+      if (iteratee(iterable[index], index, iterable) === false) {
+        break;
+      }
+    }
+    return collection;
+  };
+}
+
+module.exports = createBaseEach;
+
+}).apply(this, arguments);
+
+},{"./getLength":97,"./isLength":104,"./toObject":108}],90:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createBaseFor.js", module);
+(function(){
+var toObject = require('./toObject');
+
+/**
+ * Creates a base function for `_.forIn` or `_.forInRight`.
+ *
+ * @private
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseFor(fromRight) {
+  return function(object, iteratee, keysFunc) {
+    var iterable = toObject(object),
+        props = keysFunc(object),
+        length = props.length,
+        index = fromRight ? length : -1;
+
+    while ((fromRight ? index-- : ++index < length)) {
+      var key = props[index];
+      if (iteratee(iterable[key], key, iterable) === false) {
+        break;
+      }
+    }
+    return object;
+  };
+}
+
+module.exports = createBaseFor;
+
+}).apply(this, arguments);
+
+},{"./toObject":108}],91:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createForEach.js", module);
+(function(){
+var bindCallback = require('./bindCallback'),
+    isArray = require('../lang/isArray');
+
+/**
+ * Creates a function for `_.forEach` or `_.forEachRight`.
+ *
+ * @private
+ * @param {Function} arrayFunc The function to iterate over an array.
+ * @param {Function} eachFunc The function to iterate over a collection.
+ * @returns {Function} Returns the new each function.
+ */
+function createForEach(arrayFunc, eachFunc) {
+  return function(collection, iteratee, thisArg) {
+    return (typeof iteratee == 'function' && thisArg === undefined && isArray(collection))
+      ? arrayFunc(collection, iteratee)
+      : eachFunc(collection, bindCallback(iteratee, thisArg, 3));
+  };
+}
+
+module.exports = createForEach;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":111,"./bindCallback":87}],92:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createForOwn.js", module);
+(function(){
+var bindCallback = require('./bindCallback');
+
+/**
+ * Creates a function for `_.forOwn` or `_.forOwnRight`.
+ *
+ * @private
+ * @param {Function} objectFunc The function to iterate over an object.
+ * @returns {Function} Returns the new each function.
+ */
+function createForOwn(objectFunc) {
+  return function(object, iteratee, thisArg) {
+    if (typeof iteratee != 'function' || thisArg !== undefined) {
+      iteratee = bindCallback(iteratee, thisArg, 3);
+    }
+    return objectFunc(object, iteratee);
+  };
+}
+
+module.exports = createForOwn;
+
+}).apply(this, arguments);
+
+},{"./bindCallback":87}],93:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createObjectMapper.js", module);
+(function(){
+var baseCallback = require('./baseCallback'),
+    baseForOwn = require('./baseForOwn');
+
+/**
+ * Creates a function for `_.mapKeys` or `_.mapValues`.
+ *
+ * @private
+ * @param {boolean} [isMapKeys] Specify mapping keys instead of values.
+ * @returns {Function} Returns the new map function.
+ */
+function createObjectMapper(isMapKeys) {
+  return function(object, iteratee, thisArg) {
+    var result = {};
+    iteratee = baseCallback(iteratee, thisArg, 3);
+
+    baseForOwn(object, function(value, key, object) {
+      var mapped = iteratee(value, key, object);
+      key = isMapKeys ? mapped : key;
+      value = isMapKeys ? value : mapped;
+      result[key] = value;
+    });
+    return result;
+  };
+}
+
+module.exports = createObjectMapper;
+
+}).apply(this, arguments);
+
+},{"./baseCallback":69,"./baseForOwn":74}],94:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/equalArrays.js", module);
+(function(){
+var arraySome = require('./arraySome');
+
+/**
+ * A specialized version of `baseIsEqualDeep` for arrays with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Array} array The array to compare.
+ * @param {Array} other The other array to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing arrays.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
+ */
+function equalArrays(array, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var index = -1,
+      arrLength = array.length,
+      othLength = other.length;
+
+  if (arrLength != othLength && !(isLoose && othLength > arrLength)) {
+    return false;
+  }
+  // Ignore non-index properties.
+  while (++index < arrLength) {
+    var arrValue = array[index],
+        othValue = other[index],
+        result = customizer ? customizer(isLoose ? othValue : arrValue, isLoose ? arrValue : othValue, index) : undefined;
+
+    if (result !== undefined) {
+      if (result) {
+        continue;
+      }
+      return false;
+    }
+    // Recursively compare arrays (susceptible to call stack limits).
+    if (isLoose) {
+      if (!arraySome(other, function(othValue) {
+            return arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB);
+          })) {
+        return false;
+      }
+    } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+module.exports = equalArrays;
+
+}).apply(this, arguments);
+
+},{"./arraySome":66}],95:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/equalByTag.js", module);
+(function(){
+/** `Object#toString` result references. */
+var boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    numberTag = '[object Number]',
+    regexpTag = '[object RegExp]',
+    stringTag = '[object String]';
+
+/**
+ * A specialized version of `baseIsEqualDeep` for comparing objects of
+ * the same `toStringTag`.
+ *
+ * **Note:** This function only supports comparing values with tags of
+ * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {string} tag The `toStringTag` of the objects to compare.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalByTag(object, other, tag) {
+  switch (tag) {
+    case boolTag:
+    case dateTag:
+      // Coerce dates and booleans to numbers, dates to milliseconds and booleans
+      // to `1` or `0` treating invalid dates coerced to `NaN` as not equal.
+      return +object == +other;
+
+    case errorTag:
+      return object.name == other.name && object.message == other.message;
+
+    case numberTag:
+      // Treat `NaN` vs. `NaN` as equal.
+      return (object != +object)
+        ? other != +other
+        : object == +other;
+
+    case regexpTag:
+    case stringTag:
+      // Coerce regexes to strings and treat strings primitives and string
+      // objects as equal. See https://es5.github.io/#x15.10.6.4 for more details.
+      return object == (other + '');
+  }
+  return false;
+}
+
+module.exports = equalByTag;
+
+}).apply(this, arguments);
+
+},{}],96:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/equalObjects.js", module);
+(function(){
+var keys = require('../object/keys');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * A specialized version of `baseIsEqualDeep` for objects with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing values.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalObjects(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var objProps = keys(object),
+      objLength = objProps.length,
+      othProps = keys(other),
+      othLength = othProps.length;
+
+  if (objLength != othLength && !isLoose) {
+    return false;
+  }
+  var index = objLength;
+  while (index--) {
+    var key = objProps[index];
+    if (!(isLoose ? key in other : hasOwnProperty.call(other, key))) {
+      return false;
+    }
+  }
+  var skipCtor = isLoose;
+  while (++index < objLength) {
+    key = objProps[index];
+    var objValue = object[key],
+        othValue = other[key],
+        result = customizer ? customizer(isLoose ? othValue : objValue, isLoose? objValue : othValue, key) : undefined;
+
+    // Recursively compare objects (susceptible to call stack limits).
+    if (!(result === undefined ? equalFunc(objValue, othValue, customizer, isLoose, stackA, stackB) : result)) {
+      return false;
+    }
+    skipCtor || (skipCtor = key == 'constructor');
+  }
+  if (!skipCtor) {
+    var objCtor = object.constructor,
+        othCtor = other.constructor;
+
+    // Non `Object` object instances with different constructors are not equal.
+    if (objCtor != othCtor &&
+        ('constructor' in object && 'constructor' in other) &&
+        !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
+          typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+module.exports = equalObjects;
+
+}).apply(this, arguments);
+
+},{"../object/keys":118}],97:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/getLength.js", module);
+(function(){
+var baseProperty = require('./baseProperty');
+
+/**
+ * Gets the "length" property value of `object`.
+ *
+ * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
+ * that affects Safari on at least iOS 8.1-8.3 ARM64.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {*} Returns the "length" value.
+ */
+var getLength = baseProperty('length');
+
+module.exports = getLength;
+
+}).apply(this, arguments);
+
+},{"./baseProperty":82}],98:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/getMatchData.js", module);
+(function(){
+var isStrictComparable = require('./isStrictComparable'),
+    pairs = require('../object/pairs');
+
+/**
+ * Gets the propery names, values, and compare flags of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the match data of `object`.
+ */
+function getMatchData(object) {
+  var result = pairs(object),
+      length = result.length;
+
+  while (length--) {
+    result[length][2] = isStrictComparable(result[length][1]);
+  }
+  return result;
+}
+
+module.exports = getMatchData;
+
+}).apply(this, arguments);
+
+},{"../object/pairs":121,"./isStrictComparable":106}],99:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/getNative.js", module);
+(function(){
+var isNative = require('../lang/isNative');
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = object == null ? undefined : object[key];
+  return isNative(value) ? value : undefined;
+}
+
+module.exports = getNative;
+
+}).apply(this, arguments);
+
+},{"../lang/isNative":113}],100:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isArrayLike.js", module);
+(function(){
+var getLength = require('./getLength'),
+    isLength = require('./isLength');
+
+/**
+ * Checks if `value` is array-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ */
+function isArrayLike(value) {
+  return value != null && isLength(getLength(value));
+}
+
+module.exports = isArrayLike;
+
+}).apply(this, arguments);
+
+},{"./getLength":97,"./isLength":104}],101:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isIndex.js", module);
+(function(){
+/** Used to detect unsigned integer values. */
+var reIsUint = /^\d+$/;
+
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+  return value > -1 && value % 1 == 0 && value < length;
+}
+
+module.exports = isIndex;
+
+}).apply(this, arguments);
+
+},{}],102:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isIterateeCall.js", module);
+(function(){
+var isArrayLike = require('./isArrayLike'),
+    isIndex = require('./isIndex'),
+    isObject = require('../lang/isObject');
+
+/**
+ * Checks if the provided arguments are from an iteratee call.
+ *
+ * @private
+ * @param {*} value The potential iteratee value argument.
+ * @param {*} index The potential iteratee index or key argument.
+ * @param {*} object The potential iteratee object argument.
+ * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
+ */
+function isIterateeCall(value, index, object) {
+  if (!isObject(object)) {
+    return false;
+  }
+  var type = typeof index;
+  if (type == 'number'
+      ? (isArrayLike(object) && isIndex(index, object.length))
+      : (type == 'string' && index in object)) {
+    var other = object[index];
+    return value === value ? (value === other) : (other !== other);
+  }
+  return false;
+}
+
+module.exports = isIterateeCall;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":114,"./isArrayLike":100,"./isIndex":101}],103:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isKey.js", module);
+(function(){
+var isArray = require('../lang/isArray'),
+    toObject = require('./toObject');
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\n\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  var type = typeof value;
+  if ((type == 'string' && reIsPlainProp.test(value)) || type == 'number') {
+    return true;
+  }
+  if (isArray(value)) {
+    return false;
+  }
+  var result = !reIsDeepProp.test(value);
+  return result || (object != null && value in toObject(object));
+}
+
+module.exports = isKey;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":111,"./toObject":108}],104:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isLength.js", module);
+(function(){
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+module.exports = isLength;
+
+}).apply(this, arguments);
+
+},{}],105:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isObjectLike.js", module);
+(function(){
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+module.exports = isObjectLike;
+
+}).apply(this, arguments);
+
+},{}],106:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isStrictComparable.js", module);
+(function(){
+var isObject = require('../lang/isObject');
+
+/**
+ * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` if suitable for strict
+ *  equality comparisons, else `false`.
+ */
+function isStrictComparable(value) {
+  return value === value && !isObject(value);
+}
+
+module.exports = isStrictComparable;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":114}],107:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/shimKeys.js", module);
+(function(){
+var isArguments = require('../lang/isArguments'),
+    isArray = require('../lang/isArray'),
+    isIndex = require('./isIndex'),
+    isLength = require('./isLength'),
+    keysIn = require('../object/keysIn');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * A fallback implementation of `Object.keys` which creates an array of the
+ * own enumerable property names of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ */
+function shimKeys(object) {
+  var props = keysIn(object),
+      propsLength = props.length,
+      length = propsLength && object.length;
+
+  var allowIndexes = !!length && isLength(length) &&
+    (isArray(object) || isArguments(object));
+
+  var index = -1,
+      result = [];
+
+  while (++index < propsLength) {
+    var key = props[index];
+    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = shimKeys;
+
+}).apply(this, arguments);
+
+},{"../lang/isArguments":110,"../lang/isArray":111,"../object/keysIn":119,"./isIndex":101,"./isLength":104}],108:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/toObject.js", module);
+(function(){
+var isObject = require('../lang/isObject');
+
+/**
+ * Converts `value` to an object if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Object} Returns the object.
+ */
+function toObject(value) {
+  return isObject(value) ? value : Object(value);
+}
+
+module.exports = toObject;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":114}],109:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/toPath.js", module);
+(function(){
+var baseToString = require('./baseToString'),
+    isArray = require('../lang/isArray');
+
+/** Used to match property names within property paths. */
+var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\n\\]|\\.)*?)\2)\]/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/**
+ * Converts `value` to property path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Array} Returns the property path array.
+ */
+function toPath(value) {
+  if (isArray(value)) {
+    return value;
+  }
+  var result = [];
+  baseToString(value).replace(rePropName, function(match, number, quote, string) {
+    result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+}
+
+module.exports = toPath;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":111,"./baseToString":86}],110:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isArguments.js", module);
+(function(){
+var isArrayLike = require('../internal/isArrayLike'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Native method references. */
+var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+
+/**
+ * Checks if `value` is classified as an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+function isArguments(value) {
+  return isObjectLike(value) && isArrayLike(value) &&
+    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
+}
+
+module.exports = isArguments;
+
+}).apply(this, arguments);
+
+},{"../internal/isArrayLike":100,"../internal/isObjectLike":105}],111:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isArray.js", module);
+(function(){
+var getNative = require('../internal/getNative'),
+    isLength = require('../internal/isLength'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** `Object#toString` result references. */
+var arrayTag = '[object Array]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeIsArray = getNative(Array, 'isArray');
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(function() { return arguments; }());
+ * // => false
+ */
+var isArray = nativeIsArray || function(value) {
+  return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag;
+};
+
+module.exports = isArray;
+
+}).apply(this, arguments);
+
+},{"../internal/getNative":99,"../internal/isLength":104,"../internal/isObjectLike":105}],112:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isFunction.js", module);
+(function(){
+var isObject = require('./isObject');
+
+/** `Object#toString` result references. */
+var funcTag = '[object Function]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in older versions of Chrome and Safari which return 'function' for regexes
+  // and Safari 8 which returns 'object' for typed array constructors.
+  return isObject(value) && objToString.call(value) == funcTag;
+}
+
+module.exports = isFunction;
+
+}).apply(this, arguments);
+
+},{"./isObject":114}],113:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isNative.js", module);
+(function(){
+var isFunction = require('./isFunction'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** Used to detect host constructors (Safari > 5). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var fnToString = Function.prototype.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * Checks if `value` is a native function.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
+ * @example
+ *
+ * _.isNative(Array.prototype.push);
+ * // => true
+ *
+ * _.isNative(_);
+ * // => false
+ */
+function isNative(value) {
+  if (value == null) {
+    return false;
+  }
+  if (isFunction(value)) {
+    return reIsNative.test(fnToString.call(value));
+  }
+  return isObjectLike(value) && reIsHostCtor.test(value);
+}
+
+module.exports = isNative;
+
+}).apply(this, arguments);
+
+},{"../internal/isObjectLike":105,"./isFunction":112}],114:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isObject.js", module);
+(function(){
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+module.exports = isObject;
+
+}).apply(this, arguments);
+
+},{}],115:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isTypedArray.js", module);
+(function(){
+var isLength = require('../internal/isLength'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    funcTag = '[object Function]',
+    mapTag = '[object Map]',
+    numberTag = '[object Number]',
+    objectTag = '[object Object]',
+    regexpTag = '[object RegExp]',
+    setTag = '[object Set]',
+    stringTag = '[object String]',
+    weakMapTag = '[object WeakMap]';
+
+var arrayBufferTag = '[object ArrayBuffer]',
+    float32Tag = '[object Float32Array]',
+    float64Tag = '[object Float64Array]',
+    int8Tag = '[object Int8Array]',
+    int16Tag = '[object Int16Array]',
+    int32Tag = '[object Int32Array]',
+    uint8Tag = '[object Uint8Array]',
+    uint8ClampedTag = '[object Uint8ClampedArray]',
+    uint16Tag = '[object Uint16Array]',
+    uint32Tag = '[object Uint32Array]';
+
+/** Used to identify `toStringTag` values of typed arrays. */
+var typedArrayTags = {};
+typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+typedArrayTags[uint32Tag] = true;
+typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+typedArrayTags[dateTag] = typedArrayTags[errorTag] =
+typedArrayTags[funcTag] = typedArrayTags[mapTag] =
+typedArrayTags[numberTag] = typedArrayTags[objectTag] =
+typedArrayTags[regexpTag] = typedArrayTags[setTag] =
+typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * Checks if `value` is classified as a typed array.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isTypedArray(new Uint8Array);
+ * // => true
+ *
+ * _.isTypedArray([]);
+ * // => false
+ */
+function isTypedArray(value) {
+  return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objToString.call(value)];
+}
+
+module.exports = isTypedArray;
+
+}).apply(this, arguments);
+
+},{"../internal/isLength":104,"../internal/isObjectLike":105}],116:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/assign.js", module);
+(function(){
+var assignWith = require('../internal/assignWith'),
+    baseAssign = require('../internal/baseAssign'),
+    createAssigner = require('../internal/createAssigner');
+
+/**
+ * Assigns own enumerable properties of source object(s) to the destination
+ * object. Subsequent sources overwrite property assignments of previous sources.
+ * If `customizer` is provided it's invoked to produce the assigned values.
+ * The `customizer` is bound to `thisArg` and invoked with five arguments:
+ * (objectValue, sourceValue, key, object, source).
+ *
+ * **Note:** This method mutates `object` and is based on
+ * [`Object.assign`](http://ecma-international.org/ecma-262/6.0/#sec-object.assign).
+ *
+ * @static
+ * @memberOf _
+ * @alias extend
+ * @category Object
+ * @param {Object} object The destination object.
+ * @param {...Object} [sources] The source objects.
+ * @param {Function} [customizer] The function to customize assigned values.
+ * @param {*} [thisArg] The `this` binding of `customizer`.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * _.assign({ 'user': 'barney' }, { 'age': 40 }, { 'user': 'fred' });
+ * // => { 'user': 'fred', 'age': 40 }
+ *
+ * // using a customizer callback
+ * var defaults = _.partialRight(_.assign, function(value, other) {
+ *   return _.isUndefined(value) ? other : value;
+ * });
+ *
+ * defaults({ 'user': 'barney' }, { 'age': 36 }, { 'user': 'fred' });
+ * // => { 'user': 'barney', 'age': 36 }
+ */
+var assign = createAssigner(function(object, source, customizer) {
+  return customizer
+    ? assignWith(object, source, customizer)
+    : baseAssign(object, source);
+});
+
+module.exports = assign;
+
+}).apply(this, arguments);
+
+},{"../internal/assignWith":67,"../internal/baseAssign":68,"../internal/createAssigner":88}],117:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/forOwn.js", module);
+(function(){
+var baseForOwn = require('../internal/baseForOwn'),
+    createForOwn = require('../internal/createForOwn');
+
+/**
+ * Iterates over own enumerable properties of an object invoking `iteratee`
+ * for each property. The `iteratee` is bound to `thisArg` and invoked with
+ * three arguments: (value, key, object). Iteratee functions may exit iteration
+ * early by explicitly returning `false`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to iterate over.
+ * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.forOwn(new Foo, function(value, key) {
+ *   console.log(key);
+ * });
+ * // => logs 'a' and 'b' (iteration order is not guaranteed)
+ */
+var forOwn = createForOwn(baseForOwn);
+
+module.exports = forOwn;
+
+}).apply(this, arguments);
+
+},{"../internal/baseForOwn":74,"../internal/createForOwn":92}],118:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/keys.js", module);
+(function(){
+var getNative = require('../internal/getNative'),
+    isArrayLike = require('../internal/isArrayLike'),
+    isObject = require('../lang/isObject'),
+    shimKeys = require('../internal/shimKeys');
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeKeys = getNative(Object, 'keys');
+
+/**
+ * Creates an array of the own enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects. See the
+ * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
+ * for more details.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keys(new Foo);
+ * // => ['a', 'b'] (iteration order is not guaranteed)
+ *
+ * _.keys('hi');
+ * // => ['0', '1']
+ */
+var keys = !nativeKeys ? shimKeys : function(object) {
+  var Ctor = object == null ? undefined : object.constructor;
+  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+      (typeof object != 'function' && isArrayLike(object))) {
+    return shimKeys(object);
+  }
+  return isObject(object) ? nativeKeys(object) : [];
+};
+
+module.exports = keys;
+
+}).apply(this, arguments);
+
+},{"../internal/getNative":99,"../internal/isArrayLike":100,"../internal/shimKeys":107,"../lang/isObject":114}],119:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/keysIn.js", module);
+(function(){
+var isArguments = require('../lang/isArguments'),
+    isArray = require('../lang/isArray'),
+    isIndex = require('../internal/isIndex'),
+    isLength = require('../internal/isLength'),
+    isObject = require('../lang/isObject');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Creates an array of the own and inherited enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keysIn(new Foo);
+ * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+ */
+function keysIn(object) {
+  if (object == null) {
+    return [];
+  }
+  if (!isObject(object)) {
+    object = Object(object);
+  }
+  var length = object.length;
+  length = (length && isLength(length) &&
+    (isArray(object) || isArguments(object)) && length) || 0;
+
+  var Ctor = object.constructor,
+      index = -1,
+      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+      result = Array(length),
+      skipIndexes = length > 0;
+
+  while (++index < length) {
+    result[index] = (index + '');
+  }
+  for (var key in object) {
+    if (!(skipIndexes && isIndex(key, length)) &&
+        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = keysIn;
+
+}).apply(this, arguments);
+
+},{"../internal/isIndex":101,"../internal/isLength":104,"../lang/isArguments":110,"../lang/isArray":111,"../lang/isObject":114}],120:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/mapValues.js", module);
+(function(){
+var createObjectMapper = require('../internal/createObjectMapper');
+
+/**
+ * Creates an object with the same keys as `object` and values generated by
+ * running each own enumerable property of `object` through `iteratee`. The
+ * iteratee function is bound to `thisArg` and invoked with three arguments:
+ * (value, key, object).
+ *
+ * If a property name is provided for `iteratee` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `iteratee` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to iterate over.
+ * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Object} Returns the new mapped object.
+ * @example
+ *
+ * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
+ *   return n * 3;
+ * });
+ * // => { 'a': 3, 'b': 6 }
+ *
+ * var users = {
+ *   'fred':    { 'user': 'fred',    'age': 40 },
+ *   'pebbles': { 'user': 'pebbles', 'age': 1 }
+ * };
+ *
+ * // using the `_.property` callback shorthand
+ * _.mapValues(users, 'age');
+ * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
+ */
+var mapValues = createObjectMapper();
+
+module.exports = mapValues;
+
+}).apply(this, arguments);
+
+},{"../internal/createObjectMapper":93}],121:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/pairs.js", module);
+(function(){
+var keys = require('./keys'),
+    toObject = require('../internal/toObject');
+
+/**
+ * Creates a two dimensional array of the key-value pairs for `object`,
+ * e.g. `[[key1, value1], [key2, value2]]`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the new array of key-value pairs.
+ * @example
+ *
+ * _.pairs({ 'barney': 36, 'fred': 40 });
+ * // => [['barney', 36], ['fred', 40]] (iteration order is not guaranteed)
+ */
+function pairs(object) {
+  object = toObject(object);
+
+  var index = -1,
+      props = keys(object),
+      length = props.length,
+      result = Array(length);
+
+  while (++index < length) {
+    var key = props[index];
+    result[index] = [key, object[key]];
+  }
+  return result;
+}
+
+module.exports = pairs;
+
+}).apply(this, arguments);
+
+},{"../internal/toObject":108,"./keys":118}],122:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/utility/identity.js", module);
+(function(){
+/**
+ * This method returns the first argument provided to it.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {*} value Any value.
+ * @returns {*} Returns `value`.
+ * @example
+ *
+ * var object = { 'user': 'fred' };
+ *
+ * _.identity(object) === object;
+ * // => true
+ */
+function identity(value) {
+  return value;
+}
+
+module.exports = identity;
+
+}).apply(this, arguments);
+
+},{}],123:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/utility/property.js", module);
+(function(){
+var baseProperty = require('../internal/baseProperty'),
+    basePropertyDeep = require('../internal/basePropertyDeep'),
+    isKey = require('../internal/isKey');
+
+/**
+ * Creates a function that returns the property value at `path` on a
+ * given object.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {Array|string} path The path of the property to get.
+ * @returns {Function} Returns the new function.
+ * @example
+ *
+ * var objects = [
+ *   { 'a': { 'b': { 'c': 2 } } },
+ *   { 'a': { 'b': { 'c': 1 } } }
+ * ];
+ *
+ * _.map(objects, _.property('a.b.c'));
+ * // => [2, 1]
+ *
+ * _.pluck(_.sortBy(objects, _.property(['a', 'b', 'c'])), 'a.b.c');
+ * // => [1, 2]
+ */
+function property(path) {
+  return isKey(path) ? baseProperty(path) : basePropertyDeep(path);
+}
+
+module.exports = property;
+
+}).apply(this, arguments);
+
+},{"../internal/baseProperty":82,"../internal/basePropertyDeep":83,"../internal/isKey":103}],124:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/ms/index.js", module);
+(function(){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} options
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options){
+  options = options || {};
+  if ('string' == typeof val) return parse(val);
+  return options.long
+    ? long(val)
+    : short(val);
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = '' + str;
+  if (str.length > 10000) return;
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(str);
+  if (!match) return;
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function short(ms) {
+  if (ms >= d) return Math.round(ms / d) + 'd';
+  if (ms >= h) return Math.round(ms / h) + 'h';
+  if (ms >= m) return Math.round(ms / m) + 'm';
+  if (ms >= s) return Math.round(ms / s) + 's';
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function long(ms) {
+  return plural(ms, d, 'day')
+    || plural(ms, h, 'hour')
+    || plural(ms, m, 'minute')
+    || plural(ms, s, 'second')
+    || ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) return;
+  if (ms < n * 1.5) return Math.floor(ms / n) + ' ' + name;
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+}).apply(this, arguments);
+
+},{}],125:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/parsejson/index.js", module);
+(function(){
+(function (global){
+/**
+ * JSON parse.
+ *
+ * @see Based on jQuery#parseJSON (MIT) and JSON2
+ * @api private
+ */
+
+var rvalidchars = /^[\],:{}\s]*$/;
+var rvalidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+var rvalidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+var rvalidbraces = /(?:^|:|,)(?:\s*\[)+/g;
+var rtrimLeft = /^\s+/;
+var rtrimRight = /\s+$/;
+
+module.exports = function parsejson(data) {
+  if ('string' != typeof data || !data) {
+    return null;
+  }
+
+  data = data.replace(rtrimLeft, '').replace(rtrimRight, '');
+
+  // Attempt to parse using the native JSON parser first
+  if (global.JSON && JSON.parse) {
+    return JSON.parse(data);
+  }
+
+  if (rvalidchars.test(data.replace(rvalidescape, '@')
+      .replace(rvalidtokens, ']')
+      .replace(rvalidbraces, ''))) {
+    return (new Function('return ' + data))();
+  }
+};
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{}],126:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/parseqs/index.js", module);
+(function(){
+/**
+ * Compiles a querystring
+ * Returns string representation of the object
+ *
+ * @param {Object}
+ * @api private
+ */
+
+exports.encode = function (obj) {
+  var str = '';
+
+  for (var i in obj) {
+    if (obj.hasOwnProperty(i)) {
+      if (str.length) str += '&';
+      str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
+    }
+  }
+
+  return str;
+};
+
+/**
+ * Parses a simple querystring into an object
+ *
+ * @param {String} qs
+ * @api private
+ */
+
+exports.decode = function(qs){
+  var qry = {};
+  var pairs = qs.split('&');
+  for (var i = 0, l = pairs.length; i < l; i++) {
+    var pair = pairs[i].split('=');
+    qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+  }
+  return qry;
+};
+
+}).apply(this, arguments);
+
+},{}],127:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/parseuri/index.js", module);
+(function(){
+/**
+ * Parses an URI
+ *
+ * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api private
+ */
+
+var re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
+
+var parts = [
+    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
+];
+
+module.exports = function parseuri(str) {
+    var src = str,
+        b = str.indexOf('['),
+        e = str.indexOf(']');
+
+    if (b != -1 && e != -1) {
+        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
+    }
+
+    var m = re.exec(str || ''),
+        uri = {},
+        i = 14;
+
+    while (i--) {
+        uri[parts[i]] = m[i] || '';
+    }
+
+    if (b != -1 && e != -1) {
+        uri.source = src;
+        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
+        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
+        uri.ipv6uri = true;
+    }
+
+    return uri;
+};
+
+}).apply(this, arguments);
+
+},{}],128:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/process/browser.js", module);
+(function(){
 // shim for using process in browser
 
 var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-(function () {
-  try {
-    cachedSetTimeout = setTimeout;
-  } catch (e) {
-    cachedSetTimeout = function () {
-      throw new Error('setTimeout is not defined');
-    }
-  }
-  try {
-    cachedClearTimeout = clearTimeout;
-  } catch (e) {
-    cachedClearTimeout = function () {
-      throw new Error('clearTimeout is not defined');
-    }
-  }
-} ())
 var queue = [];
 var draining = false;
 var currentQueue;
 var queueIndex = -1;
 
 function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
     draining = false;
     if (currentQueue.length) {
         queue = currentQueue.concat(queue);
@@ -530,7 +10872,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = cachedSetTimeout(cleanUpNextTick);
+    var timeout = setTimeout(cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -547,7 +10889,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    cachedClearTimeout(timeout);
+    clearTimeout(timeout);
 }
 
 process.nextTick = function (fun) {
@@ -559,7 +10901,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        cachedSetTimeout(drainQueue, 0);
+        setTimeout(drainQueue, 0);
     }
 };
 
@@ -598,7 +10940,3882 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],24:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],129:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/index.js", module);
+(function(){
+
+/**
+ * Module dependencies.
+ */
+
+var url = require('./url');
+var parser = require('socket.io-parser');
+var Manager = require('./manager');
+var debug = require('debug')('socket.io-client');
+
+/**
+ * Module exports.
+ */
+
+module.exports = exports = lookup;
+
+/**
+ * Managers cache.
+ */
+
+var cache = exports.managers = {};
+
+/**
+ * Looks up an existing `Manager` for multiplexing.
+ * If the user summons:
+ *
+ *   `io('http://localhost/a');`
+ *   `io('http://localhost/b');`
+ *
+ * We reuse the existing instance based on same scheme/port/host,
+ * and we initialize sockets for each namespace.
+ *
+ * @api public
+ */
+
+function lookup(uri, opts) {
+  if (typeof uri == 'object') {
+    opts = uri;
+    uri = undefined;
+  }
+
+  opts = opts || {};
+
+  var parsed = url(uri);
+  var source = parsed.source;
+  var id = parsed.id;
+  var path = parsed.path;
+  var sameNamespace = cache[id] && path in cache[id].nsps;
+  var newConnection = opts.forceNew || opts['force new connection'] ||
+                      false === opts.multiplex || sameNamespace;
+
+  var io;
+
+  if (newConnection) {
+    debug('ignoring socket cache for %s', source);
+    io = Manager(source, opts);
+  } else {
+    if (!cache[id]) {
+      debug('new io instance for %s', source);
+      cache[id] = Manager(source, opts);
+    }
+    io = cache[id];
+  }
+
+  return io.socket(parsed.path);
+}
+
+/**
+ * Protocol version.
+ *
+ * @api public
+ */
+
+exports.protocol = parser.protocol;
+
+/**
+ * `connect`.
+ *
+ * @param {String} uri
+ * @api public
+ */
+
+exports.connect = lookup;
+
+/**
+ * Expose constructors for standalone build.
+ *
+ * @api public
+ */
+
+exports.Manager = require('./manager');
+exports.Socket = require('./socket');
+
+}).apply(this, arguments);
+
+},{"./manager":130,"./socket":132,"./url":133,"debug":135,"socket.io-parser":138}],130:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/manager.js", module);
+(function(){
+
+/**
+ * Module dependencies.
+ */
+
+var eio = require('engine.io-client');
+var Socket = require('./socket');
+var Emitter = require('component-emitter');
+var parser = require('socket.io-parser');
+var on = require('./on');
+var bind = require('component-bind');
+var debug = require('debug')('socket.io-client:manager');
+var indexOf = require('indexof');
+var Backoff = require('backo2');
+
+/**
+ * IE6+ hasOwnProperty
+ */
+
+var has = Object.prototype.hasOwnProperty;
+
+/**
+ * Module exports
+ */
+
+module.exports = Manager;
+
+/**
+ * `Manager` constructor.
+ *
+ * @param {String} engine instance or engine uri/opts
+ * @param {Object} options
+ * @api public
+ */
+
+function Manager(uri, opts){
+  if (!(this instanceof Manager)) return new Manager(uri, opts);
+  if (uri && ('object' == typeof uri)) {
+    opts = uri;
+    uri = undefined;
+  }
+  opts = opts || {};
+
+  opts.path = opts.path || '/socket.io';
+  this.nsps = {};
+  this.subs = [];
+  this.opts = opts;
+  this.reconnection(opts.reconnection !== false);
+  this.reconnectionAttempts(opts.reconnectionAttempts || Infinity);
+  this.reconnectionDelay(opts.reconnectionDelay || 1000);
+  this.reconnectionDelayMax(opts.reconnectionDelayMax || 5000);
+  this.randomizationFactor(opts.randomizationFactor || 0.5);
+  this.backoff = new Backoff({
+    min: this.reconnectionDelay(),
+    max: this.reconnectionDelayMax(),
+    jitter: this.randomizationFactor()
+  });
+  this.timeout(null == opts.timeout ? 20000 : opts.timeout);
+  this.readyState = 'closed';
+  this.uri = uri;
+  this.connecting = [];
+  this.lastPing = null;
+  this.encoding = false;
+  this.packetBuffer = [];
+  this.encoder = new parser.Encoder();
+  this.decoder = new parser.Decoder();
+  this.autoConnect = opts.autoConnect !== false;
+  if (this.autoConnect) this.open();
+}
+
+/**
+ * Propagate given event to sockets and emit on `this`
+ *
+ * @api private
+ */
+
+Manager.prototype.emitAll = function() {
+  this.emit.apply(this, arguments);
+  for (var nsp in this.nsps) {
+    if (has.call(this.nsps, nsp)) {
+      this.nsps[nsp].emit.apply(this.nsps[nsp], arguments);
+    }
+  }
+};
+
+/**
+ * Update `socket.id` of all sockets
+ *
+ * @api private
+ */
+
+Manager.prototype.updateSocketIds = function(){
+  for (var nsp in this.nsps) {
+    if (has.call(this.nsps, nsp)) {
+      this.nsps[nsp].id = this.engine.id;
+    }
+  }
+};
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Manager.prototype);
+
+/**
+ * Sets the `reconnection` config.
+ *
+ * @param {Boolean} true/false if it should automatically reconnect
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnection = function(v){
+  if (!arguments.length) return this._reconnection;
+  this._reconnection = !!v;
+  return this;
+};
+
+/**
+ * Sets the reconnection attempts config.
+ *
+ * @param {Number} max reconnection attempts before giving up
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnectionAttempts = function(v){
+  if (!arguments.length) return this._reconnectionAttempts;
+  this._reconnectionAttempts = v;
+  return this;
+};
+
+/**
+ * Sets the delay between reconnections.
+ *
+ * @param {Number} delay
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnectionDelay = function(v){
+  if (!arguments.length) return this._reconnectionDelay;
+  this._reconnectionDelay = v;
+  this.backoff && this.backoff.setMin(v);
+  return this;
+};
+
+Manager.prototype.randomizationFactor = function(v){
+  if (!arguments.length) return this._randomizationFactor;
+  this._randomizationFactor = v;
+  this.backoff && this.backoff.setJitter(v);
+  return this;
+};
+
+/**
+ * Sets the maximum delay between reconnections.
+ *
+ * @param {Number} delay
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnectionDelayMax = function(v){
+  if (!arguments.length) return this._reconnectionDelayMax;
+  this._reconnectionDelayMax = v;
+  this.backoff && this.backoff.setMax(v);
+  return this;
+};
+
+/**
+ * Sets the connection timeout. `false` to disable
+ *
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.timeout = function(v){
+  if (!arguments.length) return this._timeout;
+  this._timeout = v;
+  return this;
+};
+
+/**
+ * Starts trying to reconnect if reconnection is enabled and we have not
+ * started reconnecting yet
+ *
+ * @api private
+ */
+
+Manager.prototype.maybeReconnectOnOpen = function() {
+  // Only try to reconnect if it's the first time we're connecting
+  if (!this.reconnecting && this._reconnection && this.backoff.attempts === 0) {
+    // keeps reconnection from firing twice for the same reconnection loop
+    this.reconnect();
+  }
+};
+
+
+/**
+ * Sets the current transport `socket`.
+ *
+ * @param {Function} optional, callback
+ * @return {Manager} self
+ * @api public
+ */
+
+Manager.prototype.open =
+Manager.prototype.connect = function(fn){
+  debug('readyState %s', this.readyState);
+  if (~this.readyState.indexOf('open')) return this;
+
+  debug('opening %s', this.uri);
+  this.engine = eio(this.uri, this.opts);
+  var socket = this.engine;
+  var self = this;
+  this.readyState = 'opening';
+  this.skipReconnect = false;
+
+  // emit `open`
+  var openSub = on(socket, 'open', function() {
+    self.onopen();
+    fn && fn();
+  });
+
+  // emit `connect_error`
+  var errorSub = on(socket, 'error', function(data){
+    debug('connect_error');
+    self.cleanup();
+    self.readyState = 'closed';
+    self.emitAll('connect_error', data);
+    if (fn) {
+      var err = new Error('Connection error');
+      err.data = data;
+      fn(err);
+    } else {
+      // Only do this if there is no fn to handle the error
+      self.maybeReconnectOnOpen();
+    }
+  });
+
+  // emit `connect_timeout`
+  if (false !== this._timeout) {
+    var timeout = this._timeout;
+    debug('connect attempt will timeout after %d', timeout);
+
+    // set timer
+    var timer = setTimeout(function(){
+      debug('connect attempt timed out after %d', timeout);
+      openSub.destroy();
+      socket.close();
+      socket.emit('error', 'timeout');
+      self.emitAll('connect_timeout', timeout);
+    }, timeout);
+
+    this.subs.push({
+      destroy: function(){
+        clearTimeout(timer);
+      }
+    });
+  }
+
+  this.subs.push(openSub);
+  this.subs.push(errorSub);
+
+  return this;
+};
+
+/**
+ * Called upon transport open.
+ *
+ * @api private
+ */
+
+Manager.prototype.onopen = function(){
+  debug('open');
+
+  // clear old subs
+  this.cleanup();
+
+  // mark as open
+  this.readyState = 'open';
+  this.emit('open');
+
+  // add new subs
+  var socket = this.engine;
+  this.subs.push(on(socket, 'data', bind(this, 'ondata')));
+  this.subs.push(on(socket, 'ping', bind(this, 'onping')));
+  this.subs.push(on(socket, 'pong', bind(this, 'onpong')));
+  this.subs.push(on(socket, 'error', bind(this, 'onerror')));
+  this.subs.push(on(socket, 'close', bind(this, 'onclose')));
+  this.subs.push(on(this.decoder, 'decoded', bind(this, 'ondecoded')));
+};
+
+/**
+ * Called upon a ping.
+ *
+ * @api private
+ */
+
+Manager.prototype.onping = function(){
+  this.lastPing = new Date;
+  this.emitAll('ping');
+};
+
+/**
+ * Called upon a packet.
+ *
+ * @api private
+ */
+
+Manager.prototype.onpong = function(){
+  this.emitAll('pong', new Date - this.lastPing);
+};
+
+/**
+ * Called with data.
+ *
+ * @api private
+ */
+
+Manager.prototype.ondata = function(data){
+  this.decoder.add(data);
+};
+
+/**
+ * Called when parser fully decodes a packet.
+ *
+ * @api private
+ */
+
+Manager.prototype.ondecoded = function(packet) {
+  this.emit('packet', packet);
+};
+
+/**
+ * Called upon socket error.
+ *
+ * @api private
+ */
+
+Manager.prototype.onerror = function(err){
+  debug('error', err);
+  this.emitAll('error', err);
+};
+
+/**
+ * Creates a new socket for the given `nsp`.
+ *
+ * @return {Socket}
+ * @api public
+ */
+
+Manager.prototype.socket = function(nsp){
+  var socket = this.nsps[nsp];
+  if (!socket) {
+    socket = new Socket(this, nsp);
+    this.nsps[nsp] = socket;
+    var self = this;
+    socket.on('connecting', onConnecting);
+    socket.on('connect', function(){
+      socket.id = self.engine.id;
+    });
+
+    if (this.autoConnect) {
+      // manually call here since connecting evnet is fired before listening
+      onConnecting();
+    }
+  }
+
+  function onConnecting() {
+    if (!~indexOf(self.connecting, socket)) {
+      self.connecting.push(socket);
+    }
+  }
+
+  return socket;
+};
+
+/**
+ * Called upon a socket close.
+ *
+ * @param {Socket} socket
+ */
+
+Manager.prototype.destroy = function(socket){
+  var index = indexOf(this.connecting, socket);
+  if (~index) this.connecting.splice(index, 1);
+  if (this.connecting.length) return;
+
+  this.close();
+};
+
+/**
+ * Writes a packet.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Manager.prototype.packet = function(packet){
+  debug('writing packet %j', packet);
+  var self = this;
+
+  if (!self.encoding) {
+    // encode, then write to engine with result
+    self.encoding = true;
+    this.encoder.encode(packet, function(encodedPackets) {
+      for (var i = 0; i < encodedPackets.length; i++) {
+        self.engine.write(encodedPackets[i], packet.options);
+      }
+      self.encoding = false;
+      self.processPacketQueue();
+    });
+  } else { // add packet to the queue
+    self.packetBuffer.push(packet);
+  }
+};
+
+/**
+ * If packet buffer is non-empty, begins encoding the
+ * next packet in line.
+ *
+ * @api private
+ */
+
+Manager.prototype.processPacketQueue = function() {
+  if (this.packetBuffer.length > 0 && !this.encoding) {
+    var pack = this.packetBuffer.shift();
+    this.packet(pack);
+  }
+};
+
+/**
+ * Clean up transport subscriptions and packet buffer.
+ *
+ * @api private
+ */
+
+Manager.prototype.cleanup = function(){
+  debug('cleanup');
+
+  var sub;
+  while (sub = this.subs.shift()) sub.destroy();
+
+  this.packetBuffer = [];
+  this.encoding = false;
+  this.lastPing = null;
+
+  this.decoder.destroy();
+};
+
+/**
+ * Close the current socket.
+ *
+ * @api private
+ */
+
+Manager.prototype.close =
+Manager.prototype.disconnect = function(){
+  debug('disconnect');
+  this.skipReconnect = true;
+  this.reconnecting = false;
+  if ('opening' == this.readyState) {
+    // `onclose` will not fire because
+    // an open event never happened
+    this.cleanup();
+  }
+  this.backoff.reset();
+  this.readyState = 'closed';
+  if (this.engine) this.engine.close();
+};
+
+/**
+ * Called upon engine close.
+ *
+ * @api private
+ */
+
+Manager.prototype.onclose = function(reason){
+  debug('onclose');
+
+  this.cleanup();
+  this.backoff.reset();
+  this.readyState = 'closed';
+  this.emit('close', reason);
+
+  if (this._reconnection && !this.skipReconnect) {
+    this.reconnect();
+  }
+};
+
+/**
+ * Attempt a reconnection.
+ *
+ * @api private
+ */
+
+Manager.prototype.reconnect = function(){
+  if (this.reconnecting || this.skipReconnect) return this;
+
+  var self = this;
+
+  if (this.backoff.attempts >= this._reconnectionAttempts) {
+    debug('reconnect failed');
+    this.backoff.reset();
+    this.emitAll('reconnect_failed');
+    this.reconnecting = false;
+  } else {
+    var delay = this.backoff.duration();
+    debug('will wait %dms before reconnect attempt', delay);
+
+    this.reconnecting = true;
+    var timer = setTimeout(function(){
+      if (self.skipReconnect) return;
+
+      debug('attempting reconnect');
+      self.emitAll('reconnect_attempt', self.backoff.attempts);
+      self.emitAll('reconnecting', self.backoff.attempts);
+
+      // check again for the case socket closed in above events
+      if (self.skipReconnect) return;
+
+      self.open(function(err){
+        if (err) {
+          debug('reconnect attempt error');
+          self.reconnecting = false;
+          self.reconnect();
+          self.emitAll('reconnect_error', err.data);
+        } else {
+          debug('reconnect success');
+          self.onreconnect();
+        }
+      });
+    }, delay);
+
+    this.subs.push({
+      destroy: function(){
+        clearTimeout(timer);
+      }
+    });
+  }
+};
+
+/**
+ * Called upon successful reconnect.
+ *
+ * @api private
+ */
+
+Manager.prototype.onreconnect = function(){
+  var attempt = this.backoff.attempts;
+  this.reconnecting = false;
+  this.backoff.reset();
+  this.updateSocketIds();
+  this.emitAll('reconnect', attempt);
+};
+
+}).apply(this, arguments);
+
+},{"./on":131,"./socket":132,"backo2":26,"component-bind":33,"component-emitter":134,"debug":135,"engine.io-client":36,"indexof":54,"socket.io-parser":138}],131:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/on.js", module);
+(function(){
+
+/**
+ * Module exports.
+ */
+
+module.exports = on;
+
+/**
+ * Helper for subscriptions.
+ *
+ * @param {Object|EventEmitter} obj with `Emitter` mixin or `EventEmitter`
+ * @param {String} event name
+ * @param {Function} callback
+ * @api public
+ */
+
+function on(obj, ev, fn) {
+  obj.on(ev, fn);
+  return {
+    destroy: function(){
+      obj.removeListener(ev, fn);
+    }
+  };
+}
+
+}).apply(this, arguments);
+
+},{}],132:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/socket.js", module);
+(function(){
+
+/**
+ * Module dependencies.
+ */
+
+var parser = require('socket.io-parser');
+var Emitter = require('component-emitter');
+var toArray = require('to-array');
+var on = require('./on');
+var bind = require('component-bind');
+var debug = require('debug')('socket.io-client:socket');
+var hasBin = require('has-binary');
+
+/**
+ * Module exports.
+ */
+
+module.exports = exports = Socket;
+
+/**
+ * Internal events (blacklisted).
+ * These events can't be emitted by the user.
+ *
+ * @api private
+ */
+
+var events = {
+  connect: 1,
+  connect_error: 1,
+  connect_timeout: 1,
+  connecting: 1,
+  disconnect: 1,
+  error: 1,
+  reconnect: 1,
+  reconnect_attempt: 1,
+  reconnect_failed: 1,
+  reconnect_error: 1,
+  reconnecting: 1,
+  ping: 1,
+  pong: 1
+};
+
+/**
+ * Shortcut to `Emitter#emit`.
+ */
+
+var emit = Emitter.prototype.emit;
+
+/**
+ * `Socket` constructor.
+ *
+ * @api public
+ */
+
+function Socket(io, nsp){
+  this.io = io;
+  this.nsp = nsp;
+  this.json = this; // compat
+  this.ids = 0;
+  this.acks = {};
+  this.receiveBuffer = [];
+  this.sendBuffer = [];
+  this.connected = false;
+  this.disconnected = true;
+  if (this.io.autoConnect) this.open();
+}
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Socket.prototype);
+
+/**
+ * Subscribe to open, close and packet events
+ *
+ * @api private
+ */
+
+Socket.prototype.subEvents = function() {
+  if (this.subs) return;
+
+  var io = this.io;
+  this.subs = [
+    on(io, 'open', bind(this, 'onopen')),
+    on(io, 'packet', bind(this, 'onpacket')),
+    on(io, 'close', bind(this, 'onclose'))
+  ];
+};
+
+/**
+ * "Opens" the socket.
+ *
+ * @api public
+ */
+
+Socket.prototype.open =
+Socket.prototype.connect = function(){
+  if (this.connected) return this;
+
+  this.subEvents();
+  this.io.open(); // ensure open
+  if ('open' == this.io.readyState) this.onopen();
+  this.emit('connecting');
+  return this;
+};
+
+/**
+ * Sends a `message` event.
+ *
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.send = function(){
+  var args = toArray(arguments);
+  args.unshift('message');
+  this.emit.apply(this, args);
+  return this;
+};
+
+/**
+ * Override `emit`.
+ * If the event is in `events`, it's emitted normally.
+ *
+ * @param {String} event name
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.emit = function(ev){
+  if (events.hasOwnProperty(ev)) {
+    emit.apply(this, arguments);
+    return this;
+  }
+
+  var args = toArray(arguments);
+  var parserType = parser.EVENT; // default
+  if (hasBin(args)) { parserType = parser.BINARY_EVENT; } // binary
+  var packet = { type: parserType, data: args };
+
+  packet.options = {};
+  packet.options.compress = !this.flags || false !== this.flags.compress;
+
+  // event ack callback
+  if ('function' == typeof args[args.length - 1]) {
+    debug('emitting packet with ack id %d', this.ids);
+    this.acks[this.ids] = args.pop();
+    packet.id = this.ids++;
+  }
+
+  if (this.connected) {
+    this.packet(packet);
+  } else {
+    this.sendBuffer.push(packet);
+  }
+
+  delete this.flags;
+
+  return this;
+};
+
+/**
+ * Sends a packet.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.packet = function(packet){
+  packet.nsp = this.nsp;
+  this.io.packet(packet);
+};
+
+/**
+ * Called upon engine `open`.
+ *
+ * @api private
+ */
+
+Socket.prototype.onopen = function(){
+  debug('transport is open - connecting');
+
+  // write connect packet if necessary
+  if ('/' != this.nsp) {
+    this.packet({ type: parser.CONNECT });
+  }
+};
+
+/**
+ * Called upon engine `close`.
+ *
+ * @param {String} reason
+ * @api private
+ */
+
+Socket.prototype.onclose = function(reason){
+  debug('close (%s)', reason);
+  this.connected = false;
+  this.disconnected = true;
+  delete this.id;
+  this.emit('disconnect', reason);
+};
+
+/**
+ * Called with socket packet.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.onpacket = function(packet){
+  if (packet.nsp != this.nsp) return;
+
+  switch (packet.type) {
+    case parser.CONNECT:
+      this.onconnect();
+      break;
+
+    case parser.EVENT:
+      this.onevent(packet);
+      break;
+
+    case parser.BINARY_EVENT:
+      this.onevent(packet);
+      break;
+
+    case parser.ACK:
+      this.onack(packet);
+      break;
+
+    case parser.BINARY_ACK:
+      this.onack(packet);
+      break;
+
+    case parser.DISCONNECT:
+      this.ondisconnect();
+      break;
+
+    case parser.ERROR:
+      this.emit('error', packet.data);
+      break;
+  }
+};
+
+/**
+ * Called upon a server event.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.onevent = function(packet){
+  var args = packet.data || [];
+  debug('emitting event %j', args);
+
+  if (null != packet.id) {
+    debug('attaching ack callback to event');
+    args.push(this.ack(packet.id));
+  }
+
+  if (this.connected) {
+    emit.apply(this, args);
+  } else {
+    this.receiveBuffer.push(args);
+  }
+};
+
+/**
+ * Produces an ack callback to emit with an event.
+ *
+ * @api private
+ */
+
+Socket.prototype.ack = function(id){
+  var self = this;
+  var sent = false;
+  return function(){
+    // prevent double callbacks
+    if (sent) return;
+    sent = true;
+    var args = toArray(arguments);
+    debug('sending ack %j', args);
+
+    var type = hasBin(args) ? parser.BINARY_ACK : parser.ACK;
+    self.packet({
+      type: type,
+      id: id,
+      data: args
+    });
+  };
+};
+
+/**
+ * Called upon a server acknowlegement.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.onack = function(packet){
+  var ack = this.acks[packet.id];
+  if ('function' == typeof ack) {
+    debug('calling ack %s with %j', packet.id, packet.data);
+    ack.apply(this, packet.data);
+    delete this.acks[packet.id];
+  } else {
+    debug('bad ack %s', packet.id);
+  }
+};
+
+/**
+ * Called upon server connect.
+ *
+ * @api private
+ */
+
+Socket.prototype.onconnect = function(){
+  this.connected = true;
+  this.disconnected = false;
+  this.emit('connect');
+  this.emitBuffered();
+};
+
+/**
+ * Emit buffered events (received and emitted).
+ *
+ * @api private
+ */
+
+Socket.prototype.emitBuffered = function(){
+  var i;
+  for (i = 0; i < this.receiveBuffer.length; i++) {
+    emit.apply(this, this.receiveBuffer[i]);
+  }
+  this.receiveBuffer = [];
+
+  for (i = 0; i < this.sendBuffer.length; i++) {
+    this.packet(this.sendBuffer[i]);
+  }
+  this.sendBuffer = [];
+};
+
+/**
+ * Called upon server disconnect.
+ *
+ * @api private
+ */
+
+Socket.prototype.ondisconnect = function(){
+  debug('server disconnect (%s)', this.nsp);
+  this.destroy();
+  this.onclose('io server disconnect');
+};
+
+/**
+ * Called upon forced client/server side disconnections,
+ * this method ensures the manager stops tracking us and
+ * that reconnections don't get triggered for this.
+ *
+ * @api private.
+ */
+
+Socket.prototype.destroy = function(){
+  if (this.subs) {
+    // clean subscriptions to avoid reconnections
+    for (var i = 0; i < this.subs.length; i++) {
+      this.subs[i].destroy();
+    }
+    this.subs = null;
+  }
+
+  this.io.destroy(this);
+};
+
+/**
+ * Disconnects the socket manually.
+ *
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.close =
+Socket.prototype.disconnect = function(){
+  if (this.connected) {
+    debug('performing disconnect (%s)', this.nsp);
+    this.packet({ type: parser.DISCONNECT });
+  }
+
+  // remove socket from pool
+  this.destroy();
+
+  if (this.connected) {
+    // fire events
+    this.onclose('io client disconnect');
+  }
+  return this;
+};
+
+/**
+ * Sets the compress flag.
+ *
+ * @param {Boolean} if `true`, compresses the sending data
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.compress = function(compress){
+  this.flags = this.flags || {};
+  this.flags.compress = compress;
+  return this;
+};
+
+}).apply(this, arguments);
+
+},{"./on":131,"component-bind":33,"component-emitter":134,"debug":135,"has-binary":52,"socket.io-parser":138,"to-array":143}],133:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/url.js", module);
+(function(){
+(function (global){
+
+/**
+ * Module dependencies.
+ */
+
+var parseuri = require('parseuri');
+var debug = require('debug')('socket.io-client:url');
+
+/**
+ * Module exports.
+ */
+
+module.exports = url;
+
+/**
+ * URL parser.
+ *
+ * @param {String} url
+ * @param {Object} An object meant to mimic window.location.
+ *                 Defaults to window.location.
+ * @api public
+ */
+
+function url(uri, loc){
+  var obj = uri;
+
+  // default to window.location
+  var loc = loc || global.location;
+  if (null == uri) uri = loc.protocol + '//' + loc.host;
+
+  // relative path support
+  if ('string' == typeof uri) {
+    if ('/' == uri.charAt(0)) {
+      if ('/' == uri.charAt(1)) {
+        uri = loc.protocol + uri;
+      } else {
+        uri = loc.host + uri;
+      }
+    }
+
+    if (!/^(https?|wss?):\/\//.test(uri)) {
+      debug('protocol-less url %s', uri);
+      if ('undefined' != typeof loc) {
+        uri = loc.protocol + '//' + uri;
+      } else {
+        uri = 'https://' + uri;
+      }
+    }
+
+    // parse
+    debug('parse %s', uri);
+    obj = parseuri(uri);
+  }
+
+  // make sure we treat `localhost:80` and `localhost` equally
+  if (!obj.port) {
+    if (/^(http|ws)$/.test(obj.protocol)) {
+      obj.port = '80';
+    }
+    else if (/^(http|ws)s$/.test(obj.protocol)) {
+      obj.port = '443';
+    }
+  }
+
+  obj.path = obj.path || '/';
+
+  var ipv6 = obj.host.indexOf(':') !== -1;
+  var host = ipv6 ? '[' + obj.host + ']' : obj.host;
+
+  // define unique id
+  obj.id = obj.protocol + '://' + host + ':' + obj.port;
+  // define href
+  obj.href = obj.protocol + '://' + host + (loc && loc.port == obj.port ? '' : (':' + obj.port));
+
+  return obj;
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"debug":135,"parseuri":127}],134:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/component-emitter/index.js", module);
+(function(){
+
+/**
+ * Expose `Emitter`.
+ */
+
+module.exports = Emitter;
+
+/**
+ * Initialize a new `Emitter`.
+ *
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
+};
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Listen on the given `event` with `fn`.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  function on() {
+    this.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  on.fn = fn;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks['$' + event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks['$' + event];
+    return this;
+  }
+
+  // remove specific handler
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
+    }
+  }
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+  var args = [].slice.call(arguments, 1)
+    , callbacks = this._callbacks['$' + event];
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks['$' + event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
+
+}).apply(this, arguments);
+
+},{}],135:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":136}],136:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":124}],137:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/binary.js", module);
+(function(){
+(function (global){
+/*global Blob,File*/
+
+/**
+ * Module requirements
+ */
+
+var isArray = require('isarray');
+var isBuf = require('./is-buffer');
+
+/**
+ * Replaces every Buffer | ArrayBuffer in packet with a numbered placeholder.
+ * Anything with blobs or files should be fed through removeBlobs before coming
+ * here.
+ *
+ * @param {Object} packet - socket.io event packet
+ * @return {Object} with deconstructed packet and list of buffers
+ * @api public
+ */
+
+exports.deconstructPacket = function(packet){
+  var buffers = [];
+  var packetData = packet.data;
+
+  function _deconstructPacket(data) {
+    if (!data) return data;
+
+    if (isBuf(data)) {
+      var placeholder = { _placeholder: true, num: buffers.length };
+      buffers.push(data);
+      return placeholder;
+    } else if (isArray(data)) {
+      var newData = new Array(data.length);
+      for (var i = 0; i < data.length; i++) {
+        newData[i] = _deconstructPacket(data[i]);
+      }
+      return newData;
+    } else if ('object' == typeof data && !(data instanceof Date)) {
+      var newData = {};
+      for (var key in data) {
+        newData[key] = _deconstructPacket(data[key]);
+      }
+      return newData;
+    }
+    return data;
+  }
+
+  var pack = packet;
+  pack.data = _deconstructPacket(packetData);
+  pack.attachments = buffers.length; // number of binary 'attachments'
+  return {packet: pack, buffers: buffers};
+};
+
+/**
+ * Reconstructs a binary packet from its placeholder packet and buffers
+ *
+ * @param {Object} packet - event packet with placeholders
+ * @param {Array} buffers - binary buffers to put in placeholder positions
+ * @return {Object} reconstructed packet
+ * @api public
+ */
+
+exports.reconstructPacket = function(packet, buffers) {
+  var curPlaceHolder = 0;
+
+  function _reconstructPacket(data) {
+    if (data && data._placeholder) {
+      var buf = buffers[data.num]; // appropriate buffer (should be natural order anyway)
+      return buf;
+    } else if (isArray(data)) {
+      for (var i = 0; i < data.length; i++) {
+        data[i] = _reconstructPacket(data[i]);
+      }
+      return data;
+    } else if (data && 'object' == typeof data) {
+      for (var key in data) {
+        data[key] = _reconstructPacket(data[key]);
+      }
+      return data;
+    }
+    return data;
+  }
+
+  packet.data = _reconstructPacket(packet.data);
+  packet.attachments = undefined; // no longer useful
+  return packet;
+};
+
+/**
+ * Asynchronously removes Blobs or Files from data via
+ * FileReader's readAsArrayBuffer method. Used before encoding
+ * data as msgpack. Calls callback with the blobless data.
+ *
+ * @param {Object} data
+ * @param {Function} callback
+ * @api private
+ */
+
+exports.removeBlobs = function(data, callback) {
+  function _removeBlobs(obj, curKey, containingObject) {
+    if (!obj) return obj;
+
+    // convert any blob
+    if ((global.Blob && obj instanceof Blob) ||
+        (global.File && obj instanceof File)) {
+      pendingBlobs++;
+
+      // async filereader
+      var fileReader = new FileReader();
+      fileReader.onload = function() { // this.result == arraybuffer
+        if (containingObject) {
+          containingObject[curKey] = this.result;
+        }
+        else {
+          bloblessData = this.result;
+        }
+
+        // if nothing pending its callback time
+        if(! --pendingBlobs) {
+          callback(bloblessData);
+        }
+      };
+
+      fileReader.readAsArrayBuffer(obj); // blob -> arraybuffer
+    } else if (isArray(obj)) { // handle array
+      for (var i = 0; i < obj.length; i++) {
+        _removeBlobs(obj[i], i, obj);
+      }
+    } else if (obj && 'object' == typeof obj && !isBuf(obj)) { // and object
+      for (var key in obj) {
+        _removeBlobs(obj[key], key, obj);
+      }
+    }
+  }
+
+  var pendingBlobs = 0;
+  var bloblessData = data;
+  _removeBlobs(bloblessData);
+  if (!pendingBlobs) {
+    callback(bloblessData);
+  }
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{"./is-buffer":139,"isarray":55}],138:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/index.js", module);
+(function(){
+
+/**
+ * Module dependencies.
+ */
+
+var debug = require('debug')('socket.io-parser');
+var json = require('json3');
+var isArray = require('isarray');
+var Emitter = require('component-emitter');
+var binary = require('./binary');
+var isBuf = require('./is-buffer');
+
+/**
+ * Protocol version.
+ *
+ * @api public
+ */
+
+exports.protocol = 4;
+
+/**
+ * Packet types.
+ *
+ * @api public
+ */
+
+exports.types = [
+  'CONNECT',
+  'DISCONNECT',
+  'EVENT',
+  'ACK',
+  'ERROR',
+  'BINARY_EVENT',
+  'BINARY_ACK'
+];
+
+/**
+ * Packet type `connect`.
+ *
+ * @api public
+ */
+
+exports.CONNECT = 0;
+
+/**
+ * Packet type `disconnect`.
+ *
+ * @api public
+ */
+
+exports.DISCONNECT = 1;
+
+/**
+ * Packet type `event`.
+ *
+ * @api public
+ */
+
+exports.EVENT = 2;
+
+/**
+ * Packet type `ack`.
+ *
+ * @api public
+ */
+
+exports.ACK = 3;
+
+/**
+ * Packet type `error`.
+ *
+ * @api public
+ */
+
+exports.ERROR = 4;
+
+/**
+ * Packet type 'binary event'
+ *
+ * @api public
+ */
+
+exports.BINARY_EVENT = 5;
+
+/**
+ * Packet type `binary ack`. For acks with binary arguments.
+ *
+ * @api public
+ */
+
+exports.BINARY_ACK = 6;
+
+/**
+ * Encoder constructor.
+ *
+ * @api public
+ */
+
+exports.Encoder = Encoder;
+
+/**
+ * Decoder constructor.
+ *
+ * @api public
+ */
+
+exports.Decoder = Decoder;
+
+/**
+ * A socket.io Encoder instance
+ *
+ * @api public
+ */
+
+function Encoder() {}
+
+/**
+ * Encode a packet as a single string if non-binary, or as a
+ * buffer sequence, depending on packet type.
+ *
+ * @param {Object} obj - packet object
+ * @param {Function} callback - function to handle encodings (likely engine.write)
+ * @return Calls callback with Array of encodings
+ * @api public
+ */
+
+Encoder.prototype.encode = function(obj, callback){
+  debug('encoding packet %j', obj);
+
+  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
+    encodeAsBinary(obj, callback);
+  }
+  else {
+    var encoding = encodeAsString(obj);
+    callback([encoding]);
+  }
+};
+
+/**
+ * Encode packet as string.
+ *
+ * @param {Object} packet
+ * @return {String} encoded
+ * @api private
+ */
+
+function encodeAsString(obj) {
+  var str = '';
+  var nsp = false;
+
+  // first is type
+  str += obj.type;
+
+  // attachments if we have them
+  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
+    str += obj.attachments;
+    str += '-';
+  }
+
+  // if we have a namespace other than `/`
+  // we append it followed by a comma `,`
+  if (obj.nsp && '/' != obj.nsp) {
+    nsp = true;
+    str += obj.nsp;
+  }
+
+  // immediately followed by the id
+  if (null != obj.id) {
+    if (nsp) {
+      str += ',';
+      nsp = false;
+    }
+    str += obj.id;
+  }
+
+  // json data
+  if (null != obj.data) {
+    if (nsp) str += ',';
+    str += json.stringify(obj.data);
+  }
+
+  debug('encoded %j as %s', obj, str);
+  return str;
+}
+
+/**
+ * Encode packet as 'buffer sequence' by removing blobs, and
+ * deconstructing packet into object with placeholders and
+ * a list of buffers.
+ *
+ * @param {Object} packet
+ * @return {Buffer} encoded
+ * @api private
+ */
+
+function encodeAsBinary(obj, callback) {
+
+  function writeEncoding(bloblessData) {
+    var deconstruction = binary.deconstructPacket(bloblessData);
+    var pack = encodeAsString(deconstruction.packet);
+    var buffers = deconstruction.buffers;
+
+    buffers.unshift(pack); // add packet info to beginning of data list
+    callback(buffers); // write all the buffers
+  }
+
+  binary.removeBlobs(obj, writeEncoding);
+}
+
+/**
+ * A socket.io Decoder instance
+ *
+ * @return {Object} decoder
+ * @api public
+ */
+
+function Decoder() {
+  this.reconstructor = null;
+}
+
+/**
+ * Mix in `Emitter` with Decoder.
+ */
+
+Emitter(Decoder.prototype);
+
+/**
+ * Decodes an ecoded packet string into packet JSON.
+ *
+ * @param {String} obj - encoded packet
+ * @return {Object} packet
+ * @api public
+ */
+
+Decoder.prototype.add = function(obj) {
+  var packet;
+  if ('string' == typeof obj) {
+    packet = decodeString(obj);
+    if (exports.BINARY_EVENT == packet.type || exports.BINARY_ACK == packet.type) { // binary packet's json
+      this.reconstructor = new BinaryReconstructor(packet);
+
+      // no attachments, labeled binary but no binary data to follow
+      if (this.reconstructor.reconPack.attachments === 0) {
+        this.emit('decoded', packet);
+      }
+    } else { // non-binary full packet
+      this.emit('decoded', packet);
+    }
+  }
+  else if (isBuf(obj) || obj.base64) { // raw binary data
+    if (!this.reconstructor) {
+      throw new Error('got binary data when not reconstructing a packet');
+    } else {
+      packet = this.reconstructor.takeBinaryData(obj);
+      if (packet) { // received final buffer
+        this.reconstructor = null;
+        this.emit('decoded', packet);
+      }
+    }
+  }
+  else {
+    throw new Error('Unknown type: ' + obj);
+  }
+};
+
+/**
+ * Decode a packet String (JSON data)
+ *
+ * @param {String} str
+ * @return {Object} packet
+ * @api private
+ */
+
+function decodeString(str) {
+  var p = {};
+  var i = 0;
+
+  // look up type
+  p.type = Number(str.charAt(0));
+  if (null == exports.types[p.type]) return error();
+
+  // look up attachments if type binary
+  if (exports.BINARY_EVENT == p.type || exports.BINARY_ACK == p.type) {
+    var buf = '';
+    while (str.charAt(++i) != '-') {
+      buf += str.charAt(i);
+      if (i == str.length) break;
+    }
+    if (buf != Number(buf) || str.charAt(i) != '-') {
+      throw new Error('Illegal attachments');
+    }
+    p.attachments = Number(buf);
+  }
+
+  // look up namespace (if any)
+  if ('/' == str.charAt(i + 1)) {
+    p.nsp = '';
+    while (++i) {
+      var c = str.charAt(i);
+      if (',' == c) break;
+      p.nsp += c;
+      if (i == str.length) break;
+    }
+  } else {
+    p.nsp = '/';
+  }
+
+  // look up id
+  var next = str.charAt(i + 1);
+  if ('' !== next && Number(next) == next) {
+    p.id = '';
+    while (++i) {
+      var c = str.charAt(i);
+      if (null == c || Number(c) != c) {
+        --i;
+        break;
+      }
+      p.id += str.charAt(i);
+      if (i == str.length) break;
+    }
+    p.id = Number(p.id);
+  }
+
+  // look up json data
+  if (str.charAt(++i)) {
+    try {
+      p.data = json.parse(str.substr(i));
+    } catch(e){
+      return error();
+    }
+  }
+
+  debug('decoded %s as %j', str, p);
+  return p;
+}
+
+/**
+ * Deallocates a parser's resources
+ *
+ * @api public
+ */
+
+Decoder.prototype.destroy = function() {
+  if (this.reconstructor) {
+    this.reconstructor.finishedReconstruction();
+  }
+};
+
+/**
+ * A manager of a binary event's 'buffer sequence'. Should
+ * be constructed whenever a packet of type BINARY_EVENT is
+ * decoded.
+ *
+ * @param {Object} packet
+ * @return {BinaryReconstructor} initialized reconstructor
+ * @api private
+ */
+
+function BinaryReconstructor(packet) {
+  this.reconPack = packet;
+  this.buffers = [];
+}
+
+/**
+ * Method to be called when binary data received from connection
+ * after a BINARY_EVENT packet.
+ *
+ * @param {Buffer | ArrayBuffer} binData - the raw binary data received
+ * @return {null | Object} returns null if more binary data is expected or
+ *   a reconstructed packet object if all buffers have been received.
+ * @api private
+ */
+
+BinaryReconstructor.prototype.takeBinaryData = function(binData) {
+  this.buffers.push(binData);
+  if (this.buffers.length == this.reconPack.attachments) { // done with buffer list
+    var packet = binary.reconstructPacket(this.reconPack, this.buffers);
+    this.finishedReconstruction();
+    return packet;
+  }
+  return null;
+};
+
+/**
+ * Cleans up binary packet reconstruction variables.
+ *
+ * @api private
+ */
+
+BinaryReconstructor.prototype.finishedReconstruction = function() {
+  this.reconPack = null;
+  this.buffers = [];
+};
+
+function error(data){
+  return {
+    type: exports.ERROR,
+    data: 'parser error'
+  };
+}
+
+}).apply(this, arguments);
+
+},{"./binary":137,"./is-buffer":139,"component-emitter":34,"debug":140,"isarray":55,"json3":142}],139:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/is-buffer.js", module);
+(function(){
+(function (global){
+
+module.exports = isBuf;
+
+/**
+ * Returns true if obj is a buffer or an arraybuffer.
+ *
+ * @api private
+ */
+
+function isBuf(obj) {
+  return (global.Buffer && global.Buffer.isBuffer(obj)) ||
+         (global.ArrayBuffer && obj instanceof ArrayBuffer);
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{}],140:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":141}],141:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":124}],142:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/json3/lib/json3.js", module);
+(function(){
+(function (global){
+/*! JSON v3.3.2 | http://bestiejs.github.io/json3 | Copyright 2012-2014, Kit Cambridge | http://kit.mit-license.org */
+;(function () {
+  // Detect the `define` function exposed by asynchronous module loaders. The
+  // strict `define` check is necessary for compatibility with `r.js`.
+  var isLoader = typeof define === "function" && define.amd;
+
+  // A set of types used to distinguish objects from primitives.
+  var objectTypes = {
+    "function": true,
+    "object": true
+  };
+
+  // Detect the `exports` object exposed by CommonJS implementations.
+  var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
+
+  // Use the `global` object exposed by Node (including Browserify via
+  // `insert-module-globals`), Narwhal, and Ringo as the default context,
+  // and the `window` object in browsers. Rhino exports a `global` function
+  // instead.
+  var root = objectTypes[typeof window] && window || this,
+      freeGlobal = freeExports && objectTypes[typeof module] && module && !module.nodeType && typeof global == "object" && global;
+
+  if (freeGlobal && (freeGlobal["global"] === freeGlobal || freeGlobal["window"] === freeGlobal || freeGlobal["self"] === freeGlobal)) {
+    root = freeGlobal;
+  }
+
+  // Public: Initializes JSON 3 using the given `context` object, attaching the
+  // `stringify` and `parse` functions to the specified `exports` object.
+  function runInContext(context, exports) {
+    context || (context = root["Object"]());
+    exports || (exports = root["Object"]());
+
+    // Native constructor aliases.
+    var Number = context["Number"] || root["Number"],
+        String = context["String"] || root["String"],
+        Object = context["Object"] || root["Object"],
+        Date = context["Date"] || root["Date"],
+        SyntaxError = context["SyntaxError"] || root["SyntaxError"],
+        TypeError = context["TypeError"] || root["TypeError"],
+        Math = context["Math"] || root["Math"],
+        nativeJSON = context["JSON"] || root["JSON"];
+
+    // Delegate to the native `stringify` and `parse` implementations.
+    if (typeof nativeJSON == "object" && nativeJSON) {
+      exports.stringify = nativeJSON.stringify;
+      exports.parse = nativeJSON.parse;
+    }
+
+    // Convenience aliases.
+    var objectProto = Object.prototype,
+        getClass = objectProto.toString,
+        isProperty, forEach, undef;
+
+    // Test the `Date#getUTC*` methods. Based on work by @Yaffle.
+    var isExtended = new Date(-3509827334573292);
+    try {
+      // The `getUTCFullYear`, `Month`, and `Date` methods return nonsensical
+      // results for certain dates in Opera >= 10.53.
+      isExtended = isExtended.getUTCFullYear() == -109252 && isExtended.getUTCMonth() === 0 && isExtended.getUTCDate() === 1 &&
+        // Safari < 2.0.2 stores the internal millisecond time value correctly,
+        // but clips the values returned by the date methods to the range of
+        // signed 32-bit integers ([-2 ** 31, 2 ** 31 - 1]).
+        isExtended.getUTCHours() == 10 && isExtended.getUTCMinutes() == 37 && isExtended.getUTCSeconds() == 6 && isExtended.getUTCMilliseconds() == 708;
+    } catch (exception) {}
+
+    // Internal: Determines whether the native `JSON.stringify` and `parse`
+    // implementations are spec-compliant. Based on work by Ken Snyder.
+    function has(name) {
+      if (has[name] !== undef) {
+        // Return cached feature test result.
+        return has[name];
+      }
+      var isSupported;
+      if (name == "bug-string-char-index") {
+        // IE <= 7 doesn't support accessing string characters using square
+        // bracket notation. IE 8 only supports this for primitives.
+        isSupported = "a"[0] != "a";
+      } else if (name == "json") {
+        // Indicates whether both `JSON.stringify` and `JSON.parse` are
+        // supported.
+        isSupported = has("json-stringify") && has("json-parse");
+      } else {
+        var value, serialized = '{"a":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}';
+        // Test `JSON.stringify`.
+        if (name == "json-stringify") {
+          var stringify = exports.stringify, stringifySupported = typeof stringify == "function" && isExtended;
+          if (stringifySupported) {
+            // A test function object with a custom `toJSON` method.
+            (value = function () {
+              return 1;
+            }).toJSON = value;
+            try {
+              stringifySupported =
+                // Firefox 3.1b1 and b2 serialize string, number, and boolean
+                // primitives as object literals.
+                stringify(0) === "0" &&
+                // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
+                // literals.
+                stringify(new Number()) === "0" &&
+                stringify(new String()) == '""' &&
+                // FF 3.1b1, 2 throw an error if the value is `null`, `undefined`, or
+                // does not define a canonical JSON representation (this applies to
+                // objects with `toJSON` properties as well, *unless* they are nested
+                // within an object or array).
+                stringify(getClass) === undef &&
+                // IE 8 serializes `undefined` as `"undefined"`. Safari <= 5.1.7 and
+                // FF 3.1b3 pass this test.
+                stringify(undef) === undef &&
+                // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
+                // respectively, if the value is omitted entirely.
+                stringify() === undef &&
+                // FF 3.1b1, 2 throw an error if the given value is not a number,
+                // string, array, object, Boolean, or `null` literal. This applies to
+                // objects with custom `toJSON` methods as well, unless they are nested
+                // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
+                // methods entirely.
+                stringify(value) === "1" &&
+                stringify([value]) == "[1]" &&
+                // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
+                // `"[null]"`.
+                stringify([undef]) == "[null]" &&
+                // YUI 3.0.0b1 fails to serialize `null` literals.
+                stringify(null) == "null" &&
+                // FF 3.1b1, 2 halts serialization if an array contains a function:
+                // `[1, true, getClass, 1]` serializes as "[1,true,],". FF 3.1b3
+                // elides non-JSON values from objects and arrays, unless they
+                // define custom `toJSON` methods.
+                stringify([undef, getClass, null]) == "[null,null,null]" &&
+                // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
+                // where character escape codes are expected (e.g., `\b` => `\u0008`).
+                stringify({ "a": [value, true, false, null, "\x00\b\n\f\r\t"] }) == serialized &&
+                // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
+                stringify(null, value) === "1" &&
+                stringify([1, 2], null, 1) == "[\n 1,\n 2\n]" &&
+                // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
+                // serialize extended years.
+                stringify(new Date(-8.64e15)) == '"-271821-04-20T00:00:00.000Z"' &&
+                // The milliseconds are optional in ES 5, but required in 5.1.
+                stringify(new Date(8.64e15)) == '"+275760-09-13T00:00:00.000Z"' &&
+                // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
+                // four-digit years instead of six-digit years. Credits: @Yaffle.
+                stringify(new Date(-621987552e5)) == '"-000001-01-01T00:00:00.000Z"' &&
+                // Safari <= 5.1.5 and Opera >= 10.53 incorrectly serialize millisecond
+                // values less than 1000. Credits: @Yaffle.
+                stringify(new Date(-1)) == '"1969-12-31T23:59:59.999Z"';
+            } catch (exception) {
+              stringifySupported = false;
+            }
+          }
+          isSupported = stringifySupported;
+        }
+        // Test `JSON.parse`.
+        if (name == "json-parse") {
+          var parse = exports.parse;
+          if (typeof parse == "function") {
+            try {
+              // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
+              // Conforming implementations should also coerce the initial argument to
+              // a string prior to parsing.
+              if (parse("0") === 0 && !parse(false)) {
+                // Simple parsing test.
+                value = parse(serialized);
+                var parseSupported = value["a"].length == 5 && value["a"][0] === 1;
+                if (parseSupported) {
+                  try {
+                    // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
+                    parseSupported = !parse('"\t"');
+                  } catch (exception) {}
+                  if (parseSupported) {
+                    try {
+                      // FF 4.0 and 4.0.1 allow leading `+` signs and leading
+                      // decimal points. FF 4.0, 4.0.1, and IE 9-10 also allow
+                      // certain octal literals.
+                      parseSupported = parse("01") !== 1;
+                    } catch (exception) {}
+                  }
+                  if (parseSupported) {
+                    try {
+                      // FF 4.0, 4.0.1, and Rhino 1.7R3-R4 allow trailing decimal
+                      // points. These environments, along with FF 3.1b1 and 2,
+                      // also allow trailing commas in JSON objects and arrays.
+                      parseSupported = parse("1.") !== 1;
+                    } catch (exception) {}
+                  }
+                }
+              }
+            } catch (exception) {
+              parseSupported = false;
+            }
+          }
+          isSupported = parseSupported;
+        }
+      }
+      return has[name] = !!isSupported;
+    }
+
+    if (!has("json")) {
+      // Common `[[Class]]` name aliases.
+      var functionClass = "[object Function]",
+          dateClass = "[object Date]",
+          numberClass = "[object Number]",
+          stringClass = "[object String]",
+          arrayClass = "[object Array]",
+          booleanClass = "[object Boolean]";
+
+      // Detect incomplete support for accessing string characters by index.
+      var charIndexBuggy = has("bug-string-char-index");
+
+      // Define additional utility methods if the `Date` methods are buggy.
+      if (!isExtended) {
+        var floor = Math.floor;
+        // A mapping between the months of the year and the number of days between
+        // January 1st and the first of the respective month.
+        var Months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        // Internal: Calculates the number of days between the Unix epoch and the
+        // first day of the given month.
+        var getDay = function (year, month) {
+          return Months[month] + 365 * (year - 1970) + floor((year - 1969 + (month = +(month > 1))) / 4) - floor((year - 1901 + month) / 100) + floor((year - 1601 + month) / 400);
+        };
+      }
+
+      // Internal: Determines if a property is a direct property of the given
+      // object. Delegates to the native `Object#hasOwnProperty` method.
+      if (!(isProperty = objectProto.hasOwnProperty)) {
+        isProperty = function (property) {
+          var members = {}, constructor;
+          if ((members.__proto__ = null, members.__proto__ = {
+            // The *proto* property cannot be set multiple times in recent
+            // versions of Firefox and SeaMonkey.
+            "toString": 1
+          }, members).toString != getClass) {
+            // Safari <= 2.0.3 doesn't implement `Object#hasOwnProperty`, but
+            // supports the mutable *proto* property.
+            isProperty = function (property) {
+              // Capture and break the object's prototype chain (see section 8.6.2
+              // of the ES 5.1 spec). The parenthesized expression prevents an
+              // unsafe transformation by the Closure Compiler.
+              var original = this.__proto__, result = property in (this.__proto__ = null, this);
+              // Restore the original prototype chain.
+              this.__proto__ = original;
+              return result;
+            };
+          } else {
+            // Capture a reference to the top-level `Object` constructor.
+            constructor = members.constructor;
+            // Use the `constructor` property to simulate `Object#hasOwnProperty` in
+            // other environments.
+            isProperty = function (property) {
+              var parent = (this.constructor || constructor).prototype;
+              return property in this && !(property in parent && this[property] === parent[property]);
+            };
+          }
+          members = null;
+          return isProperty.call(this, property);
+        };
+      }
+
+      // Internal: Normalizes the `for...in` iteration algorithm across
+      // environments. Each enumerated key is yielded to a `callback` function.
+      forEach = function (object, callback) {
+        var size = 0, Properties, members, property;
+
+        // Tests for bugs in the current environment's `for...in` algorithm. The
+        // `valueOf` property inherits the non-enumerable flag from
+        // `Object.prototype` in older versions of IE, Netscape, and Mozilla.
+        (Properties = function () {
+          this.valueOf = 0;
+        }).prototype.valueOf = 0;
+
+        // Iterate over a new instance of the `Properties` class.
+        members = new Properties();
+        for (property in members) {
+          // Ignore all properties inherited from `Object.prototype`.
+          if (isProperty.call(members, property)) {
+            size++;
+          }
+        }
+        Properties = members = null;
+
+        // Normalize the iteration algorithm.
+        if (!size) {
+          // A list of non-enumerable properties inherited from `Object.prototype`.
+          members = ["valueOf", "toString", "toLocaleString", "propertyIsEnumerable", "isPrototypeOf", "hasOwnProperty", "constructor"];
+          // IE <= 8, Mozilla 1.0, and Netscape 6.2 ignore shadowed non-enumerable
+          // properties.
+          forEach = function (object, callback) {
+            var isFunction = getClass.call(object) == functionClass, property, length;
+            var hasProperty = !isFunction && typeof object.constructor != "function" && objectTypes[typeof object.hasOwnProperty] && object.hasOwnProperty || isProperty;
+            for (property in object) {
+              // Gecko <= 1.0 enumerates the `prototype` property of functions under
+              // certain conditions; IE does not.
+              if (!(isFunction && property == "prototype") && hasProperty.call(object, property)) {
+                callback(property);
+              }
+            }
+            // Manually invoke the callback for each non-enumerable property.
+            for (length = members.length; property = members[--length]; hasProperty.call(object, property) && callback(property));
+          };
+        } else if (size == 2) {
+          // Safari <= 2.0.4 enumerates shadowed properties twice.
+          forEach = function (object, callback) {
+            // Create a set of iterated properties.
+            var members = {}, isFunction = getClass.call(object) == functionClass, property;
+            for (property in object) {
+              // Store each property name to prevent double enumeration. The
+              // `prototype` property of functions is not enumerated due to cross-
+              // environment inconsistencies.
+              if (!(isFunction && property == "prototype") && !isProperty.call(members, property) && (members[property] = 1) && isProperty.call(object, property)) {
+                callback(property);
+              }
+            }
+          };
+        } else {
+          // No bugs detected; use the standard `for...in` algorithm.
+          forEach = function (object, callback) {
+            var isFunction = getClass.call(object) == functionClass, property, isConstructor;
+            for (property in object) {
+              if (!(isFunction && property == "prototype") && isProperty.call(object, property) && !(isConstructor = property === "constructor")) {
+                callback(property);
+              }
+            }
+            // Manually invoke the callback for the `constructor` property due to
+            // cross-environment inconsistencies.
+            if (isConstructor || isProperty.call(object, (property = "constructor"))) {
+              callback(property);
+            }
+          };
+        }
+        return forEach(object, callback);
+      };
+
+      // Public: Serializes a JavaScript `value` as a JSON string. The optional
+      // `filter` argument may specify either a function that alters how object and
+      // array members are serialized, or an array of strings and numbers that
+      // indicates which properties should be serialized. The optional `width`
+      // argument may be either a string or number that specifies the indentation
+      // level of the output.
+      if (!has("json-stringify")) {
+        // Internal: A map of control characters and their escaped equivalents.
+        var Escapes = {
+          92: "\\\\",
+          34: '\\"',
+          8: "\\b",
+          12: "\\f",
+          10: "\\n",
+          13: "\\r",
+          9: "\\t"
+        };
+
+        // Internal: Converts `value` into a zero-padded string such that its
+        // length is at least equal to `width`. The `width` must be <= 6.
+        var leadingZeroes = "000000";
+        var toPaddedString = function (width, value) {
+          // The `|| 0` expression is necessary to work around a bug in
+          // Opera <= 7.54u2 where `0 == -0`, but `String(-0) !== "0"`.
+          return (leadingZeroes + (value || 0)).slice(-width);
+        };
+
+        // Internal: Double-quotes a string `value`, replacing all ASCII control
+        // characters (characters with code unit values between 0 and 31) with
+        // their escaped equivalents. This is an implementation of the
+        // `Quote(value)` operation defined in ES 5.1 section 15.12.3.
+        var unicodePrefix = "\\u00";
+        var quote = function (value) {
+          var result = '"', index = 0, length = value.length, useCharIndex = !charIndexBuggy || length > 10;
+          var symbols = useCharIndex && (charIndexBuggy ? value.split("") : value);
+          for (; index < length; index++) {
+            var charCode = value.charCodeAt(index);
+            // If the character is a control character, append its Unicode or
+            // shorthand escape sequence; otherwise, append the character as-is.
+            switch (charCode) {
+              case 8: case 9: case 10: case 12: case 13: case 34: case 92:
+                result += Escapes[charCode];
+                break;
+              default:
+                if (charCode < 32) {
+                  result += unicodePrefix + toPaddedString(2, charCode.toString(16));
+                  break;
+                }
+                result += useCharIndex ? symbols[index] : value.charAt(index);
+            }
+          }
+          return result + '"';
+        };
+
+        // Internal: Recursively serializes an object. Implements the
+        // `Str(key, holder)`, `JO(value)`, and `JA(value)` operations.
+        var serialize = function (property, object, callback, properties, whitespace, indentation, stack) {
+          var value, className, year, month, date, time, hours, minutes, seconds, milliseconds, results, element, index, length, prefix, result;
+          try {
+            // Necessary for host object support.
+            value = object[property];
+          } catch (exception) {}
+          if (typeof value == "object" && value) {
+            className = getClass.call(value);
+            if (className == dateClass && !isProperty.call(value, "toJSON")) {
+              if (value > -1 / 0 && value < 1 / 0) {
+                // Dates are serialized according to the `Date#toJSON` method
+                // specified in ES 5.1 section 15.9.5.44. See section 15.9.1.15
+                // for the ISO 8601 date time string format.
+                if (getDay) {
+                  // Manually compute the year, month, date, hours, minutes,
+                  // seconds, and milliseconds if the `getUTC*` methods are
+                  // buggy. Adapted from @Yaffle's `date-shim` project.
+                  date = floor(value / 864e5);
+                  for (year = floor(date / 365.2425) + 1970 - 1; getDay(year + 1, 0) <= date; year++);
+                  for (month = floor((date - getDay(year, 0)) / 30.42); getDay(year, month + 1) <= date; month++);
+                  date = 1 + date - getDay(year, month);
+                  // The `time` value specifies the time within the day (see ES
+                  // 5.1 section 15.9.1.2). The formula `(A % B + B) % B` is used
+                  // to compute `A modulo B`, as the `%` operator does not
+                  // correspond to the `modulo` operation for negative numbers.
+                  time = (value % 864e5 + 864e5) % 864e5;
+                  // The hours, minutes, seconds, and milliseconds are obtained by
+                  // decomposing the time within the day. See section 15.9.1.10.
+                  hours = floor(time / 36e5) % 24;
+                  minutes = floor(time / 6e4) % 60;
+                  seconds = floor(time / 1e3) % 60;
+                  milliseconds = time % 1e3;
+                } else {
+                  year = value.getUTCFullYear();
+                  month = value.getUTCMonth();
+                  date = value.getUTCDate();
+                  hours = value.getUTCHours();
+                  minutes = value.getUTCMinutes();
+                  seconds = value.getUTCSeconds();
+                  milliseconds = value.getUTCMilliseconds();
+                }
+                // Serialize extended years correctly.
+                value = (year <= 0 || year >= 1e4 ? (year < 0 ? "-" : "+") + toPaddedString(6, year < 0 ? -year : year) : toPaddedString(4, year)) +
+                  "-" + toPaddedString(2, month + 1) + "-" + toPaddedString(2, date) +
+                  // Months, dates, hours, minutes, and seconds should have two
+                  // digits; milliseconds should have three.
+                  "T" + toPaddedString(2, hours) + ":" + toPaddedString(2, minutes) + ":" + toPaddedString(2, seconds) +
+                  // Milliseconds are optional in ES 5.0, but required in 5.1.
+                  "." + toPaddedString(3, milliseconds) + "Z";
+              } else {
+                value = null;
+              }
+            } else if (typeof value.toJSON == "function" && ((className != numberClass && className != stringClass && className != arrayClass) || isProperty.call(value, "toJSON"))) {
+              // Prototype <= 1.6.1 adds non-standard `toJSON` methods to the
+              // `Number`, `String`, `Date`, and `Array` prototypes. JSON 3
+              // ignores all `toJSON` methods on these objects unless they are
+              // defined directly on an instance.
+              value = value.toJSON(property);
+            }
+          }
+          if (callback) {
+            // If a replacement function was provided, call it to obtain the value
+            // for serialization.
+            value = callback.call(object, property, value);
+          }
+          if (value === null) {
+            return "null";
+          }
+          className = getClass.call(value);
+          if (className == booleanClass) {
+            // Booleans are represented literally.
+            return "" + value;
+          } else if (className == numberClass) {
+            // JSON numbers must be finite. `Infinity` and `NaN` are serialized as
+            // `"null"`.
+            return value > -1 / 0 && value < 1 / 0 ? "" + value : "null";
+          } else if (className == stringClass) {
+            // Strings are double-quoted and escaped.
+            return quote("" + value);
+          }
+          // Recursively serialize objects and arrays.
+          if (typeof value == "object") {
+            // Check for cyclic structures. This is a linear search; performance
+            // is inversely proportional to the number of unique nested objects.
+            for (length = stack.length; length--;) {
+              if (stack[length] === value) {
+                // Cyclic structures cannot be serialized by `JSON.stringify`.
+                throw TypeError();
+              }
+            }
+            // Add the object to the stack of traversed objects.
+            stack.push(value);
+            results = [];
+            // Save the current indentation level and indent one additional level.
+            prefix = indentation;
+            indentation += whitespace;
+            if (className == arrayClass) {
+              // Recursively serialize array elements.
+              for (index = 0, length = value.length; index < length; index++) {
+                element = serialize(index, value, callback, properties, whitespace, indentation, stack);
+                results.push(element === undef ? "null" : element);
+              }
+              result = results.length ? (whitespace ? "[\n" + indentation + results.join(",\n" + indentation) + "\n" + prefix + "]" : ("[" + results.join(",") + "]")) : "[]";
+            } else {
+              // Recursively serialize object members. Members are selected from
+              // either a user-specified list of property names, or the object
+              // itself.
+              forEach(properties || value, function (property) {
+                var element = serialize(property, value, callback, properties, whitespace, indentation, stack);
+                if (element !== undef) {
+                  // According to ES 5.1 section 15.12.3: "If `gap` {whitespace}
+                  // is not the empty string, let `member` {quote(property) + ":"}
+                  // be the concatenation of `member` and the `space` character."
+                  // The "`space` character" refers to the literal space
+                  // character, not the `space` {width} argument provided to
+                  // `JSON.stringify`.
+                  results.push(quote(property) + ":" + (whitespace ? " " : "") + element);
+                }
+              });
+              result = results.length ? (whitespace ? "{\n" + indentation + results.join(",\n" + indentation) + "\n" + prefix + "}" : ("{" + results.join(",") + "}")) : "{}";
+            }
+            // Remove the object from the traversed object stack.
+            stack.pop();
+            return result;
+          }
+        };
+
+        // Public: `JSON.stringify`. See ES 5.1 section 15.12.3.
+        exports.stringify = function (source, filter, width) {
+          var whitespace, callback, properties, className;
+          if (objectTypes[typeof filter] && filter) {
+            if ((className = getClass.call(filter)) == functionClass) {
+              callback = filter;
+            } else if (className == arrayClass) {
+              // Convert the property names array into a makeshift set.
+              properties = {};
+              for (var index = 0, length = filter.length, value; index < length; value = filter[index++], ((className = getClass.call(value)), className == stringClass || className == numberClass) && (properties[value] = 1));
+            }
+          }
+          if (width) {
+            if ((className = getClass.call(width)) == numberClass) {
+              // Convert the `width` to an integer and create a string containing
+              // `width` number of space characters.
+              if ((width -= width % 1) > 0) {
+                for (whitespace = "", width > 10 && (width = 10); whitespace.length < width; whitespace += " ");
+              }
+            } else if (className == stringClass) {
+              whitespace = width.length <= 10 ? width : width.slice(0, 10);
+            }
+          }
+          // Opera <= 7.54u2 discards the values associated with empty string keys
+          // (`""`) only if they are used directly within an object member list
+          // (e.g., `!("" in { "": 1})`).
+          return serialize("", (value = {}, value[""] = source, value), callback, properties, whitespace, "", []);
+        };
+      }
+
+      // Public: Parses a JSON source string.
+      if (!has("json-parse")) {
+        var fromCharCode = String.fromCharCode;
+
+        // Internal: A map of escaped control characters and their unescaped
+        // equivalents.
+        var Unescapes = {
+          92: "\\",
+          34: '"',
+          47: "/",
+          98: "\b",
+          116: "\t",
+          110: "\n",
+          102: "\f",
+          114: "\r"
+        };
+
+        // Internal: Stores the parser state.
+        var Index, Source;
+
+        // Internal: Resets the parser state and throws a `SyntaxError`.
+        var abort = function () {
+          Index = Source = null;
+          throw SyntaxError();
+        };
+
+        // Internal: Returns the next token, or `"$"` if the parser has reached
+        // the end of the source string. A token may be a string, number, `null`
+        // literal, or Boolean literal.
+        var lex = function () {
+          var source = Source, length = source.length, value, begin, position, isSigned, charCode;
+          while (Index < length) {
+            charCode = source.charCodeAt(Index);
+            switch (charCode) {
+              case 9: case 10: case 13: case 32:
+                // Skip whitespace tokens, including tabs, carriage returns, line
+                // feeds, and space characters.
+                Index++;
+                break;
+              case 123: case 125: case 91: case 93: case 58: case 44:
+                // Parse a punctuator token (`{`, `}`, `[`, `]`, `:`, or `,`) at
+                // the current position.
+                value = charIndexBuggy ? source.charAt(Index) : source[Index];
+                Index++;
+                return value;
+              case 34:
+                // `"` delimits a JSON string; advance to the next character and
+                // begin parsing the string. String tokens are prefixed with the
+                // sentinel `@` character to distinguish them from punctuators and
+                // end-of-string tokens.
+                for (value = "@", Index++; Index < length;) {
+                  charCode = source.charCodeAt(Index);
+                  if (charCode < 32) {
+                    // Unescaped ASCII control characters (those with a code unit
+                    // less than the space character) are not permitted.
+                    abort();
+                  } else if (charCode == 92) {
+                    // A reverse solidus (`\`) marks the beginning of an escaped
+                    // control character (including `"`, `\`, and `/`) or Unicode
+                    // escape sequence.
+                    charCode = source.charCodeAt(++Index);
+                    switch (charCode) {
+                      case 92: case 34: case 47: case 98: case 116: case 110: case 102: case 114:
+                        // Revive escaped control characters.
+                        value += Unescapes[charCode];
+                        Index++;
+                        break;
+                      case 117:
+                        // `\u` marks the beginning of a Unicode escape sequence.
+                        // Advance to the first character and validate the
+                        // four-digit code point.
+                        begin = ++Index;
+                        for (position = Index + 4; Index < position; Index++) {
+                          charCode = source.charCodeAt(Index);
+                          // A valid sequence comprises four hexdigits (case-
+                          // insensitive) that form a single hexadecimal value.
+                          if (!(charCode >= 48 && charCode <= 57 || charCode >= 97 && charCode <= 102 || charCode >= 65 && charCode <= 70)) {
+                            // Invalid Unicode escape sequence.
+                            abort();
+                          }
+                        }
+                        // Revive the escaped character.
+                        value += fromCharCode("0x" + source.slice(begin, Index));
+                        break;
+                      default:
+                        // Invalid escape sequence.
+                        abort();
+                    }
+                  } else {
+                    if (charCode == 34) {
+                      // An unescaped double-quote character marks the end of the
+                      // string.
+                      break;
+                    }
+                    charCode = source.charCodeAt(Index);
+                    begin = Index;
+                    // Optimize for the common case where a string is valid.
+                    while (charCode >= 32 && charCode != 92 && charCode != 34) {
+                      charCode = source.charCodeAt(++Index);
+                    }
+                    // Append the string as-is.
+                    value += source.slice(begin, Index);
+                  }
+                }
+                if (source.charCodeAt(Index) == 34) {
+                  // Advance to the next character and return the revived string.
+                  Index++;
+                  return value;
+                }
+                // Unterminated string.
+                abort();
+              default:
+                // Parse numbers and literals.
+                begin = Index;
+                // Advance past the negative sign, if one is specified.
+                if (charCode == 45) {
+                  isSigned = true;
+                  charCode = source.charCodeAt(++Index);
+                }
+                // Parse an integer or floating-point value.
+                if (charCode >= 48 && charCode <= 57) {
+                  // Leading zeroes are interpreted as octal literals.
+                  if (charCode == 48 && ((charCode = source.charCodeAt(Index + 1)), charCode >= 48 && charCode <= 57)) {
+                    // Illegal octal literal.
+                    abort();
+                  }
+                  isSigned = false;
+                  // Parse the integer component.
+                  for (; Index < length && ((charCode = source.charCodeAt(Index)), charCode >= 48 && charCode <= 57); Index++);
+                  // Floats cannot contain a leading decimal point; however, this
+                  // case is already accounted for by the parser.
+                  if (source.charCodeAt(Index) == 46) {
+                    position = ++Index;
+                    // Parse the decimal component.
+                    for (; position < length && ((charCode = source.charCodeAt(position)), charCode >= 48 && charCode <= 57); position++);
+                    if (position == Index) {
+                      // Illegal trailing decimal.
+                      abort();
+                    }
+                    Index = position;
+                  }
+                  // Parse exponents. The `e` denoting the exponent is
+                  // case-insensitive.
+                  charCode = source.charCodeAt(Index);
+                  if (charCode == 101 || charCode == 69) {
+                    charCode = source.charCodeAt(++Index);
+                    // Skip past the sign following the exponent, if one is
+                    // specified.
+                    if (charCode == 43 || charCode == 45) {
+                      Index++;
+                    }
+                    // Parse the exponential component.
+                    for (position = Index; position < length && ((charCode = source.charCodeAt(position)), charCode >= 48 && charCode <= 57); position++);
+                    if (position == Index) {
+                      // Illegal empty exponent.
+                      abort();
+                    }
+                    Index = position;
+                  }
+                  // Coerce the parsed value to a JavaScript number.
+                  return +source.slice(begin, Index);
+                }
+                // A negative sign may only precede numbers.
+                if (isSigned) {
+                  abort();
+                }
+                // `true`, `false`, and `null` literals.
+                if (source.slice(Index, Index + 4) == "true") {
+                  Index += 4;
+                  return true;
+                } else if (source.slice(Index, Index + 5) == "false") {
+                  Index += 5;
+                  return false;
+                } else if (source.slice(Index, Index + 4) == "null") {
+                  Index += 4;
+                  return null;
+                }
+                // Unrecognized token.
+                abort();
+            }
+          }
+          // Return the sentinel `$` character if the parser has reached the end
+          // of the source string.
+          return "$";
+        };
+
+        // Internal: Parses a JSON `value` token.
+        var get = function (value) {
+          var results, hasMembers;
+          if (value == "$") {
+            // Unexpected end of input.
+            abort();
+          }
+          if (typeof value == "string") {
+            if ((charIndexBuggy ? value.charAt(0) : value[0]) == "@") {
+              // Remove the sentinel `@` character.
+              return value.slice(1);
+            }
+            // Parse object and array literals.
+            if (value == "[") {
+              // Parses a JSON array, returning a new JavaScript array.
+              results = [];
+              for (;; hasMembers || (hasMembers = true)) {
+                value = lex();
+                // A closing square bracket marks the end of the array literal.
+                if (value == "]") {
+                  break;
+                }
+                // If the array literal contains elements, the current token
+                // should be a comma separating the previous element from the
+                // next.
+                if (hasMembers) {
+                  if (value == ",") {
+                    value = lex();
+                    if (value == "]") {
+                      // Unexpected trailing `,` in array literal.
+                      abort();
+                    }
+                  } else {
+                    // A `,` must separate each array element.
+                    abort();
+                  }
+                }
+                // Elisions and leading commas are not permitted.
+                if (value == ",") {
+                  abort();
+                }
+                results.push(get(value));
+              }
+              return results;
+            } else if (value == "{") {
+              // Parses a JSON object, returning a new JavaScript object.
+              results = {};
+              for (;; hasMembers || (hasMembers = true)) {
+                value = lex();
+                // A closing curly brace marks the end of the object literal.
+                if (value == "}") {
+                  break;
+                }
+                // If the object literal contains members, the current token
+                // should be a comma separator.
+                if (hasMembers) {
+                  if (value == ",") {
+                    value = lex();
+                    if (value == "}") {
+                      // Unexpected trailing `,` in object literal.
+                      abort();
+                    }
+                  } else {
+                    // A `,` must separate each object member.
+                    abort();
+                  }
+                }
+                // Leading commas are not permitted, object property names must be
+                // double-quoted strings, and a `:` must separate each property
+                // name and value.
+                if (value == "," || typeof value != "string" || (charIndexBuggy ? value.charAt(0) : value[0]) != "@" || lex() != ":") {
+                  abort();
+                }
+                results[value.slice(1)] = get(lex());
+              }
+              return results;
+            }
+            // Unexpected token encountered.
+            abort();
+          }
+          return value;
+        };
+
+        // Internal: Updates a traversed object member.
+        var update = function (source, property, callback) {
+          var element = walk(source, property, callback);
+          if (element === undef) {
+            delete source[property];
+          } else {
+            source[property] = element;
+          }
+        };
+
+        // Internal: Recursively traverses a parsed JSON object, invoking the
+        // `callback` function for each value. This is an implementation of the
+        // `Walk(holder, name)` operation defined in ES 5.1 section 15.12.2.
+        var walk = function (source, property, callback) {
+          var value = source[property], length;
+          if (typeof value == "object" && value) {
+            // `forEach` can't be used to traverse an array in Opera <= 8.54
+            // because its `Object#hasOwnProperty` implementation returns `false`
+            // for array indices (e.g., `![1, 2, 3].hasOwnProperty("0")`).
+            if (getClass.call(value) == arrayClass) {
+              for (length = value.length; length--;) {
+                update(value, length, callback);
+              }
+            } else {
+              forEach(value, function (property) {
+                update(value, property, callback);
+              });
+            }
+          }
+          return callback.call(source, property, value);
+        };
+
+        // Public: `JSON.parse`. See ES 5.1 section 15.12.2.
+        exports.parse = function (source, callback) {
+          var result, value;
+          Index = 0;
+          Source = "" + source;
+          result = get(lex());
+          // If a JSON string contains multiple tokens, it is invalid.
+          if (lex() != "$") {
+            abort();
+          }
+          // Reset the parser state.
+          Index = Source = null;
+          return callback && getClass.call(callback) == functionClass ? walk((value = {}, value[""] = result, value), "", callback) : result;
+        };
+      }
+    }
+
+    exports["runInContext"] = runInContext;
+    return exports;
+  }
+
+  if (freeExports && !isLoader) {
+    // Export for CommonJS environments.
+    runInContext(root, freeExports);
+  } else {
+    // Export for web browsers and JavaScript engines.
+    var nativeJSON = root.JSON,
+        previousJSON = root["JSON3"],
+        isRestored = false;
+
+    var JSON3 = runInContext(root, (root["JSON3"] = {
+      // Public: Restores the original value of the global `JSON` object and
+      // returns a reference to the `JSON3` object.
+      "noConflict": function () {
+        if (!isRestored) {
+          isRestored = true;
+          root.JSON = nativeJSON;
+          root["JSON3"] = previousJSON;
+          nativeJSON = previousJSON = null;
+        }
+        return JSON3;
+      }
+    }));
+
+    root.JSON = {
+      "parse": JSON3.parse,
+      "stringify": JSON3.stringify
+    };
+  }
+
+  // Export for asynchronous module loaders.
+  if (isLoader) {
+    define(function () {
+      return JSON3;
+    });
+  }
+}).call(this);
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{}],143:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/to-array/index.js", module);
+(function(){
+module.exports = toArray
+
+function toArray(list, index) {
+    var array = []
+
+    index = index || 0
+
+    for (var i = index || 0; i < list.length; i++) {
+        array[i - index] = list[i]
+    }
+
+    return array
+}
+
+}).apply(this, arguments);
+
+},{}],144:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
+(function(){
+(function (global){
+/*! https://mths.be/utf8js v2.0.0 by @mathias */
+;(function(root) {
+
+	// Detect free variables `exports`
+	var freeExports = typeof exports == 'object' && exports;
+
+	// Detect free variable `module`
+	var freeModule = typeof module == 'object' && module &&
+		module.exports == freeExports && module;
+
+	// Detect free variable `global`, from Node.js or Browserified code,
+	// and use it as `root`
+	var freeGlobal = typeof global == 'object' && global;
+	if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
+		root = freeGlobal;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	var stringFromCharCode = String.fromCharCode;
+
+	// Taken from https://mths.be/punycode
+	function ucs2decode(string) {
+		var output = [];
+		var counter = 0;
+		var length = string.length;
+		var value;
+		var extra;
+		while (counter < length) {
+			value = string.charCodeAt(counter++);
+			if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
+				// high surrogate, and there is a next character
+				extra = string.charCodeAt(counter++);
+				if ((extra & 0xFC00) == 0xDC00) { // low surrogate
+					output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
+				} else {
+					// unmatched surrogate; only append this code unit, in case the next
+					// code unit is the high surrogate of a surrogate pair
+					output.push(value);
+					counter--;
+				}
+			} else {
+				output.push(value);
+			}
+		}
+		return output;
+	}
+
+	// Taken from https://mths.be/punycode
+	function ucs2encode(array) {
+		var length = array.length;
+		var index = -1;
+		var value;
+		var output = '';
+		while (++index < length) {
+			value = array[index];
+			if (value > 0xFFFF) {
+				value -= 0x10000;
+				output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
+				value = 0xDC00 | value & 0x3FF;
+			}
+			output += stringFromCharCode(value);
+		}
+		return output;
+	}
+
+	function checkScalarValue(codePoint) {
+		if (codePoint >= 0xD800 && codePoint <= 0xDFFF) {
+			throw Error(
+				'Lone surrogate U+' + codePoint.toString(16).toUpperCase() +
+				' is not a scalar value'
+			);
+		}
+	}
+	/*--------------------------------------------------------------------------*/
+
+	function createByte(codePoint, shift) {
+		return stringFromCharCode(((codePoint >> shift) & 0x3F) | 0x80);
+	}
+
+	function encodeCodePoint(codePoint) {
+		if ((codePoint & 0xFFFFFF80) == 0) { // 1-byte sequence
+			return stringFromCharCode(codePoint);
+		}
+		var symbol = '';
+		if ((codePoint & 0xFFFFF800) == 0) { // 2-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 6) & 0x1F) | 0xC0);
+		}
+		else if ((codePoint & 0xFFFF0000) == 0) { // 3-byte sequence
+			checkScalarValue(codePoint);
+			symbol = stringFromCharCode(((codePoint >> 12) & 0x0F) | 0xE0);
+			symbol += createByte(codePoint, 6);
+		}
+		else if ((codePoint & 0xFFE00000) == 0) { // 4-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 18) & 0x07) | 0xF0);
+			symbol += createByte(codePoint, 12);
+			symbol += createByte(codePoint, 6);
+		}
+		symbol += stringFromCharCode((codePoint & 0x3F) | 0x80);
+		return symbol;
+	}
+
+	function utf8encode(string) {
+		var codePoints = ucs2decode(string);
+		var length = codePoints.length;
+		var index = -1;
+		var codePoint;
+		var byteString = '';
+		while (++index < length) {
+			codePoint = codePoints[index];
+			byteString += encodeCodePoint(codePoint);
+		}
+		return byteString;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	function readContinuationByte() {
+		if (byteIndex >= byteCount) {
+			throw Error('Invalid byte index');
+		}
+
+		var continuationByte = byteArray[byteIndex] & 0xFF;
+		byteIndex++;
+
+		if ((continuationByte & 0xC0) == 0x80) {
+			return continuationByte & 0x3F;
+		}
+
+		// If we end up here, it’s not a continuation byte
+		throw Error('Invalid continuation byte');
+	}
+
+	function decodeSymbol() {
+		var byte1;
+		var byte2;
+		var byte3;
+		var byte4;
+		var codePoint;
+
+		if (byteIndex > byteCount) {
+			throw Error('Invalid byte index');
+		}
+
+		if (byteIndex == byteCount) {
+			return false;
+		}
+
+		// Read first byte
+		byte1 = byteArray[byteIndex] & 0xFF;
+		byteIndex++;
+
+		// 1-byte sequence (no continuation bytes)
+		if ((byte1 & 0x80) == 0) {
+			return byte1;
+		}
+
+		// 2-byte sequence
+		if ((byte1 & 0xE0) == 0xC0) {
+			var byte2 = readContinuationByte();
+			codePoint = ((byte1 & 0x1F) << 6) | byte2;
+			if (codePoint >= 0x80) {
+				return codePoint;
+			} else {
+				throw Error('Invalid continuation byte');
+			}
+		}
+
+		// 3-byte sequence (may include unpaired surrogates)
+		if ((byte1 & 0xF0) == 0xE0) {
+			byte2 = readContinuationByte();
+			byte3 = readContinuationByte();
+			codePoint = ((byte1 & 0x0F) << 12) | (byte2 << 6) | byte3;
+			if (codePoint >= 0x0800) {
+				checkScalarValue(codePoint);
+				return codePoint;
+			} else {
+				throw Error('Invalid continuation byte');
+			}
+		}
+
+		// 4-byte sequence
+		if ((byte1 & 0xF8) == 0xF0) {
+			byte2 = readContinuationByte();
+			byte3 = readContinuationByte();
+			byte4 = readContinuationByte();
+			codePoint = ((byte1 & 0x0F) << 0x12) | (byte2 << 0x0C) |
+				(byte3 << 0x06) | byte4;
+			if (codePoint >= 0x010000 && codePoint <= 0x10FFFF) {
+				return codePoint;
+			}
+		}
+
+		throw Error('Invalid UTF-8 detected');
+	}
+
+	var byteArray;
+	var byteCount;
+	var byteIndex;
+	function utf8decode(byteString) {
+		byteArray = ucs2decode(byteString);
+		byteCount = byteArray.length;
+		byteIndex = 0;
+		var codePoints = [];
+		var tmp;
+		while ((tmp = decodeSymbol()) !== false) {
+			codePoints.push(tmp);
+		}
+		return ucs2encode(codePoints);
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	var utf8 = {
+		'version': '2.0.0',
+		'encode': utf8encode,
+		'decode': utf8decode
+	};
+
+	// Some AMD build optimizers, like r.js, check for specific condition patterns
+	// like the following:
+	if (
+		typeof define == 'function' &&
+		typeof define.amd == 'object' &&
+		define.amd
+	) {
+		define(function() {
+			return utf8;
+		});
+	}	else if (freeExports && !freeExports.nodeType) {
+		if (freeModule) { // in Node.js or RingoJS v0.8.0+
+			freeModule.exports = utf8;
+		} else { // in Narwhal or RingoJS v0.7.0-
+			var object = {};
+			var hasOwnProperty = object.hasOwnProperty;
+			for (var key in utf8) {
+				hasOwnProperty.call(utf8, key) && (freeExports[key] = utf8[key]);
+			}
+		}
+	} else { // in Rhino or a web browser
+		root.utf8 = utf8;
+	}
+
+}(this));
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).apply(this, arguments);
+
+},{}],145:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-autosize/index.js", module);
+(function(){
 var autosize = require('autosize')
 
 exports.install = function(Vue) {
@@ -617,7 +14834,11 @@ exports.install = function(Vue) {
     }
   })
 }
-},{"autosize":1}],25:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"autosize":4}],146:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-hot-reload-api/index.js", module);
+(function(){
 var Vue // late bind
 var map = Object.create(null)
 var shimmed = false
@@ -918,7 +15139,11 @@ function format (id) {
   return match ? match[0] : id
 }
 
-},{}],26:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],147:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/before.js", module);
+(function(){
 /**
  * Before Interceptor.
  */
@@ -938,7 +15163,11 @@ module.exports = {
 
 };
 
-},{"../util":49}],27:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],148:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/index.js", module);
+(function(){
 /**
  * Base client.
  */
@@ -1005,7 +15234,11 @@ function parseHeaders(str) {
     return headers;
 }
 
-},{"../../promise":42,"../../util":49,"./xhr":30}],28:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../../promise":163,"../../util":170,"./xhr":151}],149:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/jsonp.js", module);
+(function(){
 /**
  * JSONP client.
  */
@@ -1055,7 +15288,11 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":42,"../../util":49}],29:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../../promise":163,"../../util":170}],150:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xdr.js", module);
+(function(){
 /**
  * XDomain client (Internet Explorer).
  */
@@ -1094,7 +15331,11 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":42,"../../util":49}],30:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../../promise":163,"../../util":170}],151:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xhr.js", module);
+(function(){
 /**
  * XMLHttp client.
  */
@@ -1139,7 +15380,11 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":42,"../../util":49}],31:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../../promise":163,"../../util":170}],152:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/cors.js", module);
+(function(){
 /**
  * CORS Interceptor.
  */
@@ -1178,7 +15423,11 @@ function crossOrigin(request) {
     return (requestUrl.protocol !== originUrl.protocol || requestUrl.host !== originUrl.host);
 }
 
-},{"../util":49,"./client/xdr":29}],32:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170,"./client/xdr":150}],153:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/header.js", module);
+(function(){
 /**
  * Header Interceptor.
  */
@@ -1206,7 +15455,11 @@ module.exports = {
 
 };
 
-},{"../util":49}],33:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],154:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/index.js", module);
+(function(){
 /**
  * Service for sending network requests.
  */
@@ -1305,7 +15558,11 @@ Http.headers = {
 
 module.exports = _.http = Http;
 
-},{"../promise":42,"../util":49,"./before":26,"./client":27,"./cors":31,"./header":32,"./interceptor":34,"./jsonp":35,"./method":36,"./mime":37,"./timeout":38}],34:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../promise":163,"../util":170,"./before":147,"./client":148,"./cors":152,"./header":153,"./interceptor":155,"./jsonp":156,"./method":157,"./mime":158,"./timeout":159}],155:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/interceptor.js", module);
+(function(){
 /**
  * Interceptor factory.
  */
@@ -1352,7 +15609,11 @@ function when(value, fulfilled, rejected) {
     return promise.then(fulfilled, rejected);
 }
 
-},{"../promise":42,"../util":49}],35:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../promise":163,"../util":170}],156:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/jsonp.js", module);
+(function(){
 /**
  * JSONP Interceptor.
  */
@@ -1372,7 +15633,11 @@ module.exports = {
 
 };
 
-},{"./client/jsonp":28}],36:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./client/jsonp":149}],157:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/method.js", module);
+(function(){
 /**
  * HTTP method override Interceptor.
  */
@@ -1391,7 +15656,11 @@ module.exports = {
 
 };
 
-},{}],37:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],158:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/mime.js", module);
+(function(){
 /**
  * Mime Interceptor.
  */
@@ -1429,7 +15698,11 @@ module.exports = {
 
 };
 
-},{"../util":49}],38:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],159:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/timeout.js", module);
+(function(){
 /**
  * Timeout Interceptor.
  */
@@ -1461,7 +15734,11 @@ module.exports = function () {
     };
 };
 
-},{}],39:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],160:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/index.js", module);
+(function(){
 /**
  * Install plugin.
  */
@@ -1516,7 +15793,11 @@ if (window.Vue) {
 
 module.exports = install;
 
-},{"./http":33,"./promise":42,"./resource":43,"./url":44,"./util":49}],40:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./http":154,"./promise":163,"./resource":164,"./url":165,"./util":170}],161:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/promise.js", module);
+(function(){
 /**
  * Promises/A+ polyfill v1.1.4 (https://github.com/bramstein/promis)
  */
@@ -1697,7 +15978,11 @@ p.catch = function (onRejected) {
 
 module.exports = Promise;
 
-},{"../util":49}],41:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],162:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/url-template.js", module);
+(function(){
 /**
  * URL Template v2.0.6 (https://github.com/bramstein/url-template)
  */
@@ -1849,7 +16134,11 @@ exports.encodeReserved = function (str) {
     }).join('');
 };
 
-},{}],42:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],163:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/promise.js", module);
+(function(){
 /**
  * Promise adapter.
  */
@@ -1960,7 +16249,11 @@ p.always = function (callback) {
 
 module.exports = Promise;
 
-},{"./lib/promise":40,"./util":49}],43:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./lib/promise":161,"./util":170}],164:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/resource.js", module);
+(function(){
 /**
  * Service for interacting with RESTful services.
  */
@@ -2072,7 +16365,11 @@ Resource.actions = {
 
 module.exports = _.resource = Resource;
 
-},{"./util":49}],44:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./util":170}],165:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/index.js", module);
+(function(){
 /**
  * Service for URL templating.
  */
@@ -2204,7 +16501,11 @@ function serialize(params, obj, scope) {
 
 module.exports = _.url = Url;
 
-},{"../util":49,"./legacy":45,"./query":46,"./root":47,"./template":48}],45:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170,"./legacy":166,"./query":167,"./root":168,"./template":169}],166:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/legacy.js", module);
+(function(){
 /**
  * Legacy Transform.
  */
@@ -2252,7 +16553,11 @@ function encodeUriQuery(value, spaces) {
         replace(/%20/g, (spaces ? '%20' : '+'));
 }
 
-},{"../util":49}],46:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],167:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/query.js", module);
+(function(){
 /**
  * Query Parameter Transform.
  */
@@ -2278,7 +16583,11 @@ module.exports = function (options, next) {
     return url;
 };
 
-},{"../util":49}],47:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],168:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/root.js", module);
+(function(){
 /**
  * Root Prefix Transform.
  */
@@ -2296,7 +16605,11 @@ module.exports = function (options, next) {
     return url;
 };
 
-},{"../util":49}],48:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../util":170}],169:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/template.js", module);
+(function(){
 /**
  * URL Template (RFC 6570) Transform.
  */
@@ -2314,7 +16627,11 @@ module.exports = function (options) {
     return url;
 };
 
-},{"../lib/url-template":41}],49:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../lib/url-template":162}],170:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-resource/src/util.js", module);
+(function(){
 /**
  * Utility functions.
  */
@@ -2438,7 +16755,11 @@ function merge(target, source, deep) {
     }
 }
 
-},{}],50:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],171:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", module);
+(function(){
 /*!
  * vue-router v0.7.13
  * (c) 2016 Evan You
@@ -5148,7 +19469,181 @@ function merge(target, source, deep) {
   return Router;
 
 }));
-},{}],51:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],172:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-touch/vue-touch.js", module);
+(function(){
+;(function () {
+
+  var vueTouch = {}
+  var Hammer = typeof require === 'function'
+    ? require('hammerjs')
+    : window.Hammer
+  var gestures = ['tap', 'pan', 'pinch', 'press', 'rotate', 'swipe']
+  var directions = ['up', 'down', 'left', 'right', 'horizontal', 'vertical', 'all']
+  var customEvents = {}
+
+  if (!Hammer) {
+    throw new Error('[vue-touch] cannot locate Hammer.js.')
+  }
+
+  // exposed global options
+  vueTouch.config = {}
+
+  vueTouch.install = function (Vue) {
+
+    Vue.directive('touch', {
+
+      isFn: true,
+      acceptStatement: true,
+      priority: Vue.directive('on').priority,
+
+      bind: function () {
+        if (!this.el.hammer) {
+          this.el.hammer = new Hammer.Manager(this.el)
+        }
+        var mc = this.mc = this.el.hammer
+        // determine event type
+        var event = this.arg
+        if (!event) {
+          console.warn('[vue-touch] event type argument is required.')
+        }
+        var recognizerType, recognizer
+
+        if (customEvents[event]) {
+          // custom event
+          var custom = customEvents[event]
+          recognizerType = custom.type
+          recognizer = new Hammer[capitalize(recognizerType)](custom)
+          recognizer.recognizeWith(mc.recognizers)
+          mc.add(recognizer)
+        } else {
+          // built-in event
+          for (var i = 0; i < gestures.length; i++) {
+            if (event.indexOf(gestures[i]) === 0) {
+              recognizerType = gestures[i]
+              break
+            }
+          }
+          if (!recognizerType) {
+            console.warn('[vue-touch] invalid event type: ' + event)
+            return
+          }
+          recognizer = mc.get(recognizerType)
+          if (!recognizer) {
+            // add recognizer
+            recognizer = new Hammer[capitalize(recognizerType)]()
+            // make sure multiple recognizers work together...
+            recognizer.recognizeWith(mc.recognizers)
+            mc.add(recognizer)
+          }
+          // apply global options
+          var globalOptions = vueTouch.config[recognizerType]
+          if (globalOptions) {
+            guardDirections(globalOptions)
+            recognizer.set(globalOptions)
+          }
+          // apply local options
+          var localOptions =
+            this.el.hammerOptions &&
+            this.el.hammerOptions[recognizerType]
+          if (localOptions) {
+            guardDirections(localOptions)
+            recognizer.set(localOptions)
+          }
+        }
+        this.recognizer = recognizer
+      },
+
+      update: function (fn) {
+        var mc = this.mc
+        var event = this.arg
+        // teardown old handler
+        if (this.handler) {
+          mc.off(event, this.handler)
+        }
+        if (typeof fn !== 'function') {
+          this.handler = null
+          console.warn(
+            '[vue-touch] invalid handler function for v-touch: ' +
+            this.arg + '="' + this.descriptor.raw
+          )
+        } else {
+          mc.on(event, (this.handler = fn))
+        }
+      },
+
+      unbind: function () {
+        if (this.handler) {
+          this.mc.off(this.arg, this.handler)
+        }
+        if (!Object.keys(this.mc.handlers).length) {
+          this.mc.destroy()
+          this.el.hammer = null
+        }
+      }
+    })
+
+    Vue.directive('touch-options', {
+      priority: Vue.directive('on').priority + 1,
+      update: function (options) {
+        var opts = this.el.hammerOptions || (this.el.hammerOptions = {})
+        if (!this.arg) {
+          console.warn('[vue-touch] recognizer type argument for v-touch-options is required.')
+        } else {
+          opts[this.arg] = options
+        }
+      }
+    })
+  }
+
+  /**
+   * Register a custom event.
+   *
+   * @param {String} event
+   * @param {Object} options - a Hammer.js recognizer option object.
+   *                           required fields:
+   *                           - type: the base recognizer to use for this event
+   */
+
+  vueTouch.registerCustomEvent = function (event, options) {
+    options.event = event
+    customEvents[event] = options
+  }
+
+  function capitalize (str) {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
+  function guardDirections (options) {
+    var dir = options.direction
+    if (typeof dir === 'string') {
+      var hammerDirection = 'DIRECTION_' + dir.toUpperCase()
+      if (directions.indexOf(dir) > -1 && Hammer.hasOwnProperty(hammerDirection)) {
+        options.direction = Hammer[hammerDirection]
+      } else {
+        console.warn('[vue-touch] invalid direction: ' + dir)
+      }
+    }
+  }
+
+  if (typeof exports == "object") {
+    module.exports = vueTouch
+  } else if (typeof define == "function" && define.amd) {
+    define([], function(){ return vueTouch })
+  } else if (window.Vue) {
+    window.VueTouch = vueTouch
+    Vue.use(vueTouch)
+  }
+
+})()
+
+}).apply(this, arguments);
+
+},{"hammerjs":51}],173:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue/dist/vue.common.js", module);
+(function(){
 (function (process,global){
 /*!
  * Vue.js v1.0.26
@@ -15225,7 +29720,11 @@ setTimeout(function () {
 
 module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":23}],52:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"_process":128}],174:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vueify/lib/insert-css.js", module);
+(function(){
 var inserted = exports.cache = {}
 
 exports.insert = function (css) {
@@ -15245,7 +29744,85 @@ exports.insert = function (css) {
   return elem
 }
 
-},{}],53:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],175:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/yeast/index.js", module);
+(function(){
+'use strict';
+
+var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
+  , length = 64
+  , map = {}
+  , seed = 0
+  , i = 0
+  , prev;
+
+/**
+ * Return a string representing the specified number.
+ *
+ * @param {Number} num The number to convert.
+ * @returns {String} The string representation of the number.
+ * @api public
+ */
+function encode(num) {
+  var encoded = '';
+
+  do {
+    encoded = alphabet[num % length] + encoded;
+    num = Math.floor(num / length);
+  } while (num > 0);
+
+  return encoded;
+}
+
+/**
+ * Return the integer value specified by the given string.
+ *
+ * @param {String} str The string to convert.
+ * @returns {Number} The integer value represented by the string.
+ * @api public
+ */
+function decode(str) {
+  var decoded = 0;
+
+  for (i = 0; i < str.length; i++) {
+    decoded = decoded * length + map[str.charAt(i)];
+  }
+
+  return decoded;
+}
+
+/**
+ * Yeast: A tiny growing id generator.
+ *
+ * @returns {String} A unique id.
+ * @api public
+ */
+function yeast() {
+  var now = encode(+new Date());
+
+  if (now !== prev) return seed = 0, prev = now;
+  return now +'.'+ encode(seed++);
+}
+
+//
+// Map each character to its index.
+//
+for (; i < length; i++) map[alphabet[i]] = i;
+
+//
+// Expose the `yeast`, `encode` and `decode` functions.
+//
+yeast.encode = encode;
+yeast.decode = decode;
+module.exports = yeast;
+
+}).apply(this, arguments);
+
+},{}],176:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/AddEvent.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
 var __vueify_style__ = __vueify_insert__.insert("@media screen and (max-width: 767px) {\n  #addEventCancel {\n    margin-left: 0px;\n  }\n}\n.homeGame {\n  color: #c90018 !important;\n}\n.awayGame {\n  color: #f2d500 !important;\n}\n.practice {\n  color: #329acf !important;\n}\n.other {\n  color: #76af00 !important;\n}\ndiv[AddEvent=\"fromTime\"],\ndiv[AddEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n")
 'use strict';
@@ -15290,6 +29867,7 @@ exports.default = {
 
 	methods: {
 		//submit post request
+
 		createEvent: function createEvent() {
 			var errors = this.errorCheck();
 
@@ -15505,7 +30083,7 @@ exports.default = {
 				untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
 
 				if (!this.toPickerChange) {
-					//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
+					//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
 					toPicker.data('DateTimePicker').date(e.date);
 				}
 			}.bind(this));
@@ -15603,9 +30181,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-1024e6ba", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],54:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],177:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/Alert.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Alert__container {\n  position: fixed;\n  width: 100%;\n  top: 90px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  z-index: 5000;\n}\n@media screen and (max-width: 767px) {\n  .Alert__container {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.alert {\n  opacity: 0.9;\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  .alert {\n    margin-right: 0;\n  }\n}\n.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\n.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\n.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\n.alert .alert-icon {\n  margin-right: 15px;\n  font-size: 22px;\n}\n.alert .close {\n  color: #000;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Alert__container {\n  position: fixed;\n  width: 100%;\n  top: 90px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  z-index: 5000;\n}\n@media screen and (max-width: 767px) {\n  .Alert__container {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.alert {\n  opacity: 0.9;\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  .alert {\n    margin-right: 0;\n  }\n}\n.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\n.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\n.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\n.alert .alert-icon {\n  margin-right: 15px;\n  font-size: 22px;\n}\n.alert .close {\n  color: #000;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15629,6 +30211,7 @@ exports.default = {
 
 	events: {
 		//event from App to show an alert
+
 		displayAlert: function displayAlert(type, msg) {
 
 			//add an alert
@@ -15654,6 +30237,7 @@ exports.default = {
 	computed: {
 		//returns an array of classes for the alert
 		//info and error last longer and have a close option
+
 		alertClasses: function alertClasses() {
 			return {
 				'alert': true,
@@ -15673,7 +30257,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Alert__container {\n  position: fixed;\n  width: 100%;\n  top: 90px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  z-index: 5000;\n}\n@media screen and (max-width: 767px) {\n  .Alert__container {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.alert {\n  opacity: 0.9;\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  .alert {\n    margin-right: 0;\n  }\n}\n.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\n.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\n.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\n.alert .alert-icon {\n  margin-right: 15px;\n  font-size: 22px;\n}\n.alert .close {\n  color: #000;\n}\n"] = false
+    __vueify_insert__.cache[".Alert__container {\n  position: fixed;\n  width: 100%;\n  top: 90px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  z-index: 5000;\n}\n@media screen and (max-width: 767px) {\n  .Alert__container {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.alert {\n  opacity: 0.9;\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  .alert {\n    margin-right: 0;\n  }\n}\n.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\n.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\n.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\n.alert .alert-icon {\n  margin-right: 15px;\n  font-size: 22px;\n}\n.alert .close {\n  color: #000;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -15682,9 +30266,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-3923ff22", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],55:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],178:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/App.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n}\n#hamburger:focus {\n  background: #b00015;\n}\n#hamburger span {\n  background: #fff;\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 52px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n#searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n@media only screen and (max-width: 767px) and (min-width: 10px) {\n  .divider {\n    background: #d9d9d9 !important;\n  }\n  #searchIcon {\n    top: 32px;\n    left: -38px;\n  }\n  #searchBar {\n    margin-top: 25px;\n    border: #b00015;\n  }\n  #navSearchDiv {\n    left: 5px !important;\n  }\n}\n@media only screen and (max-width: 991px) and (min-width: 768px) {\n  #searchBar {\n    width: 220px;\n  }\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n#profileAboutIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 40px;\n  bottom: 32px;\n}\n#profileMetricsIcon {\n  position: absolute;\n  left: 43px;\n  bottom: 32px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15699,6 +30287,10 @@ var _Requests = require('../mixins/Requests.js');
 
 var _Requests2 = _interopRequireDefault(_Requests);
 
+var _Nav = require('./Nav.vue');
+
+var _Nav2 = _interopRequireDefault(_Nav);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
@@ -15710,7 +30302,8 @@ exports.default = {
 	mixins: [_Requests2.default],
 
 	components: {
-		'rc-alert': _Alert2.default
+		'rc-alert': _Alert2.default,
+		'rc-nav': _Nav2.default
 	},
 
 	data: function data() {
@@ -15722,7 +30315,8 @@ exports.default = {
 			alert: false,
 			alertCounter: 0,
 			alertMessage: "You better check yoself",
-			alertType: "info"
+			alertType: "info",
+			toggleSidebar: true
 		};
 	},
 	created: function created() {
@@ -15770,32 +30364,37 @@ exports.default = {
 		},
 
 
-		// if user became a member/fan of a team, add that team to their nav dropdown
-		becameAFanOfTeam: function becameAFanOfTeam(team) {
-
+		/**
+   * User became a fan of a given team, add them to the nav menus
+   */
+		App_becameAFan: function App_becameAFan(team) {
 			var newTeam = {
 				id: team.id,
 				teamname: team.teamname,
 				name: team.name,
-				sport: team.sport,
 				notifications: 0,
-				role: 4
+				isMember: false,
+				isFan: true,
+				hasBeenInvited: false
 			};
 
 			this.teams.push(newTeam);
 		},
 
 
-		// the opposite of above
-		removedAsFanOfTeam: function removedAsFanOfTeam(teamname) {
-			this.teams = this.teams.filter(function (team) {
-				return team.teamname !== teamname;
+		/**
+   * Remove given team from nav menus
+   */
+		App_notAFan: function App_notAFan(team) {
+			this.teams = this.teams.filter(function (current) {
+				return current.teamname !== team.teamname;
 			});
 		}
 	},
 
 	computed: {
 		// which teams they are a member of
+
 		memberOf: function memberOf() {
 			return this.teams.filter(function (team) {
 				return team.isMember;
@@ -15820,7 +30419,6 @@ exports.default = {
 	},
 
 	methods: {
-
 		/**
    * Show a sweetalert popup message
    *
@@ -15828,6 +30426,7 @@ exports.default = {
    * @param {string} title  
    * @param {string} msg  
    */
+
 		popup: function popup(type, title, msg) {
 			switch (type) {
 				case 'good':
@@ -15900,9 +30499,6 @@ exports.default = {
 			$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 			$('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
 
-			// $("nav.navbar-fixed-top").autoHidingNavbar();
-
-
 			$('div.modal').on('hide.bs.modal', function () {
 				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 				$('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
@@ -15911,13 +30507,13 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<div>\n\t\n    <nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n      <div class=\"container\">\n\n         <!-- logo and hamburger  -->\n        <div class=\"navbar-header\">\n            <button id=\"hamburger\" type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#navbar-left\">\n                <span class=\"sr-only\">Toggle navigation</span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n                <span class=\"icon-bar\"></span>\n            </button>\n            <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n\n            \n        <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n          <!-- search bar -->\n          <ul class=\"nav navbar-nav\">\n            <div id=\"navSearchDiv\">\n              <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n              <form method=\"GET\" action=\"/search\" accept-charset=\"UTF-8\">\n          \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form\" placeholder=\"Search players and teams...\" tabindex=\"1\" required=\"\" role=\"search\" name=\"q\" type=\"search\">\n          \t\t</form>\n            </div>\n          </ul>\n\n          <!-- nav links -->\n          <ul class=\"nav navbar-nav navbar-right\">\n            <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n            <li id=\"teamDropdown\" class=\"dropdown\">\n              <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n                <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span id=\"teamCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n            \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n                <li v-for=\"team in memberOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li>\n                <li v-if=\"memberOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n                <li v-for=\"team in fanOf\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"fanOf.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n                <li v-for=\"team in invitedTo\">\n                \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n                \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n                \t\t{{ team.name }}\n                \t</a>\n                </li><li v-if=\"invitedTo.length\" id=\"divider\" class=\"divider\"></li>\n\n                <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n              </ul>\n            </li>\n            <li id=\"optionsDropdown\" class=\"dropdown\">\n              <a href=\"#\" id=\"navOptions\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span id=\"optionsCaret\" class=\"caret\"></span></a>\n              <ul class=\"dropdown-menu\" role=\"menu\">\n                <li><a class=\"nav-link\">Settings</a></li>\n                <li><a class=\"nav-link\">Help</a></li>\n                <li><a class=\"nav-link\">Submit Feedback</a></li>\n                <li id=\"divider\" class=\"divider\"></li>\n                <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n              </ul>\n            </li>\n          </ul>\n        </div>\n      </div>\n    </nav>\n\n    <nav style=\"display: none\" class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n      <div class=\"container\">\n        <div class=\"navbar-header\">\n          <a href=\"/\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n        </div>\n      </div>\n    </nav>\n\n\t\t<rc-alert :show=\"alert\" transition=\"fade-fast\"></rc-alert>\n\t\n\t\t<router-view id=\"router\" transition=\"fade-md\" transition-mode=\"out-in\" class=\"router\"></router-view>\n\t\n\t</div>\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div id=\"app-wrapper\" :class=\"{'toggled' : toggleSidebar}\">\n\n\t<div id=\"app-content\">\n\n\t<rc-nav :user=\"user\" :member=\"memberOf\" :toggle.sync=\"toggleSidebar\" :invited=\"invitedTo\" :fan=\"fanOf\"></rc-nav>\n\n\t\n\n\t<rc-alert :show=\"alert\" transition=\"fade-fast\"></rc-alert>\n\n\t<router-view id=\"router\" transition=\"fade-md\" transition-mode=\"out-in\" class=\"router\"></router-view>\n\n\t</div>\n\n</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n}\n#hamburger:focus {\n  background: #b00015;\n}\n#hamburger span {\n  background: #fff;\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 52px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n#searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n@media only screen and (max-width: 767px) and (min-width: 10px) {\n  .divider {\n    background: #d9d9d9 !important;\n  }\n  #searchIcon {\n    top: 32px;\n    left: -38px;\n  }\n  #searchBar {\n    margin-top: 25px;\n    border: #b00015;\n  }\n  #navSearchDiv {\n    left: 5px !important;\n  }\n}\n@media only screen and (max-width: 991px) and (min-width: 768px) {\n  #searchBar {\n    width: 220px;\n  }\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n#profileAboutIcon {\n  font-size: 24px;\n  position: absolute;\n  left: 40px;\n  bottom: 32px;\n}\n#profileMetricsIcon {\n  position: absolute;\n  left: 43px;\n  bottom: 32px;\n}\n"] = false
+    __vueify_insert__.cache[".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -15926,18 +30522,20 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-c10b0e32", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/Requests.js":72,"./Alert.vue":54,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],56:[function(require,module,exports){
-var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Stats__title {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-bottom: 4em;\n}\n.Stats__title div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n              -ms-grid-row-align: center;\n          align-items: center;\n}\n@media screen and (max-width: 767px) {\n  .Stats__title h1 {\n    font-size: 25px;\n  }\n}\n.Stats__title .versus {\n  color: rc_light_gray;\n}\n.Stats__title .win {\n  color: #f3b700;\n}\n.Stats__title .loss {\n  color: rgba(38,51,255,0.72);\n}\n.Stats__header {\n  margin-bottom: 15px;\n}\n@media screen and (max-width: 767px) {\n  .Stats__header {\n    font-size: 20px;\n  }\n}\n")
+}).apply(this, arguments);
+
+},{"../mixins/Requests.js":194,"./Alert.vue":177,"./Nav.vue":186,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],179:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/BasketballStats.vue", module);
+(function(){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _StatsScrollSpy = require('../mixins/StatsScrollSpy.js');
+var _Stats = require('../mixins/Stats.js');
 
-var _StatsScrollSpy2 = _interopRequireDefault(_StatsScrollSpy);
+var _Stats2 = _interopRequireDefault(_Stats);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -15945,564 +30543,343 @@ exports.default = {
 
 	name: 'BasketballStats',
 
-	props: ['type', 'rawStats', 'pagination', 'event', 'players', 'teamCols', 'playerCols'],
+	props: ['type', 'event', 'team', 'players', 'rawStats', 'cols', 'total', 'player', 'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
 
-	mixins: [_StatsScrollSpy2.default],
+	mixins: [_Stats2.default],
 
 	data: function data() {
-		if (!this.pagination) this.pagination = false;
-
-		// if single-event stats are being viewed, remove unnecessary columns
-		if (this.type === 'event') {
-			this.formatForEvent();
-		}
-
 		return {
-			pagActive: 0,
-			pagCount: 1,
-			rowsPerPage: 10,
-			playerSeasonStats: [],
-			playerRecentStats: [],
-			teamRecentStats: [],
-			teamSeasonStats: [],
-			meta: {},
-			noStats: false,
-			teamSortKey: 'date',
-			playerSortKey: 'pts',
-			teamSortOrders: {},
-			playerSortOrders: {}
+			ignoredCols: { // which stat keys should not be shown for each type?
+				teamRecent: ['gp'],
+				teamSeason: ['date', 'opp'],
+				playerRecent: ['name', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff'],
+				playerSeason: ['date', 'win', 'opp']
+			},
+			totalStats: [],
+			avgStats: []
 		};
 	},
 
 
-	computed: {
-		ifPagination: function ifPagination() {
-			return this.pagCount > 1 && this.pagination;
-		},
-
-
-		// gets rid of the stat categories that aren't useful for team season stats
-		teamSeasonCols: function teamSeasonCols() {
-			var index;
-			var teamCols = [];
-			// make a non-reactive copy of cols
-			this.teamCols.forEach(function (val) {
-				teamCols.push(val);
-			});
-
-			index = teamCols.indexOf('date');
-			if (index !== -1) teamCols.splice(index, 1);
-
-			index = teamCols.indexOf('win');
-			if (index !== -1) teamCols.splice(index, 1);
-
-			index = teamCols.indexOf('opp');
-			if (index !== -1) teamCols.splice(index, 1);
-
-			return teamCols;
-		},
-
-
-		// use all team stats for recent stats
-		teamRecentCols: function teamRecentCols() {
-			return this.teamCols;
-		},
-
-
-		// gets rid of the stat categories that aren't useful for player season stats
-		playerSeasonCols: function playerSeasonCols() {
-			var index;
-			var playerCols = [];
-			// make a non-reactive copy of cols
-			this.playerCols.forEach(function (val) {
-				playerCols.push(val);
-			});
-
-			var ditch = ['date', 'win', 'opp'];
-			ditch.forEach(function (stat) {
-				var index = playerCols.indexOf(stat);
-				if (index !== -1) {
-					playerCols.splice(index, 1);
-				}
-			});
-
-			return playerCols;
-		},
-
-
-		// gets rid of the stat categories that aren't useful for recent player stats
-		playerRecentCols: function playerRecentCols() {
-			var index;
-			var playerCols = [];
-			// make a non-reactive copy of cols
-			this.playerCols.forEach(function (val) {
-				playerCols.push(val);
-			});
-
-			var ditch = ['name', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff'];
-			ditch.forEach(function (stat) {
-				var index = playerCols.indexOf(stat);
-				if (index !== -1) {
-					playerCols.splice(index, 1);
-				}
-			});
-
-			return playerCols;
-		}
-	},
-
-	events: {
-		compileStats: function compileStats() {
-			this.compile();
-		}
-	},
-
 	watch: {
-		type: function type() {
-			this.initScrollSpy();
+		/**
+   * Whether to view the totals for a season or an average
+   */
+
+		total: function total(val) {
+			if (val) {
+				this.done(this.totalStats);
+			} else {
+				this.done(this.avgStats);
+			}
 		}
 	},
 
 	methods: {
-		// initializes variables when stats request arrives
-		compile: function compile() {
-			var pagCount = 1;
-			var rawTeamStats = [];
-			var rawPlayerStats = [];
+		/**
+   * Build stats array into the team's recent stats
+   */
 
-			if (this.rawStats.length) {
+		teamRecent: function teamRecent() {
+			var recentStats = [];
+			for (var x = 0; x < this.teamStats.length; x++) {
+				recentStats.push(this.defaultTeamRecent(this.teamStats[x]));
+			}
 
-				// separate the data into player and team stats arrays
-				for (var x = 0; x < this.rawStats.length; x++) {
+			this.done(recentStats);
+		},
 
-					// team stats
-					if (this.rawStats[x].type === 'team') {
-						rawTeamStats.push(this.rawStats[x]);
-					}
 
-					// player stats
-					if (this.rawStats[x].type === 'player') {
-						rawPlayerStats.push(this.rawStats[x]);
-					}
-				}
+		/**
+   * Calculate the team's season stats to date
+   * This step amasses the stats into one object of key totals
+   */
+		teamSeason: function teamSeason() {
+			// the keys to not include in the totaling
+			var ignored = [];
 
-				// format stats for table
-				this.makeTeamRecentStats(rawTeamStats);
-				this.makePlayerSeasonStats(rawPlayerStats);
-				this.makeTeamSeasonStats(rawTeamStats);
+			// the keys that should not be averaged
+			var noAvg = ['wins', 'losses', 'gp'];
 
-				// initialize the sorting order on columns to be descending
-				var teamSortOrders = {};
-				this.teamCols.forEach(function (key) {
-					teamSortOrders[key] = -1;
-				});
-				var playerSortOrders = {};
-				this.playerCols.forEach(function (key) {
-					playerSortOrders[key] = -1;
-				});
-				playerSortOrders['lastname'] = -1;
+			this.done(this.defaultTeamSeason(ignored, noAvg));
+		},
 
-				// number of pages
-				pagCount = Math.ceil(this.teamRecentStats.length / this.rowsPerPage);
 
-				this.pagCount = pagCount;
-				this.teamSortOrders = teamSortOrders;
-				this.playerSortOrders = playerSortOrders;
+		/**
+   * Calculate who won based on the given data
+   *
+   * @param {object} stats  The stats
+   * @param {object} meta   The stats' meta data
+   */
+		whoWon: function whoWon(stats, meta) {
+			if (meta.oppScore > stats.pts) {
+				// they lost
+				return 0;
+			}
+			if (meta.oppScore < stats.pts) {
+				// they won
+				return 1;
 			} else {
-				// error occurred getting data, create placeholder data
-				this.playerSeasonStats = this.markEmpty(0);
-				this.playerRecentStats = this.markEmpty(0);
-				this.teamRecentStats = this.markEmpty(1);
-				this.teamSeasonStats = this.markEmpty(1);
+				return null;
 			}
-
-			this.initScrollSpy();
 		},
-
-
-		// prepare listeners for showing "SCROLL >" indicators
-		initScrollSpy: function initScrollSpy() {
-			if (this.type === 'teamSeason') this.attachScrollListener('#teamSeasonDiv', 'teamSeason');
-
-			if (this.type === 'teamRecent') this.attachScrollListener('#teamRecentDiv', 'teamRecent');
-
-			if (this.type === 'playerSeason') this.attachScrollListener('#playerSeasonDiv', 'playerSeason');
-
-			if (this.type === 'event' || this.type === 'playerRecent') this.attachScrollListener('#playerRecentDiv', 'playerRecent');
-		},
-
-
-		// compiles averages for the season for each player
-		// fair warning: this function is sort of a monster
-		makePlayerSeasonStats: function makePlayerSeasonStats(rawData) {
-			var statsArray = [];
-			var IDs = [];
-			var playerStats = [];
-
-			// start by grouping all the stats by player
-			for (var x = 0; x < rawData.length; x++) {
-				var data = rawData[x];
-				var userStats = [];
-
-				// if this player hasn't had their stats grouped yet
-				if (IDs.indexOf(data.member_id) === -1) {
-					// find all of this player's stats in rawData
-					userStats = rawData.filter(function (stat) {
-						return stat.member_id === data.member_id && stat.type === 'player';
-					});
-					// add them to the list of already sorted
-					IDs.push(data.member_id);
-					statsArray.push(userStats);
-				}
+		lookupValues: function lookupValues(key) {
+			if (key === 'date') {
+				return function (val) {
+					return moment.unix(val).format('M/D');
+				};
 			}
-
-			// now loop through each players' stats and average
-			for (var x = 0; x < statsArray.length; x++) {
-
-				// init object of compiled player's stats
-				// length of this array === number of games played
-				var totalStats = {};
-				this.playerSeasonCols.forEach(function (key) {
-					totalStats[key] = 0;
-				});
-				totalStats.gp = statsArray[x].length;
-				var thisPlayer = this.players.filter(function (player) {
-					return player.member_id === statsArray[x][0].member_id;
-				});
-				totalStats.lastname = thisPlayer[0].lastname;
-				totalStats.name = thisPlayer[0].abbrName;
-
-				// loop through each stats object belonging to this user
-				for (var y = 0; y < statsArray[x].length; y++) {
-					// store the stats for this event
-					var stats = JSON.parse(statsArray[x][y].stats);
-					var doubleDigits = 0;
-
-					for (var key in stats) {
-						if (stats.hasOwnProperty(key)) {
-
-							if (key[key.length - 1] === '_') continue; // leave the percentages (e.g. fg_) for later
-
-							if (isNaN(stats[key])) {
-								totalStats[key] = stats[key]; // not something that needs averaging
-								continue;
-							}
-
-							if (key === 'starter') {
-								// rename 'starter' to be 'gs'
-								totalStats.gs++;
-								continue;
-							}
-
-							// make a counter for double and triple doubles
-							// double double = 2 stat categories in double digits
-							if (stats[key] >= 10) {
-								if (key === 'ast' || key === 'reb' || key === 'stl' || key === 'blk' || key === 'pts') {
-									doubleDigits++;
-								}
-							}
-
-							// add the these stats to the total
-							totalStats[key] = totalStats[key] + stats[key];
-						}
-					}
-
-					// if two categories in double digits, they get a double double
-					// a triple double counts as both
-					if (doubleDigits == 2) {
-						totalStats.dd2++;
-					}
-					if (doubleDigits > 2) {
-						totalStats.dd2++;
-						totalStats.td3++;
-					}
-				}
-
-				// depending on what sport this team is, do the correct stat crunching
-				playerStats.push(this.crunchStats(totalStats));
-			}
-
-			if (!playerStats.length) {
-				playerStats = this.markEmpty(0);
-			}
-
-			// finally done
-			this.playerSeasonStats = playerStats;
-		},
-		crunchStats: function crunchStats(totals) {
-			var crunched = {};
-
-			// loop through each key
-			for (var key in totals) {
-				if (totals.hasOwnProperty(key)) {
-					// key exists
-
-					// keys not needing averaging
-					if (key === 'name' || key === 'dd2' || key === 'td3' || key === 'lastname') {
-						crunched[key] = totals[key];
-						continue;
-					}
-
-					// special cases, aren't averaged
-					if (key === 'gs' || key === 'gp') {
-						if (totals[key] === true) crunched[key] = 1;else if (totals[key] === false) crunched[key] = 0;else crunched[key] = totals[key];
-						continue;
-					}
-
-					// average by number of games played, round to nearest tenth
-					crunched[key] = Math.round(totals[key] / totals['gp'] * 10) / 10;
-				}
-			}
-
-			// calculate the percentages
-			// field goal, 3 pointers, free throws
-			var prefixes = ['fg', 'threep', 'ft'];
-			for (var x = 0; x < prefixes.length; x++) {
-				var makes = prefixes[x] + 'm';
-				var attempts = prefixes[x] + 'a';
-				var percentage = prefixes[x] + '_';
-
-				if (crunched[makes] && crunched[attempts]) {
-					var percent = crunched[makes] / crunched[attempts];
-					if (isNaN(percent)) {
-						crunched[percentage] = 0;
-						continue;
-					}
-					// convert to percentages and round to nearest tenth
-					crunched[percentage] = Math.round(percent * 100 * 10) / 10;
+			if (key === 'win') {
+				if (this.type.includes('Recent')) {
+					return function (val) {
+						if (val === 0) return 'L';
+						if (val === 1) return 'W';
+						return '';
+					};
 				} else {
-					crunched[percentage] = 0;
-				}
-			}
-
-			// calculate special stats
-
-			if (this.playerSeasonCols.includes('eff')) {
-				crunched['eff'] = this.efficiency(totals);
-			}
-
-			if (this.playerSeasonCols.includes('efg_')) {
-				var efg = (totals['fgm'] + 0.5 * totals['threepm']) / totals['fga'];
-				crunched['efg_'] = Math.round(efg * 100 * 10) / 10;
-			}
-
-			if (this.playerSeasonCols.includes('ts_')) {
-				var ts = totals['pts'] / (2 * (totals['fga'] + 0.44 * totals['fta']));
-				crunched['ts_'] = Math.round(ts * 100 * 10) / 10;
-			}
-
-			if (this.playerSeasonCols.includes('astto')) {
-				var astto = totals['ast'] / totals['to'];
-				crunched['astto'] = Math.round(astto * 10) / 10;
-			}
-
-			return crunched;
-		},
-
-
-		// calculates a players season efficiency rating
-		efficiency: function efficiency(totals) {
-			var eff = (totals['pts'] + totals['reb'] + totals['ast'] + totals['stl'] + totals['blk'] - (totals['fga'] - totals['fgm']) - (totals['fta'] - totals['ftm']) - totals['to']) / totals['gp'];
-
-			return Math.round(eff * 100) / 100;
-		},
-
-
-		// compiles raw stats into a list of stats by event
-		makeTeamRecentStats: function makeTeamRecentStats(rawData) {
-			var teamStats = [];
-
-			// for each event, parse some info
-			for (var x = 0; x < rawData.length; x++) {
-				var data = rawData[x];
-
-				var stats = JSON.parse(data.stats);
-				var meta = JSON.parse(data.meta);
-
-				// format date of event like 1/31
-				var date = moment.utc(meta.event.start * 1000).local().format('M/D');
-
-				stats.date = date;
-				stats.id = data.id;
-				stats.event_id = data.event_id;
-
-				// if they included who this game was against
-				if (meta.event.type === 'home_game') {
-					// home game
-					stats.opp = 'vs. ' + meta.opp;
-					meta.home = 'vs.';
-				} else if (meta.event.type === 'away_game') {
-					// away game
-					stats.opp = '@ ' + meta.opp;
-					meta.home = '@';
-				} else {
-					// unspecified
-					stats.opp = meta.opp;
-				}
-
-				if (meta.oppScore < stats.pts) {
-					// they won
-					stats.win = 'W';
-				} else if (meta.oppScore > stats.pts) {
-					// they lost
-					stats.win = 'L';
-				} else if (meta.oppScore === stats.pts) {
-					// tie
-					stats.win = 'TIE';
-				}
-
-				teamStats.push(stats);
-			}
-
-			if (!teamStats.length) teamStats = this.markEmpty(1);
-
-			this.teamRecentStats = teamStats;
-			this.meta = meta;
-		},
-		makeTeamSeasonStats: function makeTeamSeasonStats(rawData) {
-
-			var totalStats = {
-				gp: rawData.length
-			};
-
-			for (var x = 0; x < rawData.length; x++) {
-
-				// store the stats for this event
-				var stats = JSON.parse(rawData[x].stats);
-				var meta = JSON.parse(rawData[x].meta);
-				var doubleDigits = 0;
-
-				for (var key in stats) {
-					if (stats.hasOwnProperty(key)) {
-
-						if (key.includes('_')) {
-							totalStats[key] = '-';
-							continue; // leave the percentages (e.g. fg_) for later
+					return function (val, key, stats) {
+						if (this.total) {
+							return stats.wins;
+						} else {
+							return this.percentage(stats.wins, stats.gp);
 						}
-
-						if (isNaN(stats[key])) {
-							totalStats[key] = stats[key]; // not something that needs averaging
-							continue;
+					};
+				}
+			}
+			if (key === 'opp') {
+				return function (val) {
+					if (val.includes('***', -3)) return 'vs. ' + val.slice(0, -3);
+					if (val.includes('^^^', -3)) return '@ ' + val.slice(0, -3);
+					return val;
+				};
+			}
+			if (key.includes('_', -1)) {
+				// percentage key being calculated
+				return function (val, key, stats) {
+					var prefix = key.slice(0, -1); // e.g. prefix of fg_ is fg
+					var makes = stats[prefix + 'm']; // fgm
+					var attempts = stats[prefix + 'a']; // fga
+					if (!makes || !attempts) return null;
+					return this.percentage(makes, attempts);
+				};
+			} else {
+				return function (val, key, stats) {
+					return this.round(val);
+				};
+			}
+		},
+		lookupValClasses: function lookupValClasses(key) {
+			if (key === 'win') {
+				return function (val) {
+					if (val === 0) return ['loss'];
+					if (val === 1) return ['win'];
+					return [''];
+				};
+			} else {
+				return function (val) {
+					return [''];
+				};
+			}
+		},
+		lookupKeyClasses: function lookupKeyClasses(key) {
+			if (key === 'opp') {
+				return function () {
+					return ['opp'];
+				};
+			} else {
+				return function () {
+					return [''];
+				};
+			}
+		},
+		lookupTooltips: function lookupTooltips(key) {
+			switch (key) {
+				case 'date':
+					return function () {
+						return 'Date of Game';
+					};
+				case 'opp':
+					return function () {
+						return 'Opponent';
+					};
+				case 'win':
+					return function () {
+						if (this.type.includes('Season')) {
+							if (this.total) {
+								return 'Wins';
+							} else {
+								return 'Win Percentage';
+							}
+						} else {
+							return 'Win or Loss';
 						}
-
-						// if this key already exists, add the numbers
-						if (totalStats[key]) totalStats[key] = totalStats[key] + stats[key];else totalStats[key] = stats[key];
+					};
+				case 'gs':
+					return function () {
+						return 'Games Started';
+					};
+				case 'gp':
+					return function () {
+						return 'Games Played';
+					};
+				case 'min':
+					return function () {
+						return 'Minutes Played';
+					};
+				case 'dnp':
+					return function () {
+						return 'Did Not Play';
+					};
+				case 'pts':
+					return function () {
+						return 'Points';
+					};
+				case 'fgm':
+					return function () {
+						return 'Field Goals Made';
+					};
+				case 'fga':
+					return function () {
+						return 'Field Goals Attempted';
+					};
+				case 'fg_':
+					return function () {
+						return 'Field Goal Percentage';
+					};
+				case 'threepm':
+					return function () {
+						return 'Three Pointers Made';
+					};
+				case 'threepa':
+					return function () {
+						return 'Three Pointers Attempted';
+					};
+				case 'threep_':
+					return function () {
+						return 'Three Point Percentage';
+					};
+				case 'ftm':
+					return function () {
+						return 'Free Throws Made';
+					};
+				case 'fta':
+					return function () {
+						return 'Free Throws Attempted';
+					};
+				case 'ft_':
+					return function () {
+						return 'Free Throw Percentage';
+					};
+				case 'ast':
+					return function () {
+						return 'Assists';
+					};
+				case 'reb':
+					return function () {
+						return 'Rebounds';
+					};
+				case 'oreb':
+					return function () {
+						return 'Offensive Rebounds';
+					};
+				case 'stl':
+					return function () {
+						return 'Steals';
+					};
+				case 'blk':
+					return function () {
+						return 'Blocks';
+					};
+				case 'to':
+					return function () {
+						return 'Turnovers';
+					};
+				case 'pf':
+					return function () {
+						return 'Personal Fouls';
+					};
+				case 'dd2':
+					return function () {
+						return 'Double Doubles';
+					};
+				case 'td3':
+					return function () {
+						return 'Triple Doubles';
+					};
+				case 'efg_':
+					return function () {
+						return 'Effective Field Goal Percentage';
+					};
+				case 'ts_':
+					return function () {
+						return 'True Shooting Percentage';
+					};
+				case 'astto':
+					return function () {
+						return 'Assist to Turnover Ratio';
+					};
+				case 'eff':
+					return function () {
+						return 'Player Efficiency';
+					};
+				default:
+					return function () {
+						return '';
+					};
+			}
+		},
+		lookupNames: function lookupNames(key) {
+			// if key is 'win', return 'W/L'
+			if (key === 'win') {
+				return function () {
+					if (this.total) {
+						return 'WINS';
 					}
-				}
+					return 'W/L';
+				};
 			}
-
-			this.teamSeasonStats = this.crunchStats(totalStats);
-		},
-
-
-		// if stats are being viewed for a single event, cut out unnecessary columns
-		formatForEvent: function formatForEvent() {
-
-			var index = this.teamCols.indexOf('win');
-			this.teamCols.splice(index, 1);
-			index = this.teamCols.indexOf('date');
-			this.teamCols.splice(index, 1);
-			index = this.teamCols.indexOf('opp');
-			this.teamCols.splice(index, 1);
-
-			index = this.playerCols.indexOf('gs');
-			this.playerCols.splice(index, 1);
-			index = this.playerCols.indexOf('gp');
-			this.playerCols.splice(index, 1);
-			index = this.playerCols.indexOf('dd2');
-			this.playerCols.splice(index, 1);
-			index = this.playerCols.indexOf('td3');
-			this.playerCols.splice(index, 1);
-		},
-
-
-		// decides whether or not this row is shown
-		// based on which pagination page is active
-		statShown: function statShown(index) {
-			return this.pagActive === Math.floor(index / this.rowsPerPage) || !this.pagination;
-		},
-
-
-		// returns 'win' or 'loss' for formatting class on W/L column
-		winLossClass: function winLossClass(val) {
-			if (val === 'W') return 'win';else if (val === 'L') return 'loss';else if (val === 'TIE') return 'versus';else return '';
-		},
-
-
-		// new pagination link was clicked
-		switchPag: function switchPag(clicked) {
-			this.pagActive = clicked;
-		},
-
-
-		// set the clicked header as the sort key
-		// invert ascending / descending
-		playerSortBy: function playerSortBy(key) {
-
-			if (key === 'name') {
-				// if sorting by name, really sort by hidden lastname field
-				key = 'lastname';
-				if (key === this.playerSortKey) this.playerSortOrders['name'] = this.playerSortOrders['name'] * -1;else this.playerSortKey = 'lastname';
-
-				return;
+			if (key === 'astto') {
+				return function () {
+					return 'AST/TO';
+				};
 			}
+			if (key === 'opp') {
+				return function () {
+					return 'OPPONENT';
+				};
+			} else {
+				return function (key) {
+					// everywhere with a _ becomes a %
+					key = key.replace(/_/g, '%');
 
-			if (key === this.playerSortKey) this.playerSortOrders[key] = this.playerSortOrders[key] * -1;else this.playerSortKey = key;
-		},
-		teamSortBy: function teamSortBy(key) {
-			if (key === this.teamSortKey) this.teamSortOrders[key] = this.teamSortOrders[key] * -1;else this.teamSortKey = key;
-		},
+					// everywhere there's a 'three' becomes a '3'
+					key = key.replace(/three/g, '3');
 
-
-		// instead of an empty stats row, fill with '-'
-		markEmpty: function markEmpty(type) {
-			var stats = [{}];
-
-			if (type === 'player') {
-				// player stats
-				this.playerCols.forEach(function (key) {
-					stats[key] = '-';
-				});
-			} else if (type === 'team') {
-				// team stats
-				this.teamCols.forEach(function (key) {
-					stats[key] = '-';
-				});
+					// and also return all capitalized
+					return key.toUpperCase();
+				};
 			}
-			return stats;
 		}
-	},
-
-	ready: function ready() {
-
-		$(function () {
-
-			$('[data-toggle="tooltip"').tooltip({
-				container: 'body',
-				delay: { show: 400, hide: 0 }
-			});
-		});
-	}
-};
+	} };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div class=\"stats-container\">\n\n\t\t<!-- tell the user there aren't any stats here -->\n\t\t<div v-if=\"noStats\" class=\"Stats__title\">\n\t\t\t<div class=\"text-center\">\n\t\t\t\t<h3>There aren't any stats here yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<!-- if this is an event, show the outcome and opponent -->\n\t\t<div v-if=\"type === 'event'\" class=\"Stats__title\">\n\t\t\t<div class=\"text-center\">\n\t\t\t\t<h1>\n\t\t\t\t\t<span v-if=\"meta.teamScore > meta.oppScore\" class=\"win\">Win</span>\n\t\t\t\t\t<span v-if=\"meta.teamScore < meta.oppScore\" class=\"loss\">Loss</span>\n\t\t\t\t\t<span v-if=\"meta.teamScore === meta.oppScore\" class=\"win\">Tie</span>\n\t\t\t\t\t<span class=\"versus\">{{ meta.home }} </span>{{ meta.opp }}\n\t\t\t\t</h1>\n\t\t\t\t<h1>{{ meta.teamScore }} - {{ meta.oppScore }}</h1>\n\t\t\t</div>\n\t\t</div>\n\n\t\n\n    \n\n\t\t<!-- team recent stats -->\n\t\t<h3 v-show=\"type === 'event' &amp;&amp; !noStats\" class=\"Stats__header\">Team Stats</h3>\t\n    <div v-show=\"type === 'teamRecent' || type === 'event'\">\n    \t<div v-if=\"overflowed.teamRecent\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.teamRecent.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.teamRecent.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\n\t\t\t<div id=\"teamRecentDiv\" class=\"table-responsive\">\n\t\t\t\t<table v-show=\"teamRecentStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in teamRecentCols\" class=\"stat-columns text-center\" :class=\"[teamSortKey === key ? 'col-sort' : '', key === 'opp' ? 'opp' : '']\" @click=\"teamSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"teamSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in teamRecentStats | orderBy teamSortKey teamSortOrders[teamSortKey]\">\n\t\t\t\t      <td v-for=\"key in teamRecentCols\" class=\"stat-entries\" :class=\"[key === 'win' ? winLossClass(val[key]) : '']\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- team season stats -->\n\t\t<div v-show=\"type === 'teamSeason'\">\n\t\t\t<div v-if=\"overflowed.teamSeason\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.teamSeason.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.teamSeason.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<div id=\"teamSeasonDiv\" class=\"table-responsive\">\n\t\t\t\t<table v-show=\"teamSeasonStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in teamSeasonCols\" class=\"stat-columns text-center\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr>\n\t\t\t\t      <td v-for=\"key in teamSeasonCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"teamSeasonStats[key] === null\">-</span>\n\t\t\t\t        {{ teamSeasonStats[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- player season stats -->\n\t\t<div v-show=\"type === 'playerSeason'\">\n\t\t\t<div v-if=\"overflowed.playerSeason\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.playerSeason.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.playerSeason.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\n\t\t\t<div id=\"playerSeasonDiv\" class=\"table-responsive\">\n\t\t\t\t<table v-show=\"playerSeasonStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t      \t<th v-for=\"key in playerSeasonCols\" class=\"stat-columns text-center\" :class=\"[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '', \n\t\t\t      \t\t\t\t\t\t\t\t(playerSortKey === 'lastname' &amp;&amp; key === 'name') ? 'col-sort' : '']\" @click=\"playerSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t      \t\t<br><span class=\"caret\" :class=\"playerSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in playerSeasonStats | orderBy playerSortKey playerSortOrders[playerSortKey]\">\n\t\t\t\t      <td v-for=\"key in playerSeasonCols\" class=\"stat-entries\">\n\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t        {{ val[key] }}\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- player recent stats -->\n\t\t<div v-show=\"type === 'playerRecent' || type === 'event'\">\n\t\t\t<h3 v-show=\"type === 'event' &amp;&amp; !noStats\" class=\"Stats__header\">Player Stats</h3>\n\t\t\t<div v-if=\"overflowed.playerRecent\" class=\"Stats__overflow\">\n\t\t\t\t<span class=\"--left\" v-show=\"overflowed.playerRecent.first\">\n\t\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t\t</span>\n\t\t\t\t<span class=\"--right\" v-show=\"overflowed.playerRecent.last\">\n\t\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t\t</span>\n\t\t\t</div>\t\n\t\t\t<div id=\"playerRecentDiv\">\n\t\t\t\t<div class=\"table-responsive\">\n\t\t\t\t\t<table v-show=\"playerRecentStats\" class=\"table table-striped stats-table\">\n\t\t\t\t\t\t<thead>\n\t\t\t\t    \t<tr class=\"no-highlight\">\n\t\t\t\t      \t<th v-for=\"key in playerRecentCols\" class=\"stat-columns text-center\" :class=\"[playerSortKey === key ? 'col-sort' : '', key === 'name' ? 'name' : '',\n\t\t\t\t      \t\t\t\t\t\t\t\t(playerSortKey === 'lastname' &amp;&amp; key === 'name') ? 'col-sort' : '']\" @click=\"playerSortBy(key)\" data-toggle=\"tooltip\" :title=\"key | basketballTooltips\">\n\t\t\t\t      \t\t{{ key | basketballStats }}\n\t\t\t\t      \t\t<br><span class=\"caret\" :class=\"playerSortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t\t\t      \t</th>\n\t\t\t\t    \t</tr>\n\t\t\t\t  \t</thead>\n\t\t\t\t  \t<tbody>\n\t\t\t\t    \t<tr v-show=\"statShown($index)\" v-for=\"val in playerRecentStats | orderBy playerSortKey playerSortOrders[playerSortKey]\">\n\t\t\t\t\t      <td v-for=\"key in playerRecentCols\" class=\"stat-entries\">\n\t\t\t\t\t      \t<span v-show=\"val[key] == null\">-</span>\n\t\t\t\t\t        {{ val[key] }}\n\t\t\t\t\t      </td>\n\t\t\t\t    \t</tr>\n\t\t\t\t  \t</tbody>\n\t\t\t\t\t</table>\n\t\t\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t\t<p>No stats here yet...</p>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div v-show=\"ifPagination\" class=\"pagination text-center\">\n\t\t\t<ul class=\"pagination\">\n\t\t\t\t<li :class=\"{active: n === pagActive}\" v-for=\"n in pagCount\">\n\t\t\t\t\t<a @click=\"switchPag(n)\">{{ n + 1 }}</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>\n\n\n\t</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div></div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  module.hot.dispose(function () {
-    __vueify_insert__.cache[".Stats__title {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-bottom: 4em;\n}\n.Stats__title div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n              -ms-grid-row-align: center;\n          align-items: center;\n}\n@media screen and (max-width: 767px) {\n  .Stats__title h1 {\n    font-size: 25px;\n  }\n}\n.Stats__title .versus {\n  color: rc_light_gray;\n}\n.Stats__title .win {\n  color: #f3b700;\n}\n.Stats__title .loss {\n  color: rgba(38,51,255,0.72);\n}\n.Stats__header {\n  margin-bottom: 15px;\n}\n@media screen and (max-width: 767px) {\n  .Stats__header {\n    font-size: 20px;\n  }\n}\n"] = false
-    document.head.removeChild(__vueify_style__)
-  })
   if (!module.hot.data) {
     hotAPI.createRecord("_v-1181ffc0", module.exports)
   } else {
     hotAPI.update("_v-1181ffc0", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/StatsScrollSpy.js":73,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],57:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../mixins/Stats.js":196,"vue":173,"vue-hot-reload-api":146}],180:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/Calendar.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -ms-flex-preferred-size: 775px;\n      flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-flex-basis: 775px;\n      -ms-flex-preferred-size: 775px;\n          flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16569,6 +30946,7 @@ exports.default = {
   methods: {
 
     // events array changed, reload the calendar data
+
     compile: function compile() {
 
       // attach a new events array
@@ -16668,7 +31046,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".calendar-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -ms-flex-preferred-size: 775px;\n      flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n"] = false
+    __vueify_insert__.cache[".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-flex-basis: 775px;\n      -ms-flex-preferred-size: 775px;\n          flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -16677,9 +31055,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-2d7d5230", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],58:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],181:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/CreateTeam.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".page-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n      -ms-flex: none;\n          flex: none;\n  -ms-flex-preferred-size: 75px;\n      flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -ms-flex-preferred-size: 25%;\n      flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -ms-flex-preferred-size: 50%;\n      flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #b1b1b1;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16744,6 +31126,7 @@ exports.default = {
    * 
    * @return Routes to /team/<teamname>
    */
+
 		save: function save() {
 
 			if (this.errorCheck() > 0) {
@@ -16844,6 +31227,7 @@ exports.default = {
    *
    * @param {object} response
    */
+
 		CreateTeam_dummy: function CreateTeam_dummy(response) {
 			this.dummy = response.data.dummy;
 		},
@@ -16922,6 +31306,7 @@ exports.default = {
 		/**
    * If the sport changed, change the stats in the pickers as well
    */
+
 		sport: function sport() {
 			this.initSelections(this.sport);
 		},
@@ -16976,7 +31361,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".page-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n      -ms-flex: none;\n          flex: none;\n  -ms-flex-preferred-size: 75px;\n      flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -ms-flex-preferred-size: 25%;\n      flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -ms-flex-preferred-size: 50%;\n      flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: rgba(128,128,128,0.44);\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
+    __vueify_insert__.cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #b1b1b1;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -16985,9 +31370,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-cc5cf9ba", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/StatsSelection.js":74,"../mixins/Validator.js":75,"./GoogleTypeahead.vue":62,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],59:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../mixins/StatsSelection.js":198,"../mixins/Validator.js":199,"./GoogleTypeahead.vue":185,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],182:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/EditBasketballStats.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("#statsWrapper {\n  padding: 1.5em;\n}\n#statsWrapper h3 {\n  margin-top: 2em;\n}\n.stats-radio {\n  padding-left: 3em;\n}\n.stat-notes {\n  margin-bottom: 20px;\n}\n.edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-bottom: 25px;\n  }\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.meta-data {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 2em;\n}\n.meta-data div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-right: 2em;\n}\n.meta-data .opponent {\n  max-width: 300px;\n  min-width: 250px;\n}\n.meta-data .opponent-score {\n  max-width: 120px;\n  min-width: 120px;\n}\ninput.form-control.stats-input {\n  margin: 0 auto;\n  width: 50px;\n  height: 0;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n}\n.form-group .new-stats {\n  vertical-align: middle;\n  min-width: 96px;\n}\n.stats-table tr.no-hover:hover td,\n.stats-table tr.form-group:hover td {\n  background-color: #fff !important;\n  border: 1px solid #cacaca !important;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert("#statsWrapper {\n  padding: 1.5em;\n}\n#statsWrapper h3 {\n  margin-top: 2em;\n}\n.stats-radio {\n  padding-left: 3em;\n}\n.stat-notes {\n  margin-bottom: 20px;\n}\n.edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-bottom: 25px;\n  }\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.meta-data {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 2em;\n}\n.meta-data div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-right: 2em;\n}\n.meta-data .opponent {\n  max-width: 300px;\n  min-width: 250px;\n}\n.meta-data .opponent-score {\n  max-width: 120px;\n  min-width: 120px;\n}\ninput.form-control.stats-input {\n  margin: 0 auto;\n  width: 50px;\n  height: 0;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n}\n.form-group .new-stats {\n  vertical-align: middle;\n  min-width: 96px;\n}\n.stats-table tr.no-hover:hover td,\n.stats-table tr.form-group:hover td {\n  background-color: #fff !important;\n  border: 1px solid #cacaca !important;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16997,10 +31386,6 @@ Object.defineProperty(exports, "__esModule", {
 var _isInteger = require('babel-runtime/core-js/number/is-integer');
 
 var _isInteger2 = _interopRequireDefault(_isInteger);
-
-var _stringify = require('babel-runtime/core-js/json/stringify');
-
-var _stringify2 = _interopRequireDefault(_stringify);
 
 var _StatsScrollSpy = require('../mixins/StatsScrollSpy.js');
 
@@ -17032,6 +31417,7 @@ exports.default = {
 	watch: {
 
 		// if stats change, reinitialize the page
+
 		stats: function stats() {
 			this.compile();
 		},
@@ -17044,38 +31430,42 @@ exports.default = {
 	},
 
 	computed: {
-		newPlayerCols: function newPlayerCols() {
-			var index;
-			var newCols = JSON.parse((0, _stringify2.default)(this.playerCols));
+		// newPlayerCols()
+		// {
+		// 	var index;
+		// 	var newCols = JSON.parse(JSON.stringify(this.playerCols));
 
-			var ditch = ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff', 'dd2', 'td3'];
-			ditch.forEach(function (stat) {
-				var index = newCols.indexOf(stat);
-				if (index !== -1) {
-					newCols.splice(index, 1);
-				}
-			});
+		// 	var ditch = ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'astto', 'ts_', 'per', 'eff', 'dd2', 'td3'];
+		// 	ditch.forEach(function(stat) {
+		// 		var index = newCols.indexOf(stat);
+		// 		if (index !== -1) {
+		// 			newCols.splice(index, 1);
+		// 		}
+		// 	});
 
-			return newCols;
-		},
-		newTeamCols: function newTeamCols() {
-			var index;
-			var newCols = [];
+		// 	return newCols;
+		// },
 
-			this.newPlayerCols.forEach(function (val) {
-				newCols.push(val);
-			});
+		// newTeamCols()
+		// {
+		// 	var index;
+		// 	var newCols = [];
 
-			var ditch = ['name', 'dnp'];
-			ditch.forEach(function (stat) {
-				var index = newCols.indexOf(stat);
-				if (index !== -1) {
-					newCols.splice(index, 1);
-				}
-			});
+		// 	this.newPlayerCols.forEach(function(val) {
+		// 		newCols.push(val);
+		// 	});
 
-			return newCols;
-		}
+		// 	var ditch = ['name', 'dnp'];
+		// 	ditch.forEach(function(stat) {
+		// 		var index = newCols.indexOf(stat);
+		// 		if (index !== -1) {
+		// 			newCols.splice(index, 1);
+		// 		}
+		// 	});
+
+		// 	return newCols;
+		// },
+
 	},
 
 	methods: {
@@ -17358,7 +31748,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache["#statsWrapper {\n  padding: 1.5em;\n}\n#statsWrapper h3 {\n  margin-top: 2em;\n}\n.stats-radio {\n  padding-left: 3em;\n}\n.stat-notes {\n  margin-bottom: 20px;\n}\n.edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-bottom: 25px;\n  }\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.meta-data {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 2em;\n}\n.meta-data div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-right: 2em;\n}\n.meta-data .opponent {\n  max-width: 300px;\n  min-width: 250px;\n}\n.meta-data .opponent-score {\n  max-width: 120px;\n  min-width: 120px;\n}\ninput.form-control.stats-input {\n  margin: 0 auto;\n  width: 50px;\n  height: 0;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n}\n.form-group .new-stats {\n  vertical-align: middle;\n  min-width: 96px;\n}\n.stats-table tr.no-hover:hover td,\n.stats-table tr.form-group:hover td {\n  background-color: #fff !important;\n  border: 1px solid #cacaca !important;\n}\n"] = false
+    __vueify_insert__.cache["#statsWrapper {\n  padding: 1.5em;\n}\n#statsWrapper h3 {\n  margin-top: 2em;\n}\n.stats-radio {\n  padding-left: 3em;\n}\n.stat-notes {\n  margin-bottom: 20px;\n}\n.edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-bottom: 25px;\n  }\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.meta-data {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 2em;\n}\n.meta-data div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-right: 2em;\n}\n.meta-data .opponent {\n  max-width: 300px;\n  min-width: 250px;\n}\n.meta-data .opponent-score {\n  max-width: 120px;\n  min-width: 120px;\n}\ninput.form-control.stats-input {\n  margin: 0 auto;\n  width: 50px;\n  height: 0;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n}\n.form-group .new-stats {\n  vertical-align: middle;\n  min-width: 96px;\n}\n.stats-table tr.no-hover:hover td,\n.stats-table tr.form-group:hover td {\n  background-color: #fff !important;\n  border: 1px solid #cacaca !important;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -17367,9 +31757,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-1c7772b6", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/StatsScrollSpy.js":73,"babel-runtime/core-js/json/stringify":2,"babel-runtime/core-js/number/is-integer":3,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],60:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../mixins/StatsScrollSpy.js":197,"babel-runtime/core-js/number/is-integer":6,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],183:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/EditEvent.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -17410,6 +31804,7 @@ exports.default = {
 
 	computed: {
 		// figure out if this event is a game
+
 		isGame: function isGame() {
 			return this.event.type === 1 || this.event.type === 2;
 		}
@@ -17418,6 +31813,7 @@ exports.default = {
 	methods: {
 
 		// save button was hit
+
 		updateEvent: function updateEvent() {
 
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
@@ -17550,7 +31946,7 @@ exports.default = {
 					toPicker.data('DateTimePicker').minDate(e.date);
 
 					if (!this.toPickerChange) {
-						// if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
+						// if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
 						toPicker.data('DateTimePicker').date(e.date);
 					}
 				}.bind(this));
@@ -17683,7 +32079,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n"] = false
+    __vueify_insert__.cache[".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -17692,7 +32088,11 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-2402af76", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"babel-runtime/core-js/json/stringify":2,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],61:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"babel-runtime/core-js/json/stringify":5,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],184:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/EditUser.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
 var __vueify_style__ = __vueify_insert__.insert(".EditUser {\n  background: #fff;\n}\n.EditUser__role {\n  margin-bottom: 25px;\n}\n.EditUser__data {\n  margin-bottom: 25px;\n}\n.EditUser__buttons {\n  margin-bottom: 12px;\n}\n.EditUser__confirm .kick {\n  width: 100%;\n  text-align: center;\n  margin-bottom: 35px;\n}\n")
 'use strict';
@@ -17719,6 +32119,7 @@ exports.default = {
 
 		return {
 			ghostEmail: false,
+			originalRole: null,
 			adminOptions: {
 				state: this.user.isAdmin,
 				onText: 'YES',
@@ -17736,6 +32137,9 @@ exports.default = {
 	beforeCompile: function beforeCompile() {
 		this.setErrorChecking();
 	},
+	ready: function ready() {
+		this.initialize();
+	},
 
 
 	computed: {
@@ -17746,13 +32150,15 @@ exports.default = {
 
 	watch: {
 
-		//if user changed, set inputs to correct new states
+		// if user changed, set inputs to correct new states
+
 		user: function user() {
+			this.originalRole = this.user.role;
 			this.initialize();
 		},
 
 
-		//if role changed, set inputs to correct new states
+		// if role changed, set inputs to correct new states
 		role: function role() {
 			this.initialize();
 		}
@@ -17763,45 +32169,80 @@ exports.default = {
 			$('#rosterModal').modal('hide');
 			this.$dispatch('Team_updated_members', response.data.members);
 			this.$root.banner('good', "User saved");
+		},
+		EditUser_new: function EditUser_new(response) {
+			$('#rosterModal').modal('hide');
+			this.$dispatch('Team_updated_members', response.data.members);
+			this.$root.banner('good', "User created");
+		},
+		EditUser_kick: function EditUser_kick(response) {
+			var msg = 'User kicked, replaced with ghost';
+			if (this.user.isGhost) {
+				msg = 'Ghost deleted';
+			} else if (this.user.isFan) {
+				msg = 'Fan removed';
+			}
+
+			$('#rosterModal').modal('hide');
+			this.confirmKick = false;
+			this.$dispatch('Team_updated_members', response.data.members);
+			this.$root.banner('good', msg);
 		}
 	},
 
 	methods: {
 
-		//whenever the data reloads, reset the input elements and some logic
+		// whenever the data reloads, reset the input elements and some logic
+
 		initialize: function initialize() {
 			this.confirmKick = false;
 
+			if (this.originalRole === null) this.originalRole = this.user.role;
+
 			if (this.user.isGhost) {
-				if (this.user.meta.email) {
+				this.ghostEmail = false;
+				if (this.user.meta.email.length) {
 					this.ghostEmail = true;
-				} else {
-					this.ghostEmail = false;
 				}
 			}
 
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.isAdmin);
+			if (this.user.role.includes('player')) {
+				this.user.isPlayer = true;
+				this.user.isCoach = false;
+			}
+			if (this.user.role.includes('coach')) {
+				this.user.isPlayer = false;
+				this.user.isCoach = true;
+			}
 
-			$('.selectpicker[EditUser]').selectpicker({
-				noneSelectedText: 'None'
-			}).selectpicker('refresh');
+			setTimeout(function () {
+				this.renderPickers();
+			}.bind(this), 10);
 
 			this.setErrorChecking();
 		},
 		setErrorChecking: function setErrorChecking() {
 			this.registerErrorChecking('user.meta.num', 'jersey', 'Choose between 00-99');
 
-			// extra details to check if editing a ghost
+			//  extra details to check if editing a ghost
 			if (this.user.isGhost) {
 				this.registerErrorChecking('user.meta.firstname', 'required', 'Enter a first name');
 				this.registerErrorChecking('user.meta.lastname', 'required', 'Enter a last name');
 				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email');
 			}
 		},
+		renderPickers: function renderPickers() {
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(this.adminOptions);
+			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch('state', this.user.isAdmin);
+
+			$('.selectpicker[EditUser="role"]').selectpicker().selectpicker('render');
+
+			$('.selectpicker[EditUser="positions[0]"]').selectpicker({ noneSelectedText: 'None' }).selectpicker('render');
+			$('.selectpicker[EditUser="positions[1]"]').selectpicker({ noneSelectedText: 'None' }).selectpicker('render');
+		},
 
 
-		//send ajax request to save data
+		// send ajax request to save data
 		save: function save() {
 			if (this.errorCheck() > 0) {
 				return;
@@ -17815,37 +32256,26 @@ exports.default = {
 		},
 
 
-		//send post request to server to save new user
+		// send post request to server to save new user
 		newUser: function newUser() {
 			var self = this;
 			var url = this.$parent.prefix + '/member';
 			var data = {
-				name: this.user.meta.ghost.name,
-				email: this.user.meta.ghost.email,
+				firstname: this.user.meta.firstname,
+				lastname: this.user.meta.lastname,
+				email: this.user.meta.email,
 				role: this.user.role
 			};
 
-			this.$http.post(url, data).then(function (response) {
-				if (!response.data.ok) throw response.data.error;
-
-				$('#rosterModal').modal('hide');
-				self.$dispatch('newUser', response.data.user);
-				self.$root.banner('good', "User created");
-			}).catch(function (error) {
-				self.$root.errorMsg(error);
-			});
+			this.$root.post(url, 'EditUser_new', data);
 		},
 
 
-		//send put request to server to update user
+		// send put request to server to update user
 		updateUser: function updateUser() {
-			$('#rosterModal').modal('hide');
-
-			var self = this;
 			var url = this.$parent.prefix + '/member/' + this.user.member_id;
 			var switchRole = false;
-			if (this.user.isPlayer && (this.user.role === 'coach' || this.user.role === 'ghost_coach')) switchRole = true;
-			if (this.user.isCoach && (this.user.role === 'player' || this.user.role === 'ghost_player')) switchRole = true;
+			if (this.user.role !== this.originalRole) switchRole = true;
 			var data = {
 				meta: this.user.meta,
 				isGhost: this.user.isGhost,
@@ -17856,72 +32286,48 @@ exports.default = {
 		},
 
 
-		//close modal
+		// close modal
 		cancel: function cancel() {
 			$('#rosterModal').modal('hide');
 		},
 
 
-		//show popup asking to confirm the kick, send event to Team if they do
-		kick: function kick(confirm) {
-			if (typeof confirm !== 'boolean') {
-				//they need to first confirm their decision to kick
-				this.confirm();
-				return;
-			}
-
-			if (!confirm) {
-				//they don't want to kick
+		/**
+   * The user has confirmed their choice to kick a user
+   *
+   * @param {boolean} confirm
+   */
+		confirm: function confirm(_confirm) {
+			if (!_confirm) {
+				// they hit cancel
 				this.confirmKick = false;
 				return;
 			}
 
-			if (this.user.ghost) {
-				var msg = 'Ghost deleted';
-			} else if (this.user.isFan) {
-				var msg = 'Fan removed';
-			} else {
-				var msg = 'User kicked, replaced with ghost';
-			}
-
-			//tell server about new changes
-			var data = { user: this.user };
-			var self = this;
-			this.$http.delete(this.$parent.prefix + '/user', data).then(function (response) {
-				if (!response.data.ok) throw response.data.error;
-
-				var user = response.data.user;
-				if (!user) {
-					user = { deleted: true, member_id: self.user.member_id };
-				}
-
-				self.confirmKick = false;
-
-				self.$dispatch('deleteUser', user);
-				self.$root.banner('good', msg);
-				$('#rosterModal').modal('hide');
-			}).catch(function (error) {
-				self.$root.errorMsg(error);
-			});
-
-			return;
+			this.$root.delete(this.$parent.prefix + '/member/' + this.user.member_id, 'EditUser_kick');
 		},
 
 
-		//change the popup so they can confirm their kick on a player
-		confirm: function confirm() {
+		// change the popup so they can confirm their kick on a player
+		kick: function kick() {
 			if (this.user.isFan) {
-				//this is a fan
+				// they're a fan
 				this.kickMsg = 'Remove ' + this.user.firstname + ' as a fan?';
 				this.kickText = '';
 				this.kickButton = 'REMOVE';
 			} else if (this.user.isGhost) {
-				//they're a ghost, stats will be deleted too
+				// they're a ghost, stats will be deleted too
 				this.kickMsg = 'Delete this ghost?';
-				this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
+
+				if (this.user.isPlayer) {
+					this.kickText = 'If you delete this ghost, all associated stats will be deleted as well.';
+				} else {
+					this.kickText = '';
+				}
+
 				this.kickButton = 'DELETE';
 			} else {
-				//they're kick a player
+				// they're a player
 				this.kickMsg = 'Kick ' + this.user.firstname + ' from the team?';
 				this.kickText = "They will be replaced with a ghost user";
 				this.kickButton = 'KICK';
@@ -17929,27 +32335,11 @@ exports.default = {
 
 			this.confirmKick = true;
 		}
-	},
-
-	//initialize inputs with jquery
-	ready: function ready() {
-
-		var self = this;
-
-		this.initialize();
-
-		$(function () {
-
-			$('.selectpicker[EditUser]').selectpicker({
-				noneSelectedText: 'None'
-			});
-
-			$('input[bootstrap-switch="EditUser"]').bootstrapSwitch(self.adminOptions);
-		});
 	}
+
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n\n\n\t\t<div v-show=\"confirmKick\" class=\"EditUser__confirm\">\n\t\t\t<!-- show this div when user is confirming a kick on someone -->\n\t\t\t<div class=\"row kick\">\n\t\t\t\t<h3>{{ kickMsg }}</h3>\n\t\t\t\t<p>{{ kickText }}</p>\n\t\t\t</div>\n\t\t\t<div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t    \t<a class=\"btn btn-delete btn-block btn-md\" @click=\"kick(true)\">{{ kickButton }}</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"kick(false)\">CANCEL</a>\n\t\t    </div>\n\t\t  </div>\n\t\t</div>\n\n    <form v-else=\"\" @submit.prevent=\"save()\">\n    \t<div v-if=\"!user.new\" class=\"row EditUser__role\">\n\t    \t<div v-if=\"user.isCoach || user.isPlayer\" class=\"col-xs-6\">\n\t        <label>Is a...</label>\n\t        <select data-style=\"btn-select btn-lg\" edituser=\"\" class=\"selectpicker form-control show-tick\" data-max-options=\"1\" v-model=\"user.role\" number=\"\">\n\t        \t<option v-if=\"user.isGhost\" value=\"ghost_player\">Player</option>    \n\t          <option v-else=\"\" value=\"player\">Player</option>    \n\t          <option v-if=\"user.isGhost\" value=\"ghost_coach\">Coach</option>    \n\t          <option v-else=\"\" value=\"coach\">Coach</option>    \n\t        </select>\n\t      </div>\n\t    </div>\n\t    <div v-if=\"user.isPlayer\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.user.meta.num}\" v-model=\"user.meta.num\" @keyup=\"errorCheck('num')\" autocomplete=\"false\" maxlength=\"2\">\n          <span v-show=\"errors.user.meta.num\" class=\"form-error\">{{ errors.user.meta.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Primary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"position[0]\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Secondary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"position[1]\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.isGhost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-6 col-sm-3\">\n  \t\t\t\t<label>First Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.firstname\" required=\"\" :class=\"{'form-error' : errors.user.meta.firstname}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.user.meta.firstname\" class=\"form-error\">{{ errors.user.meta.firstname }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-6 col-sm-3\">\n  \t\t\t\t<label>Last Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.lastname\" required=\"\" :class=\"{'form-error' : errors.user.meta.lastname}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.user.meta.lastname\" class=\"form-error\">{{ errors.user.meta.lastname }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{ 'form-error' : errors.user.meta.email }\" maxlength=\"100\" v-model=\"user.meta.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.user.meta.email\" class=\"form-error\">{{ errors.user.meta.email }}</span>\n\t\t\t\t\t<template v-else=\"\">\n\t\t\t\t\t\t<span v-show=\"ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t\t<span v-show=\"! ghostEmail\" class=\"input-info\">Invite someone to take this spot!</span>\n\t\t\t\t\t</template>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"! user.isGhost\" class=\"row\">\n        <div class=\"col-xs-6\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.isGhost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.isGhost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"col-xs-12 EditUser\">\n\n\t\t<div v-show=\"confirmKick\" class=\"EditUser__confirm\">\n\t\t\t<!-- show this div when user is confirming a kick on someone -->\n\t\t\t<div class=\"row kick\">\n\t\t\t\t<h3>{{ kickMsg }}</h3>\n\t\t\t\t<p>{{ kickText }}</p>\n\t\t\t</div>\n\t\t\t<div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t    \t<a class=\"btn btn-delete btn-block btn-md\" @click=\"confirm(true)\">{{ kickButton }}</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"confirm(false)\">CANCEL</a>\n\t\t    </div>\n\t\t  </div>\n\t\t</div>\n\n    <form v-else=\"\" @submit.prevent=\"save()\">\n    \t<div v-if=\"! user.new\" class=\"row EditUser__role\">\n\t    \t<div v-if=\"user.isCoach || user.isPlayer\" class=\"col-xs-6\">\n\t        <label>Is a...</label>\n\t        <select data-style=\"btn-select btn-lg\" edituser=\"role\" class=\"selectpicker form-control show-tick\" data-max-options=\"1\" v-model=\"user.role\" number=\"\">\n\t        \t<option v-if=\"user.isGhost\" value=\"ghost_player\">Player</option>    \n\t          <option v-else=\"\" value=\"player\">Player</option>    \n\t          <option v-if=\"user.isGhost\" value=\"ghost_coach\">Coach</option>    \n\t          <option v-else=\"\" value=\"coach\">Coach</option>    \n\t        </select>\n\t      </div>\n\t    </div>\n\t    <div v-if=\"user.isPlayer\" class=\"row EditUser__data\">\n        <div class=\"col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0\">\n          <label for=\"number\">Jersey Number</label>\n          <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.user.meta.num}\" v-model=\"user.meta.num\" autocomplete=\"false\" maxlength=\"2\">\n          <span v-show=\"errors.user.meta.num\" class=\"form-error\">{{ errors.user.meta.num }}</span>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Primary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"positions[0]\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[0]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>\n        <div class=\"col-xs-6 col-sm-4\">\n          <label>Secondary</label>\n          <select data-style=\"btn-select btn-lg\" edituser=\"positions[1]\" class=\"selectpicker form-control show-tick\" multiple=\"\" data-max-options=\"1\" v-model=\"user.meta.positions[1]\">\n            <option v-for=\"position in positions\" :value=\"position\">{{ position | uppercase }}</option>    \n          </select>\n        </div>  \n\t    </div>\n\n\n\t    <div v-if=\"user.isGhost\" class=\"row EditUser__data\">\n  \t\t\t<div class=\"col-xs-6 col-sm-3\">\n  \t\t\t\t<label>First Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.firstname\" required=\"\" :class=\"{'form-error' : errors.user.meta.firstname}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.user.meta.firstname\" class=\"form-error\">{{ errors.user.meta.firstname }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-6 col-sm-3\">\n  \t\t\t\t<label>Last Name</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"100\" v-model=\"user.meta.lastname\" required=\"\" :class=\"{'form-error' : errors.user.meta.lastname}\" autocomplete=\"false\">\n  \t\t\t\t<span v-show=\"errors.user.meta.lastname\" class=\"form-error\">{{ errors.user.meta.lastname }}</span>\n  \t\t\t</div>\n  \t\t\t<div class=\"col-xs-12 col-sm-6\">\n  \t\t\t\t<label>Email</label>\n  \t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{ 'form-error' : errors.user.meta.email }\" maxlength=\"100\" v-model=\"user.meta.email\" autocomplete=\"false\">\n\t\t\t\t\t<span v-show=\"errors.user.meta.email\" class=\"form-error\">{{ errors.user.meta.email }}</span>\n\t\t\t\t\t<template v-else=\"\">\n\t\t\t\t\t\t<span v-show=\"ghostEmail\" class=\"input-info\">Editing the email will resend an invitation</span>\n  \t\t\t\t\t<span v-show=\"! ghostEmail\" class=\"input-info\">Invite someone to take this spot!</span>\n\t\t\t\t\t</template>\n  \t\t\t</div>\n\t\t\t</div>\n\t    <div v-if=\"! user.isGhost\" class=\"row\">\n        <div class=\"col-xs-6\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditUser\">\n\t\t\t\t\t\t<span class=\"switch-label\">Team Admin</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\n\n\n    \t<hr>\n\t    <div class=\"row EditUser__buttons\">\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" @click=\"save()\">SAVE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a v-if=\"!user.new &amp;&amp; !user.isGhost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">KICK</a>\n\t\t    \t<a v-if=\"!user.new &amp;&amp; user.isGhost\" class=\"btn btn-delete btn-block btn-md\" @click=\"kick()\">DELETE</a>\n\t\t    </div>\n\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0\">\n\t\t    \t<a class=\"btn btn-cancel btn-block btn-md outline\" @click=\"cancel()\">CANCEL</a>\n\t\t    </div>\n\t    </div>\n    </form>\n\t</div>\t\n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -17964,7 +32354,11 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-f4673dc2", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./../mixins/Validator.js":75,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],62:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./../mixins/Validator.js":199,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],185:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/GoogleTypeahead.vue", module);
+(function(){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -17986,6 +32380,7 @@ exports.default = {
 
 	watch: {
 		//if they have edited something previously selected, reset the data
+
 		location: function location(val) {
 			if (this.selected) {
 				this.selected = false;
@@ -17998,6 +32393,7 @@ exports.default = {
 
 	methods: {
 		//format the results into the necessary items
+
 		placeSelected: function placeSelected(place) {
 			var address = place.formatted_address.split(',');
 			this.city = address[0] + ', ' + address[1][1] + address[1][2];
@@ -18038,9 +32434,127 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-6e36b7d4", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":51,"vue-hot-reload-api":25}],63:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"vue":173,"vue-hot-reload-api":146}],186:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/Nav.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Feed {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid rgba(128,128,128,0.44);\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert("#app-wrapper {\n  padding-left: 0;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 200px;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: absolute;\n}\n#sidebar-wrapper {\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  width: 0;\n  height: 100%;\n  margin-left: -200px;\n  margin-top: 5px;\n  overflow-y: auto;\n  background: #404040;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-content-wrapper {\n  width: 100%;\n  position: absolute;\n  padding: 15px;\n}\n.sidebar-nav {\n  position: absolute;\n  top: 0;\n  width: 200px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.sidebar-nav li {\n  text-indent: 20px;\n  line-height: 40px;\n}\n.sidebar-nav li a {\n  display: block;\n  margin-top: 5px;\n  text-decoration: none;\n  color: #fff;\n}\n.sidebar-nav li a.toggled {\n  text-decoration: none;\n  color: #fff;\n  background: rgba(255,255,255,0.2);\n}\n.sidebar-nav .dropdown-menu {\n  width: 200px;\n  margin: 0;\n  border-radius: 0;\n  position: relative;\n  border: 0;\n}\n.sidebar-nav .dropdown-menu li {\n  text-indent: 0px;\n  line-height: 10px;\n}\n.sidebar-nav .dropdown-menu li a {\n  color: #000;\n}\n.sidebar-nav #searchBar {\n  background: rgba(255,255,255,0.2);\n  color: #fff;\n  border-radius: 0;\n  padding-left: 20px;\n  font-size: 15px;\n}\n#app-wrapper.toggled {\n  padding-left: 0;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 0;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: relative;\n  margin-right: 0;\n}\n#sidebar-wrapper {\n  width: 200px;\n}\n#app-content-wrapper {\n  padding: 20px;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n  border: 0;\n  float: left;\n  margin: 14px 0px 8px 5px;\n}\n#hamburger .icon-bar {\n  background: #fff;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(0deg) translate(0px, 0px);\n          transform: rotate(0deg) translate(0px, 0px);\n}\n#hamburger.toggled #bottom-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(45deg) translate(-2px, -5px);\n          transform: rotate(45deg) translate(-2px, -5px);\n}\n#hamburger.toggled #top-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(-45deg) translate(1px, 3px);\n          transform: rotate(-45deg) translate(1px, 3px);\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 52px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n.navbar-nav #searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\n@media (max-width: 991px) {\n  .navbar-nav #searchBar {\n    width: 225px;\n  }\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:focus {\n  border: none;\n  outline: none;\n  box-shadow: none;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n")
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
+
+	name: 'Nav',
+
+	props: ['user', 'invited', 'member', 'fan', 'toggle'],
+
+	data: function data() {
+		return {
+			teamDropdown: false,
+			optionsDropdown: false,
+			query: ''
+		};
+	},
+
+
+	computed: {
+		invitedTo: function invitedTo() {
+			if (!this.invited) {
+				return [];
+			} else {
+				return this.invited;
+			}
+		},
+		memberOf: function memberOf() {
+			if (!this.member) {
+				return [];
+			} else {
+				return this.member;
+			}
+		},
+		fanOf: function fanOf() {
+			if (!this.fan) {
+				return [];
+			} else {
+				return this.fan;
+			}
+		}
+	}, //end computed props
+
+	methods: {
+		/**
+   * Perform a search for the given query
+   */
+
+		gotoSearch: function gotoSearch() {
+			this.resetNav();
+			alert(this.query);
+		},
+
+
+		/**
+   * Move router to user's profile
+   */
+		gotoProfile: function gotoProfile() {
+			this.resetNav();
+			this.$router.go({ name: 'user', params: { name: this.user.username } });
+		},
+
+
+		/**
+   * Move router to a given team's page
+   */
+		gotoTeam: function gotoTeam(teamname) {
+			this.resetNav();
+			this.$router.go({ name: 'team', params: { name: teamname } });
+		},
+
+
+		/**
+   * Move router to a given settings page
+   */
+		gotoOptions: function gotoOptions(option) {
+			this.resetNav();
+			this.$router.go({ name: 'settings', params: { name: option } });
+		},
+
+
+		/**
+   * Reset the nav back to hidden and closed up
+   */
+		resetNav: function resetNav() {
+			this.toggle = !this.toggle;
+			this.teamDropdown = false;
+			this.optionsDropdown = false;
+		}
+	} };
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n    <div class=\"container\">\n      <div class=\"navbar-header\">\n        <div id=\"hamburger\" class=\"navbar-toggle\" :class=\"{'toggled' : !toggle}\" v-touch:tap=\"toggle = !toggle\">\n          <span id=\"top-bar\" class=\"icon-bar\"></span>\n          <span id=\"bottom-bar\" class=\"icon-bar\"></span>\n        </div>\n        <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n      </div>\n\n      <div id=\"sidebar-wrapper\">\n        <ul class=\"sidebar-nav\">\n        \t<li>\n        \t\t<form @submit.prevent=\"gotoSearch()\">\n        \t\t\t<input id=\"searchBar\" type=\"text\" class=\"form-control\" placeholder=\"Search...\" v-model=\"query\">\n        \t\t</form>\n        \t</li>\n          <li>\n          \t<a @click=\"gotoProfile()\">Profile</a>\n          </li>\n          <li class=\"dropdown teams-dropdown open\">\n            <a class=\"dropdown-toggle\" v-touch:tap=\"teamDropdown = !teamDropdown\" :class=\"{'toggled' : teamDropdown}\">\n              <span v-cloak=\"\" v-show=\"totalCount > 0\" class=\"badge badge-danger\">{{ totalCount }}&nbsp;</span>Teams <span class=\"caret\"></span>\n            </a>\n              \n            <ul v-show=\"teamDropdown\" class=\"dropdown-menu dropdown-menu-left\">\n          \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n              <li v-for=\"team in memberOf\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"memberOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n              <li v-for=\"team in fanOf\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"fanOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n              <li v-for=\"team in invitedTo\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"invitedTo.length\" class=\"divider\"></li>\n\n              <li><a @click=\"gotoTeam('create')\" class=\"nav-link\">Create a Team</a></li>\n\n            </ul>\n          </li>\n          <li class=\"dropdown options-dropdown open\">\n            <a class=\"dropdown-toggle\" v-touch:tap=\"optionsDropdown = !optionsDropdown\" :class=\"{'toggled' : optionsDropdown}\">\n            \tOptions <span class=\"caret\"></span>\n            </a>\n            <ul v-show=\"optionsDropdown\" class=\"dropdown-menu\" role=\"menu\">\n              <li><a @click=\"gotoOptions('settings')\" class=\"nav-link\">Settings</a></li>\n              <li><a @click=\"gotoOptions('help')\" class=\"nav-link\">Help</a></li>\n              <li><a @click=\"gotoOptions('feedback')\" class=\"nav-link\">Submit Feedback</a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n            </ul>\n          </li>\n        </ul>\n      </div>\n\n          \n      <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n        <!-- search bar -->\n        <ul class=\"nav navbar-nav\">\n          <div id=\"navSearchDiv\">\n            <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n            <form @submit.prevent=\"gotoSearch()\">\n        \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form search-bar\" placeholder=\"Search players and teams...\" v-model=\"query\">\n        \t\t</form>\n          </div>\n        </ul>\n\n        <!-- nav links -->\n        <ul class=\"nav navbar-nav navbar-right\">\n          <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n          <li class=\"dropdown teams-dropdown\">\n            <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n              <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span class=\"caret\"></span></a>\n            <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n          \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n              <li v-for=\"team in memberOf\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"memberOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n              <li v-for=\"team in fanOf\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"fanOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n              <li v-for=\"team in invitedTo\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"invitedTo.length\" class=\"divider\"></li>\n\n              <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n            </ul>\n          </li>\n          <li class=\"dropdown options-dropdown\">\n            <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span class=\"caret\"></span></a>\n            <ul class=\"dropdown-menu\" role=\"menu\">\n              <li><a class=\"nav-link\">Settings</a></li>\n              <li><a class=\"nav-link\">Help</a></li>\n              <li><a class=\"nav-link\">Submit Feedback</a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n            </ul>\n          </li>\n        </ul>\n      </div>\n    </div>\n  </nav>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.dispose(function () {
+    __vueify_insert__.cache["#app-wrapper {\n  padding-left: 0;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 200px;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: absolute;\n}\n#sidebar-wrapper {\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  width: 0;\n  height: 100%;\n  margin-left: -200px;\n  margin-top: 5px;\n  overflow-y: auto;\n  background: #404040;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-content-wrapper {\n  width: 100%;\n  position: absolute;\n  padding: 15px;\n}\n.sidebar-nav {\n  position: absolute;\n  top: 0;\n  width: 200px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.sidebar-nav li {\n  text-indent: 20px;\n  line-height: 40px;\n}\n.sidebar-nav li a {\n  display: block;\n  margin-top: 5px;\n  text-decoration: none;\n  color: #fff;\n}\n.sidebar-nav li a.toggled {\n  text-decoration: none;\n  color: #fff;\n  background: rgba(255,255,255,0.2);\n}\n.sidebar-nav .dropdown-menu {\n  width: 200px;\n  margin: 0;\n  border-radius: 0;\n  position: relative;\n  border: 0;\n}\n.sidebar-nav .dropdown-menu li {\n  text-indent: 0px;\n  line-height: 10px;\n}\n.sidebar-nav .dropdown-menu li a {\n  color: #000;\n}\n.sidebar-nav #searchBar {\n  background: rgba(255,255,255,0.2);\n  color: #fff;\n  border-radius: 0;\n  padding-left: 20px;\n  font-size: 15px;\n}\n#app-wrapper.toggled {\n  padding-left: 0;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 0;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: relative;\n  margin-right: 0;\n}\n#sidebar-wrapper {\n  width: 200px;\n}\n#app-content-wrapper {\n  padding: 20px;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n  border: 0;\n  float: left;\n  margin: 14px 0px 8px 5px;\n}\n#hamburger .icon-bar {\n  background: #fff;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(0deg) translate(0px, 0px);\n          transform: rotate(0deg) translate(0px, 0px);\n}\n#hamburger.toggled #bottom-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(45deg) translate(-2px, -5px);\n          transform: rotate(45deg) translate(-2px, -5px);\n}\n#hamburger.toggled #top-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(-45deg) translate(1px, 3px);\n          transform: rotate(-45deg) translate(1px, 3px);\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 52px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n.navbar-nav #searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\n@media (max-width: 991px) {\n  .navbar-nav #searchBar {\n    width: 225px;\n  }\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:focus {\n  border: none;\n  outline: none;\n  box-shadow: none;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n"] = false
+    document.head.removeChild(__vueify_style__)
+  })
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-35e756e9", module.exports)
+  } else {
+    hotAPI.update("_v-35e756e9", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+}).apply(this, arguments);
+
+},{"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],187:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/NewsFeed.vue", module);
+(function(){
+var __vueify_insert__ = require("vueify/lib/insert-css")
+var __vueify_style__ = __vueify_insert__.insert(".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid #b1b1b1;\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18048,7 +32562,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 
-// NewsFeed handles some of its own state without notifying parent. this 
+// NewsFeed handles some of its own state without notifying parent. this
 // is mostly due to the fact that there are transitions and for the most
 // part, the data here is inconsequential to the rest of the page
 
@@ -18076,6 +32590,7 @@ exports.default = {
 
 	events: {
 		// new feed entry from Team has been sent
+
 		updateFeed: function updateFeed(entry) {
 			// add to the feed, 'true' means this is a brand new post
 			this.format(entry, true);
@@ -18085,6 +32600,7 @@ exports.default = {
 	methods: {
 
 		// iterate through all raw feed data, format and add to the news feed
+
 		compile: function compile() {
 
 			var self = this;
@@ -18278,7 +32794,7 @@ exports.default = {
 		},
 
 
-		// returns name of player/coach 
+		// returns name of player/coach
 		lookupPlayer: function lookupPlayer(id) {
 			// returns the name of the player when given an id
 			var match = {};
@@ -18342,7 +32858,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Feed {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid rgba(128,128,128,0.44);\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n"] = false
+    __vueify_insert__.cache[".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid #b1b1b1;\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -18351,9 +32867,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-2c217d3b", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],64:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],188:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/Roster.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n}\n@media screen and (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n.Roster__add {\n  position: absolute;\n  right: 0;\n  top: 5px;\n  font-size: 16px;\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n@media screen and (max-width: 550px) {\n  .Roster__list {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n.Roster__coaches {\n  position: relative;\n}\n.Roster__players {\n  margin-top: 25px;\n  position: relative;\n}\n.Roster__fans {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 3em;\n}\n@media screen and (max-width: 550px) {\n  .Roster__fans {\n    padding: 0;\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n#adminIcon {\n  color: rgba(128,128,128,0.44);\n}\n#editIcon {\n  color: #1179c9;\n}\n#editIcon:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n#saveIcon {\n  position: absolute;\n  left: 35px;\n  top: 9px;\n  color: #fff;\n  margin: 0;\n  line-height: 0.2;\n}\n.jersey {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  max-width: 75px;\n  display: inline-block;\n}\n.jersey div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  opacity: 0;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n@media (max-width: 767px) {\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__pic {\n  -webkit-flex-basis: 200px;\n      -ms-flex-preferred-size: 200px;\n          flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #a8a8a8;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #a8a8a8;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #b1b1b1;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #a8a8a8;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #c5c5c5;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #a8a8a8;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18370,39 +32890,61 @@ exports.default = {
 
 	name: 'Roster',
 
-	props: ['players', 'coaches', 'fans', 'admin', 'editUser'],
+	props: ['players', 'coaches', 'fans', 'isAdmin', 'editUser'],
 
 	data: function data() {
-		return {};
+		return {
+			tab: 'players'
+		};
 	},
 
 
 	methods: {
 
-		//they clicked the edit button
-		//open modal to edit player
-		edit: function edit(user) {
+		/**
+   * Open a modal to edit the given user
+   * 
+   * @param  {object} user 
+   */
 
-			//make a copy of this player (not reactive with state in case not saved)
-			this.$set('editUser', JSON.parse((0, _stringify2.default)(user)));
+		edit: function edit(user) {
+			//make a copy of this player for reactivity
+			user = JSON.parse((0, _stringify2.default)(user));
+
+			var role = '';
+			if (user.isGhost) role = 'ghost';
+			if (user.isPlayer) role += '_player';
+			if (user.isCoach) role += '_coach';
+			user.role = role;
+
+			this.$set('editUser', user);
 			this.$root.showModal('rosterModal');
 		},
 
 
 		//clicked the 'add user' button
 		addUser: function addUser(role) {
-			if (role === 'player') var role = 1;
-			if (role === 'coach') var role = 3;
+			if (role === 'player') {
+				var isPlayer = true;
+				var isCoach = false;
+				role = 'ghost_player';
+			}
+			if (role === 'coach') {
+				var isPlayer = false;
+				var isCoach = true;
+				role = 'ghost_coach';
+			}
 
 			var user = {
+				isGhost: true,
+				isPlayer: isPlayer,
+				isCoach: isCoach,
 				role: role,
-				ghost: true,
 				new: true,
 				meta: {
-					ghost: {
-						name: '',
-						email: ''
-					},
+					firstname: '',
+					lastname: '',
+					email: '',
 					positions: [],
 					num: ''
 				}
@@ -18425,13 +32967,13 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"Roster\">\n\t\t\n\t\t<div class=\"Roster__list\">\n\n\n\t\t\t<!-- coaches column -->\n\t\t\t<div v-if=\"coaches.length\" class=\"Roster__coaches\">\n\t\t\t\t<h2 class=\"Roster__header\">Coaches</h2>\n\t\t\t\t<a v-show=\"isAdmin\" class=\"Roster__add\" @click=\"addUser('coach')\">\n          <i class=\"material-icons\">person_add</i>\n        </a>\n\t\t\t\t<hr>\n\t\t\t\t<div v-for=\"coach in coaches | orderBy 'lastname'\">\n\t\t\t\t\t<div class=\"Media\">\n\n\t\t\t\t\t\t<img v-if=\"! coach.isGhost\" :src=\"coach.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: coach.username}}\">\n\t\t\n\t\t\t\t\t\t<img v-else=\"\" :src=\"coach.pic\" class=\"Media__thumbnail --ghost\" width=\"60\" height=\"60\">\n\n\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t\t\t<a v-if=\"! coach.isGhost\" v-link=\"{name: 'user', params: {name: coach.username}}\">\n\t\t\t\t\t\t\t\t\t{{ coach.firstname + ' ' + coach.lastname }}\n\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t<p v-else=\"\">\n\t\t\t\t\t\t\t\t\t{{ coach.firstname + ' ' + coach.lastname }}\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\t\t<i v-if=\"isAdmin\" @click=\"edit(coach)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t\t\t<i v-if=\"coach.isAdmin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\t\n\t\t\t</div>\n\n\n\t\t\t<!-- players column -->\n\t\t\t<div v-if=\"players.length\" class=\"Roster__players\">\n\t\t\t\t<h2 class=\"Roster__header\">Players</h2>\n\t\t\t\t<a v-show=\"isAdmin\" class=\"Roster__add\" @click=\"addUser('player')\">\n          <i class=\"material-icons\">person_add</i>\n        </a>\n\t\t\t\t<hr>\n\t\t\t\t\n\t\t\t\t<div v-for=\"player in players | orderBy 'lastname'\">\n\t\t\t\t\t<div class=\"Media\">\n\n\t\t\t\t\t\t<img v-if=\"! player.isGhost\" :src=\"player.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: player.username}}\">\n\t\t\t\t\t\t<img v-else=\"\" :src=\"player.pic\" class=\"Media__thumbnail --ghost\" width=\"60\" height=\"60\">\n\t\t\t\n\t\t\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t\t\t<span v-show=\"player.meta.num\" class=\"Media__number\">\n\t\t\t\t\t\t\t\t\t\t{{ player.meta.num }}<span class=\"Media__divider\">|</span>\n\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t<a v-if=\"! player.isGhost\" v-link=\"{name: 'user', params: {name: player.username}}\">\n\t\t\t\t\t\t\t\t\t{{ player.firstname + ' ' + player.lastname }}\n\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t<p v-else=\"\">\n\t\t\t\t\t\t\t\t\t{{ player.firstname + ' ' + player.lastname }}\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(player)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t\t\t<i v-if=\"player.admin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t\t\t\t<span class=\"positions\">\n\t\t\t\t\t\t\t\t\t<span v-for=\"position in player.meta.positions\">\n\t\t\t\t\t\t\t\t\t\t{{ position | uppercase }}  \n\t\t\t\t\t\t\t\t\t\t<span v-show=\"$index !== (player.meta.positions.length - 1) &amp;&amp; \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tplayer.meta.positions[$index+1].length\"> | </span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t</div> <!-- end Roster__list -->\n\n\n\t\t<!-- fans column -->\n\t\t<div v-if=\"fans.length\" class=\"Roster__fans\">\n\t\t\t<h2 class=\"Roster__header\">Fans</h2>\n\t\t\t<hr>\n\t\t\t<div v-for=\"fan in fans | orderBy 'admin' -1\" class=\"Media\">\n\n\t\t\t\t<img :src=\"fan.pic\" class=\"Media__thumbnail\" width=\"60\" height=\"60\" v-link=\"{name: 'user', params: {name: fan.username}}\">\n\t\t\t\t\n\t\t\t\t<div class=\"Media__text\">\n\t\t\t\t\t<div class=\"Media__title\">\n\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: fan.username}}\">\n\t\t\t\t\t\t\t{{ fan.firstname + ' ' + fan.lastname }}\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"Media__details\">\n\t\t\t\t\t\t<i v-if=\"admin\" @click=\"edit(fan)\" id=\"editIcon\" class=\"material-icons\">mode_edit</i>\n\t\t\t\t\t\t<i v-if=\"fan.isAdmin\" id=\"adminIcon\" class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\n\n\n\t</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"Roster\">\n\n\t<div class=\"TabButton\">\n\t\t<div class=\"first\" :class=\"{'active' : tab === 'players'}\" v-touch:tap=\"tab = 'players'\">\n\t\t\t<span>Players</span>\n\t\t</div>\n\t\t<div class=\"second\" :class=\"{'active' : tab === 'coaches'}\" v-touch:tap=\"tab = 'coaches'\">\n\t\t\t<span>Coaches</span>\n\t\t</div>\n\t\t<div class=\"third\" :class=\"{'active' : tab === 'fans'}\" v-touch:tap=\"tab = 'fans'\">\n\t\t\t<span>Fans</span>\n\t\t</div>\n\t</div>\n\t\n\t<div v-show=\"tab === 'players'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"player in players | orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"player.isAdmin\" class=\"admin-icon\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" class=\"edit-icon\" v-touch:tap=\"edit(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\" :class=\"{'--ghost-pic' : player.isGhost}\">\n\t\t\t\t\t<img v-if=\"! player.isGhost\" :src=\"player.pic\" :alt=\"player.name\" height=\"200\" width=\"200\">\n\t\t\t\t\t<div v-else=\"\">\n\t\t\t\t\t\t<span>{{ player.firstname[0] }}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span v-if=\"player.isGhost\">{{ player.name }}</span>\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: player.username}}\">{{ player.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div v-show=\"player.meta.positions.length\" class=\"User__positions\">\n\t\t\t\t\t\t\t<span v-for=\"position in player.meta.positions\">\n\t\t\t\t\t\t\t\t{{ position | uppercase }}\n\t\t\t\t\t\t\t</span>&nbsp;\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"details-num\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>{{ player.meta.num }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- add player placeholder -->\n\t\t\t<div class=\"User\" v-if=\"isAdmin\">\n\t\t\t\t<div class=\"User__pic --add-player\" v-touch:tap=\"addUser('player')\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<i class=\"material-icons\">add</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span>Add a Player</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! isAdmin &amp;&amp; ! players.length\">\n\t\t\t\t<h3>No players yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\t<div v-show=\"tab === 'coaches'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"coach in coaches | orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"coach.isAdmin\" class=\"admin-icon\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" class=\"edit-icon\" v-touch:tap=\"edit(coach)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\" :class=\"{'--ghost-pic' : coach.isGhost}\">\n\t\t\t\t\t<img v-if=\"! coach.isGhost\" :src=\"coach.pic\" :alt=\"coach.name\" height=\"200\" width=\"200\">\n\t\t\t\t\t<div v-else=\"\">\n\t\t\t\t\t\t<span>{{ coach.firstname[0] }}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span v-if=\"coach.isGhost\">{{ coach.name }}</span>\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: coach.username}}\">{{ coach.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- add coach placeholder -->\n\t\t\t<div class=\"User\" v-if=\"isAdmin\">\n\t\t\t\t<div class=\"User__pic --add-player\" v-touch:tap=\"addUser('coach')\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<i class=\"material-icons\">add</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span>Add a Coach</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! isAdmin &amp;&amp; ! coaches.length\">\n\t\t\t\t<h3>No coaches yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\t<div v-show=\"tab === 'fans'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"fan in fans | orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"fan.isAdmin\" class=\"admin-icon\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" class=\"edit-icon\" v-touch:tap=\"edit(fan)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\">\n\t\t\t\t\t<img :src=\"fan.pic\" :alt=\"fan.name\" height=\"200\" width=\"200\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: fan.username}}\">{{ fan.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"User__positions\">\n\t\t\t\t\t\t\t<span>Since {{ fan.since }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! fans.length\">\n\t\t\t\t<h3>No fans yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\n</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n}\n@media screen and (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n.Roster__add {\n  position: absolute;\n  right: 0;\n  top: 5px;\n  font-size: 16px;\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n@media screen and (max-width: 550px) {\n  .Roster__list {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n.Roster__coaches {\n  position: relative;\n}\n.Roster__players {\n  margin-top: 25px;\n  position: relative;\n}\n.Roster__fans {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 3em;\n}\n@media screen and (max-width: 550px) {\n  .Roster__fans {\n    padding: 0;\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n#adminIcon {\n  color: rgba(128,128,128,0.44);\n}\n#editIcon {\n  color: #1179c9;\n}\n#editIcon:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n#saveIcon {\n  position: absolute;\n  left: 35px;\n  top: 9px;\n  color: #fff;\n  margin: 0;\n  line-height: 0.2;\n}\n.jersey {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  max-width: 75px;\n  display: inline-block;\n}\n.jersey div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n"] = false
+    __vueify_insert__.cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  opacity: 0;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n@media (max-width: 767px) {\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__pic {\n  -webkit-flex-basis: 200px;\n      -ms-flex-preferred-size: 200px;\n          flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #a8a8a8;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #a8a8a8;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #b1b1b1;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #a8a8a8;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #c5c5c5;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #a8a8a8;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -18440,18 +32982,30 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-39a90f96", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"babel-runtime/core-js/json/stringify":2,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],65:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"babel-runtime/core-js/json/stringify":5,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],189:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/Stats.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert("#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #b1b1b1 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: #b1b1b1;\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _StatsScrollSpy = require('../mixins/StatsScrollSpy.js');
+
+var _StatsScrollSpy2 = _interopRequireDefault(_StatsScrollSpy);
+
 var _BasketballStats = require('./BasketballStats.vue');
 
 var _BasketballStats2 = _interopRequireDefault(_BasketballStats);
+
+var _StatFunctions = require('../mixins/StatFunctions.js');
+
+var _StatFunctions2 = _interopRequireDefault(_StatFunctions);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -18459,39 +33013,133 @@ exports.default = {
 
 	name: 'Stats',
 
-	props: ['stats', 'players', 'type', 'team', 'sport', 'event', 'pagination', 'teamCols', 'playerCols'],
+	mixins: [_StatsScrollSpy2.default, _StatFunctions2.default],
+
+	props: ['sport', 'rawStats', 'players', 'player', 'type', 'team', 'event', 'total'],
 
 	components: {
 		'basketball': _BasketballStats2.default
 	},
 
 	data: function data() {
-		return {};
+		return {
+			keyNames: {},
+			valLookup: {},
+			keyClassLookup: {},
+			valClassLookup: {},
+			tooltips: {},
+			cols: [],
+			compiling: true,
+			stats: [],
+			sortKey: '',
+			sortOrders: {}
+		};
 	},
 
 
 	watch: {
-		//stats have changed, compile
-		stats: function stats() {
-			this.$broadcast('compileStats');
+		/**
+   * Stats have been altered, recompile them
+   */
+
+		rawStats: function rawStats() {
+			this.compileStats();
+		},
+		type: function type() {
+			this.compileStats();
+		},
+		cols: function cols() {
+			this.cols.forEach(function (key) {
+				this.$set('sortOrders.' + key, -1);
+			}.bind(this));
 		}
 	},
 
 	events: {
-		dataReady: function dataReady() {
+		/**
+   * Stats are done being created by child sport component
+   */
+
+		Stats_compiled: function Stats_compiled(stats) {
+			this.stats = stats;
+			this.compiling = false;
+			this.attachScrollListener('#statsTable', 'stats');
+			setTimeout(function () {
+				this.attachTooltips();
+			}.bind(this), 250);
+		}
+	},
+
+	methods: {
+		/**
+   * Tell the child component to compile stats
+   */
+
+		compileStats: function compileStats() {
+			this.compiling = true;
 			this.$broadcast('compileStats');
+		},
+
+
+		/**
+   * Change which key the table is being sorted by
+   */
+		sortBy: function sortBy(key) {
+			if (key === 'name') {
+				// if sorting by name, really sort by hidden lastname field
+				key = 'lastname';
+				if (key === this.sortKey) {
+					this.sortOrders['name'] = this.sortOrders['name'] * -1;
+				} else {
+					this.sortKey = 'lastname';
+				}
+
+				return;
+			}
+
+			if (key === this.sortKey) {
+				this.sortOrders[key] = this.sortOrders[key] * -1;
+			} else {
+				this.sortKey = key;
+			}
+		},
+		keyClasses: function keyClasses(key) {
+			var classes = [];
+			if (this.sortKey === key) {
+				classes.push('col-sort');
+			}
+
+			this.keyClassLookup[key].call(this).forEach(function (className) {
+				classes.push(className);
+			});
+
+			return classes;
+		},
+		valClasses: function valClasses(val, key) {
+			var classes = [];
+			this.valClassLookup[key].call(this, val[key]).forEach(function (className) {
+				classes.push(className);
+			});
+
+			return classes;
+		},
+		attachTooltips: function attachTooltips() {
+			$('#statsTable [data-toggle="tooltip"]').data('bs.tooltip', false).tooltip({
+				container: 'body',
+				delay: { show: 400, hide: 0 }
+			});
 		}
 	}
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div>\n\n\t\t<div v-if=\"type === 'event' &amp;&amp; ! stats.length\" class=\"Stats__title --noStats\">\n\t\t\t<p>This event's stats aren't posted yet... bug a team admin to post them!</p>\n\t\t</div>\n\t\t\n\t\t<basketball v-if=\"sport === 'basketball'\" :type=\"type\" :event=\"event\" :players=\"players\" :raw-stats=\"stats\" :pagination=\"pagination\" :team-cols=\"teamCols\" :player-cols=\"playerCols\">\n  \t</basketball>\t\n\n\n\n\t</div>\n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\n\t\t<div v-if=\"type === 'event' &amp;&amp; ! stats.length\" class=\"Stats__title --noStats\">\n\t\t\t<p>This event's stats aren't posted yet... bug a team admin to post them!</p>\n\t\t</div>\n\n  \t<div v-if=\"overflowed.stats\" class=\"Stats__overflow\">\n\t\t\t<span class=\"--left\" v-show=\"overflowed.stats.first\">\n\t\t\t\t<i class=\"material-icons\">chevron_left</i>SCROLL\n\t\t\t</span>\n\t\t\t<span class=\"--right\" v-show=\"overflowed.stats.last\">\n\t\t\t\tSCROLL<i class=\"material-icons\">chevron_right</i>\n\t\t\t</span>\n\t\t</div>\t\n\t\t<div id=\"statsTable\" class=\"table-responsive\">\n\t\t\t<table v-show=\"stats\" class=\"table table-striped stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr class=\"no-highlight\">\n\t\t      \t<th v-for=\"key in cols\" class=\"stat-columns text-center\" :class=\"keyClasses(key)\" v-touch:tap=\"sortBy(key)\" data-toggle=\"tooltip\" :title=\"tooltips[key].call(this)\">\n\t\t      \t\t{{ keyNames[key].call(this, key) }}\n\t\t      \t\t<br><span class=\"caret\" :class=\"sortOrders[key] > 0  ? 'asc' : 'desc'\"></span>\t      \t\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr v-for=\"val in stats | orderBy sortKey sortOrders[sortKey]\">\n\t\t\t      <td v-for=\"key in cols\" class=\"stat-entries\" :class=\"valClasses(val, key)\">\n\t\t\t        {{ valLookup[key].call(this, val[key], key, val) }}\n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t<h4>No stats yet...</h4>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- just for calculations, doesn't display anything -->\n\t\t<basketball v-if=\"sport === 'basketball'\" :type=\"type\" :event=\"event\" :player=\"player\" :players=\"players\" :raw-stats=\"rawStats\" :team=\"team\" :cols.sync=\"cols\" :total=\"total\" :key-names.sync=\"keyNames\" :tooltips.sync=\"tooltips\" :val-lookup.sync=\"valLookup\" :val-class-lookup.sync=\"valClassLookup\" :key-class-lookup.sync=\"keyClassLookup\">\n  \t</basketball>\t\n\n\n\t</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache["#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #7ab0eb;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #4b74a0;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f7f7f7;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #d6d6d6 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: rgba(128,128,128,0.44);\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
+    __vueify_insert__.cache["#statsWrapper {\n  padding-bottom: 10px;\n}\n.stats-container {\n  position: relative;\n  min-height: 100px;\n  padding: 0.5em 2em 2em 0;\n}\n@media screen and (max-width: 767px) {\n  .stats-container {\n    border: 0;\n  }\n}\n.stats-container .Tab__container {\n  margin-bottom: 45px;\n  font-size: 16px;\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  font-weight: 300;\n}\ntable th.stat-columns.name {\n  padding: 8px 30px;\n}\ntable th.stat-columns.opp {\n  padding: 8px 50px;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\n.stats-table tr:hover td {\n  background-color: #b1b1b1 !important;\n  border: 1px solid #f7f7f7 !important;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n}\n.stats-table .caret {\n  margin: 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.versus {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: #b1b1b1;\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -18500,9 +33148,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-14bfe0e5", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./BasketballStats.vue":56,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],66:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"../mixins/StatFunctions.js":195,"../mixins/StatsScrollSpy.js":197,"./BasketballStats.vue":179,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],190:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/Team.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Team {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  margin-bottom: 35px;\n  padding: 110px 0 0 0px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 40px;\n  max-width: 290px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 3px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-pack: start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n.Team__info {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.Team__text {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column wrap;\n      flex-flow: column wrap;\n  color: #fff;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.Team__name {\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__fans {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 20px;\n}\n.Team__fans .num-fans {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  overflow: hidden;\n  height: 44px;\n  width: 70px;\n}\n.Team__fans .num-fans .fan-count {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background-color: #fff;\n  min-width: 61px;\n  height: 44px;\n  font-size: 17px;\n  border-radius: 10%;\n  color: #7b7b7b;\n}\n.Team__fans .num-fans .fan-count span {\n  position: absolute;\n  top: 8px;\n  right: 33px;\n}\n.Team__fans .num-fans .fan-count.--tensOfFans span {\n  right: 30px;\n}\n.Team__fans .num-fans .fan-count.--hundredsOfFans span {\n  right: 24px;\n}\n.Team__fans .num-fans .fan-count.--thousandsOfFans span {\n  right: 19px;\n}\n.Team__fans .num-fans .arrow-right {\n  position: absolute;\n  top: 5px;\n  right: 4px;\n  margin-top: 9px;\n  height: 0;\n  width: 0;\n  border-bottom: 6px solid transparent;\n  border-top: 6px solid transparent;\n  border-left: 6px solid #fff;\n}\n.Team__fans .fan-icon {\n  margin-left: 2px;\n}\n.Team__fans .fan-icon:hover {\n  cursor: pointer;\n}\n.Team__fans .fan-icon.--member:hover {\n  cursor: default;\n}\n.Team__invite {\n  background: #fff;\n  border-radius: 5px;\n  margin-right: 15px;\n}\n.Team__invite a.btn.outline,\n.Team__invite a.btn {\n  border: 0;\n  margin: 0;\n}\n.Team__invite a.btn.outline:hover,\n.Team__invite a.btn:hover {\n  border: 0;\n}\n.Team__invite a.btn.outline.--member:hover,\n.Team__invite a.btn.--member:hover {\n  cursor: default;\n  color: #fff;\n  background-color: #21c230;\n}\n.Team__tabs {\n  margin-top: 25px;\n  height: 45px;\n  padding: 0;\n  overflow: visible;\n}\n.Team__tabs .tab {\n  width: 200px;\n  position: relative;\n  height: 45px;\n  float: left;\n  overflow: hidden;\n  margin: 0 -15px 0 0;\n}\n.Team__tabs .tab .tab-box {\n  height: 53px;\n  background: #ccc;\n  border-radius: 6px;\n  border: 1px solid rgba(128,128,128,0.44);\n  border-bottom: 9px solid rgba(128,128,128,0.44);\n  margin: 0 7px 0;\n  box-shadow: 0 0 2px #fff inset;\n  -webkit-transform: perspective(100px) rotateX(23deg);\n          transform: perspective(100px) rotateX(23deg);\n  -webkit-transition: background 0.3s, border-bottom 0.05s;\n  transition: background 0.3s, border-bottom 0.05s;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  -webkit-transition: color 0.3s;\n  transition: color 0.3s;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab:hover .tab-box {\n  background: #fff;\n  -webkit-transition: background 0.3s;\n  transition: background 0.3s;\n}\n.Team__tabs .tab:hover a {\n  color: #38a9f9;\n  -webkit-transition: color 0.3s;\n  transition: color 0.3s;\n}\n.Team__tabs .tab.--active {\n  z-index: 40;\n  position: relative;\n  padding-bottom: 1px;\n}\n.Team__tabs .tab.--active .tab-box {\n  background-color: #f5f5f5;\n  border-bottom: 0;\n  -webkit-transition: border-bottom 0.05s;\n  transition: border-bottom 0.05s;\n  box-shadow: 0 0 2px #fff inset;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media screen and (max-width: 1000px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media screen and (max-width: 1000px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media screen and (max-width: 1000px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__buttons {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: end;\n  -webkit-align-items: flex-end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 35px;\n}\n.Team__buttons .--members {\n  margin-right: 5px;\n}\n.Team__buttons .--fans {\n  margin-left: 5px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-bottom: 15px;\n}\n.Team__fans ul {\n  list-style: none;\n  font-size: 16px;\n  text-align: center;\n  padding-left: 0;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18567,6 +33219,7 @@ exports.default = {
 		document.title = teamname;
 
 		return {
+			temp: 1,
 			prefix: prefix + teamname,
 			requestFinished: false,
 			notFound: false,
@@ -18581,22 +33234,20 @@ exports.default = {
 			hasBeenInvited: false,
 			hasRequestedToJoin: false,
 			isCreator: false,
+			joinAction: null,
 			editUser: {
 				firstname: '',
 				lastname: '',
 				meta: {}
 			},
+			showStatTotals: false,
 			positions: [],
-			teamStatCols: [],
-			playerStatCols: [],
 			users: [],
-			tab: 'roster',
-			statsTab: 'teamRecent',
+			tab: 'stats',
+			statsTab: 'playerSeason',
 			events: [],
 			stats: [],
-			feed: [],
-			fansChanged: false,
-			numFansTransition: 'number-tick-up'
+			feed: []
 		};
 	},
 	created: function created() {
@@ -18606,26 +33257,19 @@ exports.default = {
 
 
 	computed: {
-		numFans: function numFans() {
-			return this.fans.length;
-		},
 		isMember: function isMember() {
 			return this.isPlayer || this.isCoach;
 		},
 
 
-		// makes fan counter div wider with larger numFans
-		numFansClass: function numFansClass() {
-			if (this.fans.length >= 1000) return '--thousandsOfFans';else if (this.fans.length >= 100) return '--hundredsOfFans';else if (this.fans.length >= 10) return '--tensOfFans';else return '';
-		},
-
-
-		// the following three functions pick which of the fan icons to display
+		/**
+   * The following three properties pick which of the fan icons to display
+   */
 		showRemoveFan: function showRemoveFan() {
-			return !this.isFan && !this.isMember;
+			return this.isFan && !this.isMember;
 		},
 		showBecomeFan: function showBecomeFan() {
-			return this.isFan && !this.isAdmin;
+			return !this.isFan && !this.isAdmin;
 		},
 		showIsFan: function showIsFan() {
 			// this icon is unclickable
@@ -18633,9 +33277,11 @@ exports.default = {
 		},
 
 
-		// the following four functions pick which of the membership buttons to display
-		showYoureAMember: function showYoureAMember() {
-			return this.isMember || this.isCreator;
+		/**
+   * The following four properties pick which of the membership buttons to display
+   */
+		showJoinButton: function showJoinButton() {
+			return this.showRequestToJoin || this.showCancelRequest || this.showRespondToInvitation;
 		},
 		showRequestToJoin: function showRequestToJoin() {
 			return !this.hasRequestedToJoin && !this.hasBeenInvited && !this.isMember && !this.isCreator;
@@ -18648,7 +33294,9 @@ exports.default = {
 		},
 
 
-		// create list of players from users
+		/**
+   * Create list of players from users
+   */
 		players: function players() {
 			return this.users.filter(function (user) {
 				return user.isPlayer;
@@ -18656,7 +33304,9 @@ exports.default = {
 		},
 
 
-		// create list of coaches from users
+		/**
+   * Create list of coaches from users
+   */
 		coaches: function coaches() {
 			return this.users.filter(function (user) {
 				return user.isCoach;
@@ -18664,10 +33314,22 @@ exports.default = {
 		},
 
 
-		// create list of fans from users
+		/**
+   * Create list of fans from users
+   */
 		fans: function fans() {
 			return this.users.filter(function (user) {
 				return user.isFan;
+			});
+		},
+
+
+		/**
+   * Create a list of users that have requested to join the team
+   */
+		usersThatWantToJoin: function usersThatWantToJoin() {
+			return this.users.filter(function (user) {
+				return user.hasRequestedToJoin;
 			});
 		}
 	},
@@ -18675,6 +33337,7 @@ exports.default = {
 	events: {
 
 		// team data has arrived from the back-end
+
 		Team_requestSuccess: function Team_requestSuccess(response) {
 			this.compile(response.data.data);
 
@@ -18693,12 +33356,35 @@ exports.default = {
 
 
 		/**
-   * User has toggled their fan status
+   * Successful toggleFan request to server
    */
 		Team_toggleFan: function Team_toggleFan(response) {
-			this.updateFanStatus();
+			this.isFan = !this.isFan;
+
+			if (this.isFan) {
+				// tell App.vue to add this team to the nav dropdown
+				this.$dispatch('App_becameAFan', this.team);
+				this.$root.banner('good', "You're now a fan");
+			} else {
+				this.$dispatch('App_notAFan', this.team);
+				this.$root.banner('good', "You're no longer a fan");
+			}
+
 			this.users = [];
 			this.formatUsers(response.data.members);
+		},
+		Team_join: function Team_join(response) {
+			if (this.joinAction === 'request') {
+				this.hasRequestedToJoin = true;
+				this.$root.banner('good', "Request sent");
+			} else if (this.joinAction === 'cancel') {
+				this.hasRequestedToJoin = false;
+				this.$root.banner('good', "Request canceled");
+			} else if (this.joinAction === 'accept') {
+				this.users = [];
+				this.formatUsers(response.data.members);
+				this.$root.banner('good', "You've joined this team");
+			}
 		},
 
 
@@ -18791,13 +33477,11 @@ exports.default = {
 
 			// store meta data about team
 			var meta = JSON.parse(data.team.meta);
-			this.teamStatCols = meta.stats.teamCols;
-			this.playerStatCols = meta.stats.playerCols;
 			this.team.slogan = meta.slogan;
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
 
-			// format the backdrop image as a style tag 
+			// format the backdrop image as a style tag
 			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
 
 			// note whether or not this user is the creator
@@ -18821,7 +33505,7 @@ exports.default = {
 		// compile meta data for users and push into this.users
 		formatUsers: function formatUsers(users) {
 			if (!users) {
-				// its possible there is a 'null' here 
+				// its possible there is a 'null' here
 				return;
 			}
 
@@ -18858,112 +33542,22 @@ exports.default = {
 		},
 
 
-		// user hit fan button
+		/**
+   * User hit the 'FAN'/'UNFAN' button
+   */
 		toggleFan: function toggleFan() {
-			var self = this;
-			var url = this.prefix + '/fan';
-			this.$root.post(url, 'Team_toggleFan');
+			this.$root.post(this.prefix + '/fan', 'Team_toggleFan');
 		},
 
 
-		// successful request, change fan status
-		updateFanStatus: function updateFanStatus() {
-			if (this.isFan) {
-				// use decrement animation on counter
-				this.numFansTransition = 'number-tick-down';
-			} else {
-				// increment
-				this.numFansTransition = 'number-tick-up';
-			}
-
-			// swap the fan status
-			this.isFan = !this.isFan;
-			this.fansChanged = !this.fansChanged;
-
-			if (this.isFan) {
-				// tell App.vue to add this team to the nav dropdown
-				this.$dispatch('becameAFanOfTeam', this.team);
-				this.$root.banner('good', "You're now a fan");
-			} else {
-				this.$dispatch('removedAsFanOfTeam', this.team.teamname);
-				this.$root.banner('good', "You're no longer a fan");
-			}
-		},
-
-
-		// the player wants to send a request to join this team
-		requestToJoin: function requestToJoin(action) {
-			var self = this;
-			var url = this.prefix + '/join';
-			this.$http.post(url).then(function (response) {
-				if (!response.data.ok) throw response.data.error;
-
-				if (action === 'join') {
-					self.hasRequestedToJoin = true;
-					self.$root.banner('good', "Request sent to team admin");
-				} else if (action === 'cancel') {
-					self.hasRequestedToJoin = false;
-					self.$root.banner('good', "Request cancelled");
-				}
-			}).catch(function (error) {
-				self.$root.errorMsg(error);
-			});
-		},
-
-
-		// they were invited, make them a for-real member now
-		respondToInv: function respondToInv(outcome) {
-			var self = this;
-			// first they should confirm whether they want to accept the invite or not
-			// only do this if 'outcome' isn't a boolean yet (vue makes it random event data on-click)
-			if (typeof outcome !== 'boolean') {
-				if (this.auth.role === 5 || this.auth.role === 45) var role = 'player.';
-				if (this.auth.role === 6 || this.auth.role === 46) var role = 'coach.';
-				var text = "You've been invited to join this team as a " + role;
-				swal({
-					title: 'Respond to Invitation',
-					text: text,
-					type: "info",
-					showCancelButton: true,
-					confirmButtonColor: '#1179C9',
-					cancelButtonColor: 'whitesmoke',
-					confirmButtonText: 'JOIN',
-					cancelButtonText: 'NO THANKS',
-					closeOnConfirm: true
-				}, function (confirm) {
-					// call this function with boolean response
-					if (confirm) {
-						self.respondToInv(true);
-					} else {
-						self.respondToInv(false);
-					}
-				});
-
-				// they will be back after confirming
-				return;
-			}
-
-			var url = this.prefix + '/join';
-			data = { accept: outcome };
-			this.$http.post(url, data).then(function (response) {
-				// check there were no authorization errors
-				if (!response.data.ok) {
-					throw response.data.error;
-				}
-
-				self.hasBeenInvited = false;
-
-				if (outcome) {
-					// add them to the team
-					self.formatUsers(response.data.users);
-					self.$root.banner('good', "You've joined this team");
-					self.isFan = false;
-				} else {
-					self.$root.banner('good', "Invitation denied");
-				}
-			}).catch(function (error) {
-				self.$root.errorMsg(error);
-			});
+		/**
+   * User hit the 'ASK TO JOIN' or 'ACCEPT INVITATION' button
+   * 
+   * @param  {string} action  Either 'request', 'cancel', or 'accept'
+   */
+		join: function join(action) {
+			this.joinAction = action;
+			this.$root.post(this.prefix + '/join', 'Team_join', { action: action });
 		}
 	}, // end methods
 
@@ -18975,31 +33569,17 @@ exports.default = {
 				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 				$('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
 			});
-
-			$('#becomeFan').on('mouseover', function () {
-				$(this).attr('src', '/images/becomeFanHover.png');
-			});
-			$('#becomeFan').on('mouseout', function () {
-				$(this).attr('src', '/images/becomeFan.png');
-			});
-
-			$('#isFan').on('mouseover', function () {
-				$(this).attr('src', '/images/isFanHover.png');
-			});
-			$('#isFan').on('mouseout', function () {
-				$(this).attr('src', '/images/isFan.png');
-			});
 		});
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<div v-show=\"requestFinished\">\n\t<!-- container for template -->\n\n\t\t<!-- no results for team, show message -->\n\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"notFound\" class=\"f-el-fill text-center\">\n\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t<br>\n\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t</div>\n\n\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t<div v-cloak=\"\" v-else=\"\" class=\"Team for-blurring\">\n\t\t\n\n    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\n\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t{{ team.homefield + ', ' + team.city }}\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__fans\">\n\t\t\t\t\t\t\t\t<div class=\"Team__join_buttons\">\n\t\t\t\t\t\t\t\t\t<!-- buttons for joining team, accepting invitation -->\n\t\t\t\t\t\t\t\t\t<div class=\"Team__invite\">\n\t\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"requestToJoin('join')\">REQUEST TO JOIN</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-delete\" @click=\"requestToJoin('cancel')\">CANCEL REQUEST</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success\" @click=\"respondToInv()\">RESPOND TO INVITATION</a>\n\n\t\t\t\t\t\t\t\t\t\t<a v-show=\"false\" class=\"btn btn-success --member\">YOU'RE A MEMBER</a>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"num-fans\">\n\t\t\t\t\t\t\t\t\t<div class=\"fan-count\" :class=\"numFansClass\">\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"!fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"fansChanged\" :transition=\"numFansTransition\">{{ numFans }}</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"arrow-right --white\"></div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div v-show=\"!isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/becomeFan.png\" width=\"35\" height=\"47\" alt=\"Become a fan\" id=\"becomeFan\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isFan &amp;&amp; !isMember\" class=\"fan-icon\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a fan\" id=\"isFan\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"isMember\" class=\"fan-icon --member\">\n\t\t\t\t\t\t\t\t\t<img src=\"/images/isFan.png\" width=\"35\" height=\"47\" alt=\"You're a member\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div> <!-- end  Team__fans -->\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" @click=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"calendarTab\">\n\t        \t\t\t\t<i class=\"material-icons\">date_range</i>CALENDAR\n\t\t            </a>\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" @click=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"statsTab\">\n\t        \t\t\t\t<i class=\"material-icons\">trending_up</i>STATS\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" @click=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"rosterTab\">\n\t        \t\t\t\t<i class=\"material-icons\">group</i>ROSTER\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" @click=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t<div class=\"tab-box\"></div>\n\t\t\t\t\t\t\t\t<a id=\"settingsTab\">\n\t        \t\t\t\t<i class=\"material-icons\">settings</i>SETTINGS\n\t\t            </a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\n\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t  <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t        \t<rc-calendar :admin=\"isAdmin\" :events=\"events\"></rc-calendar>\n\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t      \t<!-- links for switching tabs -->\n\t\t\t\t\t\t<div class=\"Tab__container\">\n\t\t\t\t\t\t\t<ul class=\"Tab__list\">\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamRecent' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamRecent'\">RECENT\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'playerSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'playerSeason'\">PLAYER\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t      <li>\n\t\t\t\t\t        <a :class=\"['Tab', statsTab === 'teamSeason' ? 'Tab--active' : '']\" @click=\"statsTab = 'teamSeason'\">SEASON\n\t\t\t\t\t        </a>\n\t\t\t\t\t      </li>\n\t\t\t\t\t    </ul>\n\t\t\t\t\t\t</div>\n\n\t        \t<rc-stats :type=\"statsTab\" :stats=\"stats\" :sport=\"team.sport\" :players=\"players\" pagination=\"false\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n        \t\t</rc-stats>\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :admin=\"isAdmin\">\n\t\t        </rc-roster>\t\t\n\n\t\t      </div>\n\t\t    </div>\n\n\n\t\t     <div class=\"row\">\n\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t        \t<h3>Settings</h3>\n\t        \t\n\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\t    </div>\n\n\t\t\t\n\t\t\t<div class=\"row\">\n\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t<!-- <rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed> -->\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<!-- include the footer at bottom -->\n\t\t\t<div class=\"Footer\">\n\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t</div>\n\n\t\t</div>\n\t  <!--  end of blurring wrapper --> \n\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n    <!-- inside here is complex logic handling what happens when an event is \n    \t\t\tclicked on from calendar or news feed -->\n\t\t<rc-view-event :admin=\"isAdmin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :auth=\"auth\" :players=\"players\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t</rc-view-event>\n\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Add an Event</h3>\n          </div>\n          <div class=\"modal-body\">\n            <div class=\"row\">\n                 \n\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n    <!-- modal for editing a player in the roster -->\n\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 v-show=\"(editUser.member_id) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 1\" class=\"modal-title\">Add a Player</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.role === 3\" class=\"modal-title\">Add a Coach</h3>\n          </div>\n          <div class=\"modal-body\">\n          \t<div class=\"row\">\n            \n\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.member_id || editUser.new\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n\n <!-- end container for template -->\n  </div>  \n</div>\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<div v-show=\"requestFinished\">\n\t<!-- container for template -->\n\n\t\t<!-- no results for team, show message -->\n\t\t<div id=\"noTeam\" v-cloak=\"\" v-show=\"notFound\" class=\"f-el-fill text-center\">\n\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t<br>\n\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t</div>\n\n\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t<div v-cloak=\"\" v-else=\"\" class=\"Team for-blurring\">\n\t\t\n\n    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\n\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"team.homefield\">{{ team.homefield  + ', '}}</span>\n\t\t\t\t\t\t\t\t\t\t<span>{{ team.city }}</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__buttons\">\n\t\t\t\t\t\t\t\t<div class=\"btn-counter --members\">\n\t\t\t\t\t\t\t\t\t<template v-if=\"! isMember\">\n\t\t\t\t\t\t\t\t\t\t<span v-show=\"hasBeenInvited\" class=\"btn-text --icon --green\" @click=\"join('accept')\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">drafts</i><span>ACCEPT INVITE</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span v-show=\"hasRequestedToJoin\" class=\"btn-text --icon --red\" @click=\"join('cancel')\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">clear</i><span>CANCEL</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span v-show=\"! hasBeenInvited &amp;&amp; ! hasRequestedToJoin\" class=\"btn-text --icon --blue\" @click=\"join('request')\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">person_add</i><span>ASK TO JOIN</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t<span v-else=\"\" class=\"btn-text --icon --not-a-button\">\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">grade</i><span>MEMBERS</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t<span class=\"btn-count\">\n\t\t\t\t\t\t\t\t\t\t<span>{{ players.length + coaches.length }}</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class=\"btn-counter --fans\">\n\t\t\t\t\t\t\t\t\t<template v-if=\"! isMember\">\n\t\t\t\t\t\t\t\t\t\t<span v-show=\"! isFan\" class=\"btn-text --icon --blue\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite</i><span>FAN</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span v-show=\"isFan\" class=\"btn-text --icon --blue\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite_border</i><span>UNFAN</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t<span v-else=\"\" class=\"btn-text --icon --not-a-button\">\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite</i><span>FANS</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t<span class=\"btn-count\" v-touch:tap=\"$root.showModal('fansModal')\">\n\t\t\t\t\t\t\t\t\t\t<span>{{ fans.length }}</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div> <!-- end  Team__buttons -->\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div> <!-- end Team__info -->\n\n\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" @click=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t<a>CALENDAR</a>\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" @click=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t<a>STATS</a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" @click=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t<a>ROSTER</a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" @click=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t<a>SETTINGS</a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\n\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t  <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t        \t<rc-calendar :admin=\"isAdmin\" :events=\"events\"></rc-calendar>\n\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t      \t<div class=\"TabButton\">\n\t\t\t\t\t\t\t<div class=\"first\" :class=\"{'active' : statsTab === 'teamRecent'}\" v-touch:tap=\"statsTab = 'teamRecent'\">\n\t\t\t\t\t\t\t\t<span>Recent</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"second\" :class=\"{'active' : statsTab === 'playerSeason'}\" v-touch:tap=\"statsTab = 'playerSeason'\">\n\t\t\t\t\t\t\t\t<span>Player</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"third\" :class=\"{'active' : statsTab === 'teamSeason'}\" v-touch:tap=\"statsTab = 'teamSeason'\">\n\t\t\t\t\t\t\t\t<span>Season</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div v-show=\"statsTab === 'teamRecent'\">\n\t\t\t\t\t\t\t<rc-stats type=\"teamRecent\" :team=\"team\" :sport=\"team.sport\" :raw-stats=\"stats\" :players=\"players\">\n\t        \t\t</rc-stats>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\n\t\t\t\t\t\t<div v-show=\"statsTab === 'teamSeason'\">\n\t\t\t\t\t\t\t<div class=\"TabButton --just-two --small\">\n\t\t\t\t\t\t\t\t<div class=\"first\" :class=\"{'active' : showStatTotals === true}\" v-touch:tap=\"showStatTotals = true\">\n\t\t\t\t\t\t\t\t\t<span>Totals</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"second\" :class=\"{'active' : showStatTotals === false}\" v-touch:tap=\"showStatTotals = false\">\n\t\t\t\t\t\t\t\t\t<span>Averages</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t        \t<rc-stats type=\"teamSeason\" :team=\"team\" :total=\"showStatTotals\" :sport=\"team.sport\" :raw-stats=\"stats\" :players=\"players\">\n\t        \t\t</rc-stats>\n\t        \t</div>\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t        <rc-roster :players=\"players\" :coaches=\"coaches\" :fans=\"fans\" :edit-user.sync=\"editUser\" :is-admin=\"isAdmin\">\n\t\t        </rc-roster>\t\t\n\n\t\t      </div>\n\t\t    </div>\n\n\n\t\t     <div class=\"row\">\n\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t        \t<h3>Settings</h3>\n\t        \t\n\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\t    </div>\n\n\t\t\t\n\t\t\t<div class=\"row\">\n\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t<!-- <rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed> -->\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<!-- include the footer at bottom -->\n\t\t\t<div class=\"Footer\">\n\t\t    <p>® 2016 Rookiecard LLC</p>\n\t\t\t</div>\n\n\t\t</div>\n\t  <!--  end of blurring wrapper --> \n\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n    <!-- inside here is complex logic handling what happens when an event is \n    \t\t\tclicked on from calendar or news feed -->\n\t\t<!-- <rc-view-event :admin=\"isAdmin\" :events=\"events\" \n\t\t\t\t\t\t\t\t\t\t:stats=\"stats\" :team=\"team\" \n\t\t\t\t\t\t\t\t\t\t:auth=\"auth\" :players=\"players\"\n\t\t\t\t\t\t\t\t\t\t:team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\">\n\t\t</rc-view-event> -->\n\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"addEventModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Add an Event</h3>\n          </div>\n          <div class=\"modal-body\">\n            <div class=\"row\">\n                 \n\t\t\t\t\t\t\t<rc-add-event></rc-add-event>\n\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"fansModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Fans</h3>\n          </div>\n          <div class=\"modal-body\">\n            <div class=\"row\">\n                 \n\t\t\t\t\t\t\t<div class=\"col-xs-12 Team__fans\">\n\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t<li v-for=\"fan in fans\">\n\t\t\t\t\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: fan.username}}\">{{ fan.name }}</a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t</div>\n\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n    <!-- modal for editing a player in the roster -->\n\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 v-show=\"(editUser.member_id) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.isPlayer\" class=\"modal-title\">Add a Player</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.isCoach\" class=\"modal-title\">Add a Coach</h3>\n          </div>\n          <div class=\"modal-body\">\n          \t<div class=\"row\">\n            \n\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.member_id || editUser.new\" :user=\"editUser\" :positions=\"positions\"></rc-edit-user>\n\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n\n <!-- end container for template -->\n  </div>  \n</div>\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Team {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  margin-bottom: 35px;\n  padding: 110px 0 0 0px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  padding-left: 40px;\n  max-width: 290px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 3px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-pack: start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n.Team__info {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.Team__text {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column wrap;\n      flex-flow: column wrap;\n  color: #fff;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.Team__name {\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__fans {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 20px;\n}\n.Team__fans .num-fans {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  overflow: hidden;\n  height: 44px;\n  width: 70px;\n}\n.Team__fans .num-fans .fan-count {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background-color: #fff;\n  min-width: 61px;\n  height: 44px;\n  font-size: 17px;\n  border-radius: 10%;\n  color: #7b7b7b;\n}\n.Team__fans .num-fans .fan-count span {\n  position: absolute;\n  top: 8px;\n  right: 33px;\n}\n.Team__fans .num-fans .fan-count.--tensOfFans span {\n  right: 30px;\n}\n.Team__fans .num-fans .fan-count.--hundredsOfFans span {\n  right: 24px;\n}\n.Team__fans .num-fans .fan-count.--thousandsOfFans span {\n  right: 19px;\n}\n.Team__fans .num-fans .arrow-right {\n  position: absolute;\n  top: 5px;\n  right: 4px;\n  margin-top: 9px;\n  height: 0;\n  width: 0;\n  border-bottom: 6px solid transparent;\n  border-top: 6px solid transparent;\n  border-left: 6px solid #fff;\n}\n.Team__fans .fan-icon {\n  margin-left: 2px;\n}\n.Team__fans .fan-icon:hover {\n  cursor: pointer;\n}\n.Team__fans .fan-icon.--member:hover {\n  cursor: default;\n}\n.Team__invite {\n  background: #fff;\n  border-radius: 5px;\n  margin-right: 15px;\n}\n.Team__invite a.btn.outline,\n.Team__invite a.btn {\n  border: 0;\n  margin: 0;\n}\n.Team__invite a.btn.outline:hover,\n.Team__invite a.btn:hover {\n  border: 0;\n}\n.Team__invite a.btn.outline.--member:hover,\n.Team__invite a.btn.--member:hover {\n  cursor: default;\n  color: #fff;\n  background-color: #21c230;\n}\n.Team__tabs {\n  margin-top: 25px;\n  height: 45px;\n  padding: 0;\n  overflow: visible;\n}\n.Team__tabs .tab {\n  width: 200px;\n  position: relative;\n  height: 45px;\n  float: left;\n  overflow: hidden;\n  margin: 0 -15px 0 0;\n}\n.Team__tabs .tab .tab-box {\n  height: 53px;\n  background: #ccc;\n  border-radius: 6px;\n  border: 1px solid rgba(128,128,128,0.44);\n  border-bottom: 9px solid rgba(128,128,128,0.44);\n  margin: 0 7px 0;\n  box-shadow: 0 0 2px #fff inset;\n  -webkit-transform: perspective(100px) rotateX(23deg);\n          transform: perspective(100px) rotateX(23deg);\n  -webkit-transition: background 0.3s, border-bottom 0.05s;\n  transition: background 0.3s, border-bottom 0.05s;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  -webkit-transition: color 0.3s;\n  transition: color 0.3s;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab:hover .tab-box {\n  background: #fff;\n  -webkit-transition: background 0.3s;\n  transition: background 0.3s;\n}\n.Team__tabs .tab:hover a {\n  color: #38a9f9;\n  -webkit-transition: color 0.3s;\n  transition: color 0.3s;\n}\n.Team__tabs .tab.--active {\n  z-index: 40;\n  position: relative;\n  padding-bottom: 1px;\n}\n.Team__tabs .tab.--active .tab-box {\n  background-color: #f5f5f5;\n  border-bottom: 0;\n  -webkit-transition: border-bottom 0.05s;\n  transition: border-bottom 0.05s;\n  box-shadow: 0 0 2px #fff inset;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
+    __vueify_insert__.cache[".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media screen and (max-width: 1000px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media screen and (max-width: 1000px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media screen and (max-width: 1000px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__buttons {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: end;\n  -webkit-align-items: flex-end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 35px;\n}\n.Team__buttons .--members {\n  margin-right: 5px;\n}\n.Team__buttons .--fans {\n  margin-left: 5px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #ebebeb;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-bottom: 15px;\n}\n.Team__fans ul {\n  list-style: none;\n  font-size: 16px;\n  text-align: center;\n  padding-left: 0;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -19008,9 +33588,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-ad3660f2", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./AddEvent.vue":53,"./Calendar.vue":57,"./EditUser.vue":61,"./NewsFeed.vue":63,"./Roster.vue":64,"./Stats.vue":65,"./ViewEvent.vue":67,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],67:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{"./AddEvent.vue":176,"./Calendar.vue":180,"./EditUser.vue":184,"./NewsFeed.vue":187,"./Roster.vue":188,"./Stats.vue":189,"./ViewEvent.vue":191,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],191:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/ViewEvent.vue", module);
+(function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19074,6 +33658,7 @@ exports.default = {
 		// FUTURE EVENTS
 
 		// event has NOT happened yet, user is admin
+
 		canEditEvent: function canEditEvent() {
 			return moment().isBefore(moment.unix(this.event.start)) && this.admin;
 		},
@@ -19122,18 +33707,13 @@ exports.default = {
 				// user wants to specifically edit the event regardless of date
 				return false;
 			} else return this.pastEventStats || this.canEditStats;
-		},
-
-
-		// show basketball stats
-		basketball: function basketball() {
-			return this.team.sport === 'basketball';
 		}
 	},
 
 	methods: {
 
 		// find which event was clicked and display
+
 		viewEvent: function viewEvent(id) {
 			// pass along event data
 			var event = this.events.filter(function (event) {
@@ -19194,13 +33774,13 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\t\n\n    <div class=\"modal\" :class=\"showStats ? 'stats-modal' : ''\" id=\"viewEventModal\">\n    \t<!-- modal window for viewing an event when clicked from the calendar -->\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">{{ event.title }}&nbsp;</h3>\n          </div>\n          <div class=\"modal-body\">\n\t\t\t\t\t\t<div class=\"row\">\n\n\n\t\t\t\t\t\t\t<!-- the following shows the correct content based on date, event type, admin status, sport -->\n\n\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t<!-- show stats if they aren't admin and is past event -->\n\t\t\t\t\t\t\t<rc-stats v-show=\"pastEventStats\" type=\"event\" :sport=\"team.sport\" :stats=\"currStats\" :team=\"team\" :players=\"players\" :event=\"event\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\"></rc-stats>\n\n\n\t\t\t\t\t\t\t<!-- show edit event page if admin and event is in the future -->\n\t\t\t\t\t\t\t<rc-edit-event v-show=\"canEditEvent || editEvent\" :event=\"event\" :edit-event.sync=\"editEvent\"></rc-edit-event>\n\n\n\n\t\t\t\t\t\t\t<!-- if showing edit stats, choose the correct sport -->\n\t\t\t\t\t\t\t<div v-show=\"canEditStats\">\n\n\t\t\t\t\t\t\t\t<rc-basketball v-if=\"basketball\" :stats=\"currStats\" :players=\"players\" :edit-event.sync=\"editEvent\" :event=\"event\" :team=\"team\" :team-cols=\"teamCols\" :player-cols=\"playerCols\"></rc-basketball>\n\t\t\t\t\t\t\t</div>\t\t\n\n\n\t\t\t\t\t\t\t<div v-show=\"pastEventNoStats\" class=\"col-xs-12 ViewEvent\">\n\t\t\t\t\t\t\t\t<div class=\"edit-button\">\n\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"editEvent = true\">Edit Event Details</a>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"ViewEvent__details\">\n\t\t\t\t\t\t\t\t\t<p>This event is over and wasn't set up as a Game, so there are no stats</p>\n\t\t\t\t\t\t\t\t</div>\n\t\n\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\n\n\n\t\t\t\t\t\t\t\n\n\t\t\t\t\t\t\t<div v-show=\"(futureEvent || pastEvent) &amp;&amp; event.id\" class=\"col-xs-12 ViewEvent\">\n\n\t\t\t\t\t\t\t\t<div class=\"ViewEvent__type --{{ event.titleClass }}\">{{ event.title }}</div>\n\t\t\t\t\t\t\t\t<div class=\"ViewEvent__time\">{{ event.start | formatTimeString event.end }}</div>\n\t\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"ViewEvent__details\">{{ event.details }}</div>\n\n\t\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    \n\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\t\n\n    <div class=\"modal\" :class=\"showStats ? 'stats-modal' : ''\" id=\"viewEventModal\">\n    \t<!-- modal window for viewing an event when clicked from the calendar -->\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">{{ event.title }}&nbsp;</h3>\n          </div>\n          <div class=\"modal-body\">\n\t\t\t\t\t\t<div class=\"row\">\n\n\n\t\t\t\t\t\t\t<!-- the following shows the correct content based on date, event type, admin status, sport -->\n\n\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t<!-- show stats if they aren't admin and is past event -->\n\t\t\t\t\t\t\t<rc-stats v-show=\"pastEventStats\" type=\"event\" :sport=\"team.sport\" :stats=\"currStats\" :team=\"team\" :players=\"players\" :event=\"event\" :team-cols=\"teamStatCols\" :player-cols=\"playerStatCols\"></rc-stats>\n\n\n\t\t\t\t\t\t\t<!-- show edit event page if admin and event is in the future -->\n\t\t\t\t\t\t\t<rc-edit-event v-show=\"canEditEvent || editEvent\" :event=\"event\" :edit-event.sync=\"editEvent\"></rc-edit-event>\n\n\n\n\t\t\t\t\t\t\t<!-- if showing edit stats, choose the correct sport -->\n\t\t\t\t\t\t\t<div v-show=\"canEditStats\">\n\n\t\t\t\t\t\t\t\t<rc-basketball v-if=\"team.sport === 'basketball'\" :stats=\"currStats\" :players=\"players\" :edit-event.sync=\"editEvent\" :event=\"event\" :team=\"team\"></rc-basketball>\n\t\t\t\t\t\t\t</div>\t\t\n\n\n\t\t\t\t\t\t\t<div v-show=\"pastEventNoStats\" class=\"col-xs-12 ViewEvent\">\n\t\t\t\t\t\t\t\t<div class=\"edit-button\">\n\t\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" @click=\"editEvent = true\">Edit Event Details</a>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"ViewEvent__details\">\n\t\t\t\t\t\t\t\t\t<p>This event is over and wasn't set up as a Game, so there are no stats</p>\n\t\t\t\t\t\t\t\t</div>\n\t\n\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\n\n\n\t\t\t\t\t\t\t\n\n\t\t\t\t\t\t\t<div v-show=\"(futureEvent || pastEvent) &amp;&amp; event.id\" class=\"col-xs-12 ViewEvent\">\n\n\t\t\t\t\t\t\t\t<div class=\"ViewEvent__type --{{ event.titleClass }}\">{{ event.title }}</div>\n\t\t\t\t\t\t\t\t<div class=\"ViewEvent__time\">{{ event.start | formatTimeString event.end }}</div>\n\t\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"ViewEvent__details\">{{ event.details }}</div>\n\n\t\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    \n\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n"] = false
+    __vueify_insert__.cache[".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -19209,138 +33789,11 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-ab103d8a", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./EditBasketballStats.vue":59,"./EditEvent.vue":60,"./Stats.vue":65,"vue":51,"vue-hot-reload-api":25,"vueify/lib/insert-css":52}],68:[function(require,module,exports){
-'use strict';
+}).apply(this, arguments);
 
-//formats the json version of a stat name to the basketball version
-module.exports = function (val) {
-
-	//if key is 'win', return 'W/L'
-	if (val === 'win') return 'W/L';
-
-	//'astto' becomes 'AST/TO'
-	if (val === 'astto') return 'AST/TO';
-
-	if (val === 'opp') return 'OPPONENT';
-
-	//everywhere with a _ becomes a %
-	val = val.replace(/_/g, '%');
-
-	//everywhere with a - becomes a /
-	val = val.replace(/-/g, '/');
-
-	//everywhere there's a 'three' becomes a '3'
-	val = val.replace(/three/g, '3');
-
-	//and also return all capitalized
-	return val.toUpperCase();
-};
-
-},{}],69:[function(require,module,exports){
-'use strict';
-
-//converts column name to human for stats table tooltips
-
-module.exports = function (val) {
-	switch (val) {
-		case 'date':
-			return 'Date of Game';
-			break;
-		case 'opp':
-			return 'Opponent';
-			break;
-		case 'win':
-			return 'Win or Loss';
-			break;
-		case 'gs':
-			return 'Games Started';
-			break;
-		case 'gp':
-			return 'Games Played';
-			break;
-		case 'min':
-			return 'Minutes Played';
-			break;
-		case 'dnp':
-			return 'Did Not Play';
-			break;
-		case 'pts':
-			return 'Points';
-			break;
-		case 'fgm':
-			return 'Field Goals Made';
-			break;
-		case 'fga':
-			return 'Field Goals Attempted';
-			break;
-		case 'fg_':
-			return 'Field Goal Percentage';
-			break;
-		case 'threepm':
-			return 'Three Pointers Made';
-			break;
-		case 'threepa':
-			return 'Three Pointers Attempted';
-			break;
-		case 'threep_':
-			return 'Three Point Percentage';
-			break;
-		case 'ftm':
-			return 'Free Throws Made';
-			break;
-		case 'fta':
-			return 'Free Throws Attempted';
-			break;
-		case 'ft_':
-			return 'Free Throw Percentage';
-			break;
-		case 'ast':
-			return 'Assists';
-			break;
-		case 'reb':
-			return 'Rebounds';
-			break;
-		case 'oreb':
-			return 'Offensive Rebounds';
-			break;
-		case 'stl':
-			return 'Steals';
-			break;
-		case 'blk':
-			return 'Blocks';
-			break;
-		case 'to':
-			return 'Turnovers';
-			break;
-		case 'pf':
-			return 'Personal Fouls';
-			break;
-		case 'dd2':
-			return 'Double Doubles';
-			break;
-		case 'td3':
-			return 'Triple Doubles';
-			break;
-		case 'efg_':
-			return 'Effective Field Goal Percentage';
-			break;
-		case 'ts_':
-			return 'True Shooting Percentage';
-			break;
-		case 'astto':
-			return 'Assist to Turnover Ratio';
-			break;
-		case 'eff':
-			return 'Player Efficiency';
-			break;
-
-		default:
-			return '';
-			break;
-	}
-};
-
-},{}],70:[function(require,module,exports){
+},{"./EditBasketballStats.vue":182,"./EditEvent.vue":183,"./Stats.vue":189,"vue":173,"vue-hot-reload-api":146,"vueify/lib/insert-css":174}],192:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/filters/FormatRepeatString.js", module);
+(function(){
 'use strict';
 
 module.exports = function (string) {
@@ -19403,7 +33856,11 @@ module.exports = function (string) {
   return prefix + suffix;
 };
 
-},{}],71:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],193:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/filters/FormatTimeString.js", module);
+(function(){
 'use strict';
 
 //formats the time string to be as readable as possible
@@ -19431,7 +33888,11 @@ module.exports = function (start, end) {
   }
 };
 
-},{}],72:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],194:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/Requests.js", module);
+(function(){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19441,6 +33902,7 @@ exports.default = {
 	methods: {
 		// send a GET request with the given parameters
 		// execute the given event string when finished
+
 		get: function get(url) {
 			var successEvent = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 			var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
@@ -19544,7 +34006,291 @@ exports.default = {
 	}
 };
 
-},{}],73:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],195:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/StatFunctions.js", module);
+(function(){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
+	data: function data() {
+		return {};
+	},
+
+
+	methods: {
+		/**
+   * Given a part and a whole, calculate the percentage
+   *
+   * @param {int} part
+   * @param {int} whole
+   * @param {int} precision  The amount of digits past the decimal place
+   * @return {float}
+   */
+
+		percentage: function percentage(part, whole) {
+			var precision = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+
+			return this.average(part * 100, whole, precision);
+		},
+
+
+		/**
+   * Return an average of total based on the count
+   * 
+   * @param {int} total  		The number being averaged
+   * @param {int} count   	How many times it occured
+   * @param {int} precision  	The amount of digits past the decimal place
+   * @return {float}
+   */
+		average: function average(total, count) {
+			var precision = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+
+			return this.round(total / count, precision);
+		},
+
+
+		/**
+   * Round a given number to a given precision past the decimal place
+   *
+   * @param {float} number
+   * @param {int} precision
+   */
+		round: function round(number) {
+			var precision = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+			precision = Math.pow(10, precision);
+
+			return Math.round(number * precision) / precision;
+		}
+	}
+};
+
+}).apply(this, arguments);
+
+},{}],196:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/Stats.js", module);
+(function(){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _StatFunctions = require('./StatFunctions.js');
+
+var _StatFunctions2 = _interopRequireDefault(_StatFunctions);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+	mixins: [_StatFunctions2.default],
+
+	events: {
+		/**
+   * Event received from Stats.vue when needed
+   */
+
+		compileStats: function compileStats() {
+			this.setup();
+
+			// call the function with the same name as the type
+			// i.e. this.teamRecent()
+			this[this.type].call(this);
+		}
+	},
+
+	computed: {
+		teamStats: function teamStats() {
+			return this.rawStats.filter(function (stat) {
+				return stat.type === 'team';
+			});
+		},
+		playerStats: function playerStats() {
+			return this.rawStats.filter(function (stat) {
+				return stat.type === 'player';
+			});
+		}
+	},
+
+	methods: {
+		/**
+   * Setup a few variables before compiling any stats
+   */
+
+		setup: function setup() {
+			this.teamMeta = JSON.parse(this.team.meta);
+
+			if (this.type.includes('team')) {
+				var cols = this.teamMeta.stats.teamCols;
+			} else if (this.type.includes('player')) {
+				var cols = this.teamMeta.stats.playerCols;
+			}
+
+			this.cols = cols.filter(function (key) {
+				return this.ignoredCols[this.type].indexOf(key) === -1;
+			}.bind(this));
+
+			this.cols.forEach(function (key) {
+				this.keyNames[key] = this.lookupNames(key);
+				this.tooltips[key] = this.lookupTooltips(key);
+				this.valLookup[key] = this.lookupValues(key);
+				this.valClassLookup[key] = this.lookupValClasses(key);
+				this.keyClassLookup[key] = this.lookupKeyClasses(key);
+			}.bind(this));
+		},
+
+
+		/**
+   * Done building stats, tell parent data is ready
+   *
+   * @param {array} stats  Compiled stats
+   */
+		done: function done(stats) {
+			if (!Array.isArray(stats)) stats = [stats];
+
+			if (!stats.length) {
+				stats = [this.markEmpty()];
+			}
+
+			this.$dispatch('Stats_compiled', stats);
+		},
+
+
+		/**
+   * Instead of an empty table, fill each stat with '-'
+   */
+		markEmpty: function markEmpty() {
+			var stats = {};
+			this.cols.forEach(function (key) {
+				stats[key] = '-';
+			});
+
+			return stats;
+		},
+
+
+		/**
+   * Compiles an object of lifetime totals into averages based on the number of games played
+   *
+   * @param {object} stats  Lifetime totals
+   * @param {array} noAvg 	The keys that should not be averaged
+   */
+		perGame: function perGame(stats, noAvg) {
+			var averaged = {};
+			for (var key in stats) {
+				if (noAvg.indexOf(key) !== -1) {
+					averaged[key] = stats[key];
+					continue;
+				}
+
+				averaged[key] = stats[key] / stats.gp;
+			}
+
+			return averaged;
+		},
+
+
+		/**
+   * Add the given stats to the season totals object, possibly ignoring some keys
+   *
+   * @param {object} data   			The stat object as given from the server
+   * @param {object} statTotals 	The current season totals object
+   * @param {array} ignored 			Which keys should be ignored
+   */
+		addToSeasonTotal: function addToSeasonTotal(data, statTotals, ignored) {
+			var stats = JSON.parse(data.stats);
+			var meta = JSON.parse(data.meta);
+
+			stats.gp = 1;
+			stats.wins = 0;
+			stats.losses = 0;
+			stats.ties = 0;
+			// add a win, loss, or tie to the total depending on the outcome
+			if (this.whoWon(stats, meta) === 0) stats.losses = 1;
+			if (this.whoWon(stats, meta) === 1) stats.wins = 1;
+			if (this.whoWon(stats, meta) === 2) stats.ties = 1;
+
+			// for each key in stats, add it to the total
+			for (var key in stats) {
+				if (ignored.indexOf(key) !== -1) continue;
+
+				if (typeof statTotals[key] === 'undefined') {
+					statTotals[key] = stats[key];
+				} else {
+					statTotals[key] += stats[key];
+				}
+			}
+
+			return statTotals;
+		},
+
+
+		/**
+   * Sort out the sport-agnostic recent team stats
+   *
+   * @param {object} data  	The stats data as given by the server
+   * @return {object} 			Slightly more compiled stats
+   */
+		defaultTeamRecent: function defaultTeamRecent(data) {
+			var meta = JSON.parse(data.meta);
+			var stats = JSON.parse(data.stats);
+
+			// format date to unix time for sorting efficiency, converts to 'M/D' later in Stats.vue
+			var date = moment.utc(meta.event.start * 1000).local().unix();
+
+			stats.date = date;
+			stats.id = data.id;
+			stats.event_id = data.event_id;
+
+			// if they included who this game was against
+			if (meta.event.type === 'home_game') {
+				// home game
+				stats.opp = meta.opp + '***';
+			} else if (meta.event.type === 'away_game') {
+				// away game
+				stats.opp = meta.opp + '^^^';
+			} else {
+				// unspecified
+				stats.opp = meta.opp;
+			}
+
+			stats.win = this.whoWon(stats, meta);
+
+			return stats;
+		},
+
+
+		/**
+   * Sort out the sport-agnostic season team stats
+   *
+   * @param {array} ignored 	Which stat keys should be ignored
+   * @param {array} noAvg 		Which stat keys shouldn't be averaged
+   * @return {object} 				Team's averaged season stats
+   */
+		defaultTeamSeason: function defaultTeamSeason(ignored, noAvg) {
+			var seasonTotals = {};
+			for (var x = 0; x < this.teamStats.length; x++) {
+				seasonTotals = this.addToSeasonTotal(this.teamStats[x], seasonTotals, ignored);
+			}
+
+			this.totalStats = seasonTotals;
+
+			this.avgStats = this.perGame(seasonTotals, noAvg);
+
+			return this.avgStats;
+		}
+	} };
+
+}).apply(this, arguments);
+
+},{"./StatFunctions.js":195}],197:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsScrollSpy.js", module);
+(function(){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19563,6 +34309,7 @@ exports.default = {
 	methods: {
 
 		// checks to see if that element is visible on screen or not
+
 		isHidden: function isHidden(element) {
 			element = element[0];
 			var rect = element.getBoundingClientRect();
@@ -19572,26 +34319,32 @@ exports.default = {
 
 		// set up listeners to constantly check visibility on scroll
 		attachScrollListener: function attachScrollListener(element, overflowIndex) {
-			var firstElement = $(element + ' th:first-child');
-			var lastElement = $(element + ' th:last-child');
-			var parent = $(element);
+			setTimeout(function () {
+				var firstElement = $(element + ' th:first-child');
+				var lastElement = $(element + ' th:last-child');
+				var parent = $(element);
 
-			this.$set('overflowed.' + overflowIndex, { first: false, last: false });
+				this.$set('overflowed.' + overflowIndex, { first: false, last: false });
 
-			this.overflowed[overflowIndex].last = this.isHidden(lastElement);
+				this.overflowed[overflowIndex].last = this.isHidden(lastElement);
 
-			var self = this;
-			// listen for scroll, update the flag if now in view
-			parent.on('scroll', function () {
-				self.overflowed[overflowIndex].first = self.isHidden(firstElement);
-				self.overflowed[overflowIndex].last = self.isHidden(lastElement);
-			});
+				var self = this;
+				// listen for scroll, update the flag if now in view
+				parent.on('scroll', function () {
+					self.overflowed[overflowIndex].first = self.isHidden(firstElement);
+					self.overflowed[overflowIndex].last = self.isHidden(lastElement);
+				});
+			}.bind(this), 50);
 		}
 	}
 
 };
 
-},{}],74:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],198:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsSelection.js", module);
+(function(){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19689,7 +34442,11 @@ exports.default = {
 	}
 };
 
-},{}],75:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],199:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/mixins/Validator.js", module);
+(function(){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19740,7 +34497,7 @@ exports.default = {
 				}, // the field must be an array
 				regex: function regex(args) {
 					return this.regex_(args);
-				}, // the field must be a string that matches a given regular expression. BE CAREFUL, DON'T INCLUDE PIPES! 
+				}, // the field must be a string that matches a given regular expression. BE CAREFUL, DON'T INCLUDE PIPES!
 				alpha_num: function alpha_num(args) {
 					return this.alphaNum(args);
 				}, // the field must be a string with only alphanumeric characters
@@ -19750,6 +34507,7 @@ exports.default = {
 				jersey: function jersey(args) {
 					return this.jersey_(args);
 				} },
+			// the field must be a valid jersey number
 			value_: null, // the value of the variable in question
 			path_: null, // the full path of the variable (e.g. user.name.firstname)
 			root_: null, // the name of the root of the variable (e.g. user)
@@ -19761,6 +34519,7 @@ exports.default = {
 			arrayIndex_: null, // which index of the given array to error check
 			temp_: {} };
 	},
+	// temporary useless variable to utilize $set functionality
 
 
 	methods: {
@@ -19773,6 +34532,7 @@ exports.default = {
    * @param {boolean} watch  	Whether or not to run error checking when the variable changes
    * @return {void} 
    */
+
 		registerErrorChecking: function registerErrorChecking(variable, rules) {
 			var messages = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var watch = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
@@ -19877,7 +34637,7 @@ exports.default = {
 					// new entry
 					this.errors[this.root_].$set(x, this.temp_);
 				} else {
-					// copy over existing content and the new 
+					// copy over existing content and the new
 					for (var key in this.temp_) {
 						this.errors[this.root_][x][key] = this.temp_[key];
 					}
@@ -20211,8 +34971,8 @@ exports.default = {
 					this.setError_(rule);
 					break; // no sense in continuing if it has failed a check already
 				} else {
-					this.clearError_();
-				}
+						this.clearError_();
+					}
 			}
 
 			return errors;
@@ -20276,16 +35036,16 @@ exports.default = {
    */
 		setError_: function setError_(rule) {
 			if (this.arrayIndex_ === null) {
-				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message 
+				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
 				this.$set('errors.' + this.path_, error); // store
 			} else {
-				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
-				this.$set('temp_', JSON.parse(JSON.stringify(this.errors[this.root_][this.arrayIndex_]))); // create copy
-				this.$set('temp_.' + this.key_, error); // move error message to correct key
+					var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
+					this.$set('temp_', JSON.parse(JSON.stringify(this.errors[this.root_][this.arrayIndex_]))); // create copy
+					this.$set('temp_.' + this.key_, error); // move error message to correct key
 
-				this.errors[this.root_].$set(this.arrayIndex_, this.temp_); // merge placeholder with this.errors
-				this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
-			}
+					this.errors[this.root_].$set(this.arrayIndex_, this.temp_); // merge placeholder with this.errors
+					this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
+				}
 		},
 
 
@@ -20536,7 +35296,11 @@ exports.default = {
 	}
 };
 
-},{}],76:[function(require,module,exports){
+}).apply(this, arguments);
+
+},{}],200:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/routes.js", module);
+(function(){
 'use strict';
 
 var _App = require('./components/App.vue');
@@ -20557,24 +35321,26 @@ var Vue = require('vue');
 var VueRouter = require('vue-router');
 var VueResource = require('vue-resource');
 var VueAutosize = require('vue-autosize');
+var VueTouch = require('vue-touch');
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
 Vue.use(VueAutosize);
+Vue.use(VueTouch);
 
 Vue.config.debug = true;
 
-//pull meta data from server out of tags in <head> of main.blade
+// pull meta data from server out of tags in <head> of main.blade
 Vue.http.headers.common['X-CSRF-TOKEN'] = $('#_token').attr('value');
 
-//set up global filters
+// set up global filters
 
-//turns LeBron James -> L. James
+// turns LeBron James -> L. James
 Vue.filter('statsName', function (first, last) {
 	return first[0] + '. ' + last;
 });
 
-//returns at time string like 11:25 pm
+// returns at time string like 11:25 pm
 Vue.filter('justTime', function (val) {
 	return moment(val * 1000).format('h:mm a');
 });
@@ -20583,15 +35349,13 @@ Vue.filter('checkPercentage', function (val) {
 	if (val > 100) return 'ERROR';else return val;
 });
 
-Vue.filter('basketballTooltips', require('./filters/BasketballTooltips.js'));
-Vue.filter('basketballStats', require('./filters/BasketballStats.js'));
 Vue.filter('formatRepeatString', require('./filters/FormatRepeatString.js'));
 Vue.filter('formatTimeString', require('./filters/FormatTimeString.js'));
 
-//import components
+// import components
 
 
-//enable router, turn on history mode
+// enable router, turn on history mode
 var router = new VueRouter({
 	history: true,
 	transitionOnLoad: true
@@ -20633,6 +35397,56 @@ router.map({
 
 router.start(_App2.default, '#app');
 
-},{"./components/App.vue":55,"./components/CreateTeam.vue":58,"./components/Team.vue":66,"./filters/BasketballStats.js":68,"./filters/BasketballTooltips.js":69,"./filters/FormatRepeatString.js":70,"./filters/FormatTimeString.js":71,"vue":51,"vue-autosize":24,"vue-resource":39,"vue-router":50}]},{},[76]);
+}).apply(this, arguments);
+
+},{"./components/App.vue":178,"./components/CreateTeam.vue":181,"./components/Team.vue":190,"./filters/FormatRepeatString.js":192,"./filters/FormatTimeString.js":193,"vue":173,"vue-autosize":145,"vue-resource":160,"vue-router":171,"vue-touch":172}],1:[function(require,module,exports){
+(function(global, _main, moduleDefs, cachedModules, _entries) {
+  'use strict';
+
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":31,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/filters/FormatRepeatString.js":{"index":192,"hash":"aYqM9RcbXd4tw9FBJI8M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/filters/FormatTimeString.js":{"index":193,"hash":"dY0+F73Xnjl0nfswf1HI","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":32,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":131,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":194,"hash":"HSTRFhYEbsYDiKfsD4Nq","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":198,"hash":"FZSki5eTAZiXZzCQXwa9","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":199,"hash":"ivhcP4t3QbmJo+p09h+l","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditUser.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":134,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":171,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":139,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"resources/assets/js/mixins/StatsScrollSpy.js":{"index":197,"hash":"huz17aNBA0jKuG+3GZaK","parents":["resources/assets/js/components/Stats.vue","resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/mixins/StatFunctions.js":{"index":195,"hash":"flUFGrvyF0Nq5XyV2awQ","parents":["resources/assets/js/mixins/Stats.js","resources/assets/js/components/Stats.vue"]},"node_modules/parseuri/index.js":{"index":127,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":133,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/node_modules/debug/browser.js":{"index":135,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/indexof/index.js":{"index":54,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/component-bind/index.js":{"index":33,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":26,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":143,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":142,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":170,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":55,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/has-binary/index.js","node_modules/socket.io-parser/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":34,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":57,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":111,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":63,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arraySome.js":{"index":66,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":65,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":64,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":146,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":137,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":164,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":145,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/hammerjs/hammer.js":{"index":51,"hash":"GMd3rFxMDNnM5JQEpiKL","parents":["node_modules/vue-touch/vue-touch.js"]},"node_modules/vue-touch/vue-touch.js":{"index":172,"hash":"uwuR+mmbqpdzD9PBqC8T","parents":["resources/assets/js/routes.js"]},"node_modules/has-binary/index.js":{"index":52,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":132,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-parser/index.js":{"index":138,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/process/browser.js":{"index":128,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":173,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/BasketballStats.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":124,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/socket.io-client/node_modules/debug/debug.js","node_modules/socket.io-parser/node_modules/debug/debug.js","node_modules/engine.io-client/node_modules/debug/debug.js"]},"node_modules/socket.io-client/node_modules/debug/debug.js":{"index":136,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-client/node_modules/debug/browser.js"]},"node_modules/lodash/internal/baseSome.js":{"index":85,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":71,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":93,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":69,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":74,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":120,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseMap.js":{"index":79,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":100,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":60,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":72,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":58,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":92,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":87,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/assignWith.js":{"index":67,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":118,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"resources/assets/js/mixins/Stats.js":{"index":196,"hash":"FC6yNnJvuqEJENc8vcyB","parents":["resources/assets/js/components/BasketballStats.vue"]},"node_modules/vue-resource/src/http/timeout.js":{"index":159,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":157,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":122,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":104,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":105,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":101,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":114,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":70,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":68,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":62,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":88,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":102,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":116,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":185,"hash":"Qp3iFfi7Tkfv7s8Wz3cT","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":161,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":163,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":155,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":147,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":158,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":153,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":166,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":167,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":168,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":91,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":97,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":84,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":56,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":82,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":162,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":169,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":165,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"resources/assets/js/components/BasketballStats.vue":{"index":179,"hash":"xzefKm1EnlkxHFIz8sd5","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/socket.io-parser/node_modules/debug/debug.js":{"index":141,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-parser/node_modules/debug/browser.js"]},"node_modules/socket.io-parser/node_modules/debug/browser.js":{"index":140,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":78,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":76,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/toObject.js":{"index":108,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":89,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":59,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseGet.js":{"index":75,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":103,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":106,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":83,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":109,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":123,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":90,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":73,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"resources/assets/js/components/CreateTeam.vue":{"index":181,"hash":"Rc1WkRqyUxi6GYOENCqr","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":174,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditBasketballStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/baseToString.js":{"index":86,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":149,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":156,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":150,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":152,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":151,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":148,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":154,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":160,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":125,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":126,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":49,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":121,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":98,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":80,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":112,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":113,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":99,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":110,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":119,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":107,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":117,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":95,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"resources/assets/js/components/Alert.vue":{"index":177,"hash":"d7mbZOR4xjYqMelKmJuG","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/Nav.vue":{"index":186,"hash":"sf/nGvQgsHMmjeILNs/6","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":178,"hash":"CLDj5S+46XjVjd3e2ABh","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Stats.vue":{"index":189,"hash":"p8QyOfWNaL3Z8qZWssKt","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Calendar.vue":{"index":180,"hash":"fyZH5ZfHRYq1ybYO90/f","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":176,"hash":"rnRobwVHiA76KbyW8lpN","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":187,"hash":"8nTpN6niAB3CFkO8MoYO","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":184,"hash":"r61CzkTKcKWZOihAMtLq","parents":["resources/assets/js/components/Team.vue"]},"node_modules/browser-resolve/empty.js":{"index":29,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":39,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":48,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":94,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":96,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":115,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":77,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":81,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":61,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":30,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":144,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":28,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":27,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":53,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":45,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/node_modules/debug/debug.js":{"index":47,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/engine.io-client/node_modules/debug/browser.js"]},"node_modules/engine.io-client/node_modules/debug/browser.js":{"index":46,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":42,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":43,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/component-inherit/index.js":{"index":35,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/yeast/index.js":{"index":175,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":44,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":183,"hash":"sKKO36qcPRss9fTygzrD","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":50,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":41,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":40,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":38,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":37,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":36,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":130,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":129,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":11,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":7,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":188,"hash":"x+eLeccVY8Vt8C+gL+K4","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":17,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":21,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-integer.js":{"index":20,"hash":"34fh0nQELCiQkIkv8woA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":9,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":12,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":23,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":16,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":13,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":10,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":24,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":14,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":19,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":22,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":18,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":15,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.number.is-integer.js":{"index":25,"hash":"r0EEZqgzR1Hyez1IX8ut","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/number/is-integer.js":{"index":8,"hash":"qQ4v330IKF/B8saDMYor","parents":["node_modules/babel-runtime/core-js/number/is-integer.js"]},"node_modules/babel-runtime/core-js/number/is-integer.js":{"index":6,"hash":"IW+zPdzSK/luVnAjeyJA","parents":["resources/assets/js/components/EditBasketballStats.vue"]},"resources/assets/js/components/EditBasketballStats.vue":{"index":182,"hash":"oniKHCdstX25REByNIJw","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":191,"hash":"br2FWmBftffNNytbBeCJ","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":190,"hash":"/wlkMO475oUsn0AFwV/x","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":200,"hash":"CiXhQHGloNtOKvA5aBwK","parents":[]}};
+  var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
+  var updateUrl = null;
+  var updateMode = "websocket";
+  var supportModes = ["none","websocket"];
+  var ignoreUnaccepted = true;
+  var updateCacheBust = false;
+  var bundleKey = "websocket:null";
+  var sioPath = "./node_modules/socket.io-client/lib/index.js";
+  var incPath = "./node_modules/browserify-hmr/inc/index.js";
+
+  if (!global._hmr) {
+    try {
+      Object.defineProperty(global, '_hmr', {value: {}});
+    } catch(e) {
+      global._hmr = {};
+    }
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(global._hmr, bundleKey)) {
+    // Temporary hack so requiring modules works before the _hmr values are
+    // correctly initialized.
+    global._hmr[bundleKey] = {initModule: function(){}};
+  }
+
+  var main = require(incPath);
+  var isFirstRun = main(
+    moduleDefs, cachedModules, moduleMeta, updateUrl,
+    updateMode, supportModes, ignoreUnaccepted, updateCacheBust, bundleKey,
+    sioPath ? require(sioPath) : null,
+    typeof __filename !== 'undefined' && __filename,
+    typeof __dirname !== 'undefined' && __dirname
+  );
+  if (isFirstRun) {
+    for (var i=0, len=originalEntries.length; i<len; i++) {
+      require(originalEntries[i]);
+    }
+  }
+}).call(
+  this,
+  typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},
+  arguments[3], arguments[4], arguments[5], arguments[6]
+);
+
+},{"./node_modules/browserify-hmr/inc/index.js":30,"./node_modules/socket.io-client/lib/index.js":129,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":200}]},{},[1]);
 
 //# sourceMappingURL=routes.js.map

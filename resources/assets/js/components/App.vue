@@ -1,101 +1,21 @@
 
 <template>
 
-	<div>
-	
-    <nav class="navbar navbar-default navbar-fixed-top no-highlight" role="navigation">
-      <div class="container">
+	<div id="app-wrapper" :class="{'toggled' : toggleSidebar}">
 
-         <!-- logo and hamburger  -->
-        <div class="navbar-header">
-            <button id='hamburger' type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-left">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a v-link="{name: 'home'}"><img id="navLogo" src="/images/logo.png" class="navbar-brand navbar-brand-centered"></a>
-        </div>
+		<div id="app-content">
 
-            
-        <div class="collapse navbar-collapse text-center" id="navbar-left">
+		<rc-nav :user="user" :member="memberOf" :toggle.sync="toggleSidebar"
+						:invited="invitedTo" :fan="fanOf"></rc-nav>
 
-          <!-- search bar -->
-          <ul class="nav navbar-nav">
-            <div id='navSearchDiv' >
-              <i id="searchIcon" class="glyphicon glyphicon-search"></i>
-
-              <form method="GET" action="/search" accept-charset="UTF-8">
-          			<input id="searchBar" class="form-control navbar-form search-form" placeholder="Search players and teams..." 
-          							tabindex="1" 	required="" role="search" name="q" type="search">
-          		</form>
-            </div>
-          </ul>
-
-          <!-- nav links -->
-          <ul class="nav navbar-nav navbar-right">
-            <li><a v-link="{name: 'user', params: {name: user.username}}" class="nav-link">Profile</a></li>
-            <li id="teamDropdown" class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown">
-                <span v-cloak class="badge badge-danger">{{ totalCount }}</span>&nbsp;Teams <span id='teamCaret' class="caret"></span></a>
-              <ul class="dropdown-menu dropdown-menu-left" role="menu">
-
-            		<li v-if="memberOf.length" class="dropdown-header"><small>MEMBER OF</small></li>
-                <li v-for="team in memberOf">
-                	<a v-link="{name: 'team', params: {name: team.teamname}}" class="nav-link">
-                		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
-                		{{ team.name }}
-                	</a>
-                </li>
-                <li v-if="memberOf.length" id='divider' class="divider"></li>
-
-                <li v-if="fanOf.length" class="dropdown-header"><small>FAN OF</small></li>
-                <li v-for="team in fanOf">
-                	<a v-link="{name: 'team', params: {name: team.teamname}}" class="nav-link">
-                		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
-                		{{ team.name }}
-                	</a>
-                <li v-if="fanOf.length" id='divider' class="divider"></li>
-
-                <li v-if="invitedTo.length" class="dropdown-header"><small>INVITED TO</small></li>
-                <li v-for="team in invitedTo">
-                	<a v-link="{name: 'team', params: {name: team.teamname}}" class="nav-link">
-                		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
-                		{{ team.name }}
-                	</a>
-                <li v-if="invitedTo.length" id='divider' class="divider"></li>
-
-                <li><a v-link="{name: 'team', params: {name: 'create'}}" class="nav-link">Create a Team</a></li>
-
-              </ul>
-            </li>
-            <li id="optionsDropdown" class="dropdown">
-              <a href="#" id="navOptions" class="dropdown-toggle" data-toggle="dropdown">Options <span id='optionsCaret' class="caret"></span></a>
-              <ul class="dropdown-menu" role="menu">
-                <li><a class="nav-link">Settings</a></li>
-                <li><a class="nav-link">Help</a></li>
-                <li><a class="nav-link">Submit Feedback</a></li>
-                <li id='divider' class="divider"></li>
-                <li><a href="/logout" class="nav-link">Log out</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <nav style='display: none' class="navbar navbar-default navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <a href="/"><img id="navLogo" src="/images/logo.png" class="navbar-brand navbar-brand-centered"></a>
-        </div>
-      </div>
-    </nav>
+		
 
 		<rc-alert :show="alert" transition="fade-fast"></rc-alert>
-	
+
 		<router-view id="router" transition="fade-md" transition-mode="out-in" class="router"></router-view>
-	
+
+		</div>
+
 	</div>
 	
 </template>
@@ -107,6 +27,7 @@
 
 import Alert from './Alert.vue'
 import Requests from '../mixins/Requests.js'
+import Nav from './Nav.vue'
 
 export default  {
 
@@ -117,7 +38,8 @@ export default  {
 	mixins: [Requests],
 
 	components: {
-		'rc-alert' : Alert,
+		'rc-alert' 	: Alert,
+		'rc-nav'		: Nav,
 	},
 
 	data() {
@@ -130,6 +52,7 @@ export default  {
 			alertCounter: 0,
 			alertMessage:  "You better check yoself",
 			alertType: "info",
+			toggleSidebar: true,
 		}
 	},
 
@@ -163,7 +86,8 @@ export default  {
 
 
 		// event from Team.vue telling App to clear notifications for that team
-		clearNotifications(id) {
+		clearNotifications(id)
+		{
 			var updated = false;
 			var self = this;
 
@@ -182,25 +106,32 @@ export default  {
 			}
 		},
 
-		// if user became a member/fan of a team, add that team to their nav dropdown
-		becameAFanOfTeam(team) {
-
+		/**
+		 * User became a fan of a given team, add them to the nav menus
+		 */
+		App_becameAFan(team)
+		{
 			var newTeam = {
 				id: team.id,
 				teamname: team.teamname,
 				name: team.name,
-				sport: team.sport,
 				notifications: 0,
-				role: 4,
+				isMember: false,
+				isFan: true,
+				hasBeenInvited: false,
 			}
 
 			this.teams.push(newTeam);
 		},
 
-		// the opposite of above
-		removedAsFanOfTeam(teamname) {
-			this.teams = this.teams.filter(function(team) {
-				return team.teamname !== teamname;
+		
+		/**
+		 * Remove given team from nav menus
+		 */
+		App_notAFan(team)
+		{
+			this.teams = this.teams.filter(function(current) {
+				return current.teamname !== team.teamname;
 			})
 		},
 
@@ -236,7 +167,6 @@ export default  {
 
 	methods:
 	{
-		
 		/**
 		 * Show a sweetalert popup message
 		 *
@@ -317,15 +247,11 @@ export default  {
 		*/
 		$(function() {
 
-
 			// remove blurring
 			// if user had a modal open then clicked 'back' on browser, blur persists
 			$('div.modal').modal('hide');
 			$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
 	    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
-
-
-			// $("nav.navbar-fixed-top").autoHidingNavbar();
 
 
 			$('div.modal').on('hide.bs.modal', function() {
@@ -353,184 +279,6 @@ export default  {
 	margin-top 50px
 	min-height 100%
 	position relative
-
-div.navbar-collapse[aria-expanded='true']
-div.navbar-collapse.collapsing
-	background rc_red
-	
-nav.navbar
-	background rc_red
-
-#hamburger
-	background rc_red
-	&:focus
-		background rc_dark_red
-	span
-		background white
-
-nav.navbar.navbar-default
-	border 0
-	height 53px 
-				
-// holy navbar styling batman
-ul.nav.navbar-nav.navbar-right
-	li
-		a
-			color white
-			font-size 15px
-			&:hover
-				text-shadow: 0 0 4px #FFF;	
-		background rc_red
-	.dropdown
-		&.open
-			background rc_dark_red
-			box-shadow none
-			a:hover
-				text-shadow none
-			a
-				background rc_dark_red
-				padding-bottom 16px
-				color white
-				&:hover
-					color white		
-		.dropdown-menu
-			top 52px
-			li
-				:first-of-type
-					padding-top 5px
-				:last-of-type
-					padding-bottom 5px
-				a
-					text-decoration none
-					color black
-					background white
-					padding 5px 15px 5px 15px
-				:hover
-					text-decoration none
-					cursor pointer
-					color black
-				span.badge
-					background-color lighten(gray, 60%)	
-					color white
-					font-size 12px
-					margin-bottom 2px
-			:hover
-				background lighten(gray, 87%)
-
-
-			.dropdown-header
-				background white
-				padding-left 15px
-				color gray	
-				:hover
-					background white
-					color gray
-					cursor default
-			.dropdown-none
-				font-size 15px
-				background white
-				color gray				
-		.divider
-			margin 5px 0 5px 0
-			background #D9D9D9	
-
-.badge-danger
-	background-color #D9534F	
-	font-size 12px
-	margin-bottom 2px
-
-	
-#searchBar
-	height 15px
-	width 280px
-	color white
-	margin-top 10px
-	background-color rc_dark_red
-	font-size 15px
-
-// for changing the color of searchBar input text
-input#searchBar::-webkit-input-placeholder
-	color white !important
-input#searchBar:-moz-placeholder /* Firefox 18- */
-	color white !important
-input#searchBar::-moz-placeholder  /* Firefox 19+ */
-	color white !important
-input#searchBar:-ms-input-placeholder  
-	color white !important
-
-input[placeholder]::-webkit-input-placeholder
-	color darken(#F5F5F5, 20%) !important
-input[placeholder]:-moz-placeholder /* Firefox 18- */
-	color darken(#F5F5F5, 20%) !important
-input[placeholder]::-moz-placeholder  /* Firefox 19+ */
-	color darken(#F5F5F5, 20%) !important
-input[placeholder]:-ms-input-placeholder  
-	color darken(#F5F5F5, 20%) !important	
-
-textarea[placeholder]::-webkit-input-placeholder
-	color darken(#F5F5F5, 20%) !important
-textarea[placeholder]:-moz-placeholder /* Firefox 18- */
-	color darken(#F5F5F5, 20%) !important
-textarea[placeholder]::-moz-placeholder  /* Firefox 19+ */
-	color darken(#F5F5F5, 20%) !important
-textarea[placeholder]:-ms-input-placeholder  
-	color darken(#F5F5F5, 20%) !important		
-
-	
-#searchIcon
-	color white
-	position absolute
-	left -26px
-	top 15px
-	font-size 1.3em
-
-// for keeping logo centered
-#navLogo
-	position absolute
-	height 53px
-	width 180px
-	left 50%
-	margin-left -92px
-	display block
-	background-color transparent
-
-	
-				
-// nav differences for phone screens	
-@media only screen and (max-width xs_max_width) and (min-width 10px)
-	.divider
-		background #D9D9D9 !important
-	#searchIcon
-		top 32px
-		left -38px
-	#searchBar
-		margin-top 25px
-		border rc_dark_red
-	#navSearchDiv
-		left 5px !important
-
-// nav differences for tablet screens
-@media only screen and (max-width sm_max_width) and (min-width xs_max_width + 1px)
-	#searchBar
-		width 220px
-			
-#navSearchDiv 
-	position relative
-	display inline-block
-	left 25px
-		
-// absolutely position tab icons above TEXT
-#profileAboutIcon
-	font-size 24px
-	position absolute
-	left 40px
-	bottom 32px
-#profileMetricsIcon
-	position absolute
-	left 43px
-	bottom 32px
-
-
 
 
 </style>

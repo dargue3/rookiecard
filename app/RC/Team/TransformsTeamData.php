@@ -62,7 +62,8 @@ class TransformsTeamData
                 'isGhost'               => $memberRepo->isGhost(),
                 'hasBeenInvited'        => $memberRepo->hasBeenInvited(),
                 'hasRequestedToJoin'    => $memberRepo->hasRequestedToJoin(),
-		        'meta'					=> $member->meta
+		        'meta'					=> $member->meta,
+                'since'                 => $member->created_at->format('M j, Y'),
 	        ];
 	    }
 

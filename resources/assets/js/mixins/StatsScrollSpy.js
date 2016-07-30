@@ -27,20 +27,22 @@ export default {
 
 		// set up listeners to constantly check visibility on scroll
 		attachScrollListener(element, overflowIndex) {
-			var firstElement = $(element +  ' th:first-child');
-			var lastElement = $(element +  ' th:last-child');
-			var parent = $(element);
+			setTimeout(function() {
+				var firstElement = $(element +  ' th:first-child');
+				var lastElement = $(element +  ' th:last-child');
+				var parent = $(element);
 
-			this.$set('overflowed.' + overflowIndex, {first: false, last: false});
+				this.$set('overflowed.' + overflowIndex, {first: false, last: false});
 
-			this.overflowed[overflowIndex].last = this.isHidden(lastElement);
+				this.overflowed[overflowIndex].last = this.isHidden(lastElement);
 
-			var self = this;
-			// listen for scroll, update the flag if now in view
-			parent.on('scroll', function() {
-				self.overflowed[overflowIndex].first = self.isHidden(firstElement);
-				self.overflowed[overflowIndex].last = self.isHidden(lastElement);
-			});
+				var self = this;
+				// listen for scroll, update the flag if now in view
+				parent.on('scroll', function() {
+					self.overflowed[overflowIndex].first = self.isHidden(firstElement);
+					self.overflowed[overflowIndex].last = self.isHidden(lastElement);
+				});
+			}.bind(this), 50)
 
 		}
 	},

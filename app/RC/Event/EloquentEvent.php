@@ -30,19 +30,9 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 	public $limitPerTeam;
 
 
-	/**
-	 * An instance of a stat repository
-	 * 
-	 * @var StatRepository
-	 */
-	protected $stat;
-
-
 	public function __construct()
 	{
 		$this->limitPerTeam = config('rookiecard.events.limitPerTeam');
-
-		$this->stat = App::make(StatRepository::class);
 	}
 
 
@@ -171,7 +161,9 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 		$event = Event::findOrFail($id);
 		$event->delete();
 
-		$this->stat->deleteByEvent($team_id, $id);
+		$stat = App::make(StatRepository::class);
+
+		$stat->deleteByEvent($team_id, $id);
 
 		event(new TeamDeletedAnEvent($team_id, $event));
 	}

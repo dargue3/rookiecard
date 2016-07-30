@@ -61,10 +61,10 @@ class MemberController extends Controller
         $this->validate($request, $rules);
 
         if ($request->role == 'ghost_player') {
-            $this->member->newPlayer($request->name);
+            $this->member->newPlayer($team->id, $request->firstname, $request->lastname);
         }
         else {
-            $this->member->newCoach($request->name);
+            $this->member->newCoach($team->id, $request->firstname, $request->lastname);
         }
 
         if ($request->has('email')) {
