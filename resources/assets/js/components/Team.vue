@@ -1,4 +1,3 @@
-
 <template>
 	<div>
 		<div v-show="requestFinished">
@@ -128,7 +127,7 @@
 									<span>Recent</span>
 								</div>
 								<div class="second" :class="{'active' : statsTab === 'playerSeason'}" v-touch:tap="statsTab = 'playerSeason'">
-									<span>Player</span>
+									<span>Players</span>
 								</div>
 								<div class="third" :class="{'active' : statsTab === 'teamSeason'}" v-touch:tap="statsTab = 'teamSeason'">
 									<span>Season</span>
@@ -136,14 +135,37 @@
 							</div>
 
 							<div v-show="statsTab === 'teamRecent'">
-								<rc-stats type="teamRecent" :team="team" :sport="team.sport"
-													:raw-stats="stats" :players="players">
+								<rc-stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
+													:raw-stats="stats" :players="players" :raw-team-stats.sync="rawTeamStats">
 		        		</rc-stats>
+		        		<div v-else class="text-center">
+									<h4>No stats yet...</h4>
+								</div>
 							</div>
+
+
+							<div v-show="statsTab === 'playerSeason'">
+								<div v-show="stats.length" class="TabButton --just-two --small">
+									<div class="first" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
+										<span>Totals</span>
+									</div>
+									<div class="second" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
+										<span>Averages</span>
+									</div>
+									<input type="text" class="form-control --white" placeholder="Search by name..." v-model="statFilterKey">
+								</div>
+									
+			        	<rc-stats v-if="stats.length" type="playerSeason" :stat-keys="team.settings.statKeys" :total="showStatTotals" 
+			        						:sport="team.sport" :raw-stats="stats" :players="players" :filter-key="statFilterKey">
+		        		</rc-stats>
+		        		<div v-else class="text-center">
+									<h4>No stats yet...</h4>
+								</div>
+		        	</div>
 							
 
 							<div v-show="statsTab === 'teamSeason'">
-								<div class="TabButton --just-two --small">
+								<div v-show="stats.length" class="TabButton --just-two --small">
 									<div class="first" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
 										<span>Totals</span>
 									</div>
@@ -151,9 +173,12 @@
 										<span>Averages</span>
 									</div>
 								</div>
-			        	<rc-stats type="teamSeason" :team="team" :total="showStatTotals" 
-			        						:sport="team.sport" :raw-stats="stats" :players="players">
+			        	<rc-stats v-if="stats.length" type="teamSeason" :stat-keys="team.settings.statKeys" :raw-team-stats.sync="rawTeamStats"
+			        						:sport="team.sport" :raw-stats="stats" :players="players" :total="showStatTotals">
 		        		</rc-stats>
+		        		<div v-else class="text-center">
+									<h4>No stats yet...</h4>
+								</div>
 		        	</div>
 			        	
 			      </div>
@@ -224,11 +249,9 @@
 
 	    <!-- inside here is complex logic handling what happens when an event is 
 	    			clicked on from calendar or news feed -->
-			<!-- <rc-view-event :admin="isAdmin" :events="events" 
-											:stats="stats" :team="team" 
-											:auth="auth" :players="players"
-											:team-cols="teamStatCols" :player-cols="playerStatCols">
-			</rc-view-event> -->
+			<rc-view-event :is-admin="isAdmin" :events="events" :stats="stats" :team="team" 
+											:players="players" :stat-keys="team.settings.statKeys">
+			</rc-view-event>
 
 
 
@@ -355,13 +378,17 @@ export default  {
 		document.title = teamname;
 
 		return {
-			temp: 1,
 			prefix: prefix + teamname,
 			requestFinished: false,
 			notFound: false,
+			showStatTotals: false,
+			statFilterKey: '',
+			tab: 'calendar',
+			statsTab: 'teamRecent',
 			auth: {},
 			team: {
 				meta: {},
+				settings: {},
 			},
 			isAdmin: false,
 			isFan: false,
@@ -371,19 +398,17 @@ export default  {
 			hasRequestedToJoin: false,
 			isCreator: false,
 			joinAction: null,
+			positions: [],
+			users: [],
+			events: [], 
+			stats: [], 
+			rawTeamStats: [],
+			feed: [],
 			editUser: {
 				firstname: '',
 				lastname: '',
 				meta: {},
 			},
-			showStatTotals: false,
-			positions: [],
-			users: [],
-			tab: 'stats',
-			statsTab: 'playerSeason',
-			events: [], 
-			stats: [], 
-			feed: [],
 		}
 	},
 
@@ -651,6 +676,7 @@ export default  {
 			this.team.slogan = meta.slogan;
 			this.team.homefield = meta.homefield;
 			this.team.city = meta.city;
+			this.$set('team.settings.statKeys', meta.stats);
 
 			// format the backdrop image as a style tag 
 			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
@@ -900,9 +926,14 @@ export default  {
 	padding 0 2em
 	.TabButton
 		justify-content center
+		margin-bottom 60px
 	.TabButton.--just-two
-		justify-content flex-start
-		margin-bottom 15px
+		justify-content center
+		margin-bottom 20px
+		input
+			width 175px
+			margin-left 30px
+			height 30px
 	
 .Team__fans
 	ul

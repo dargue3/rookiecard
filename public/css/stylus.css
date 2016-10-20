@@ -10,6 +10,7 @@ html {
 }
 p {
   font-size: inherit;
+  margin-bottom: 0;
   font-weight: inherit;
 }
 .material-icons:hover {
@@ -213,7 +214,7 @@ span.input-info {
 }
 .TabButton div {
   background: #329acf;
-  padding: 4px 11px;
+  padding: 4px 18px;
 }
 .TabButton div:hover {
   cursor: pointer;
@@ -269,7 +270,7 @@ span.input-info {
   font-size: 17px;
 }
 .TabButton.--small div {
-  padding: 2px 10px;
+  padding: 2px 12px;
 }
 .for-blurring {
   margin-top: 53px;
@@ -418,11 +419,11 @@ textarea {
 }
 .btn.--chevron.--med.--right {
   min-width: 125px;
-  padding-left: 14px;
+  padding-left: 10px;
 }
 .btn.--chevron.--lg.--right {
   min-width: 175px;
-  padding-left: 14px;
+  padding-left: 10px;
 }
 .btn.--chevron.--sm.--left {
   min-width: 100px;
@@ -430,15 +431,15 @@ textarea {
 }
 .btn.--chevron.--med.--left {
   min-width: 125px;
-  padding-right: 14px;
+  padding-right: 10px;
 }
 .btn.--chevron.--lg.--left {
   min-width: 175px;
-  padding-right: 14px;
+  padding-right: 10px;
 }
 .btn-chevron {
   position: absolute;
-  top: 7px;
+  top: 6px;
   font-size: 30px;
 }
 .btn-chevron.--right {

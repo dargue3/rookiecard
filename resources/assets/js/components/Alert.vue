@@ -37,28 +37,29 @@ export default  {
 		}
 	},
 
-	events: {
-		//event from App to show an alert
-		displayAlert(type, msg) {
-
-			//add an alert
+	events:
+	{
+		// event from App to show an alert
+		displayAlert(type, msg)
+		{
+			// add an alert
 			this.alertCounter++;
 			this.msg = msg;
 			this.type = type;
 
-			//choose a timeout length
+			// choose a timeout length
 			if(this.type !== 'good')
 				var timeout = 8000;
 			else
 				var timeout = 3000;
 
 			var self = this;
-			//set an async timer
+			// set an async timer
 			setTimeout(function() {
-				//when the timer is up, remove this alert
+				// when the timer is up, remove this alert
 				self.alertCounter--;
 				if(!self.alertCounter)
-					//if there's no alerts remaining, hide
+					// if there's no alerts remaining, hide
 					self.show = false;
 			}, timeout);
 			
@@ -66,8 +67,8 @@ export default  {
 	},
 
 	computed: {
-		//returns an array of classes for the alert
-		//info and error last longer and have a close option
+		// returns an array of classes for the alert
+		// info and error last longer and have a close option
 		alertClasses() {
 			return {
 				'alert': true,

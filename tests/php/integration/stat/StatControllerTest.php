@@ -59,8 +59,7 @@ class StatControllerTest extends TestCase
 		$this->data = [
 			'event_id'		=> $this->event->id,
 			'meta'			=> ['test' => 123],
-			'teamStats'		=> ['pts' => 54, 'ast' => 8, 'reb' => 11],
-			'playerStats'	=> [
+			'stats'	=> [
 				['id' => 0, 'member_id' => 1, 'pts' => 12, 'ast' => 6, 'reb' => 8],
 				['id' => 0, 'member_id' => 2, 'pts' => 42, 'ast' => 2, 'reb' => 3],
 			],

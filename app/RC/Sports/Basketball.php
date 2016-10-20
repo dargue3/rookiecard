@@ -1,13 +1,10 @@
 <?php
 namespace App\RC\Sports;
 
-use App;
-use Exception;
-use App\StatColumn;
-use App\RC\Stat\StatRepository;
-
 class Basketball extends Sport implements SportInterface
 {
+	use SportHelpers;
+
 	/**
 	 * The name of this sport
 	 * 
@@ -16,59 +13,80 @@ class Basketball extends Sport implements SportInterface
 	public $name = 'basketball';
 
 
-	/**
-	 * The keys that are valid when creating stats
-	 * 
-	 * @var array
-	 */
-	public $validKeys = ['id', 'member_id', 'gs', 'gp', 'min', 'dnp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
+    /**
+     * All possible stat keys
+     * 
+     * @var array
+     */
+    protected $statKeys = ['date', 'name', 'win', 'opp', 'gs', 'gp', 'min', 'starter', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
             'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
 
 
     /**
-     * All possible keys in player stats
+     * The stat keys that are used in tables whether the admin wants them or not
      * 
      * @var array
      */
-    public $playerKeys = ['name', 'gs', 'gp', 'min', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
-            'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
-
-    /**
-     * All possible keys in team stats
-     * 
-     * @var array
-     */
-    public $teamKeys = ['date', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
-            'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf'];
+    protected $alwaysShown = ['date', 'name', 'win', 'opp'];
 
 
     /**
-     * The keys that are always used in player stats
+     * The keys that are included during stat creation in the stats object
+     * Get unset before inserting into database
      * 
      * @var array
      */
-    public $permanentPlayerKeys = ['name'];
+    protected $keysOnlyUsedDuringCreation = ['id', 'member_id', 'dnp', 'lastname', 'name'];
 
 
     /**
-     * The keys that are always used in team stats
+     * All possible positions
      * 
      * @var array
      */
-    public $permanentTeamKeys = ['date', 'win', 'opp'];
+    protected $positions = ['pg', 'sg', 'sf', 'pf', 'c'];
+
 
 
     /**
-     * The possible positions a player could play
+     * Return truthy if the stats show this player did not play
      * 
-     * @var array
+     * @param  array $stats 
+     * @return boolean        
      */
-    public $positions = ['pg', 'sg', 'sf', 'pf', 'c'];
+    public function theyDidNotPlay($stats)
+    {
+    	if (isset($stats['min']) and $stats['min'] == 0) {
+			return true;
+		}
+
+		if (isset($stats['dnp']) and $stats['dnp'] == true) {
+			return true;
+		}
+
+		return false;
+    }
 
 
+    /**
+     * Change any falsey values to a default
+     * 
+     * @param array $stats
+     * @return array
+     */
+    public function setEmptyValues(array $stats)
+    {
+    	foreach ($stats as $key => $value) {
+    		if (is_null($value)) {
+    			$stats[$key] = 0;
+    		}
+    	}
+
+    	return $stats;
+    }
 
 	/**
-	 * Fine-grain details of each stat key and the defaults
+	 * Fine-grain details of each stat key and the defaults.
 	 * Used during team creation process
 	 * 
 	 * @return array 
@@ -84,7 +102,7 @@ class Basketball extends Sport implements SportInterface
 		 * rc: the stat keys that are extrapolated by rookiecard based on user inputs
 		 * 		val: human readable version of key
 		 * 		req: an array of keys that are prerequisites for calculation of that stat
-		 *   	subtext: human readable form of requriments 
+		 *   	subtext: human readable form of requirements 
 		 *    	disabled: whether or not that stat is currently disabled/enabled in the picker
 		 * 
 		 * userSelected: a suggestion of which keys the user should input

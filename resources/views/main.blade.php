@@ -26,10 +26,10 @@
     <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="/css/dropzone.css">
-    <link rel='stylesheet' href='/css/sweetalert.css'>
-    <link rel='stylesheet' href='/css/bootstrap-switch.css'>
+    <link rel="stylesheet" href="/css/sweetalert.css">
+    <link rel="stylesheet" href="/css/bootstrap-switch.css">
     <link rel="stylesheet" href="/bower_components/bootstrap-calendar/css/calendar.css">
-    <link rel='stylesheet' href='/css/animate.css-master/animate.css'></link>
+    <link rel="stylesheet" href="/css/animate.css-master/animate.css"></link>
     <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
     <link rel="stylesheet" href="/css/stylus.css">
     <link rel="stylesheet" href="/css/variables.css">
@@ -42,8 +42,8 @@
     <script src="/js/jstz-1.0.4.min.js"></script>
     <script src="/js/bootstrap-switch.js"></script>
     <script src="/js/bootstrap-select.min.js"></script> 
-    <script src='/js/pace.js'></script>
-    <script src='/js/dropzone.js'></script>
+    <script src="/js/pace.js"></script>
+    <script src="/js/dropzone.js"></script>
     <script src="/bower_components/moment/moment.js"></script>
     <script src="/bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
     <script src="/bower_components/underscore/underscore-min.js"></script>

@@ -18,7 +18,6 @@ class CreateRcStats extends Migration
             $table->integer('member_id')->unsigned()->index()->nullable();
             $table->integer('team_id')->unsigned()->index();
             $table->tinyInteger('sport');
-            $table->tinyInteger('type');
             $table->integer('season');
             $table->integer('event_id')->unsigned();
             $table->text('stats');

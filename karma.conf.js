@@ -36,7 +36,7 @@ module.exports = function(config) {
 
     browserify: {
         debug: true, // debug=true to generate source maps
-        transform: [ ['babelify', {presets: ["es2015"]}] ],
+        transform: [ ['babelify', {presets: ["es2015"]}], 'vueify' ],
     },
 
 

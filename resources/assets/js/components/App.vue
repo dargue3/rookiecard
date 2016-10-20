@@ -217,10 +217,12 @@ export default  {
 		 */
 		errorMsg(msg = null)
 		{
-			if(typeof msg === 'string')
+			if (typeof msg === 'string') {
 				this.banner('bad', msg);
-			else
+			}
+			else {
 				this.banner('bad', 'There was a problem, refresh the page and try again');
+			}
 		},
 
 

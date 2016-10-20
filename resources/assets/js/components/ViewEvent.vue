@@ -1,8 +1,7 @@
 
 <template>
-		
-
-    <div class="modal" :class="showStats ? 'stats-modal' : ''" id="viewEventModal">
+	
+    <div id="viewEventModal" class="modal" :class="showStats ? 'stats-modal' : ''" >
     	<!-- modal window for viewing an event when clicked from the calendar -->
       <div class="modal-dialog">
         <div class="modal-content">
@@ -13,44 +12,43 @@
           <div class="modal-body">
 						<div class="row">
 
-
 							<!-- the following shows the correct content based on date, event type, admin status, sport -->
-
-
 						
 							<!-- show stats if they aren't admin and is past event -->
-							<rc-stats v-show="pastEventStats" type="event" :sport="team.sport" :stats="currStats" 
-												:team="team" :players="players" :event="event" :team-cols="teamStatCols" :player-cols="playerStatCols"></rc-stats>
-
+							<stats v-if="pastEventStats" type="event" :sport="team.sport" 
+												:stats="eventStats" :team="team" :players="players" :event="event"
+												:keys="statKeys">
+							</stats>
 
 							<!-- show edit event page if admin and event is in the future -->
-							<rc-edit-event v-show="canEditEvent || editEvent" :event="event" :edit-event.sync="editEvent"></rc-edit-event>
-
+							<edit-event v-if="canEditEvent || editingPastEvent" :event="event" :editing-past-event.sync="editingPastEvent">
+							</edit-event>
 
 
 							<!-- if showing edit stats, choose the correct sport -->
-							<div v-show="canEditStats">
-
-								<rc-basketball v-if="team.sport === 'basketball'" :stats="currStats" :players="players" 
-															:edit-event.sync="editEvent" :event="event" :team="team"></rc-basketball>
+							<div v-if="canEditStats">
+								<edit-stats v-if="team.sport === 'basketball'" :event-stats="eventStats" :players="players" 
+														:edit-event.sync="editingPastEvent" :event="event" :team="team" :keys="statKeys">
+								</edit-stats>
 							</div>		
 
 
-							<div v-show="pastEventNoStats" class="col-xs-12 ViewEvent">
+							<div v-if="pastEventNoStats" class="col-xs-12 ViewEvent">
+
 								<div class="edit-button">
-									<a class="btn btn-primary" @click="editEvent = true">Edit Event Details</a>
+									<a class="btn btn-primary" @click="editingPastEvent = true">Edit Event Details</a>
 								</div>
 
 								<div v-if="event.details" class="ViewEvent__details">
 									<p>This event is over and wasn't set up as a Game, so there are no stats</p>
 								</div>
-	
+
 							</div>										
 
 
 							
 
-							<div v-show="(futureEvent || pastEvent) && event.id" class="col-xs-12 ViewEvent">
+							<div v-if="(futureEvent || pastEvent) && event.id" class="col-xs-12 ViewEvent">
 
 								<div class="ViewEvent__type --{{ event.titleClass }}">{{ event.title }}</div>
 								<div class="ViewEvent__time">{{ event.start | formatTimeString event.end }}</div>
@@ -72,7 +70,7 @@
 <script>
 
 import EditEvent from './EditEvent.vue'
-import EditBasketballStats from './EditBasketballStats.vue'
+import EditStats from './EditStats.vue'
 import Stats from './Stats.vue'
 
 
@@ -80,16 +78,18 @@ export default  {
 	
 	name: 'ViewEvent',
 
-	props: ['team', 'events', 'stats', 'players', 'admin', 'teamCols', 'playerCols'],
+	props: ['team', 'events', 'stats', 'players', 'isAdmin', 'statKeys'],
 
-	components: {
-		'rc-edit-event' 	: EditEvent,
-		'rc-stats'				: Stats,
-		'rc-basketball' 	: EditBasketballStats,
+	components:
+	{
+		EditEvent,
+		Stats,
+		EditStats,
 	},
 
-	data() {
-		var prefix = this.$parent.prefix;
+	data()
+	{
+		let prefix = this.$parent.prefix;
 
 		return {	
 			prefix: prefix,
@@ -98,88 +98,92 @@ export default  {
 				title: '',
 				type: 0,
 			},
-			teamStatCols: [],
-			playerStatCols: [],
-			editEvent: false,
-
-			currStats: {},
+			editingPastEvent: false,
+			eventStats: [],
 		}
 	},
 
-	watch: {
-		event() {
-			// new event, reset this flag to hide EditEvent.vue
-			this.editEvent = false;
-		}
+	watch:
+	{
+		event()
+		{
+			this.editingPastEvent = false;
+		},
 	},
 
-	computed: {
-
-
-		// FUTURE EVENTS
-
-		// event has NOT happened yet, user is admin
+	computed:
+	{
+		/**
+		 * Event has NOT happened yet, user is admin
+		 */
 		canEditEvent()
 		{
-			return moment().isBefore(moment.unix(this.event.start)) && this.admin;
+			return moment().isBefore(moment.utc(this.event.start * 1000)) && this.isAdmin;
 		},
 
-		// event has NOT happened yet, user is NOT an admin
+		/**
+		 * Event has NOT happened yet, user is NOT an admin
+		 */
 		futureEvent()
 		{
-			return moment().isBefore(moment.unix(this.event.start)) && !this.admin;
+			return moment().isBefore(moment.utc(this.event.start * 1000)) && !this.isAdmin;
 		},
 
-
-		// PAST EVENTS
-
-		// event has happened, user is admin, event was a game
+		/**
+		 * Event has happened, user is admin, event was a game
+		 */
 		canEditStats()
 		{
-			if(this.editEvent) {
+			if(this.editingPastEvent) {
 				// user wants to specifically edit the event regardless of date
 				return false;
 			}
-			else
-				return moment().isAfter(moment.unix(this.event.start)) && this.admin &&
+			else {
+				return moment().isAfter(moment.utc(this.event.start * 1000)) && this.isAdmin &&
 										(this.event.type === 'home_game' || this.event.type === 'away_game');
+			}
 		},
 
 
-		// event has happened, user is an admin, event was NOT a game
+		/**
+		 * Event has happened, user is an admin, event was NOT a game
+		 */
 		pastEventNoStats()
 		{
-			if(this.editEvent)
+			if(this.editingPastEvent) {
 				return false;
-			else
-				return moment().isAfter(moment.unix(this.event.start)) && this.admin  &&
-										(this.event.type !== 'home_game' || this.event.type !== 'away_game');
+			}
+			else {
+				return moment().isAfter(moment.utc(this.event.start * 1000)) && this.isAdmin  &&
+										(this.event.type !== 'home_game' && this.event.type !== 'away_game');
+			}
 		},
 
 
-		// event has happened, user is NOT an admin, event was a game
+		/**
+		 * Event has happened, user is NOT an admin, event was a game
+		 */
 		pastEventStats()
 		{
-			return moment().isAfter(moment.unix(this.event.start)) && !this.admin  &&
+			return moment().isAfter(moment.utc(this.event.start * 1000)) && !this.isAdmin  &&
 										(this.event.type === 'home_game' || this.event.type === 'away_game');
 		},
 
 
-
-
-		// event has happened, user is NOT an admin, event was NOT a game
+		/**
+		 * Event has happened, user is NOT an admin, event was NOT a game
+		 */
 		pastEvent()
 		{
-			return moment().isAfter(moment.unix(this.event.start)) && !this.admin && !this.pastEventStats;
+			return moment().isAfter(moment.utc(this.event.start * 1000)) && !this.isAdmin && !this.pastEventStats;
 		},
 
-
-		// SOME EXTRA LOGIC FOR CHOOSING WHAT TO SHOW
-
-		// only for choosing how wide to make the modal window
+		/**
+		 * Only for choosing how wide to make the modal window
+		 */
 		showStats()
 		{
-			if(this.editEvent) {
+			if(this.editingPastEvent) {
 				// user wants to specifically edit the event regardless of date
 				return false;
 			}
@@ -191,54 +195,49 @@ export default  {
 
 
 
-	methods: {
-
-		// find which event was clicked and display
+	methods:
+	{
+		/**
+		 * An event was clicked, gather the data and stats associated with it
+		 *
+		 * @param {int} id  The id of the clicked event
+		 */
 		viewEvent(id)
 		{
-			// pass along event data
-			var event = this.events.filter(function(event) {
-				return event.id === id;
-			});
+			// don't do anything if this is the same event that was clicked previously
+			if (this.event.id === id) {
+      	this.$root.showModal('viewEventModal')
+      	return
+			}
 
-			// pass along any existing user stats for this event
-			var stats = this.stats.filter(function(stat) {
-				return stat.event_id === id;
-			});
-
-			this.event = event[0];
+			this.event = this.events.filter(event => event.id === id)[0];
+			this.eventStats = this.stats.filter(stat => stat.event_id === id);
 
 			if(this.futureEvent || this.pastEvent) {
 				// if just showing info about the event to a non admin, pick CSS class for title
 				switch(this.event.type) {
 					case 0:
-						// practice
 						this.event.titleClass = 'practice';
 						break;
 					case 1:
-						// home game
 						this.event.titleClass = 'home';
 						break;
 					case 2:
-						// away game
 						this.event.titleClass = 'away';
 						break;
 					case 3:
-						// special event
 						this.event.titleClass = 'other';
 						break;
 				}
 			}
-			
-			this.currStats = stats;
 			
 			// show modal
       this.$root.showModal('viewEventModal')
     },
 	},
 
-	ready() {
-
+	ready()
+	{
 		// attach jquery listeners for click on events
     // wait long enough to ensure calendar is fully loaded
     setTimeout(function() {

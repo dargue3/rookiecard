@@ -94,8 +94,8 @@ class MemberControllerTest extends TestCase
     	$member = factory(TeamMember::class)->create(['team_id' => $this->team->id]);
 
     	$data = [
+            'isGhost' => true,
     		'meta' => [
-                'isGhost'       => true,
                 'firstname'     => $this->faker->firstNameMale,
 				'lastname'      => $this->faker->lastName,
 				'email'         => $this->faker->email,

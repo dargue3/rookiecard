@@ -127,7 +127,6 @@ $factory->define(App\Stat::class, function ($faker) {
         'owner_id'      => $faker->numberBetween(1, 100),
         'member_id'     => $faker->numberBetween(1, 100),
         'team_id'       => $faker->numberBetween(1, 100),
-        'type'          => 0,
         'sport'         => $sport,
         'season'        => 1,
         'stats'         => json_encode(['test' => 123]),

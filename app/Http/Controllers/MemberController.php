@@ -85,9 +85,9 @@ class MemberController extends Controller
      */
     public function update(Request $request, Team $team, $id)
     {
-        // if (Auth::user()->cannot('edit-member', [$team, $id])) {
-        //     throw new Exception("Unauthorized request");
-        // }
+        if (Auth::user()->cannot('edit-member', [$team, $id])) {
+            throw new Exception("Unauthorized request");
+        }
 
         // do a little bit of validation first
         $rules = [

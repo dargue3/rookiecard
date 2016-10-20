@@ -23,7 +23,7 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 */
 	public function findByTeam($team_id)
 	{
-		return Stat::where('team_id', $team_id)->get();
+		return Stat::where('team_id', $team_id)->orderBy('event_id')->get();
 	}
 
 

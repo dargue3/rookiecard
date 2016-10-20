@@ -151,15 +151,16 @@ export default  {
 		this.initialize();
 	},
 
-	computed: {
+	computed:
+	{
 		role()
 		{
 			return this.user.role;
 		},
 	},
 
-	watch: {
-
+	watch:
+	{
 		// if user changed, set inputs to correct new states
 		user()
 		{

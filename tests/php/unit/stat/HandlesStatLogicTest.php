@@ -37,10 +37,9 @@ class HandlesStatLogicTest extends TestCase
 		$this->data = [
 			'event'			=> $this->event,
 			'meta'			=> ['test' => 123],
-			'teamStats'		=> ['pts' => 54, 'ast' => 8, 'reb' => 11],
-			'playerStats'	=> [
-				['id' => 0, 'member_id' => 1, 'pts' => 12, 'ast' => 6, 'reb' => 8],
-				['id' => 0, 'member_id' => 2, 'pts' => 42, 'ast' => 2, 'reb' => 3],
+			'stats'	=> [
+				['id' => 0, 'member_id' => 1, 'pts' => 12, 'ast' => 6, 'reb' => 8, 'starter' => true],
+				['id' => 0, 'member_id' => 2, 'pts' => 42, 'ast' => 2, 'reb' => 3, 'starter' => false],
 			],
 		];
 	}
@@ -53,8 +52,7 @@ class HandlesStatLogicTest extends TestCase
 
     	$this->assertEquals($this->team->id, $handler->team->id);
     	$this->assertEquals($this->event->id, $handler->event['id']);
-    	$this->assertEquals($this->data['playerStats'], $handler->playerStats);
-    	$this->assertEquals($this->data['teamStats'], $handler->teamStats);
+    	$this->assertEquals($this->data['stats'], $handler->stats);
 
         $event = [
             'id'        => $this->event->id,
@@ -73,7 +71,7 @@ class HandlesStatLogicTest extends TestCase
     {
     	factory(TeamMember::class)->create();
 
-    	$this->data['playerStats'][0]['member_id'] = 3;
+    	$this->data['stats'][0]['member_id'] = 3;
 
     	$this->setExpectedException('Exception');
 
@@ -86,7 +84,7 @@ class HandlesStatLogicTest extends TestCase
     {
     	factory(TeamMember::class)->create(['user_id' => 2]);
 
-    	$this->data['playerStats'][0]['id'] = 3;
+    	$this->data['stats'][0]['id'] = 3;
 
     	$this->setExpectedException('Exception');
 
@@ -110,7 +108,7 @@ class HandlesStatLogicTest extends TestCase
     /** @test */
     public function it_throws_an_exception_if_one_of_the_stat_keys_is_invalid()
     {
-        $this->data['playerStats'][0]['cats'] = 3;
+        $this->data['stats'][0]['cats'] = 3;
 
         $this->setExpectedException('Exception');
 
@@ -123,7 +121,7 @@ class HandlesStatLogicTest extends TestCase
     {
         $handler = (new HandlesStatLogic($this->data, $this->team))->create();
 
-        $this->assertCount(3, Stat::all());
+        $this->assertCount(2, Stat::all());
     }
 
 
@@ -139,36 +137,24 @@ class HandlesStatLogicTest extends TestCase
     /** @test */
     public function it_skips_any_players_that_played_zero_minutes()
     {
-        $this->data['playerStats'][0]['min'] = 10;
-        $this->data['playerStats'][1]['min'] = 0;
+        $this->data['stats'][0]['min'] = 10;
+        $this->data['stats'][1]['min'] = 0;
 
         $handler = (new HandlesStatLogic($this->data, $this->team))->create();
 
-        $this->assertCount(2, Stat::all());
+        $this->assertCount(1, Stat::all());
     }
 
 
     /** @test */
     public function it_skips_any_players_that_had_dnp_checked()
     {
-        $this->data['playerStats'][0]['dnp'] = true; 
-        $this->data['playerStats'][1]['dnp'] = false; 
+        $this->data['stats'][0]['dnp'] = true; 
+        $this->data['stats'][1]['dnp'] = false; 
 
         $handler = (new HandlesStatLogic($this->data, $this->team))->create();
 
-        $this->assertCount(2, Stat::all());
-    }
-
-
-    /** @test */
-    public function it_doesnt_create_any_team_stats_if_there_are_no_valid_player_stats()
-    {
-        $this->data['playerStats'][0]['dnp'] = true; 
-        $this->data['playerStats'][1]['dnp'] = true; 
-
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
-
-        $this->assertCount(0, Stat::all());
+        $this->assertCount(1, Stat::all());
     }
 
 
@@ -202,13 +188,13 @@ class HandlesStatLogicTest extends TestCase
         // create some initial stats
         (new HandlesStatLogic($this->data, $this->team))->create();
 
-        $this->data['playerStats'][0]['pts'] = 56;
+        $this->data['stats'][0]['pts'] = 56;
         $this->data['meta'] = ['cats_are' => 'the best'];
 
         // update them with new data
         (new HandlesStatLogic($this->data, $this->team))->update();
 
-        $this->assertCount(3, Stat::all());
+        $this->assertCount(2, Stat::all());
 
         $first = Stat::first();
         $meta = json_decode($first->meta);

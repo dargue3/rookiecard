@@ -69,14 +69,11 @@ class CreatesNewTeamTest extends TestCase
     }
 
     /** @test */
-    public function the_constructor_sorts_the_stats_into_keys_for_players_and_keys_for_teams()
+    public function the_constructor_validates_the_stat_keys_and_saves_them_in_meta_data()
     {
     	$handler = new CreatesNewTeam($this->data);
 
-    	$formattedStats = [
-    		'teamCols' 		=> ['date', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_'],
-    		'playerCols' 	=> ['name', 'pts', 'fgm', 'fga', 'fg_']
-    	];	
+    	$formattedStats = ['date', 'name', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_'];	
 
     	$this->assertEquals($formattedStats, $handler->meta['stats']);
     }

@@ -60,50 +60,6 @@ class Sport
 
 
 	/**
-	 * Fetch all the positions a player could play
-	 * 
-	 * @return array
-	 */
-	public function positions()
-	{
-		return $this->positions;
-	}
-
-
-	/**
-	 * Fetch the array of valid stat keys
-	 * 
-	 * @return array
-	 */
-	public function validKeys()
-	{
-		return $this->validKeys;
-	}
-
-
-	/**
-	 * Fetch all possible keys for player stats
-	 * 
-	 * @return array
-	 */
-	public function playerStatKeys()
-	{
-		return $this->playerKeys;
-	}
-
-
-	/**
-	 * Fetch all possible keys for team stats
-	 * 
-	 * @return array
-	 */
-	public function teamStatKeys()
-	{
-		return $this->teamKeys;
-	}
-
-
-	/**
 	 * Return the name of this sport class
 	 * 
 	 * @return string
@@ -122,24 +78,31 @@ class Sport
 	 */
 	public function sortKeys(array $keys)
 	{
+		$reordered = [];
 		$this->validate($keys);
 
-		$player = $this->permanentPlayerKeys;
-		$team = $this->permanentTeamKeys;
+		// add in the keys always shown by this sport
+		$keys = array_merge($keys, $this->alwaysShown());
 
-		foreach ($this->playerKeys as $key) {
+		// reorder the stats to the way they're stored in statKeys
+		foreach ($this->statKeys() as $key) {
 			if (in_array($key, $keys)) {
-				$player[] = $key;
+				$reordered[] = $key;
 			}
 		}
 
-		foreach ($this->teamKeys as $key) {
-			if (in_array($key, $keys)) {
-				$team[] = $key;
-			}
-		}
+		return $reordered;
+	}
 
-		return ['playerCols' => $player, 'teamCols' => $team];
+
+	/**
+	 * Valid stat keys during the creation process
+	 * 
+	 * @return array
+	 */
+	public function validKeys()
+	{
+		return array_merge($this->keysOnlyUsedDuringCreation(), $this->statKeys());
 	}
 
 
@@ -152,16 +115,16 @@ class Sport
 	protected function validate(array $stats)
 	{
 		if ($this->isAssociative($stats)) {
-			foreach($stats as $key => $value) {
-				if (! in_array($key, $this->validKeys)) {
-					throw new Exception("'$key' is not a valid stat key in Basketball");
+			foreach ($stats as $key => $value) {
+				if (! in_array($key, $this->validKeys())) {
+					throw new Exception("'$key' is not a valid stat key in $this->name");
 				}
 			}
 		}
 		else {
-			foreach($stats as $key) {
-				if (! in_array($key, $this->validKeys)) {
-					throw new Exception("'$key' is not a valid stat key in Basketball");
+			foreach ($stats as $key) {
+				if (! in_array($key, $this->validKeys())) {
+					throw new Exception("'$key' is not a valid stat key in $this->name");
 				}
 			}
 		}
@@ -183,18 +146,6 @@ class Sport
 
 
 	/**
-	 * Validate and format the team stats before returning back to HandlesStatLogic
-	 * 
-	 * @param  array $stats
-	 * @return array
-	 */
-	public function validateTeamStats($stats)
-	{
-		return $this->validate($stats);
-	}
-
-
-	/**
 	 * Validate and format the player stats before returning back to HandlesStatLogic
 	 * 
 	 * @param  array $stats
@@ -204,24 +155,32 @@ class Sport
 	{
 		$validated = [];
 		foreach ($stats as $stat) {
-
-			if (isset($stat['min']) and $stat['min'] == 0) {
+			if ($this->theyDidNotPlay($stat)) {
 				// don't include stats for a player that didn't play
 				continue;
 			}
-
-			else if (isset($stat['dnp']) and $stat['dnp'] == true) {
-				// don't include stats for a player that didn't play
-				continue;
-			}
-
-			unset($stat['dnp']);
 
 			$validated[] = $this->validate($stat);
 		}
 
 		return $validated;
 	}
+
+
+	/**
+     * Unset relevent keys before stats object is inserted into db
+     * 
+     * @param  array $stats 
+     * @return array        
+     */
+    public function unsetKeysBeforeCreate($stats)
+    {
+    	foreach ($this->keysOnlyUsedDuringCreation() as $key) {
+    		unset($stats[$key]);
+    	}
+
+    	return $stats;
+    }
 
 
 	/**

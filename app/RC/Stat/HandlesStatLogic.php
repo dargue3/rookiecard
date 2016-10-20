@@ -45,19 +45,11 @@ class HandlesStatLogic
 
 
 	/**
-	 * The compiled version of all the player stats
-	 * 
-	 * @var array
-	 */
-	public $teamStats;
-
-
-	/**
 	 * An array of arrays of each players' stats
 	 * 
 	 * @var array
 	 */
-	public $playerStats;
+	public $stats;
 
 
 	/**
@@ -75,8 +67,7 @@ class HandlesStatLogic
 		$this->sport = Sport::find($this->team->sport);
 		$this->repo = App::make(StatRepository::class);
 
-        $this->teamStats = $data['teamStats'];
-		$this->playerStats = $data['playerStats'];
+        $this->stats = $data['stats'];
 
 		$this->event = [
 			'id'		=> $data['event']->id,
@@ -101,7 +92,7 @@ class HandlesStatLogic
 	{
 		$memberRepo = App::make(TeamMemberRepository::class);
 
-        foreach ($this->playerStats as $stats)    {
+        foreach ($this->stats as $stats)    {
             $member = $memberRepo->findOrFail($stats['member_id']);
 
             if ($member->team_id != $this->team->id) {
@@ -111,7 +102,7 @@ class HandlesStatLogic
             }
 
             if ($stats['id'] != $member->user_id) {
-                // the stat's user_id doesn't match TeamMember's user_id, tampered with
+                // the stat's user_id doesn't match TeamMember's user_id, probably tampered with
                 $id = $stats['id'];
                 throw new Exception("The stats' user_id ($id) and member_id ($member->user_id) don't match");
             }
@@ -126,18 +117,35 @@ class HandlesStatLogic
 	}
 
 	/**
-	 * Start the process of storing these new stats in the database 
+	 * Iterate through all the player stats saving them into the database
 	 * 
-	 * @return HandlesStatLogic
+	 * @return HandlesStatLogic 
 	 */
 	public function create()
 	{
-		$this->teamStats = $this->sport->validateTeamStats($this->teamStats);
-		$this->playerStats = $this->sport->validatePlayerStats($this->playerStats);
+		$this->stats = $this->sport->validatePlayerStats($this->stats);
 
-		if (count($this->playerStats) > 0) {
-			$this->createPlayerStats();
-			$this->createTeamStats();	
+		if (count($this->stats) > 0) {
+			foreach ($this->stats as $stats) {
+				// save and remove extra data about the stats
+				$user_id = $stats['id'];
+				$member_id = $stats['member_id'];
+				$stats = $this->sport->unsetKeysBeforeCreate($stats);
+
+				// set default values to anything falsey
+				$stats = $this->sport->setEmptyValues($stats);
+
+				$this->repo->create([
+					'owner_id'		=> $user_id,
+					'member_id'		=> $member_id,
+					'team_id'		=> $this->team->id,
+					'sport'			=> $this->team->sport,
+					'season'		=> $this->team->season,
+					'event_id'		=> $this->event['id'],
+					'meta'			=> json_encode($this->meta),
+					'stats'			=> json_encode($stats),
+				]);
+			}
 
 			event(new TeamPostedStats($this->team->id, $this->meta));
 		}
@@ -153,58 +161,8 @@ class HandlesStatLogic
 	 */
 	public function update()
 	{
-		$stats = $this->repo->deleteByEvent($this->team->id, $this->event['id']);
+		$this->repo->deleteByEvent($this->team->id, $this->event['id']);
 
 		return $this->create();
-	}
-
-
-	/**
-	 * Iterate through all the player stats saving them into the database
-	 * 
-	 * @return void 
-	 */
-	private function createPlayerStats()
-	{
-		foreach ($this->playerStats as $stats) {
-			// save and remove extra data about the stats
-			$user_id = $stats['id'];
-			$member_id = $stats['member_id'];
-			unset($stats['id']);
-			unset($stats['member_id']);
-
-			$this->repo->create([
-				'owner_id'		=> $user_id,
-				'member_id'		=> $member_id,
-				'team_id'		=> $this->team->id,
-				'sport'			=> $this->team->sport,
-				'type'			=> 'player',
-				'season'		=> $this->team->season,
-				'event_id'		=> $this->event['id'],
-				'meta'			=> json_encode($this->meta),
-				'stats'			=> json_encode($stats),
-			]);
-		}
-	}
-
-
-	/**
-	 * Save the team stats into the database
-	 * 
-	 * @return void
-	 */
-	private function createTeamStats()
-	{
-		$this->repo->create([
-			'owner_id'		=> $this->team->id,
-			'member_id'		=> null,
-			'team_id'		=> $this->team->id,
-			'sport'			=> $this->team->sport,
-			'type'			=> 'team',
-			'season'		=> $this->team->season,
-			'event_id'		=> $this->event['id'],
-			'meta'			=> json_encode(array_merge($this->meta, ['event' => $this->event])),
-			'stats'			=> json_encode($this->teamStats),
-		]);
 	}
 }

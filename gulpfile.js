@@ -14,17 +14,16 @@ if(gutils.env._.indexOf('watch') > -1) {
 
 elixir(function(mix) {
 
-	mix.browserify('routes.js');
-  mix.stylus('stylus.styl');
-  mix.stylus('variables.styl');
-
-  mix.browserSync({
-  	proxy: 'localhost',
-    files: [
-      elixir.config.appPath + '/**/*.php',
-      elixir.config.get('public.css.outputFolder') + '/**/*.css',
-      elixir.config.get('public.versioning.buildFolder') + '/rev-manifest.json',
-      'resources/views/**/*.php'
-    ],
-  });
+	mix.browserify('routes.js')
+      .stylus('stylus.styl')
+      .stylus('variables.styl')
+      .browserSync({
+      	proxy: 'localhost',
+        files: [
+          elixir.config.appPath + '/**/*.php',
+          elixir.config.get('public.css.outputFolder') + '/**/*.css',
+          elixir.config.get('public.versioning.buildFolder') + '/rev-manifest.json',
+          'resources/views/**/*.php'
+        ],
+      });
 });

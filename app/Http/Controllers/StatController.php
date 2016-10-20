@@ -48,10 +48,9 @@ class StatController extends Controller
     public function store(Request $request, Team $team)
     {
         $data = [
-            'event'         => $this->event->findOrFail($request->event_id),
-            'meta'          => $request->meta,
-            'teamStats'     => $request->teamStats,
-            'playerStats'   => $request->playerStats,
+            'event'   => $this->event->findOrFail($request->event_id),
+            'meta'    => $request->meta,
+            'stats'   => $request->stats,
         ];
 
         $this->stat->store($data, $team);
@@ -70,10 +69,9 @@ class StatController extends Controller
     public function update(Request $request, Team $team)
     {
         $data = [
-            'event'         => $this->event->findOrFail($request->event_id),
-            'meta'          => $request->meta,
-            'teamStats'     => $request->teamStats,
-            'playerStats'   => $request->playerStats,
+            'event'     => $this->event->findOrFail($request->event_id),
+            'meta'      => $request->meta,
+            'stats'     => $request->stats,
         ];
 
         $this->stat->update($data, $team);

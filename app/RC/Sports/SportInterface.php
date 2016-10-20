@@ -3,9 +3,9 @@ namespace App\RC\Sports;
 
 interface SportInterface
 {
+	public function statKeys();
+	public function alwaysShown();
+	public function keysOnlyUsedDuringCreation();
 	public function positions();
-	public function playerStatKeys();
-	public function teamStatKeys();
-	public function validateTeamStats($stats);
-	public function validatePlayerStats($stats);
+	public function theyDidNotPlay($stats);
 }
