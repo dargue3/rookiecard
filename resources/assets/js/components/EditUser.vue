@@ -93,7 +93,10 @@
     	<hr>
 	    <div class="row EditUser__buttons">
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
-		    	<a class="btn btn-primary btn-block btn-md" @click="save()">SAVE</a>
+		    	<a class="btn btn-primary btn-block btn-md" @click="save()">
+		    		<spinner v-show="loading" color="white"></spinner>
+		    		<span v-show="! loading">SAVE</span>
+		    	</a>
 		    </div>
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
 		    	<a v-if="!user.new && !user.isGhost" class="btn btn-delete btn-block btn-md" @click="kick()">KICK</a>
@@ -138,6 +141,7 @@ export default  {
 			kickButton: '',
 			kickMsg: '',
 			kickText: '',
+			loading: false,
 		}
 	},
 
@@ -179,9 +183,13 @@ export default  {
 	{
 		EditUser_update(response)
 		{
-			$('#rosterModal').modal('hide');
-			this.$dispatch('Team_updated_members', response.data.members);
-			this.$root.banner('good', "User saved");
+			setTimeout(function() { 
+				$('#rosterModal').modal('hide');
+				this.$dispatch('Team_updated_members', response.data.members);
+				this.$root.banner('good', "User saved");
+				this.loading = false;
+			}.bind(this), 500);
+
 		},
 
 		EditUser_new(response)
@@ -189,6 +197,7 @@ export default  {
 			$('#rosterModal').modal('hide');
 			this.$dispatch('Team_updated_members', response.data.members);
 			this.$root.banner('good', "User created");	
+			this.loading = false;
 		},
 
 		EditUser_kick(response)
@@ -200,11 +209,11 @@ export default  {
 			else if(this.user.isFan) {
 				msg = 'Fan removed';
 			}
-
 			$('#rosterModal').modal('hide');
 			this.confirmKick = false;
 			this.$dispatch('Team_updated_members', response.data.members);
 			this.$root.banner('good', msg);	
+			this.loading = false;
 		},
 	},
 
@@ -272,6 +281,8 @@ export default  {
 			if (this.errorCheck() > 0) {
 				return;
 			}
+
+			this.loading = true;
 
 			if(this.user.new) {
 				this.newUser();

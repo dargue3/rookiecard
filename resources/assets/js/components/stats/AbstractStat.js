@@ -69,7 +69,7 @@ export default
 			// only use the keys appropriate for this type
 			this.keys = this.keys.filter(key => this.$get(`${this.type}.dontShow`).indexOf(key) === -1)
 
-			this.defaultSortKey();
+			this.setDefaultSortKey();
 
 			this.keys.forEach(key => {
 				this.keyNames[key] = this.lookupKeyNames(key);
@@ -88,8 +88,9 @@ export default
 		 */
 		done(stats)
 		{
-			if (! Array.isArray(stats)) stats = [stats];
-
+			if (! Array.isArray(stats)) {
+				stats = [stats];
+			}
 			if (! stats.length) {
 				stats = [this.markEmpty()];
 			}

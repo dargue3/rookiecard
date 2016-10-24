@@ -189,9 +189,9 @@ export default  {
 			user = JSON.parse(JSON.stringify(user));
 
 			var role = '';
-			if (user.isGhost) role = 'ghost';
-			if (user.isPlayer) role += '_player'; 
-			if (user.isCoach) role += '_coach'; 
+			if (user.isGhost) role = 'ghost_';
+			if (user.isPlayer) role += 'player'; 
+			if (user.isCoach) role += 'coach'; 
 			user.role = role;
 
 			this.$set('editUser', user);

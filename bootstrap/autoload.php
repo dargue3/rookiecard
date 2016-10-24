@@ -1,5 +1,8 @@
 <?php
 
+// some Policies were breaking xdebug's 100 loop nesting max, increased it a bit for good measure
+ini_set('xdebug.max_nesting_level', 150);
+
 define('LARAVEL_START', microtime(true));
 
 /*

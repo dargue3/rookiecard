@@ -11,33 +11,31 @@ Vue.use(VueTouch);
 
 Vue.config.debug = true;
 
-
 // pull meta data from server out of tags in <head> of main.blade
 Vue.http.headers.common['X-CSRF-TOKEN'] = $('#_token').attr('value');
 
 
-// set up global filters
+// create any global components here
+Vue.component('spinner', {
+	template: 
+		`<span class="loading-spinner">
+			<span class="first" :style="color"></span>
+			<span class="second" :style="color"></span>
+			<span class="third" :style="color"></span>
+			<span class="fourth" :style="color"></span>
+		</span>`,
 
-// turns LeBron James -> L. James
-Vue.filter('statsName', function(first, last) {
-	return first[0] + '. ' + last;
-});
+	props: ['color'],
 
-// returns at time string like 11:25 pm
-Vue.filter('justTime', function(val) {
-	return moment(val * 1000).format('h:mm a');
-});
+	ready()
+	{
+		if (! this.color) {
+			this.color = 'white'
+		}
 
-
-Vue.filter('checkPercentage', function(val) {
-	if(val > 100)
-		return 'ERROR'
-	else return val
-});
-
-
-Vue.filter('formatRepeatString', require('./filters/FormatRepeatString.js'));
-Vue.filter('formatTimeString', require('./filters/FormatTimeString.js'));
+		this.color = `background-color: ${this.color};`
+	}
+})
 
 
 // import components

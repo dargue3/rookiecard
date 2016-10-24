@@ -27,8 +27,8 @@
 
 							<!-- if showing edit stats, choose the correct sport -->
 							<div v-if="canEditStats">
-								<edit-stats v-if="team.sport === 'basketball'" :event-stats="eventStats" :players="players" 
-														:edit-event.sync="editingPastEvent" :event="event" :team="team" :keys="statKeys">
+								<edit-stats :event-stats="eventStats" :players="players" :editing-past-event.sync="editingPastEvent" 
+														:event="event" :team="team">
 								</edit-stats>
 							</div>		
 
@@ -45,8 +45,6 @@
 
 							</div>										
 
-
-							
 
 							<div v-if="(futureEvent || pastEvent) && event.id" class="col-xs-12 ViewEvent">
 
@@ -78,7 +76,7 @@ export default  {
 	
 	name: 'ViewEvent',
 
-	props: ['team', 'events', 'stats', 'players', 'isAdmin', 'statKeys'],
+	props: ['team', 'events', 'stats', 'players', 'isAdmin'],
 
 	components:
 	{
@@ -111,6 +109,21 @@ export default  {
 		},
 	},
 
+	events:
+	{
+		ViewEvent_cancel()
+		{
+			$('#viewEventModal').modal('hide');
+
+			this.event = {
+				start: 0,
+				title: '',
+				type: 0,
+				id: 0,
+			}
+		},
+	},
+
 	computed:
 	{
 		/**
@@ -134,7 +147,7 @@ export default  {
 		 */
 		canEditStats()
 		{
-			if(this.editingPastEvent) {
+			if (this.editingPastEvent) {
 				// user wants to specifically edit the event regardless of date
 				return false;
 			}
@@ -150,7 +163,7 @@ export default  {
 		 */
 		pastEventNoStats()
 		{
-			if(this.editingPastEvent) {
+			if (this.editingPastEvent) {
 				return false;
 			}
 			else {
@@ -183,12 +196,13 @@ export default  {
 		 */
 		showStats()
 		{
-			if(this.editingPastEvent) {
+			if (this.editingPastEvent) {
 				// user wants to specifically edit the event regardless of date
 				return false;
 			}
-			else
+			else {
 				return this.pastEventStats || this.canEditStats;
+			}
 		},
 		
 	},
@@ -213,9 +227,9 @@ export default  {
 			this.event = this.events.filter(event => event.id === id)[0];
 			this.eventStats = this.stats.filter(stat => stat.event_id === id);
 
-			if(this.futureEvent || this.pastEvent) {
+			if (this.futureEvent || this.pastEvent) {
 				// if just showing info about the event to a non admin, pick CSS class for title
-				switch(this.event.type) {
+				switch (this.event.type) {
 					case 0:
 						this.event.titleClass = 'practice';
 						break;

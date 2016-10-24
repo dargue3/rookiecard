@@ -18,7 +18,7 @@ class Basketball extends Sport implements SportInterface
      * 
      * @var array
      */
-    protected $statKeys = ['date', 'name', 'win', 'opp', 'gs', 'gp', 'min', 'starter', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
+    protected $statKeys = ['date', 'name', 'win', 'opp', 'gs', 'gp', 'min', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_', 
             'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
 
 
@@ -69,12 +69,12 @@ class Basketball extends Sport implements SportInterface
 
 
     /**
-     * Change any falsey values to a default
+     * Change any falsey values to a default of zero
      * 
      * @param array $stats
      * @return array
      */
-    public function setEmptyValues(array $stats)
+    public function setEmptyValues($stats)
     {
     	foreach ($stats as $key => $value) {
     		if (is_null($value)) {

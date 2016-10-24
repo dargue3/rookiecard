@@ -15,7 +15,7 @@ trait SportHelpers
 
 
     /**
-     * Return the keys that are always shown
+     * Return the keys that are always shown in the stat table
      * 
      * @return array
      */
@@ -26,7 +26,7 @@ trait SportHelpers
 
 
     /**
-     * Return the keys that are used during creation
+     * Return the keys that are only included when storing new stats
      * 
      * @return array
      */

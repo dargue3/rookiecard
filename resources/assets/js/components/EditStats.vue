@@ -74,7 +74,7 @@
 				</table>
 			</div>
 
-			<h3>Opponent</h3>
+			<h3>Opponent Details</h3>
 			<div class="table-responsive stats-container">
 				<table class="table stats-table">
 					<thead>
@@ -109,8 +109,10 @@
 			</div>
 		</form>
 
+		<spinner v-show="! ready" color="gray"></spinner>
 
-		<!-- for calculating sport related variables, doesn't display anything -->
+
+		<!-- for calculating sport related variables, these don't display anything -->
 
 		<basketball v-if="team.sport === 'basketball'" :keys.sync="keys" :compile="compile" :errors.sync="errors"
   							:key-names.sync="keyNames" :tooltips.sync="tooltips" :value-lookup.sync="valueLookup" 
@@ -125,21 +127,20 @@
 <script>
 
 import StatHelpers from '../mixins/StatHelpers.js'
-
 import Basketball from './stats/EditBasketball.vue'
-
+//import { PulseLoader } from 'vue-spinner/dist/vue-spinner.min';
 
 export default  {
 	
 	name: 'EditStats',
 
-	props: ['eventStats', 'players', 'event', 'team', 'editingPastEvent', 'keys'],
+	props: ['players', 'event', 'team', 'eventStats', 'editingPastEvent'],
 
 	mixins: [ StatHelpers ],
 
 	components:
 	{
-		Basketball
+		Basketball,
 	},
 
 	data()
@@ -151,12 +152,12 @@ export default  {
 			meta: {
 				opp: '',
 				oppScore: '',
-				teamScore: '',
 				errors: {
 					opp: '',
 					oppScore: '',
 				},
 			},
+			keys: [],
 			keyNames: {},
 			tooltips: {},
 			valueLookup: {},
@@ -178,13 +179,17 @@ export default  {
 
 	watch:
 	{
-		// if stats change, reinitialize the page
+		/**
+		 * If the stats for this event have changed, reinitialize page
+		 */
 		eventStats()
 		{
 			this.setup();
 		},
 
-		// if the viewed event changes, reinitialize the page
+		/**
+		 * If the event being viewed has changed, reinitialize page
+		 */
 		event()
 		{
 			this.setup();
@@ -193,11 +198,9 @@ export default  {
 
 	computed:
 	{
-		playerStats()
-		{
-			return this.eventStats.filter(stats => stats.type === 'player');
-		},
-
+		/**
+		 * Calculate a realistic placeholder opponent score depending on the sport
+		 */
 		oppScore()
 		{
 			if (this.team.sport === 'basketball') {
@@ -215,6 +218,7 @@ export default  {
 	{
 		/**
 		 * Variables have been setup from child sport component
+		 * Ready to display the stat table on the modal
 		 */
 		EditStats_compiled()
 		{
@@ -245,14 +249,18 @@ export default  {
 			this.compile = false;
 			this.ready = true;
 
+			// attach the tooltips after a long timeout to ensure DOM is loaded
 			setTimeout(() => {
 				this.attachTooltips();
 			}, 250);
 		},
 
+		/**
+		 * The stats have been successfully saved to the database
+		 */
 		EditStats_save(response)
 		{
-			alert('saved')
+			this.$root.banner('good', 'Stats saved');
 		},
 	},
 
@@ -264,6 +272,9 @@ export default  {
 		setup()
 		{
 			this.stats = [];
+			this.ready = false;
+
+			this.keys = this.team.settings.statKeys;
 
 			// this acts as a flag to tell sport-specific child to prepare variables
 			this.compile = true;
@@ -299,9 +310,31 @@ export default  {
 		},
 
 
+		/**
+		 * Delete everything that was inputted and close the modal window
+		 */
 		cancel()
 		{
+			this.$dispatch('ViewEvent_cancel');
 
+			this.reset();
+		},
+
+
+		/**
+		 * Reset the stats table to initial conditions
+		 */
+		reset()
+		{
+			this.ready = false;
+			this.meta = {
+				opp: '',
+				oppScore: '',
+				errors: {
+					opp: '',
+					oppScore: '',
+				}
+			};
 		},
 
 

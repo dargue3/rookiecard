@@ -10,8 +10,8 @@ export default  {
 
 	name: 'Basketball',
 
-	props: ['type', 'event', 'players', 'rawStats', 'keys', 'sortKey', 'total', 'player', 'compile',
-					'rawTeamStats', 'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
+	props: ['type', 'event', 'players', 'rawStats', 'rawTeamStats', 'keys', 'sortKey', 'total', 'player', 'compile',
+				'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
 
 	mixins: [ AbstractStat ],
 
@@ -47,12 +47,12 @@ export default  {
 		/**
 		 * Set the key that will sort the stats table by default
 		 */
-		defaultSortKey()
+		setDefaultSortKey()
 		{
-			if (this.type === 'teamRecent') this.sortKey = 'date'
-			if (this.type === 'teamSeason') this.sortKey = ''
-			if (this.type === 'playerRecent') this.sortKey = 'date'
-			if (this.type === 'playerSeason') this.sortKey = 'pts'
+			if (this.type === 'teamRecent') this.sortKey = 'date';
+			if (this.type === 'teamSeason') this.sortKey = '';
+			if (this.type === 'playerRecent') this.sortKey = 'date';
+			if (this.type === 'playerSeason') this.sortKey = 'pts';
 		},
 
 
@@ -65,26 +65,31 @@ export default  {
 			let event_id = 0;
 			let eventCounter = -1;
 
-			for (let index in this.rawStats) {
-				if (this.rawStats[index].event_id !== event_id) {
-					// new event, start fresh with the stats
-					event_id = this.rawStats[index].event_id;
+			for (let playerStats in this.rawStats) {
+
+				// each iteration of the loop is a player's stats for an event
+				let currStats = this.rawStats[playerStats];
+
+				// if this is the first set of stats for this event seen so far
+				if (currStats.event_id !== event_id) {
+					// save new entry
+					event_id = currStats.event_id;
 					eventCounter++;
-					compiled[eventCounter] = this.rawStats[index];
-					compiled[eventCounter].stats = JSON.parse(this.rawStats[index].stats);
+					compiled[eventCounter] = currStats;
+					compiled[eventCounter].stats = JSON.parse(currStats.stats);
 					delete compiled[eventCounter].id;
-					compiled[eventCounter].owner_id = this.rawStats[index].team_id;
+					compiled[eventCounter].owner_id = currStats.team_id;
 				}
 				else {
 					// add this player's stats to the total for this event
-					let stats = JSON.parse(this.rawStats[index].stats)
+					let stats = JSON.parse(this.rawStats[playerStats].stats)
 					for (let key in stats) {
 						compiled[eventCounter].stats[key] += stats[key];
 					}
 				}
 			}
 
-			// JSONify stats to be more seamless with player stats
+			// turn stats back into JSON to be more seamless with how player stats look
 			for (let index in compiled) {
 				compiled[index].stats = JSON.stringify(compiled[index].stats);
 			}
@@ -230,9 +235,6 @@ export default  {
 		{
 			var stats = JSON.parse(data.stats);
 
-			if (this.usingKey('gs')) {
-				playerTotals = this.addGamesStarted(stats, playerTotals);
-			}
 			if (this.usingKey('dd2')) {
 				playerTotals = this.addDoubleAndTripleDoubles('dd2', stats, playerTotals);
 			}
@@ -240,26 +242,6 @@ export default  {
 				playerTotals = this.addDoubleAndTripleDoubles('td3', stats, playerTotals);
 			}
 
-			return playerTotals;
-		},
-
-
-		/**
-		 * Create a stat for the number of games they've started
-		 *
-		 * @param {object} stats 					The stats as given by the back-end
-		 * @param {object} playerTotals  	The current player season totals
-		 */
-		addGamesStarted(stats, playerTotals)
-		{
-			if (typeof playerTotals.gs === 'undefined') {
-				playerTotals.gs = 0;
-			}
-
-			if (stats.gs === true) {
-				playerTotals.gs++;
-			}
-	
 			return playerTotals;
 		},
 
@@ -285,10 +267,10 @@ export default  {
 			if (stats.blk >= 10) twoDigits++;
 
 			if (twoDigits >= 2 && key === 'dd2') {
-				playerTotals[key]++;
+				playerTotals.dd2++;
 			}
 			if (twoDigits >= 3 && key === 'td3') {
-				playerTotals[key]++;
+				playerTotals.td3++;
 			}
 
 			return playerTotals;

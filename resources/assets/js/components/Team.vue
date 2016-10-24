@@ -238,7 +238,7 @@
 				
 				<!-- include the footer at bottom -->
 				<div class="Footer">
-			    <p>® 2016 Rookiecard LLC</p>
+			    <p>® 2017 Rookiecard LLC</p>
 				</div>
 
 			</div>
@@ -247,10 +247,9 @@
 
 
 
-	    <!-- inside here is complex logic handling what happens when an event is 
-	    			clicked on from calendar or news feed -->
+	    <!-- inside here is complex logic handling what happens when an event is clicked on from calendar or news feed -->
 			<rc-view-event :is-admin="isAdmin" :events="events" :stats="stats" :team="team" 
-											:players="players" :stat-keys="team.settings.statKeys">
+											:players="players">
 			</rc-view-event>
 
 
@@ -261,45 +260,18 @@
 	        <div class="modal-content">
 	          <div class="modal-header">
 	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 class="modal-title">Add an Event</h3>
+	            <h3 class="modal-title">{{ newEventTitle  || 'New Event' }}</h3>
 	          </div>
 	          <div class="modal-body">
 	            <div class="row">
 	                 
-								<rc-add-event></rc-add-event>
+								<rc-add-event :new-event-title.sync="newEventTitle"></rc-add-event>
 
 	            </div>
 	          </div>
 	        </div>
 	      </div>
 	    </div>
-
-
-	    <!-- modal window for adding events -->
-	    <div class="modal" id="fansModal" role="dialog" aria-hidden="true">
-	      <div class="modal-dialog">
-	        <div class="modal-content">
-	          <div class="modal-header">
-	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 class="modal-title">Fans</h3>
-	          </div>
-	          <div class="modal-body">
-	            <div class="row">
-	                 
-								<div class="col-xs-12 Team__fans">
-									<ul>
-										<li v-for="fan in fans">
-											<a v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
-										</li>
-									</ul>
-								</div>
-
-	            </div>
-	          </div>
-	        </div>
-	      </div>
-	    </div>
-
 
 
 	    <!-- modal for editing a player in the roster -->
@@ -409,6 +381,7 @@ export default  {
 				lastname: '',
 				meta: {},
 			},
+			newEventTitle: '',
 		}
 	},
 

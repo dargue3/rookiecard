@@ -26,7 +26,7 @@ export default
 			this.keys = this.keys.filter(key => this.ignore.indexOf(key) === -1);
 
 			// add dnp if they aren't inputting minutes played
-			if (this.keys.indexOf('min') === -1) {
+			if (this.keys.indexOf('min') === -1 && this.keys.indexOf('dnp') === -1) {
 				this.keys.splice(1, 0, 'dnp');
 			}
 		

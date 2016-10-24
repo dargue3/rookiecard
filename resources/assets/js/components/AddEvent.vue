@@ -2,7 +2,7 @@
 <template>
 	
 	<div id="addEventDiv" class="col-xs-12">
-    <form @submit.prevent="createEvent()">
+    <form @submit.prevent="save()">
 
 	    <div class="row">
         <div class="form-group">
@@ -138,7 +138,7 @@ export default  {
 	
 	name: 'AddEvent',
 
-	props: [],
+	props: ['newEventTitle'],
 
 
 	data() {
@@ -167,29 +167,38 @@ export default  {
 			},
 			switchInit: false,
 		}
-		
-		
+	},
+
+	watch:
+	{
+		title()
+		{
+			this.newEventTitle = this.title;
+		},
 	},
 
 
-	methods: {
-		//submit post request
-		createEvent()
+	methods:
+	{
+		/**
+		 * Save the new event to the database
+		 */
+		save()
 		{
-			var errors = this.errorCheck();
+			let errors = this.errorCheck();
 
-			if(errors) {
-				//errors are displayed, let them fix
+			if (errors) {
+				// errors are displayed, let them fix
 				return;
 			}
 
-			//if no error, send the post request
+			// if no error, send the post request
 
-			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
-			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
-			var momentUntil = moment(this.until, 'MMM D, YYYY');
+			let momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
+			let momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+			let momentUntil = moment(this.until, 'MMM D, YYYY');
 
-			var newEvent = {
+			let newEvent = {
 				title: this.title,
 				type: this.type,
 				start: momentFrom.unix(),
@@ -197,18 +206,18 @@ export default  {
 				details: this.details,
 			};
 
-			if(this.repeats) {
-				//if the event repeats, add this extra data with the request	
+			if (this.repeats) {
+				// if the event repeats, add this extra data with the request	
 				newEvent.until = momentUntil.unix();
 				newEvent.repeats = true;
 				newEvent.days = this.days;
 			}
 
-			var self = this;
-			var url = this.$parent.prefix + '/event'; 
+			let self = this;
+			let url = this.$parent.prefix + '/event'; 
 			this.$http.post(url, newEvent)
 				.then(function(response) {
-					if(! response.data.ok) {
+					if (! response.data.ok) {
 						throw response.data.error;
 					}
 
@@ -216,12 +225,12 @@ export default  {
 
 					$('#addEventModal').modal('hide');
 
-					if(self.repeats) {
-						//plural
-						var msg = "Events saved";
+					if (self.repeats) {
+						// plural
+						let msg = "Events saved";
 					}
 					else {
-						var msg = "Event saved";
+						let msg = "Event saved";
 					}
 
 					self.$root.banner('good', msg);
@@ -230,18 +239,18 @@ export default  {
 					self.resetPickers();
 				})
 				.catch(function(response) {
-					//with a validated request, an error is thrown but laravel let's us supply an error message
+					// with a validated request, an error is thrown but laravel let's us supply an error message
 					self.$root.errorMsg(response.data.error);
 				});
 		
 		},
 
 
-		//make sure there are no errors before saving data
+		// make sure there are no errors before saving data
 		errorCheck() {
-			var errors = 0;
+			let errors = 0;
 
-			if(!this.title.length) {
+			if (!this.title.length) {
 				errors++;
 				this.errors.title = 'Enter a title';
 			}
@@ -249,7 +258,7 @@ export default  {
 				this.errors.title = '';
 			}
 
-			if(!this.toDate.length || !this.toTime.length)  {
+			if (!this.toDate.length || !this.toTime.length)  {
 				errors++;
 				this.errors.end = 'Choose an end date and time';
 			}
@@ -257,7 +266,7 @@ export default  {
 				this.errors.end = '';
 			}
 
-			if(!this.fromDate.length || !this.fromTime.length) {
+			if (!this.fromDate.length || !this.fromTime.length) {
 				errors++;
 				this.errors.start = 'Choose an end date and time';
 			}
@@ -265,15 +274,15 @@ export default  {
 				this.errors.start = '';
 			}
 
-			if(this.repeats) {
-				if(!this.days.length) {
+			if (this.repeats) {
+				if (!this.days.length) {
 					errors++;
 					this.errors.days = 'Which days does it repeat?';
 				}
 				else {
 					this.errors.days = '';
 				}
-				if(!this.until.length) {
+				if (!this.until.length) {
 					errors++;
 					this.errors.until = 'When does it repeat until?'
 				}
@@ -282,19 +291,19 @@ export default  {
 				}
 			}
 
-			if(errors) {
-				//if any of these failed, solve those issues first
+			if (errors) {
+				// if any of these failed, solve those issues first
 				return errors;
 			}
 
 
-			//check for end dates < start dates
-			//until dates < end dates
-			var momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
-			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
-			var momentUntil = moment(this.until, 'MMM D, YYYY');
+			// check for end dates < start dates
+			// until dates < end dates
+			let momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
+			let momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
+			let momentUntil = moment(this.until, 'MMM D, YYYY');
 
-			if(!momentTo.isAfter(momentFrom)) {
+			if (!momentTo.isAfter(momentFrom)) {
 				errors++;
 				this.errors.end = 'Ends before it starts';
 			}
@@ -302,7 +311,7 @@ export default  {
 				this.errors.end = '';
 			}
 
-			if(!momentUntil.isAfter(momentTo) && this.repeats) {
+			if (!momentUntil.isAfter(momentTo) && this.repeats) {
 				errors++;
 				this.errors.until = 'Stops repeating before the event ends';
 			}
@@ -313,7 +322,7 @@ export default  {
 			return errors;
 		},
 
-		//discard button was clicked
+		// discard button was clicked
 		discardEvent() {
 			$('#addEventModal').modal('hide');
 
@@ -324,7 +333,7 @@ export default  {
 		},
 
 		resetPickers() {
-			//set datetimepickers back to normal
+			// set datetimepickers back to normal
 		  $('div[AddEvent="fromDate"]').data('DateTimePicker').date(this.momentFrom);
 		  $('div[AddEvent="toDate"]').data('DateTimePicker').date(this.momentTo);
 		  $('div[AddEvent="until"]').data('DateTimePicker').date(this.momentUntil);
@@ -333,17 +342,15 @@ export default  {
 		},
 
 
-		//set newEvent object back to default values
+		// set newEvent object back to default values
 		reinitializeData() {
 
-			//initialize dates to 'tomorrow at 6:00 - 8:00 pm'
-			//untilDate is used for repeating events, initialize to a week after event starts
-			var fromDate 	= moment().add(1, 'day').hour(18).minute(0).second(0);
-			var toDate 		= moment().add(1, 'day').hour(20).minute(0).second(0);
-			var untilDate = moment().add(8, 'day').hour(20).minute(0).second(0);
+			// initialize dates to 'tomorrow at 6:00 - 8:00 pm'
+			// untilDate is used for repeating events, initialize to a week after event starts
+			let fromDate 	= moment().add(1, 'day').hour(18).minute(0).second(0);
+			let toDate 		= moment().add(1, 'day').hour(20).minute(0).second(0);
+			let untilDate = moment().add(8, 'day').hour(20).minute(0).second(0);
 
-	    
-		  
 	  	this.title =  '';
 			this.eventClass =  '0';
 			this.fromDate =  fromDate.format('MMM D, YYYY');
@@ -352,20 +359,21 @@ export default  {
 			this.toTime =  toDate.format('h:mm a');
 			this.until =  untilDate.format('MMM D, YYYY');
 			this.toPickerChange =  false;
+			this.untilPickerChange =  false;
 			this.repeats =  false;
 			this.days =  [];
-			this.untilPickerChange =  false;
 			this.details =  '';
 			this.momentFrom =  fromDate;
 			this.momentTo =  toDate;
 			this.momentUntil =  untilDate;
 
-		  for(var key in this.errors) {
+		  for (let key in this.errors) {
 		   	this.errors[key] = '';
 		  }
 
-		  if(this.switchInit)
+		  if (this.switchInit) {
 				$('input[bootstrap-switch="AddEvent"]').bootstrapSwitch('state', false);
+		  }
 			
 		},
 
@@ -382,16 +390,16 @@ export default  {
 
 		  $('.selectpicker[AddEvent]').selectpicker();
 
-		  var fromDate = this.momentFrom;
-		  var toDate = this.momentTo;
-		  var untilDate = this.momentUntil;
+		  let fromDate = this.momentFrom;
+		  let toDate = this.momentTo;
+		  let untilDate = this.momentUntil;
 
-		  //datepickers for adding events, sel
-		  var fromPicker  = $('div[AddEvent="fromDate"]');
-		  var toPicker    = $('div[AddEvent="toDate"]');
-		  var untilPicker = $('div[AddEvent="until"]');
-		  var fromPickerTime  = $('div[AddEvent="fromTime"]');
-		  var toPickerTime    = $('div[AddEvent="toTime"]');
+		  // datepickers for adding events, sel
+		  let fromPicker  = $('div[AddEvent="fromDate"]');
+		  let toPicker    = $('div[AddEvent="toDate"]');
+		  let untilPicker = $('div[AddEvent="until"]');
+		  let fromPickerTime  = $('div[AddEvent="fromTime"]');
+		  let toPickerTime    = $('div[AddEvent="toTime"]');
 
 		  fromPicker.datetimepicker({
 		    allowInputToggle: true,
@@ -400,22 +408,30 @@ export default  {
 		    defaultDate: fromDate
 		  })
 		  .on('dp.change', function(e) { 
-		  	if(!e.date) {
+		  	// when this picker changes, change data for the other two for some behind the scenes magic
+		  	
+		  	let toPickerChangeStatus = this.toPickerChange;
+		  	
+		  	if (! e.date) {
+		  		// invalid date, delete it and skip
 		  		this.fromDate = '';
 		  		return;
 		  	}
 
-				//when 'from' changes, save this new date into the state
-		  	//set 'to' and 'until' minimum dates so they don't end before it starts
+				// when 'from' changes, save this new date into the state
 		  	this.fromDate = e.date.format('MMM D, YYYY');
-		  	toPicker.data('DateTimePicker').minDate(e.date);
-		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
 
-		  	if(!this.toPickerChange) {
-		  		//if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
-		  		toPicker.data('DateTimePicker').date(e.date);
+		  	// set the 'to' date 
+		  	toPicker.data('DateTimePicker').minDate(e.date);
+		  	if (! toPickerChangeStatus) {
+		  		// if 'to' date hasn't been manually set yet, default it to this new 'from' date 
+		  		toPicker.data('DateTimePicker').date(e.date.add(2, 'hour'));
 		  	}
 
+		  	this.toPickerChange = toPickerChangeStatus;
+		  	
+		  	// set the 'until' date minimum
+		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
 		  }.bind(this));
 
 		  toPicker.datetimepicker({
@@ -425,15 +441,17 @@ export default  {
 	      defaultDate: toDate
 		  })
 		  .on('dp.change', function(e) {
-		  	if(!e.date) {
+
+		  	if (!e.date) {
+		  		// invalid date, throw it out and skip
 		  		this.toDate = '';
 		  		return;
 		  	}
 
 		  	this.toDate = e.date.format('MMM D, YYYY');
+
 		  	this.toPickerChange = true;
 		  	untilPicker.data('DateTimePicker').minDate(e.date.add(1, 'week'));
-
 		  }.bind(this));
 
 		  untilPicker.datetimepicker({
@@ -444,13 +462,13 @@ export default  {
 	      defaultDate: untilDate
 		  })
 		  .on('dp.change', function(e) {
-		  	if(!e.date) {
+		  	if (! e.date) {
+		  		// invalid date, skip and throw out
 		  		this.until = '';
 		  		return;
 		  	}
 
 		  	this.until = e.date.format('MMM D, YYYY');
-
 		  }.bind(this));
 
 		  fromPickerTime.datetimepicker({
@@ -461,12 +479,13 @@ export default  {
 	      defaultDate: fromDate
 		  })
 		  .on('dp.change', function(e) {
-		  	if(!e.date) {
+		  	if (! e.date) {
+		  		// invalid time, throw out and skip
 		  		this.fromTime = '';
 		  		return;
 		  	}
-		  	this.fromTime = e.date.format('h:mm a');
 
+		  	this.fromTime = e.date.format('h:mm a');
 		  }.bind(this));
 
 		  toPickerTime.datetimepicker({
@@ -477,19 +496,20 @@ export default  {
 	      defaultDate: toDate
 		  })
 		  .on('dp.change', function(e) {
-		  	if(!e.date) {
+		  	if (! e.date) {
+		  		// invalid time, throw out and skip
 		  		this.toTime = '';
 		  		return;
 		  	}
-		  	this.toTime = e.date.format('h:mm a');
 
+		  	this.toTime = e.date.format('h:mm a');
 		  }.bind(this));
 
 		  this.toPickerChange = false;
 		  this.untilPickerChange = false;
 
-		  var self = this;
-		  var options = {
+		  let self = this;
+		  let options = {
 				state: false,
 				onText: 'YES',
 				offText: 'NO',
@@ -521,7 +541,7 @@ export default  {
 	@media screen and (max-width 767px)
 		margin-left 0px
 		
-//for the colors of the 'event type' dropdown
+// for the colors of the 'event type' dropdown
 .homeGame
 	color rc_red !important
 .awayGame

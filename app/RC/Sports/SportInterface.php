@@ -8,4 +8,5 @@ interface SportInterface
 	public function keysOnlyUsedDuringCreation();
 	public function positions();
 	public function theyDidNotPlay($stats);
+	public function setEmptyValues($stats);
 }
