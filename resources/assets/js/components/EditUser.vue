@@ -226,9 +226,9 @@ export default  {
 
 			if (this.originalRole === null) this.originalRole = this.user.role
 
-			if(this.user.isGhost) {
+			if (this.user.isGhost) {
 				this.ghostEmail = false;
-				if(this.user.meta.email.length) {
+				if (this.user.meta.email.length) {
 					this.ghostEmail = true;
 				}
 			}

@@ -377,12 +377,14 @@ ul.nav.navbar-nav.navbar-right
 				text-shadow none
 			a
 				background rc_dark_red
-				padding-bottom 16px
+				padding-bottom 18px
 				color white
 				&:hover
 					color white		
 		.dropdown-menu
-			top 52px
+			top 53px
+			left 0
+			border-top 0
 			li
 				:first-of-type
 					padding-top 5px

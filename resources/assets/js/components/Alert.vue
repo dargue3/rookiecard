@@ -1,17 +1,15 @@
 <template>
 	
 	<div class="Alert__container" v-show="show">
-		<div :class="alertClasses">
+		<div class="alert alert-dismissable" :class="alertClasses">
 
-			<i class="material-icons alert-icon pull-left" v-show="type === 'good'">done</i>
-			<i class="material-icons alert-icon pull-left" v-show="type === 'bad'">error</i>
-			<i class="material-icons alert-icon pull-left" v-show="type === 'info'">info_outline</i>
+			<i class="material-icons" v-show="type === 'good'">done</i>
+			<i class="material-icons" v-show="type === 'bad'">error</i>
+			<i class="material-icons" v-show="type === 'info'">info_outline</i>
 
-			<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->
-			<span @click="show = false" class="close" v-show="type !== 'good'">&times;</span>
-			<span>
-				{{ msg }}
-			</span>
+			<span v-touch:tap="routeToLink()" :class="[ link.length ? 'alert-link' : '' ]">{{ msg }}</span>
+			
+			<span v-touch:tap="close()" class="close">&times;</span>
 
 		</div>
 	</div>
@@ -30,55 +28,96 @@ export default  {
 
 	data() {
 		return {
-			alerts: [],
 			alertCounter: 0,
-			type: 'info',
-			msg: 'You better check yoself',
+			type: '',
+			link: '',
+			msg: '',
 		}
 	},
 
 	events:
 	{
-		// event from App to show an alert
-		displayAlert(type, msg)
+		/**
+		 * Display an alert with the given type and message
+		 *
+		 * Event is dispatched from App.vue after a $root.banner() call
+		 *
+		 * @param {string} type  	The type of the alert. e.g. 'good', 'bad', 'info'
+		 * @param {string} msg 		The message to display
+		 * @param {string} link 	A link to route to if the user clicks the alert
+		 */
+		Alert_display(type, msg, link)
 		{
 			// add an alert
 			this.alertCounter++;
+
 			this.msg = msg;
 			this.type = type;
+			this.link = link;
+
+			let timeout = 3000;
 
 			// choose a timeout length
-			if(this.type !== 'good')
-				var timeout = 8000;
-			else
-				var timeout = 3000;
+			if (this.type !== 'good') {
+				timeout = 8000;
+			}
 
-			var self = this;
+			let self = this;
 			// set an async timer
 			setTimeout(function() {
 				// when the timer is up, remove this alert
 				self.alertCounter--;
-				if(!self.alertCounter)
-					// if there's no alerts remaining, hide
+				if (! self.alertCounter) {
+					// if there are no alerts remaining, hide
 					self.show = false;
+					self.link = '';
+				}
 			}, timeout);
 			
 		},
 	},
 
-	computed: {
-		// returns an array of classes for the alert
-		// info and error last longer and have a close option
-		alertClasses() {
+	computed: 
+	{
+		/**
+		 * Returns an array of classes depending on the type of alert
+		 * @return {array} 
+		 */
+		alertClasses()
+		{
 			return {
-				'alert': true,
-				'alert-dismissable': this.type !== 'good',
 				'alert-success': this.type === 'good',
 				'alert-danger': this.type === 'bad',
 				'alert-info': this.type === 'info',
 			}
 		},
+	},
 
+	methods:
+	{
+		/**
+		 * User clicked on alert, link them if necessary
+		 */
+		routeToLink()
+		{
+			if (this.link.length) {
+				this.$router.go(this.link);
+			}
+
+			this.show = false;
+			this.link = '';
+		},
+
+
+		/**
+		 * Hide the alert
+		 */
+		close()
+		{
+			this.show = false;
+			this.alertCounter = 0;
+			this.link = '';
+		}
 	},
 
 };
@@ -93,20 +132,18 @@ export default  {
 
 .Alert__container
 	position fixed
-	width 100%
 	top 90px
-	display flex
-	flex-flow row
-	justify-content flex-end
-	align-items center
+	right 10px
+	display inline-block
 	z-index 5000
-	@media screen and (max-width 767px)
-		justify-content center
-.alert 
-	opacity 0.9
+div.alert 
 	border none
 	box-shadow none
 	text-shadow none
+	float right
+	position relative
+	padding-left 45px
+	padding-right 39px
 	margin-right 30px
 	@media screen and (max-width 767px)
 		margin-right 0
@@ -121,13 +158,25 @@ export default  {
 	&.alert-danger
 		background-color rc_alert_danger
 		color darken(rc_alert_danger, 55%)
-		background-image none	
+		background-image none
+			
+	.alert-link
+		font-weight 400
+		color inherit
+		&:hover
+				cursor pointer
 
-	.alert-icon
-		margin-right 15px
+	.material-icons
+		position absolute
+		top 13px
+		left 9px
 		font-size 22px
 	.close
-		color black	
+		color black
+		position absolute
+		font-size 22px
+		top 14px
+		right 9px
 
 
 

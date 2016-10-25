@@ -19,7 +19,7 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 * Fetch a given team's stats
 	 * 
 	 * @param  int $team_id
-	 * @return Collection 
+	 * @return Illuminate\Support\Collection 
 	 */
 	public function findByTeam($team_id)
 	{
@@ -62,7 +62,7 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 */
 	public function deleteByMember($team_id, $member_id)
 	{
-		Stat::where('team_id', $team_id)->where('member_id', $member_id)->delete();
+		return Stat::where('team_id', $team_id)->where('member_id', $member_id)->delete();
 	}
 
 
@@ -75,7 +75,7 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 */
 	public function store(array $data, Team $team)
 	{
-		(new HandlesStatLogic($data, $team))->create();
+		return (new HandlesStatLogic($data, $team))->create();
 	}
 
 
@@ -88,7 +88,7 @@ class EloquentStat extends EloquentRepository implements StatRepository
 	 */
 	public function update(array $data, Team $team)
 	{
-		(new HandlesStatLogic($data, $team))->update();
+		return (new HandlesStatLogic($data, $team))->update();
 	}
 
 

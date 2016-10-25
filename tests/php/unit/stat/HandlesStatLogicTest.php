@@ -35,11 +35,11 @@ class HandlesStatLogicTest extends TestCase
 		factory(TeamMember::class, 2)->create(['team_id' => $this->team->id, 'user_id' => 0]);
 
 		$this->data = [
-			'event'			=> $this->event,
-			'meta'			=> ['test' => 123],
+			'event'	=> $this->event,
+			'meta'	=> ['test' => 123],
 			'stats'	=> [
-				['id' => 0, 'member_id' => 1, 'pts' => 12, 'ast' => 6, 'reb' => 8, 'starter' => true],
-				['id' => 0, 'member_id' => 2, 'pts' => 42, 'ast' => 2, 'reb' => 3, 'starter' => false],
+				['id' => 0, 'member_id' => 1, 'gs' => true, 'pts' => 12, 'ast' => 6, 'reb' => 8],
+				['id' => 0, 'member_id' => 2, 'gs' => false, 'pts' => 42, 'ast' => 2, 'reb' => 3],
 			],
 		];
 	}
@@ -75,7 +75,7 @@ class HandlesStatLogicTest extends TestCase
 
     	$this->setExpectedException('Exception');
 
-    	$handler = new HandlesStatLogic($this->data, $this->team);
+    	new HandlesStatLogic($this->data, $this->team);
     }
 
 
@@ -88,7 +88,7 @@ class HandlesStatLogicTest extends TestCase
 
     	$this->setExpectedException('Exception');
 
-    	$handler = new HandlesStatLogic($this->data, $this->team);
+    	new HandlesStatLogic($this->data, $this->team);
     }
 
 
@@ -101,7 +101,7 @@ class HandlesStatLogicTest extends TestCase
 
     	$this->setExpectedException('Exception');
 
-    	$handler = new HandlesStatLogic($this->data, $this->team);
+    	new HandlesStatLogic($this->data, $this->team);
     }
 
 
@@ -112,14 +112,14 @@ class HandlesStatLogicTest extends TestCase
 
         $this->setExpectedException('Exception');
 
-    	$handler = (new HandlesStatLogic($this->data, $this->team))->create();
+    	(new HandlesStatLogic($this->data, $this->team))->create();
     }
 
 
     /** @test */
     public function it_creates_player_stats_for_each_member_in_the_array_that_played_and_one_entry_of_team_totals()
     {
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
+        (new HandlesStatLogic($this->data, $this->team))->create();
 
         $this->assertCount(2, Stat::all());
     }
@@ -130,7 +130,7 @@ class HandlesStatLogicTest extends TestCase
     {
         $this->expectsEvents(TeamPostedStats::class);
 
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
+        (new HandlesStatLogic($this->data, $this->team))->create();
     }
 
 
@@ -140,7 +140,7 @@ class HandlesStatLogicTest extends TestCase
         $this->data['stats'][0]['min'] = 10;
         $this->data['stats'][1]['min'] = 0;
 
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
+        (new HandlesStatLogic($this->data, $this->team))->create();
 
         $this->assertCount(1, Stat::all());
     }
@@ -152,7 +152,7 @@ class HandlesStatLogicTest extends TestCase
         $this->data['stats'][0]['dnp'] = true; 
         $this->data['stats'][1]['dnp'] = false; 
 
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
+        (new HandlesStatLogic($this->data, $this->team))->create();
 
         $this->assertCount(1, Stat::all());
     }
@@ -161,7 +161,7 @@ class HandlesStatLogicTest extends TestCase
     /** @test */
     public function it_attaches_the_given_meta_data()
     {
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
+        (new HandlesStatLogic($this->data, $this->team))->create();
 
         $stats = Stat::first();
         $meta = json_decode($stats->meta);
@@ -173,7 +173,7 @@ class HandlesStatLogicTest extends TestCase
     /** @test */
     public function it_adds_the_event_data_to_the_meta_data()
     {
-        $handler = (new HandlesStatLogic($this->data, $this->team))->create();
+        (new HandlesStatLogic($this->data, $this->team))->create();
 
         $stats = Stat::first();
         $meta = json_decode($stats->meta);
@@ -188,10 +188,10 @@ class HandlesStatLogicTest extends TestCase
         // create some initial stats
         (new HandlesStatLogic($this->data, $this->team))->create();
 
+        // update them with new data
         $this->data['stats'][0]['pts'] = 56;
         $this->data['meta'] = ['cats_are' => 'the best'];
 
-        // update them with new data
         (new HandlesStatLogic($this->data, $this->team))->update();
 
         $this->assertCount(2, Stat::all());

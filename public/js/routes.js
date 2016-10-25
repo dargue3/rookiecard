@@ -71,7 +71,7 @@ module.exports = function(arraybuffer, start, end) {
 _hmr["websocket:null"].initModule("node_modules/autosize/dist/autosize.js", module);
 (function(){
 /*!
-	Autosize 3.0.16
+	Autosize 3.0.15
 	license: MIT
 	http://www.jacklmoore.com/autosize
 */
@@ -180,25 +180,10 @@ _hmr["websocket:null"].initModule("node_modules/autosize/dist/autosize.js", modu
 			resize();
 		}
 
-		function getParentOverflows(el) {
-			var arr = [];
-
-			while (el && el.parentNode && el.parentNode instanceof Element) {
-				if (el.parentNode.scrollTop) {
-					arr.push({
-						node: el.parentNode,
-						scrollTop: el.parentNode.scrollTop });
-				}
-				el = el.parentNode;
-			}
-
-			return arr;
-		}
-
 		function resize() {
+			var htmlTop = window.pageYOffset;
+			var bodyTop = document.body.scrollTop;
 			var originalHeight = ta.style.height;
-			var overflows = getParentOverflows(ta);
-			var docTop = document.documentElement && document.documentElement.scrollTop; // Needed for Mobile IE (ticket #240)
 
 			ta.style.height = 'auto';
 
@@ -216,13 +201,8 @@ _hmr["websocket:null"].initModule("node_modules/autosize/dist/autosize.js", modu
 			clientWidth = ta.clientWidth;
 
 			// prevents scroll-position jumping
-			overflows.forEach(function (el) {
-				el.node.scrollTop = el.scrollTop;
-			});
-
-			if (docTop) {
-				document.documentElement.scrollTop = docTop;
-			}
+			document.documentElement.scrollTop = htmlTop;
+			document.body.scrollTop = bodyTop;
 		}
 
 		function update() {
@@ -352,7 +332,24 @@ _hmr["websocket:null"].initModule("node_modules/babel-runtime/core-js/json/strin
 module.exports = { "default": require("core-js/library/fn/json/stringify"), __esModule: true };
 }).apply(this, arguments);
 
-},{"core-js/library/fn/json/stringify":84}],6:[function(require,module,exports){
+},{"core-js/library/fn/json/stringify":6}],6:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js", module);
+(function(){
+var core  = require('../../modules/_core')
+  , $JSON = core.JSON || (core.JSON = {stringify: JSON.stringify});
+module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
+  return $JSON.stringify.apply($JSON, arguments);
+};
+}).apply(this, arguments);
+
+},{"../../modules/_core":7}],7:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js", module);
+(function(){
+var core = module.exports = {version: '2.4.0'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+}).apply(this, arguments);
+
+},{}],8:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/backo2/index.js", module);
 (function(){
 
@@ -443,7 +440,7 @@ Backoff.prototype.setJitter = function(jitter){
 
 }).apply(this, arguments);
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/base64-arraybuffer/lib/base64-arraybuffer.js", module);
 (function(){
 /*
@@ -508,7 +505,7 @@ _hmr["websocket:null"].initModule("node_modules/base64-arraybuffer/lib/base64-ar
 
 }).apply(this, arguments);
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/blob/index.js", module);
 (function(){
 (function (global){
@@ -612,13 +609,13 @@ module.exports = (function() {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browser-resolve/empty.js", module);
 (function(){
 
 }).apply(this, arguments);
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browserify-hmr/inc/index.js", module);
 (function(){
 (function (global){
@@ -1284,7 +1281,7 @@ module.exports = main;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"../lib/has":11,"../lib/str-set":12,"lodash/array/zipObject":14,"lodash/collection/filter":15,"lodash/collection/forEach":16,"lodash/collection/map":17,"lodash/collection/some":18,"lodash/object/assign":73,"lodash/object/forOwn":74,"lodash/object/mapValues":77}],11:[function(require,module,exports){
+},{"../lib/has":13,"../lib/str-set":14,"lodash/array/zipObject":39,"lodash/collection/filter":40,"lodash/collection/forEach":41,"lodash/collection/map":42,"lodash/collection/some":43,"lodash/object/assign":98,"lodash/object/forOwn":99,"lodash/object/mapValues":102}],13:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browserify-hmr/lib/has.js", module);
 (function(){
 'use strict';
@@ -1296,7 +1293,7 @@ module.exports = has;
 
 }).apply(this, arguments);
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browserify-hmr/lib/str-set.js", module);
 (function(){
 'use strict';
@@ -1377,2672 +1374,7 @@ module.exports = StrSet;
 
 }).apply(this, arguments);
 
-},{"./has":11}],13:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/array/last.js", module);
-(function(){
-/**
- * Gets the last element of `array`.
- *
- * @static
- * @memberOf _
- * @category Array
- * @param {Array} array The array to query.
- * @returns {*} Returns the last element of `array`.
- * @example
- *
- * _.last([1, 2, 3]);
- * // => 3
- */
-function last(array) {
-  var length = array ? array.length : 0;
-  return length ? array[length - 1] : undefined;
-}
-
-module.exports = last;
-
-}).apply(this, arguments);
-
-},{}],14:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/array/zipObject.js", module);
-(function(){
-var isArray = require('../lang/isArray');
-
-/**
- * The inverse of `_.pairs`; this method returns an object composed from arrays
- * of property names and values. Provide either a single two dimensional array,
- * e.g. `[[key1, value1], [key2, value2]]` or two arrays, one of property names
- * and one of corresponding values.
- *
- * @static
- * @memberOf _
- * @alias object
- * @category Array
- * @param {Array} props The property names.
- * @param {Array} [values=[]] The property values.
- * @returns {Object} Returns the new object.
- * @example
- *
- * _.zipObject([['fred', 30], ['barney', 40]]);
- * // => { 'fred': 30, 'barney': 40 }
- *
- * _.zipObject(['fred', 'barney'], [30, 40]);
- * // => { 'fred': 30, 'barney': 40 }
- */
-function zipObject(props, values) {
-  var index = -1,
-      length = props ? props.length : 0,
-      result = {};
-
-  if (length && !values && !isArray(props[0])) {
-    values = [];
-  }
-  while (++index < length) {
-    var key = props[index];
-    if (values) {
-      result[key] = values[index];
-    } else if (key) {
-      result[key[0]] = key[1];
-    }
-  }
-  return result;
-}
-
-module.exports = zipObject;
-
-}).apply(this, arguments);
-
-},{"../lang/isArray":68}],15:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/collection/filter.js", module);
-(function(){
-var arrayFilter = require('../internal/arrayFilter'),
-    baseCallback = require('../internal/baseCallback'),
-    baseFilter = require('../internal/baseFilter'),
-    isArray = require('../lang/isArray');
-
-/**
- * Iterates over elements of `collection`, returning an array of all elements
- * `predicate` returns truthy for. The predicate is bound to `thisArg` and
- * invoked with three arguments: (value, index|key, collection).
- *
- * If a property name is provided for `predicate` the created `_.property`
- * style callback returns the property value of the given element.
- *
- * If a value is also provided for `thisArg` the created `_.matchesProperty`
- * style callback returns `true` for elements that have a matching property
- * value, else `false`.
- *
- * If an object is provided for `predicate` the created `_.matches` style
- * callback returns `true` for elements that have the properties of the given
- * object, else `false`.
- *
- * @static
- * @memberOf _
- * @alias select
- * @category Collection
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function|Object|string} [predicate=_.identity] The function invoked
- *  per iteration.
- * @param {*} [thisArg] The `this` binding of `predicate`.
- * @returns {Array} Returns the new filtered array.
- * @example
- *
- * _.filter([4, 5, 6], function(n) {
- *   return n % 2 == 0;
- * });
- * // => [4, 6]
- *
- * var users = [
- *   { 'user': 'barney', 'age': 36, 'active': true },
- *   { 'user': 'fred',   'age': 40, 'active': false }
- * ];
- *
- * // using the `_.matches` callback shorthand
- * _.pluck(_.filter(users, { 'age': 36, 'active': true }), 'user');
- * // => ['barney']
- *
- * // using the `_.matchesProperty` callback shorthand
- * _.pluck(_.filter(users, 'active', false), 'user');
- * // => ['fred']
- *
- * // using the `_.property` callback shorthand
- * _.pluck(_.filter(users, 'active'), 'user');
- * // => ['barney']
- */
-function filter(collection, predicate, thisArg) {
-  var func = isArray(collection) ? arrayFilter : baseFilter;
-  predicate = baseCallback(predicate, thisArg, 3);
-  return func(collection, predicate);
-}
-
-module.exports = filter;
-
-}).apply(this, arguments);
-
-},{"../internal/arrayFilter":21,"../internal/baseCallback":26,"../internal/baseFilter":29,"../lang/isArray":68}],16:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/collection/forEach.js", module);
-(function(){
-var arrayEach = require('../internal/arrayEach'),
-    baseEach = require('../internal/baseEach'),
-    createForEach = require('../internal/createForEach');
-
-/**
- * Iterates over elements of `collection` invoking `iteratee` for each element.
- * The `iteratee` is bound to `thisArg` and invoked with three arguments:
- * (value, index|key, collection). Iteratee functions may exit iteration early
- * by explicitly returning `false`.
- *
- * **Note:** As with other "Collections" methods, objects with a "length" property
- * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
- * may be used for object iteration.
- *
- * @static
- * @memberOf _
- * @alias each
- * @category Collection
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function} [iteratee=_.identity] The function invoked per iteration.
- * @param {*} [thisArg] The `this` binding of `iteratee`.
- * @returns {Array|Object|string} Returns `collection`.
- * @example
- *
- * _([1, 2]).forEach(function(n) {
- *   console.log(n);
- * }).value();
- * // => logs each value from left to right and returns the array
- *
- * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
- *   console.log(n, key);
- * });
- * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
- */
-var forEach = createForEach(arrayEach, baseEach);
-
-module.exports = forEach;
-
-}).apply(this, arguments);
-
-},{"../internal/arrayEach":20,"../internal/baseEach":28,"../internal/createForEach":48}],17:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/collection/map.js", module);
-(function(){
-var arrayMap = require('../internal/arrayMap'),
-    baseCallback = require('../internal/baseCallback'),
-    baseMap = require('../internal/baseMap'),
-    isArray = require('../lang/isArray');
-
-/**
- * Creates an array of values by running each element in `collection` through
- * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
- * arguments: (value, index|key, collection).
- *
- * If a property name is provided for `iteratee` the created `_.property`
- * style callback returns the property value of the given element.
- *
- * If a value is also provided for `thisArg` the created `_.matchesProperty`
- * style callback returns `true` for elements that have a matching property
- * value, else `false`.
- *
- * If an object is provided for `iteratee` the created `_.matches` style
- * callback returns `true` for elements that have the properties of the given
- * object, else `false`.
- *
- * Many lodash methods are guarded to work as iteratees for methods like
- * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
- *
- * The guarded methods are:
- * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`,
- * `drop`, `dropRight`, `every`, `fill`, `flatten`, `invert`, `max`, `min`,
- * `parseInt`, `slice`, `sortBy`, `take`, `takeRight`, `template`, `trim`,
- * `trimLeft`, `trimRight`, `trunc`, `random`, `range`, `sample`, `some`,
- * `sum`, `uniq`, and `words`
- *
- * @static
- * @memberOf _
- * @alias collect
- * @category Collection
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function|Object|string} [iteratee=_.identity] The function invoked
- *  per iteration.
- * @param {*} [thisArg] The `this` binding of `iteratee`.
- * @returns {Array} Returns the new mapped array.
- * @example
- *
- * function timesThree(n) {
- *   return n * 3;
- * }
- *
- * _.map([1, 2], timesThree);
- * // => [3, 6]
- *
- * _.map({ 'a': 1, 'b': 2 }, timesThree);
- * // => [3, 6] (iteration order is not guaranteed)
- *
- * var users = [
- *   { 'user': 'barney' },
- *   { 'user': 'fred' }
- * ];
- *
- * // using the `_.property` callback shorthand
- * _.map(users, 'user');
- * // => ['barney', 'fred']
- */
-function map(collection, iteratee, thisArg) {
-  var func = isArray(collection) ? arrayMap : baseMap;
-  iteratee = baseCallback(iteratee, thisArg, 3);
-  return func(collection, iteratee);
-}
-
-module.exports = map;
-
-}).apply(this, arguments);
-
-},{"../internal/arrayMap":22,"../internal/baseCallback":26,"../internal/baseMap":36,"../lang/isArray":68}],18:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/collection/some.js", module);
-(function(){
-var arraySome = require('../internal/arraySome'),
-    baseCallback = require('../internal/baseCallback'),
-    baseSome = require('../internal/baseSome'),
-    isArray = require('../lang/isArray'),
-    isIterateeCall = require('../internal/isIterateeCall');
-
-/**
- * Checks if `predicate` returns truthy for **any** element of `collection`.
- * The function returns as soon as it finds a passing value and does not iterate
- * over the entire collection. The predicate is bound to `thisArg` and invoked
- * with three arguments: (value, index|key, collection).
- *
- * If a property name is provided for `predicate` the created `_.property`
- * style callback returns the property value of the given element.
- *
- * If a value is also provided for `thisArg` the created `_.matchesProperty`
- * style callback returns `true` for elements that have a matching property
- * value, else `false`.
- *
- * If an object is provided for `predicate` the created `_.matches` style
- * callback returns `true` for elements that have the properties of the given
- * object, else `false`.
- *
- * @static
- * @memberOf _
- * @alias any
- * @category Collection
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function|Object|string} [predicate=_.identity] The function invoked
- *  per iteration.
- * @param {*} [thisArg] The `this` binding of `predicate`.
- * @returns {boolean} Returns `true` if any element passes the predicate check,
- *  else `false`.
- * @example
- *
- * _.some([null, 0, 'yes', false], Boolean);
- * // => true
- *
- * var users = [
- *   { 'user': 'barney', 'active': true },
- *   { 'user': 'fred',   'active': false }
- * ];
- *
- * // using the `_.matches` callback shorthand
- * _.some(users, { 'user': 'barney', 'active': false });
- * // => false
- *
- * // using the `_.matchesProperty` callback shorthand
- * _.some(users, 'active', false);
- * // => true
- *
- * // using the `_.property` callback shorthand
- * _.some(users, 'active');
- * // => true
- */
-function some(collection, predicate, thisArg) {
-  var func = isArray(collection) ? arraySome : baseSome;
-  if (thisArg && isIterateeCall(collection, predicate, thisArg)) {
-    predicate = undefined;
-  }
-  if (typeof predicate != 'function' || thisArg !== undefined) {
-    predicate = baseCallback(predicate, thisArg, 3);
-  }
-  return func(collection, predicate);
-}
-
-module.exports = some;
-
-}).apply(this, arguments);
-
-},{"../internal/arraySome":23,"../internal/baseCallback":26,"../internal/baseSome":42,"../internal/isIterateeCall":59,"../lang/isArray":68}],19:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/function/restParam.js", module);
-(function(){
-/** Used as the `TypeError` message for "Functions" methods. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/* Native method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max;
-
-/**
- * Creates a function that invokes `func` with the `this` binding of the
- * created function and arguments from `start` and beyond provided as an array.
- *
- * **Note:** This method is based on the [rest parameter](https://developer.mozilla.org/Web/JavaScript/Reference/Functions/rest_parameters).
- *
- * @static
- * @memberOf _
- * @category Function
- * @param {Function} func The function to apply a rest parameter to.
- * @param {number} [start=func.length-1] The start position of the rest parameter.
- * @returns {Function} Returns the new function.
- * @example
- *
- * var say = _.restParam(function(what, names) {
- *   return what + ' ' + _.initial(names).join(', ') +
- *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
- * });
- *
- * say('hello', 'fred', 'barney', 'pebbles');
- * // => 'hello fred, barney, & pebbles'
- */
-function restParam(func, start) {
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  start = nativeMax(start === undefined ? (func.length - 1) : (+start || 0), 0);
-  return function() {
-    var args = arguments,
-        index = -1,
-        length = nativeMax(args.length - start, 0),
-        rest = Array(length);
-
-    while (++index < length) {
-      rest[index] = args[start + index];
-    }
-    switch (start) {
-      case 0: return func.call(this, rest);
-      case 1: return func.call(this, args[0], rest);
-      case 2: return func.call(this, args[0], args[1], rest);
-    }
-    var otherArgs = Array(start + 1);
-    index = -1;
-    while (++index < start) {
-      otherArgs[index] = args[index];
-    }
-    otherArgs[start] = rest;
-    return func.apply(this, otherArgs);
-  };
-}
-
-module.exports = restParam;
-
-}).apply(this, arguments);
-
-},{}],20:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/arrayEach.js", module);
-(function(){
-/**
- * A specialized version of `_.forEach` for arrays without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Array} array The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns `array`.
- */
-function arrayEach(array, iteratee) {
-  var index = -1,
-      length = array.length;
-
-  while (++index < length) {
-    if (iteratee(array[index], index, array) === false) {
-      break;
-    }
-  }
-  return array;
-}
-
-module.exports = arrayEach;
-
-}).apply(this, arguments);
-
-},{}],21:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/arrayFilter.js", module);
-(function(){
-/**
- * A specialized version of `_.filter` for arrays without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Array} array The array to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {Array} Returns the new filtered array.
- */
-function arrayFilter(array, predicate) {
-  var index = -1,
-      length = array.length,
-      resIndex = -1,
-      result = [];
-
-  while (++index < length) {
-    var value = array[index];
-    if (predicate(value, index, array)) {
-      result[++resIndex] = value;
-    }
-  }
-  return result;
-}
-
-module.exports = arrayFilter;
-
-}).apply(this, arguments);
-
-},{}],22:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/arrayMap.js", module);
-(function(){
-/**
- * A specialized version of `_.map` for arrays without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Array} array The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
-function arrayMap(array, iteratee) {
-  var index = -1,
-      length = array.length,
-      result = Array(length);
-
-  while (++index < length) {
-    result[index] = iteratee(array[index], index, array);
-  }
-  return result;
-}
-
-module.exports = arrayMap;
-
-}).apply(this, arguments);
-
-},{}],23:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/arraySome.js", module);
-(function(){
-/**
- * A specialized version of `_.some` for arrays without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Array} array The array to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {boolean} Returns `true` if any element passes the predicate check,
- *  else `false`.
- */
-function arraySome(array, predicate) {
-  var index = -1,
-      length = array.length;
-
-  while (++index < length) {
-    if (predicate(array[index], index, array)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-module.exports = arraySome;
-
-}).apply(this, arguments);
-
-},{}],24:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/assignWith.js", module);
-(function(){
-var keys = require('../object/keys');
-
-/**
- * A specialized version of `_.assign` for customizing assigned values without
- * support for argument juggling, multiple sources, and `this` binding `customizer`
- * functions.
- *
- * @private
- * @param {Object} object The destination object.
- * @param {Object} source The source object.
- * @param {Function} customizer The function to customize assigned values.
- * @returns {Object} Returns `object`.
- */
-function assignWith(object, source, customizer) {
-  var index = -1,
-      props = keys(source),
-      length = props.length;
-
-  while (++index < length) {
-    var key = props[index],
-        value = object[key],
-        result = customizer(value, source[key], key, object, source);
-
-    if ((result === result ? (result !== value) : (value === value)) ||
-        (value === undefined && !(key in object))) {
-      object[key] = result;
-    }
-  }
-  return object;
-}
-
-module.exports = assignWith;
-
-}).apply(this, arguments);
-
-},{"../object/keys":75}],25:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseAssign.js", module);
-(function(){
-var baseCopy = require('./baseCopy'),
-    keys = require('../object/keys');
-
-/**
- * The base implementation of `_.assign` without support for argument juggling,
- * multiple sources, and `customizer` functions.
- *
- * @private
- * @param {Object} object The destination object.
- * @param {Object} source The source object.
- * @returns {Object} Returns `object`.
- */
-function baseAssign(object, source) {
-  return source == null
-    ? object
-    : baseCopy(source, keys(source), object);
-}
-
-module.exports = baseAssign;
-
-}).apply(this, arguments);
-
-},{"../object/keys":75,"./baseCopy":27}],26:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js", module);
-(function(){
-var baseMatches = require('./baseMatches'),
-    baseMatchesProperty = require('./baseMatchesProperty'),
-    bindCallback = require('./bindCallback'),
-    identity = require('../utility/identity'),
-    property = require('../utility/property');
-
-/**
- * The base implementation of `_.callback` which supports specifying the
- * number of arguments to provide to `func`.
- *
- * @private
- * @param {*} [func=_.identity] The value to convert to a callback.
- * @param {*} [thisArg] The `this` binding of `func`.
- * @param {number} [argCount] The number of arguments to provide to `func`.
- * @returns {Function} Returns the callback.
- */
-function baseCallback(func, thisArg, argCount) {
-  var type = typeof func;
-  if (type == 'function') {
-    return thisArg === undefined
-      ? func
-      : bindCallback(func, thisArg, argCount);
-  }
-  if (func == null) {
-    return identity;
-  }
-  if (type == 'object') {
-    return baseMatches(func);
-  }
-  return thisArg === undefined
-    ? property(func)
-    : baseMatchesProperty(func, thisArg);
-}
-
-module.exports = baseCallback;
-
-}).apply(this, arguments);
-
-},{"../utility/identity":79,"../utility/property":80,"./baseMatches":37,"./baseMatchesProperty":38,"./bindCallback":44}],27:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseCopy.js", module);
-(function(){
-/**
- * Copies properties of `source` to `object`.
- *
- * @private
- * @param {Object} source The object to copy properties from.
- * @param {Array} props The property names to copy.
- * @param {Object} [object={}] The object to copy properties to.
- * @returns {Object} Returns `object`.
- */
-function baseCopy(source, props, object) {
-  object || (object = {});
-
-  var index = -1,
-      length = props.length;
-
-  while (++index < length) {
-    var key = props[index];
-    object[key] = source[key];
-  }
-  return object;
-}
-
-module.exports = baseCopy;
-
-}).apply(this, arguments);
-
-},{}],28:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseEach.js", module);
-(function(){
-var baseForOwn = require('./baseForOwn'),
-    createBaseEach = require('./createBaseEach');
-
-/**
- * The base implementation of `_.forEach` without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array|Object|string} Returns `collection`.
- */
-var baseEach = createBaseEach(baseForOwn);
-
-module.exports = baseEach;
-
-}).apply(this, arguments);
-
-},{"./baseForOwn":31,"./createBaseEach":46}],29:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseFilter.js", module);
-(function(){
-var baseEach = require('./baseEach');
-
-/**
- * The base implementation of `_.filter` without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {Array} Returns the new filtered array.
- */
-function baseFilter(collection, predicate) {
-  var result = [];
-  baseEach(collection, function(value, index, collection) {
-    if (predicate(value, index, collection)) {
-      result.push(value);
-    }
-  });
-  return result;
-}
-
-module.exports = baseFilter;
-
-}).apply(this, arguments);
-
-},{"./baseEach":28}],30:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseFor.js", module);
-(function(){
-var createBaseFor = require('./createBaseFor');
-
-/**
- * The base implementation of `baseForIn` and `baseForOwn` which iterates
- * over `object` properties returned by `keysFunc` invoking `iteratee` for
- * each property. Iteratee functions may exit iteration early by explicitly
- * returning `false`.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @param {Function} keysFunc The function to get the keys of `object`.
- * @returns {Object} Returns `object`.
- */
-var baseFor = createBaseFor();
-
-module.exports = baseFor;
-
-}).apply(this, arguments);
-
-},{"./createBaseFor":47}],31:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseForOwn.js", module);
-(function(){
-var baseFor = require('./baseFor'),
-    keys = require('../object/keys');
-
-/**
- * The base implementation of `_.forOwn` without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Object} Returns `object`.
- */
-function baseForOwn(object, iteratee) {
-  return baseFor(object, iteratee, keys);
-}
-
-module.exports = baseForOwn;
-
-}).apply(this, arguments);
-
-},{"../object/keys":75,"./baseFor":30}],32:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseGet.js", module);
-(function(){
-var toObject = require('./toObject');
-
-/**
- * The base implementation of `get` without support for string paths
- * and default values.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array} path The path of the property to get.
- * @param {string} [pathKey] The key representation of path.
- * @returns {*} Returns the resolved value.
- */
-function baseGet(object, path, pathKey) {
-  if (object == null) {
-    return;
-  }
-  if (pathKey !== undefined && pathKey in toObject(object)) {
-    path = [pathKey];
-  }
-  var index = 0,
-      length = path.length;
-
-  while (object != null && index < length) {
-    object = object[path[index++]];
-  }
-  return (index && index == length) ? object : undefined;
-}
-
-module.exports = baseGet;
-
-}).apply(this, arguments);
-
-},{"./toObject":65}],33:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqual.js", module);
-(function(){
-var baseIsEqualDeep = require('./baseIsEqualDeep'),
-    isObject = require('../lang/isObject'),
-    isObjectLike = require('./isObjectLike');
-
-/**
- * The base implementation of `_.isEqual` without support for `this` binding
- * `customizer` functions.
- *
- * @private
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @param {Function} [customizer] The function to customize comparing values.
- * @param {boolean} [isLoose] Specify performing partial comparisons.
- * @param {Array} [stackA] Tracks traversed `value` objects.
- * @param {Array} [stackB] Tracks traversed `other` objects.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- */
-function baseIsEqual(value, other, customizer, isLoose, stackA, stackB) {
-  if (value === other) {
-    return true;
-  }
-  if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
-    return value !== value && other !== other;
-  }
-  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isLoose, stackA, stackB);
-}
-
-module.exports = baseIsEqual;
-
-}).apply(this, arguments);
-
-},{"../lang/isObject":71,"./baseIsEqualDeep":34,"./isObjectLike":62}],34:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js", module);
-(function(){
-var equalArrays = require('./equalArrays'),
-    equalByTag = require('./equalByTag'),
-    equalObjects = require('./equalObjects'),
-    isArray = require('../lang/isArray'),
-    isTypedArray = require('../lang/isTypedArray');
-
-/** `Object#toString` result references. */
-var argsTag = '[object Arguments]',
-    arrayTag = '[object Array]',
-    objectTag = '[object Object]';
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/**
- * A specialized version of `baseIsEqual` for arrays and objects which performs
- * deep comparisons and tracks traversed objects enabling objects with circular
- * references to be compared.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Function} [customizer] The function to customize comparing objects.
- * @param {boolean} [isLoose] Specify performing partial comparisons.
- * @param {Array} [stackA=[]] Tracks traversed `value` objects.
- * @param {Array} [stackB=[]] Tracks traversed `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
-function baseIsEqualDeep(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
-  var objIsArr = isArray(object),
-      othIsArr = isArray(other),
-      objTag = arrayTag,
-      othTag = arrayTag;
-
-  if (!objIsArr) {
-    objTag = objToString.call(object);
-    if (objTag == argsTag) {
-      objTag = objectTag;
-    } else if (objTag != objectTag) {
-      objIsArr = isTypedArray(object);
-    }
-  }
-  if (!othIsArr) {
-    othTag = objToString.call(other);
-    if (othTag == argsTag) {
-      othTag = objectTag;
-    } else if (othTag != objectTag) {
-      othIsArr = isTypedArray(other);
-    }
-  }
-  var objIsObj = objTag == objectTag,
-      othIsObj = othTag == objectTag,
-      isSameTag = objTag == othTag;
-
-  if (isSameTag && !(objIsArr || objIsObj)) {
-    return equalByTag(object, other, objTag);
-  }
-  if (!isLoose) {
-    var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
-        othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
-
-    if (objIsWrapped || othIsWrapped) {
-      return equalFunc(objIsWrapped ? object.value() : object, othIsWrapped ? other.value() : other, customizer, isLoose, stackA, stackB);
-    }
-  }
-  if (!isSameTag) {
-    return false;
-  }
-  // Assume cyclic values are equal.
-  // For more information on detecting circular references see https://es5.github.io/#JO.
-  stackA || (stackA = []);
-  stackB || (stackB = []);
-
-  var length = stackA.length;
-  while (length--) {
-    if (stackA[length] == object) {
-      return stackB[length] == other;
-    }
-  }
-  // Add `object` and `other` to the stack of traversed objects.
-  stackA.push(object);
-  stackB.push(other);
-
-  var result = (objIsArr ? equalArrays : equalObjects)(object, other, equalFunc, customizer, isLoose, stackA, stackB);
-
-  stackA.pop();
-  stackB.pop();
-
-  return result;
-}
-
-module.exports = baseIsEqualDeep;
-
-}).apply(this, arguments);
-
-},{"../lang/isArray":68,"../lang/isTypedArray":72,"./equalArrays":51,"./equalByTag":52,"./equalObjects":53}],35:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseIsMatch.js", module);
-(function(){
-var baseIsEqual = require('./baseIsEqual'),
-    toObject = require('./toObject');
-
-/**
- * The base implementation of `_.isMatch` without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Object} object The object to inspect.
- * @param {Array} matchData The propery names, values, and compare flags to match.
- * @param {Function} [customizer] The function to customize comparing objects.
- * @returns {boolean} Returns `true` if `object` is a match, else `false`.
- */
-function baseIsMatch(object, matchData, customizer) {
-  var index = matchData.length,
-      length = index,
-      noCustomizer = !customizer;
-
-  if (object == null) {
-    return !length;
-  }
-  object = toObject(object);
-  while (index--) {
-    var data = matchData[index];
-    if ((noCustomizer && data[2])
-          ? data[1] !== object[data[0]]
-          : !(data[0] in object)
-        ) {
-      return false;
-    }
-  }
-  while (++index < length) {
-    data = matchData[index];
-    var key = data[0],
-        objValue = object[key],
-        srcValue = data[1];
-
-    if (noCustomizer && data[2]) {
-      if (objValue === undefined && !(key in object)) {
-        return false;
-      }
-    } else {
-      var result = customizer ? customizer(objValue, srcValue, key) : undefined;
-      if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, true) : result)) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-module.exports = baseIsMatch;
-
-}).apply(this, arguments);
-
-},{"./baseIsEqual":33,"./toObject":65}],36:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseMap.js", module);
-(function(){
-var baseEach = require('./baseEach'),
-    isArrayLike = require('./isArrayLike');
-
-/**
- * The base implementation of `_.map` without support for callback shorthands
- * and `this` binding.
- *
- * @private
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
-function baseMap(collection, iteratee) {
-  var index = -1,
-      result = isArrayLike(collection) ? Array(collection.length) : [];
-
-  baseEach(collection, function(value, key, collection) {
-    result[++index] = iteratee(value, key, collection);
-  });
-  return result;
-}
-
-module.exports = baseMap;
-
-}).apply(this, arguments);
-
-},{"./baseEach":28,"./isArrayLike":57}],37:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseMatches.js", module);
-(function(){
-var baseIsMatch = require('./baseIsMatch'),
-    getMatchData = require('./getMatchData'),
-    toObject = require('./toObject');
-
-/**
- * The base implementation of `_.matches` which does not clone `source`.
- *
- * @private
- * @param {Object} source The object of property values to match.
- * @returns {Function} Returns the new function.
- */
-function baseMatches(source) {
-  var matchData = getMatchData(source);
-  if (matchData.length == 1 && matchData[0][2]) {
-    var key = matchData[0][0],
-        value = matchData[0][1];
-
-    return function(object) {
-      if (object == null) {
-        return false;
-      }
-      return object[key] === value && (value !== undefined || (key in toObject(object)));
-    };
-  }
-  return function(object) {
-    return baseIsMatch(object, matchData);
-  };
-}
-
-module.exports = baseMatches;
-
-}).apply(this, arguments);
-
-},{"./baseIsMatch":35,"./getMatchData":55,"./toObject":65}],38:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js", module);
-(function(){
-var baseGet = require('./baseGet'),
-    baseIsEqual = require('./baseIsEqual'),
-    baseSlice = require('./baseSlice'),
-    isArray = require('../lang/isArray'),
-    isKey = require('./isKey'),
-    isStrictComparable = require('./isStrictComparable'),
-    last = require('../array/last'),
-    toObject = require('./toObject'),
-    toPath = require('./toPath');
-
-/**
- * The base implementation of `_.matchesProperty` which does not clone `srcValue`.
- *
- * @private
- * @param {string} path The path of the property to get.
- * @param {*} srcValue The value to compare.
- * @returns {Function} Returns the new function.
- */
-function baseMatchesProperty(path, srcValue) {
-  var isArr = isArray(path),
-      isCommon = isKey(path) && isStrictComparable(srcValue),
-      pathKey = (path + '');
-
-  path = toPath(path);
-  return function(object) {
-    if (object == null) {
-      return false;
-    }
-    var key = pathKey;
-    object = toObject(object);
-    if ((isArr || !isCommon) && !(key in object)) {
-      object = path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
-      if (object == null) {
-        return false;
-      }
-      key = last(path);
-      object = toObject(object);
-    }
-    return object[key] === srcValue
-      ? (srcValue !== undefined || (key in object))
-      : baseIsEqual(srcValue, object[key], undefined, true);
-  };
-}
-
-module.exports = baseMatchesProperty;
-
-}).apply(this, arguments);
-
-},{"../array/last":13,"../lang/isArray":68,"./baseGet":32,"./baseIsEqual":33,"./baseSlice":41,"./isKey":60,"./isStrictComparable":63,"./toObject":65,"./toPath":66}],39:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseProperty.js", module);
-(function(){
-/**
- * The base implementation of `_.property` without support for deep paths.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @returns {Function} Returns the new function.
- */
-function baseProperty(key) {
-  return function(object) {
-    return object == null ? undefined : object[key];
-  };
-}
-
-module.exports = baseProperty;
-
-}).apply(this, arguments);
-
-},{}],40:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/basePropertyDeep.js", module);
-(function(){
-var baseGet = require('./baseGet'),
-    toPath = require('./toPath');
-
-/**
- * A specialized version of `baseProperty` which supports deep paths.
- *
- * @private
- * @param {Array|string} path The path of the property to get.
- * @returns {Function} Returns the new function.
- */
-function basePropertyDeep(path) {
-  var pathKey = (path + '');
-  path = toPath(path);
-  return function(object) {
-    return baseGet(object, path, pathKey);
-  };
-}
-
-module.exports = basePropertyDeep;
-
-}).apply(this, arguments);
-
-},{"./baseGet":32,"./toPath":66}],41:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseSlice.js", module);
-(function(){
-/**
- * The base implementation of `_.slice` without an iteratee call guard.
- *
- * @private
- * @param {Array} array The array to slice.
- * @param {number} [start=0] The start position.
- * @param {number} [end=array.length] The end position.
- * @returns {Array} Returns the slice of `array`.
- */
-function baseSlice(array, start, end) {
-  var index = -1,
-      length = array.length;
-
-  start = start == null ? 0 : (+start || 0);
-  if (start < 0) {
-    start = -start > length ? 0 : (length + start);
-  }
-  end = (end === undefined || end > length) ? length : (+end || 0);
-  if (end < 0) {
-    end += length;
-  }
-  length = start > end ? 0 : ((end - start) >>> 0);
-  start >>>= 0;
-
-  var result = Array(length);
-  while (++index < length) {
-    result[index] = array[index + start];
-  }
-  return result;
-}
-
-module.exports = baseSlice;
-
-}).apply(this, arguments);
-
-},{}],42:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseSome.js", module);
-(function(){
-var baseEach = require('./baseEach');
-
-/**
- * The base implementation of `_.some` without support for callback shorthands
- * and `this` binding.
- *
- * @private
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {boolean} Returns `true` if any element passes the predicate check,
- *  else `false`.
- */
-function baseSome(collection, predicate) {
-  var result;
-
-  baseEach(collection, function(value, index, collection) {
-    result = predicate(value, index, collection);
-    return !result;
-  });
-  return !!result;
-}
-
-module.exports = baseSome;
-
-}).apply(this, arguments);
-
-},{"./baseEach":28}],43:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/baseToString.js", module);
-(function(){
-/**
- * Converts `value` to a string if it's not one. An empty string is returned
- * for `null` or `undefined` values.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {string} Returns the string.
- */
-function baseToString(value) {
-  return value == null ? '' : (value + '');
-}
-
-module.exports = baseToString;
-
-}).apply(this, arguments);
-
-},{}],44:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/bindCallback.js", module);
-(function(){
-var identity = require('../utility/identity');
-
-/**
- * A specialized version of `baseCallback` which only supports `this` binding
- * and specifying the number of arguments to provide to `func`.
- *
- * @private
- * @param {Function} func The function to bind.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {number} [argCount] The number of arguments to provide to `func`.
- * @returns {Function} Returns the callback.
- */
-function bindCallback(func, thisArg, argCount) {
-  if (typeof func != 'function') {
-    return identity;
-  }
-  if (thisArg === undefined) {
-    return func;
-  }
-  switch (argCount) {
-    case 1: return function(value) {
-      return func.call(thisArg, value);
-    };
-    case 3: return function(value, index, collection) {
-      return func.call(thisArg, value, index, collection);
-    };
-    case 4: return function(accumulator, value, index, collection) {
-      return func.call(thisArg, accumulator, value, index, collection);
-    };
-    case 5: return function(value, other, key, object, source) {
-      return func.call(thisArg, value, other, key, object, source);
-    };
-  }
-  return function() {
-    return func.apply(thisArg, arguments);
-  };
-}
-
-module.exports = bindCallback;
-
-}).apply(this, arguments);
-
-},{"../utility/identity":79}],45:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/createAssigner.js", module);
-(function(){
-var bindCallback = require('./bindCallback'),
-    isIterateeCall = require('./isIterateeCall'),
-    restParam = require('../function/restParam');
-
-/**
- * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
- *
- * @private
- * @param {Function} assigner The function to assign values.
- * @returns {Function} Returns the new assigner function.
- */
-function createAssigner(assigner) {
-  return restParam(function(object, sources) {
-    var index = -1,
-        length = object == null ? 0 : sources.length,
-        customizer = length > 2 ? sources[length - 2] : undefined,
-        guard = length > 2 ? sources[2] : undefined,
-        thisArg = length > 1 ? sources[length - 1] : undefined;
-
-    if (typeof customizer == 'function') {
-      customizer = bindCallback(customizer, thisArg, 5);
-      length -= 2;
-    } else {
-      customizer = typeof thisArg == 'function' ? thisArg : undefined;
-      length -= (customizer ? 1 : 0);
-    }
-    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-      customizer = length < 3 ? undefined : customizer;
-      length = 1;
-    }
-    while (++index < length) {
-      var source = sources[index];
-      if (source) {
-        assigner(object, source, customizer);
-      }
-    }
-    return object;
-  });
-}
-
-module.exports = createAssigner;
-
-}).apply(this, arguments);
-
-},{"../function/restParam":19,"./bindCallback":44,"./isIterateeCall":59}],46:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/createBaseEach.js", module);
-(function(){
-var getLength = require('./getLength'),
-    isLength = require('./isLength'),
-    toObject = require('./toObject');
-
-/**
- * Creates a `baseEach` or `baseEachRight` function.
- *
- * @private
- * @param {Function} eachFunc The function to iterate over a collection.
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
-function createBaseEach(eachFunc, fromRight) {
-  return function(collection, iteratee) {
-    var length = collection ? getLength(collection) : 0;
-    if (!isLength(length)) {
-      return eachFunc(collection, iteratee);
-    }
-    var index = fromRight ? length : -1,
-        iterable = toObject(collection);
-
-    while ((fromRight ? index-- : ++index < length)) {
-      if (iteratee(iterable[index], index, iterable) === false) {
-        break;
-      }
-    }
-    return collection;
-  };
-}
-
-module.exports = createBaseEach;
-
-}).apply(this, arguments);
-
-},{"./getLength":54,"./isLength":61,"./toObject":65}],47:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/createBaseFor.js", module);
-(function(){
-var toObject = require('./toObject');
-
-/**
- * Creates a base function for `_.forIn` or `_.forInRight`.
- *
- * @private
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
-function createBaseFor(fromRight) {
-  return function(object, iteratee, keysFunc) {
-    var iterable = toObject(object),
-        props = keysFunc(object),
-        length = props.length,
-        index = fromRight ? length : -1;
-
-    while ((fromRight ? index-- : ++index < length)) {
-      var key = props[index];
-      if (iteratee(iterable[key], key, iterable) === false) {
-        break;
-      }
-    }
-    return object;
-  };
-}
-
-module.exports = createBaseFor;
-
-}).apply(this, arguments);
-
-},{"./toObject":65}],48:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/createForEach.js", module);
-(function(){
-var bindCallback = require('./bindCallback'),
-    isArray = require('../lang/isArray');
-
-/**
- * Creates a function for `_.forEach` or `_.forEachRight`.
- *
- * @private
- * @param {Function} arrayFunc The function to iterate over an array.
- * @param {Function} eachFunc The function to iterate over a collection.
- * @returns {Function} Returns the new each function.
- */
-function createForEach(arrayFunc, eachFunc) {
-  return function(collection, iteratee, thisArg) {
-    return (typeof iteratee == 'function' && thisArg === undefined && isArray(collection))
-      ? arrayFunc(collection, iteratee)
-      : eachFunc(collection, bindCallback(iteratee, thisArg, 3));
-  };
-}
-
-module.exports = createForEach;
-
-}).apply(this, arguments);
-
-},{"../lang/isArray":68,"./bindCallback":44}],49:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/createForOwn.js", module);
-(function(){
-var bindCallback = require('./bindCallback');
-
-/**
- * Creates a function for `_.forOwn` or `_.forOwnRight`.
- *
- * @private
- * @param {Function} objectFunc The function to iterate over an object.
- * @returns {Function} Returns the new each function.
- */
-function createForOwn(objectFunc) {
-  return function(object, iteratee, thisArg) {
-    if (typeof iteratee != 'function' || thisArg !== undefined) {
-      iteratee = bindCallback(iteratee, thisArg, 3);
-    }
-    return objectFunc(object, iteratee);
-  };
-}
-
-module.exports = createForOwn;
-
-}).apply(this, arguments);
-
-},{"./bindCallback":44}],50:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/createObjectMapper.js", module);
-(function(){
-var baseCallback = require('./baseCallback'),
-    baseForOwn = require('./baseForOwn');
-
-/**
- * Creates a function for `_.mapKeys` or `_.mapValues`.
- *
- * @private
- * @param {boolean} [isMapKeys] Specify mapping keys instead of values.
- * @returns {Function} Returns the new map function.
- */
-function createObjectMapper(isMapKeys) {
-  return function(object, iteratee, thisArg) {
-    var result = {};
-    iteratee = baseCallback(iteratee, thisArg, 3);
-
-    baseForOwn(object, function(value, key, object) {
-      var mapped = iteratee(value, key, object);
-      key = isMapKeys ? mapped : key;
-      value = isMapKeys ? value : mapped;
-      result[key] = value;
-    });
-    return result;
-  };
-}
-
-module.exports = createObjectMapper;
-
-}).apply(this, arguments);
-
-},{"./baseCallback":26,"./baseForOwn":31}],51:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/equalArrays.js", module);
-(function(){
-var arraySome = require('./arraySome');
-
-/**
- * A specialized version of `baseIsEqualDeep` for arrays with support for
- * partial deep comparisons.
- *
- * @private
- * @param {Array} array The array to compare.
- * @param {Array} other The other array to compare.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Function} [customizer] The function to customize comparing arrays.
- * @param {boolean} [isLoose] Specify performing partial comparisons.
- * @param {Array} [stackA] Tracks traversed `value` objects.
- * @param {Array} [stackB] Tracks traversed `other` objects.
- * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
- */
-function equalArrays(array, other, equalFunc, customizer, isLoose, stackA, stackB) {
-  var index = -1,
-      arrLength = array.length,
-      othLength = other.length;
-
-  if (arrLength != othLength && !(isLoose && othLength > arrLength)) {
-    return false;
-  }
-  // Ignore non-index properties.
-  while (++index < arrLength) {
-    var arrValue = array[index],
-        othValue = other[index],
-        result = customizer ? customizer(isLoose ? othValue : arrValue, isLoose ? arrValue : othValue, index) : undefined;
-
-    if (result !== undefined) {
-      if (result) {
-        continue;
-      }
-      return false;
-    }
-    // Recursively compare arrays (susceptible to call stack limits).
-    if (isLoose) {
-      if (!arraySome(other, function(othValue) {
-            return arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB);
-          })) {
-        return false;
-      }
-    } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-module.exports = equalArrays;
-
-}).apply(this, arguments);
-
-},{"./arraySome":23}],52:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/equalByTag.js", module);
-(function(){
-/** `Object#toString` result references. */
-var boolTag = '[object Boolean]',
-    dateTag = '[object Date]',
-    errorTag = '[object Error]',
-    numberTag = '[object Number]',
-    regexpTag = '[object RegExp]',
-    stringTag = '[object String]';
-
-/**
- * A specialized version of `baseIsEqualDeep` for comparing objects of
- * the same `toStringTag`.
- *
- * **Note:** This function only supports comparing values with tags of
- * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {string} tag The `toStringTag` of the objects to compare.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
-function equalByTag(object, other, tag) {
-  switch (tag) {
-    case boolTag:
-    case dateTag:
-      // Coerce dates and booleans to numbers, dates to milliseconds and booleans
-      // to `1` or `0` treating invalid dates coerced to `NaN` as not equal.
-      return +object == +other;
-
-    case errorTag:
-      return object.name == other.name && object.message == other.message;
-
-    case numberTag:
-      // Treat `NaN` vs. `NaN` as equal.
-      return (object != +object)
-        ? other != +other
-        : object == +other;
-
-    case regexpTag:
-    case stringTag:
-      // Coerce regexes to strings and treat strings primitives and string
-      // objects as equal. See https://es5.github.io/#x15.10.6.4 for more details.
-      return object == (other + '');
-  }
-  return false;
-}
-
-module.exports = equalByTag;
-
-}).apply(this, arguments);
-
-},{}],53:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/equalObjects.js", module);
-(function(){
-var keys = require('../object/keys');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * A specialized version of `baseIsEqualDeep` for objects with support for
- * partial deep comparisons.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Function} [customizer] The function to customize comparing values.
- * @param {boolean} [isLoose] Specify performing partial comparisons.
- * @param {Array} [stackA] Tracks traversed `value` objects.
- * @param {Array} [stackB] Tracks traversed `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
-function equalObjects(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
-  var objProps = keys(object),
-      objLength = objProps.length,
-      othProps = keys(other),
-      othLength = othProps.length;
-
-  if (objLength != othLength && !isLoose) {
-    return false;
-  }
-  var index = objLength;
-  while (index--) {
-    var key = objProps[index];
-    if (!(isLoose ? key in other : hasOwnProperty.call(other, key))) {
-      return false;
-    }
-  }
-  var skipCtor = isLoose;
-  while (++index < objLength) {
-    key = objProps[index];
-    var objValue = object[key],
-        othValue = other[key],
-        result = customizer ? customizer(isLoose ? othValue : objValue, isLoose? objValue : othValue, key) : undefined;
-
-    // Recursively compare objects (susceptible to call stack limits).
-    if (!(result === undefined ? equalFunc(objValue, othValue, customizer, isLoose, stackA, stackB) : result)) {
-      return false;
-    }
-    skipCtor || (skipCtor = key == 'constructor');
-  }
-  if (!skipCtor) {
-    var objCtor = object.constructor,
-        othCtor = other.constructor;
-
-    // Non `Object` object instances with different constructors are not equal.
-    if (objCtor != othCtor &&
-        ('constructor' in object && 'constructor' in other) &&
-        !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
-          typeof othCtor == 'function' && othCtor instanceof othCtor)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-module.exports = equalObjects;
-
-}).apply(this, arguments);
-
-},{"../object/keys":75}],54:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/getLength.js", module);
-(function(){
-var baseProperty = require('./baseProperty');
-
-/**
- * Gets the "length" property value of `object`.
- *
- * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
- * that affects Safari on at least iOS 8.1-8.3 ARM64.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {*} Returns the "length" value.
- */
-var getLength = baseProperty('length');
-
-module.exports = getLength;
-
-}).apply(this, arguments);
-
-},{"./baseProperty":39}],55:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/getMatchData.js", module);
-(function(){
-var isStrictComparable = require('./isStrictComparable'),
-    pairs = require('../object/pairs');
-
-/**
- * Gets the propery names, values, and compare flags of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the match data of `object`.
- */
-function getMatchData(object) {
-  var result = pairs(object),
-      length = result.length;
-
-  while (length--) {
-    result[length][2] = isStrictComparable(result[length][1]);
-  }
-  return result;
-}
-
-module.exports = getMatchData;
-
-}).apply(this, arguments);
-
-},{"../object/pairs":78,"./isStrictComparable":63}],56:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/getNative.js", module);
-(function(){
-var isNative = require('../lang/isNative');
-
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
-function getNative(object, key) {
-  var value = object == null ? undefined : object[key];
-  return isNative(value) ? value : undefined;
-}
-
-module.exports = getNative;
-
-}).apply(this, arguments);
-
-},{"../lang/isNative":70}],57:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isArrayLike.js", module);
-(function(){
-var getLength = require('./getLength'),
-    isLength = require('./isLength');
-
-/**
- * Checks if `value` is array-like.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
- */
-function isArrayLike(value) {
-  return value != null && isLength(getLength(value));
-}
-
-module.exports = isArrayLike;
-
-}).apply(this, arguments);
-
-},{"./getLength":54,"./isLength":61}],58:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isIndex.js", module);
-(function(){
-/** Used to detect unsigned integer values. */
-var reIsUint = /^\d+$/;
-
-/**
- * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
- * of an array-like value.
- */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
-function isIndex(value, length) {
-  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
-  length = length == null ? MAX_SAFE_INTEGER : length;
-  return value > -1 && value % 1 == 0 && value < length;
-}
-
-module.exports = isIndex;
-
-}).apply(this, arguments);
-
-},{}],59:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isIterateeCall.js", module);
-(function(){
-var isArrayLike = require('./isArrayLike'),
-    isIndex = require('./isIndex'),
-    isObject = require('../lang/isObject');
-
-/**
- * Checks if the provided arguments are from an iteratee call.
- *
- * @private
- * @param {*} value The potential iteratee value argument.
- * @param {*} index The potential iteratee index or key argument.
- * @param {*} object The potential iteratee object argument.
- * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
- */
-function isIterateeCall(value, index, object) {
-  if (!isObject(object)) {
-    return false;
-  }
-  var type = typeof index;
-  if (type == 'number'
-      ? (isArrayLike(object) && isIndex(index, object.length))
-      : (type == 'string' && index in object)) {
-    var other = object[index];
-    return value === value ? (value === other) : (other !== other);
-  }
-  return false;
-}
-
-module.exports = isIterateeCall;
-
-}).apply(this, arguments);
-
-},{"../lang/isObject":71,"./isArrayLike":57,"./isIndex":58}],60:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isKey.js", module);
-(function(){
-var isArray = require('../lang/isArray'),
-    toObject = require('./toObject');
-
-/** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\n\\]|\\.)*?\1)\]/,
-    reIsPlainProp = /^\w*$/;
-
-/**
- * Checks if `value` is a property name and not a property path.
- *
- * @private
- * @param {*} value The value to check.
- * @param {Object} [object] The object to query keys on.
- * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
- */
-function isKey(value, object) {
-  var type = typeof value;
-  if ((type == 'string' && reIsPlainProp.test(value)) || type == 'number') {
-    return true;
-  }
-  if (isArray(value)) {
-    return false;
-  }
-  var result = !reIsDeepProp.test(value);
-  return result || (object != null && value in toObject(object));
-}
-
-module.exports = isKey;
-
-}).apply(this, arguments);
-
-},{"../lang/isArray":68,"./toObject":65}],61:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isLength.js", module);
-(function(){
-/**
- * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
- * of an array-like value.
- */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/**
- * Checks if `value` is a valid array-like length.
- *
- * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
- */
-function isLength(value) {
-  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-}
-
-module.exports = isLength;
-
-}).apply(this, arguments);
-
-},{}],62:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isObjectLike.js", module);
-(function(){
-/**
- * Checks if `value` is object-like.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-module.exports = isObjectLike;
-
-}).apply(this, arguments);
-
-},{}],63:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/isStrictComparable.js", module);
-(function(){
-var isObject = require('../lang/isObject');
-
-/**
- * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` if suitable for strict
- *  equality comparisons, else `false`.
- */
-function isStrictComparable(value) {
-  return value === value && !isObject(value);
-}
-
-module.exports = isStrictComparable;
-
-}).apply(this, arguments);
-
-},{"../lang/isObject":71}],64:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js", module);
-(function(){
-var isArguments = require('../lang/isArguments'),
-    isArray = require('../lang/isArray'),
-    isIndex = require('./isIndex'),
-    isLength = require('./isLength'),
-    keysIn = require('../object/keysIn');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * A fallback implementation of `Object.keys` which creates an array of the
- * own enumerable property names of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- */
-function shimKeys(object) {
-  var props = keysIn(object),
-      propsLength = props.length,
-      length = propsLength && object.length;
-
-  var allowIndexes = !!length && isLength(length) &&
-    (isArray(object) || isArguments(object));
-
-  var index = -1,
-      result = [];
-
-  while (++index < propsLength) {
-    var key = props[index];
-    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
-      result.push(key);
-    }
-  }
-  return result;
-}
-
-module.exports = shimKeys;
-
-}).apply(this, arguments);
-
-},{"../lang/isArguments":67,"../lang/isArray":68,"../object/keysIn":76,"./isIndex":58,"./isLength":61}],65:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/toObject.js", module);
-(function(){
-var isObject = require('../lang/isObject');
-
-/**
- * Converts `value` to an object if it's not one.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {Object} Returns the object.
- */
-function toObject(value) {
-  return isObject(value) ? value : Object(value);
-}
-
-module.exports = toObject;
-
-}).apply(this, arguments);
-
-},{"../lang/isObject":71}],66:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/internal/toPath.js", module);
-(function(){
-var baseToString = require('./baseToString'),
-    isArray = require('../lang/isArray');
-
-/** Used to match property names within property paths. */
-var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\n\\]|\\.)*?)\2)\]/g;
-
-/** Used to match backslashes in property paths. */
-var reEscapeChar = /\\(\\)?/g;
-
-/**
- * Converts `value` to property path array if it's not one.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {Array} Returns the property path array.
- */
-function toPath(value) {
-  if (isArray(value)) {
-    return value;
-  }
-  var result = [];
-  baseToString(value).replace(rePropName, function(match, number, quote, string) {
-    result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
-  });
-  return result;
-}
-
-module.exports = toPath;
-
-}).apply(this, arguments);
-
-},{"../lang/isArray":68,"./baseToString":43}],67:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/lang/isArguments.js", module);
-(function(){
-var isArrayLike = require('../internal/isArrayLike'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Native method references. */
-var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-
-/**
- * Checks if `value` is classified as an `arguments` object.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isArguments(function() { return arguments; }());
- * // => true
- *
- * _.isArguments([1, 2, 3]);
- * // => false
- */
-function isArguments(value) {
-  return isObjectLike(value) && isArrayLike(value) &&
-    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
-}
-
-module.exports = isArguments;
-
-}).apply(this, arguments);
-
-},{"../internal/isArrayLike":57,"../internal/isObjectLike":62}],68:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/lang/isArray.js", module);
-(function(){
-var getNative = require('../internal/getNative'),
-    isLength = require('../internal/isLength'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** `Object#toString` result references. */
-var arrayTag = '[object Array]';
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/* Native method references for those with the same name as other `lodash` methods. */
-var nativeIsArray = getNative(Array, 'isArray');
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(function() { return arguments; }());
- * // => false
- */
-var isArray = nativeIsArray || function(value) {
-  return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag;
-};
-
-module.exports = isArray;
-
-}).apply(this, arguments);
-
-},{"../internal/getNative":56,"../internal/isLength":61,"../internal/isObjectLike":62}],69:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/lang/isFunction.js", module);
-(function(){
-var isObject = require('./isObject');
-
-/** `Object#toString` result references. */
-var funcTag = '[object Function]';
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in older versions of Chrome and Safari which return 'function' for regexes
-  // and Safari 8 which returns 'object' for typed array constructors.
-  return isObject(value) && objToString.call(value) == funcTag;
-}
-
-module.exports = isFunction;
-
-}).apply(this, arguments);
-
-},{"./isObject":71}],70:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/lang/isNative.js", module);
-(function(){
-var isFunction = require('./isFunction'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** Used to detect host constructors (Safari > 5). */
-var reIsHostCtor = /^\[object .+?Constructor\]$/;
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var fnToString = Function.prototype.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Used to detect if a method is native. */
-var reIsNative = RegExp('^' +
-  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-);
-
-/**
- * Checks if `value` is a native function.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
- * @example
- *
- * _.isNative(Array.prototype.push);
- * // => true
- *
- * _.isNative(_);
- * // => false
- */
-function isNative(value) {
-  if (value == null) {
-    return false;
-  }
-  if (isFunction(value)) {
-    return reIsNative.test(fnToString.call(value));
-  }
-  return isObjectLike(value) && reIsHostCtor.test(value);
-}
-
-module.exports = isNative;
-
-}).apply(this, arguments);
-
-},{"../internal/isObjectLike":62,"./isFunction":69}],71:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/lang/isObject.js", module);
-(function(){
-/**
- * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
- * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(1);
- * // => false
- */
-function isObject(value) {
-  // Avoid a V8 JIT bug in Chrome 19-20.
-  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-module.exports = isObject;
-
-}).apply(this, arguments);
-
-},{}],72:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/lang/isTypedArray.js", module);
-(function(){
-var isLength = require('../internal/isLength'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** `Object#toString` result references. */
-var argsTag = '[object Arguments]',
-    arrayTag = '[object Array]',
-    boolTag = '[object Boolean]',
-    dateTag = '[object Date]',
-    errorTag = '[object Error]',
-    funcTag = '[object Function]',
-    mapTag = '[object Map]',
-    numberTag = '[object Number]',
-    objectTag = '[object Object]',
-    regexpTag = '[object RegExp]',
-    setTag = '[object Set]',
-    stringTag = '[object String]',
-    weakMapTag = '[object WeakMap]';
-
-var arrayBufferTag = '[object ArrayBuffer]',
-    float32Tag = '[object Float32Array]',
-    float64Tag = '[object Float64Array]',
-    int8Tag = '[object Int8Array]',
-    int16Tag = '[object Int16Array]',
-    int32Tag = '[object Int32Array]',
-    uint8Tag = '[object Uint8Array]',
-    uint8ClampedTag = '[object Uint8ClampedArray]',
-    uint16Tag = '[object Uint16Array]',
-    uint32Tag = '[object Uint32Array]';
-
-/** Used to identify `toStringTag` values of typed arrays. */
-var typedArrayTags = {};
-typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
-typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
-typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
-typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
-typedArrayTags[uint32Tag] = true;
-typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
-typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
-typedArrayTags[dateTag] = typedArrayTags[errorTag] =
-typedArrayTags[funcTag] = typedArrayTags[mapTag] =
-typedArrayTags[numberTag] = typedArrayTags[objectTag] =
-typedArrayTags[regexpTag] = typedArrayTags[setTag] =
-typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/**
- * Checks if `value` is classified as a typed array.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isTypedArray(new Uint8Array);
- * // => true
- *
- * _.isTypedArray([]);
- * // => false
- */
-function isTypedArray(value) {
-  return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objToString.call(value)];
-}
-
-module.exports = isTypedArray;
-
-}).apply(this, arguments);
-
-},{"../internal/isLength":61,"../internal/isObjectLike":62}],73:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/object/assign.js", module);
-(function(){
-var assignWith = require('../internal/assignWith'),
-    baseAssign = require('../internal/baseAssign'),
-    createAssigner = require('../internal/createAssigner');
-
-/**
- * Assigns own enumerable properties of source object(s) to the destination
- * object. Subsequent sources overwrite property assignments of previous sources.
- * If `customizer` is provided it's invoked to produce the assigned values.
- * The `customizer` is bound to `thisArg` and invoked with five arguments:
- * (objectValue, sourceValue, key, object, source).
- *
- * **Note:** This method mutates `object` and is based on
- * [`Object.assign`](http://ecma-international.org/ecma-262/6.0/#sec-object.assign).
- *
- * @static
- * @memberOf _
- * @alias extend
- * @category Object
- * @param {Object} object The destination object.
- * @param {...Object} [sources] The source objects.
- * @param {Function} [customizer] The function to customize assigned values.
- * @param {*} [thisArg] The `this` binding of `customizer`.
- * @returns {Object} Returns `object`.
- * @example
- *
- * _.assign({ 'user': 'barney' }, { 'age': 40 }, { 'user': 'fred' });
- * // => { 'user': 'fred', 'age': 40 }
- *
- * // using a customizer callback
- * var defaults = _.partialRight(_.assign, function(value, other) {
- *   return _.isUndefined(value) ? other : value;
- * });
- *
- * defaults({ 'user': 'barney' }, { 'age': 36 }, { 'user': 'fred' });
- * // => { 'user': 'barney', 'age': 36 }
- */
-var assign = createAssigner(function(object, source, customizer) {
-  return customizer
-    ? assignWith(object, source, customizer)
-    : baseAssign(object, source);
-});
-
-module.exports = assign;
-
-}).apply(this, arguments);
-
-},{"../internal/assignWith":24,"../internal/baseAssign":25,"../internal/createAssigner":45}],74:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/object/forOwn.js", module);
-(function(){
-var baseForOwn = require('../internal/baseForOwn'),
-    createForOwn = require('../internal/createForOwn');
-
-/**
- * Iterates over own enumerable properties of an object invoking `iteratee`
- * for each property. The `iteratee` is bound to `thisArg` and invoked with
- * three arguments: (value, key, object). Iteratee functions may exit iteration
- * early by explicitly returning `false`.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to iterate over.
- * @param {Function} [iteratee=_.identity] The function invoked per iteration.
- * @param {*} [thisArg] The `this` binding of `iteratee`.
- * @returns {Object} Returns `object`.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.forOwn(new Foo, function(value, key) {
- *   console.log(key);
- * });
- * // => logs 'a' and 'b' (iteration order is not guaranteed)
- */
-var forOwn = createForOwn(baseForOwn);
-
-module.exports = forOwn;
-
-}).apply(this, arguments);
-
-},{"../internal/baseForOwn":31,"../internal/createForOwn":49}],75:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/object/keys.js", module);
-(function(){
-var getNative = require('../internal/getNative'),
-    isArrayLike = require('../internal/isArrayLike'),
-    isObject = require('../lang/isObject'),
-    shimKeys = require('../internal/shimKeys');
-
-/* Native method references for those with the same name as other `lodash` methods. */
-var nativeKeys = getNative(Object, 'keys');
-
-/**
- * Creates an array of the own enumerable property names of `object`.
- *
- * **Note:** Non-object values are coerced to objects. See the
- * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
- * for more details.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.keys(new Foo);
- * // => ['a', 'b'] (iteration order is not guaranteed)
- *
- * _.keys('hi');
- * // => ['0', '1']
- */
-var keys = !nativeKeys ? shimKeys : function(object) {
-  var Ctor = object == null ? undefined : object.constructor;
-  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
-      (typeof object != 'function' && isArrayLike(object))) {
-    return shimKeys(object);
-  }
-  return isObject(object) ? nativeKeys(object) : [];
-};
-
-module.exports = keys;
-
-}).apply(this, arguments);
-
-},{"../internal/getNative":56,"../internal/isArrayLike":57,"../internal/shimKeys":64,"../lang/isObject":71}],76:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js", module);
-(function(){
-var isArguments = require('../lang/isArguments'),
-    isArray = require('../lang/isArray'),
-    isIndex = require('../internal/isIndex'),
-    isLength = require('../internal/isLength'),
-    isObject = require('../lang/isObject');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * Creates an array of the own and inherited enumerable property names of `object`.
- *
- * **Note:** Non-object values are coerced to objects.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.keysIn(new Foo);
- * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
- */
-function keysIn(object) {
-  if (object == null) {
-    return [];
-  }
-  if (!isObject(object)) {
-    object = Object(object);
-  }
-  var length = object.length;
-  length = (length && isLength(length) &&
-    (isArray(object) || isArguments(object)) && length) || 0;
-
-  var Ctor = object.constructor,
-      index = -1,
-      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
-      result = Array(length),
-      skipIndexes = length > 0;
-
-  while (++index < length) {
-    result[index] = (index + '');
-  }
-  for (var key in object) {
-    if (!(skipIndexes && isIndex(key, length)) &&
-        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
-      result.push(key);
-    }
-  }
-  return result;
-}
-
-module.exports = keysIn;
-
-}).apply(this, arguments);
-
-},{"../internal/isIndex":58,"../internal/isLength":61,"../lang/isArguments":67,"../lang/isArray":68,"../lang/isObject":71}],77:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/object/mapValues.js", module);
-(function(){
-var createObjectMapper = require('../internal/createObjectMapper');
-
-/**
- * Creates an object with the same keys as `object` and values generated by
- * running each own enumerable property of `object` through `iteratee`. The
- * iteratee function is bound to `thisArg` and invoked with three arguments:
- * (value, key, object).
- *
- * If a property name is provided for `iteratee` the created `_.property`
- * style callback returns the property value of the given element.
- *
- * If a value is also provided for `thisArg` the created `_.matchesProperty`
- * style callback returns `true` for elements that have a matching property
- * value, else `false`.
- *
- * If an object is provided for `iteratee` the created `_.matches` style
- * callback returns `true` for elements that have the properties of the given
- * object, else `false`.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to iterate over.
- * @param {Function|Object|string} [iteratee=_.identity] The function invoked
- *  per iteration.
- * @param {*} [thisArg] The `this` binding of `iteratee`.
- * @returns {Object} Returns the new mapped object.
- * @example
- *
- * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
- *   return n * 3;
- * });
- * // => { 'a': 3, 'b': 6 }
- *
- * var users = {
- *   'fred':    { 'user': 'fred',    'age': 40 },
- *   'pebbles': { 'user': 'pebbles', 'age': 1 }
- * };
- *
- * // using the `_.property` callback shorthand
- * _.mapValues(users, 'age');
- * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
- */
-var mapValues = createObjectMapper();
-
-module.exports = mapValues;
-
-}).apply(this, arguments);
-
-},{"../internal/createObjectMapper":50}],78:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/object/pairs.js", module);
-(function(){
-var keys = require('./keys'),
-    toObject = require('../internal/toObject');
-
-/**
- * Creates a two dimensional array of the key-value pairs for `object`,
- * e.g. `[[key1, value1], [key2, value2]]`.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the new array of key-value pairs.
- * @example
- *
- * _.pairs({ 'barney': 36, 'fred': 40 });
- * // => [['barney', 36], ['fred', 40]] (iteration order is not guaranteed)
- */
-function pairs(object) {
-  object = toObject(object);
-
-  var index = -1,
-      props = keys(object),
-      length = props.length,
-      result = Array(length);
-
-  while (++index < length) {
-    var key = props[index];
-    result[index] = [key, object[key]];
-  }
-  return result;
-}
-
-module.exports = pairs;
-
-}).apply(this, arguments);
-
-},{"../internal/toObject":65,"./keys":75}],79:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/utility/identity.js", module);
-(function(){
-/**
- * This method returns the first argument provided to it.
- *
- * @static
- * @memberOf _
- * @category Utility
- * @param {*} value Any value.
- * @returns {*} Returns `value`.
- * @example
- *
- * var object = { 'user': 'fred' };
- *
- * _.identity(object) === object;
- * // => true
- */
-function identity(value) {
-  return value;
-}
-
-module.exports = identity;
-
-}).apply(this, arguments);
-
-},{}],80:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/browserify-hmr/node_modules/lodash/utility/property.js", module);
-(function(){
-var baseProperty = require('../internal/baseProperty'),
-    basePropertyDeep = require('../internal/basePropertyDeep'),
-    isKey = require('../internal/isKey');
-
-/**
- * Creates a function that returns the property value at `path` on a
- * given object.
- *
- * @static
- * @memberOf _
- * @category Utility
- * @param {Array|string} path The path of the property to get.
- * @returns {Function} Returns the new function.
- * @example
- *
- * var objects = [
- *   { 'a': { 'b': { 'c': 2 } } },
- *   { 'a': { 'b': { 'c': 1 } } }
- * ];
- *
- * _.map(objects, _.property('a.b.c'));
- * // => [2, 1]
- *
- * _.pluck(_.sortBy(objects, _.property(['a', 'b', 'c'])), 'a.b.c');
- * // => [1, 2]
- */
-function property(path) {
-  return isKey(path) ? baseProperty(path) : basePropertyDeep(path);
-}
-
-module.exports = property;
-
-}).apply(this, arguments);
-
-},{"../internal/baseProperty":39,"../internal/basePropertyDeep":40,"../internal/isKey":60}],81:[function(require,module,exports){
+},{"./has":13}],15:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/component-bind/index.js", module);
 (function(){
 /**
@@ -4071,7 +1403,7 @@ module.exports = function(obj, fn){
 
 }).apply(this, arguments);
 
-},{}],82:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/component-emitter/index.js", module);
 (function(){
 
@@ -4241,7 +1573,7 @@ Emitter.prototype.hasListeners = function(event){
 
 }).apply(this, arguments);
 
-},{}],83:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/component-inherit/index.js", module);
 (function(){
 
@@ -4253,401 +1585,7 @@ module.exports = function(a, b){
 };
 }).apply(this, arguments);
 
-},{}],84:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/core-js/library/fn/json/stringify.js", module);
-(function(){
-var core  = require('../../modules/_core')
-  , $JSON = core.JSON || (core.JSON = {stringify: JSON.stringify});
-module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
-  return $JSON.stringify.apply($JSON, arguments);
-};
-}).apply(this, arguments);
-
-},{"../../modules/_core":85}],85:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/core-js/library/modules/_core.js", module);
-(function(){
-var core = module.exports = {version: '2.4.0'};
-if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-}).apply(this, arguments);
-
-},{}],86:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/debug/browser.js", module);
-(function(){
-
-/**
- * This is the web browser implementation of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = require('./debug');
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-exports.storage = 'undefined' != typeof chrome
-               && 'undefined' != typeof chrome.storage
-                  ? chrome.storage.local
-                  : localstorage();
-
-/**
- * Colors.
- */
-
-exports.colors = [
-  'lightseagreen',
-  'forestgreen',
-  'goldenrod',
-  'dodgerblue',
-  'darkorchid',
-  'crimson'
-];
-
-/**
- * Currently only WebKit-based Web Inspectors, Firefox >= v31,
- * and the Firebug extension (any Firefox version) are known
- * to support "%c" CSS customizations.
- *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
- */
-
-function useColors() {
-  // is webkit? http://stackoverflow.com/a/16459606/376773
-  return ('WebkitAppearance' in document.documentElement.style) ||
-    // is firebug? http://stackoverflow.com/a/398120/376773
-    (window.console && (console.firebug || (console.exception && console.table))) ||
-    // is firefox >= v31?
-    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
-}
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-exports.formatters.j = function(v) {
-  return JSON.stringify(v);
-};
-
-
-/**
- * Colorize log arguments if enabled.
- *
- * @api public
- */
-
-function formatArgs() {
-  var args = arguments;
-  var useColors = this.useColors;
-
-  args[0] = (useColors ? '%c' : '')
-    + this.namespace
-    + (useColors ? ' %c' : ' ')
-    + args[0]
-    + (useColors ? '%c ' : ' ')
-    + '+' + exports.humanize(this.diff);
-
-  if (!useColors) return args;
-
-  var c = 'color: ' + this.color;
-  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
-
-  // the final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-z%]/g, function(match) {
-    if ('%%' === match) return;
-    index++;
-    if ('%c' === match) {
-      // we only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-
-  args.splice(lastC, 0, c);
-  return args;
-}
-
-/**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
- *
- * @api public
- */
-
-function log() {
-  // this hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return 'object' === typeof console
-    && console.log
-    && Function.prototype.apply.call(console.log, console, arguments);
-}
-
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-
-function save(namespaces) {
-  try {
-    if (null == namespaces) {
-      exports.storage.removeItem('debug');
-    } else {
-      exports.storage.debug = namespaces;
-    }
-  } catch(e) {}
-}
-
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-
-function load() {
-  var r;
-  try {
-    r = exports.storage.debug;
-  } catch(e) {}
-  return r;
-}
-
-/**
- * Enable namespaces listed in `localStorage.debug` initially.
- */
-
-exports.enable(load());
-
-/**
- * Localstorage attempts to return the localstorage.
- *
- * This is necessary because safari throws
- * when a user disables cookies/localstorage
- * and you attempt to access it.
- *
- * @return {LocalStorage}
- * @api private
- */
-
-function localstorage(){
-  try {
-    return window.localStorage;
-  } catch (e) {}
-}
-
-}).apply(this, arguments);
-
-},{"./debug":87}],87:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/debug/debug.js", module);
-(function(){
-
-/**
- * This is the common logic for both the Node.js and web browser
- * implementations of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = debug;
-exports.coerce = coerce;
-exports.disable = disable;
-exports.enable = enable;
-exports.enabled = enabled;
-exports.humanize = require('ms');
-
-/**
- * The currently active debug mode names, and names to skip.
- */
-
-exports.names = [];
-exports.skips = [];
-
-/**
- * Map of special "%n" handling functions, for the debug "format" argument.
- *
- * Valid key names are a single, lowercased letter, i.e. "n".
- */
-
-exports.formatters = {};
-
-/**
- * Previously assigned color.
- */
-
-var prevColor = 0;
-
-/**
- * Previous log timestamp.
- */
-
-var prevTime;
-
-/**
- * Select a color.
- *
- * @return {Number}
- * @api private
- */
-
-function selectColor() {
-  return exports.colors[prevColor++ % exports.colors.length];
-}
-
-/**
- * Create a debugger with the given `namespace`.
- *
- * @param {String} namespace
- * @return {Function}
- * @api public
- */
-
-function debug(namespace) {
-
-  // define the `disabled` version
-  function disabled() {
-  }
-  disabled.enabled = false;
-
-  // define the `enabled` version
-  function enabled() {
-
-    var self = enabled;
-
-    // set `diff` timestamp
-    var curr = +new Date();
-    var ms = curr - (prevTime || curr);
-    self.diff = ms;
-    self.prev = prevTime;
-    self.curr = curr;
-    prevTime = curr;
-
-    // add the `color` if not set
-    if (null == self.useColors) self.useColors = exports.useColors();
-    if (null == self.color && self.useColors) self.color = selectColor();
-
-    var args = Array.prototype.slice.call(arguments);
-
-    args[0] = exports.coerce(args[0]);
-
-    if ('string' !== typeof args[0]) {
-      // anything else let's inspect with %o
-      args = ['%o'].concat(args);
-    }
-
-    // apply any `formatters` transformations
-    var index = 0;
-    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
-      // if we encounter an escaped % then don't increase the array index
-      if (match === '%%') return match;
-      index++;
-      var formatter = exports.formatters[format];
-      if ('function' === typeof formatter) {
-        var val = args[index];
-        match = formatter.call(self, val);
-
-        // now we need to remove `args[index]` since it's inlined in the `format`
-        args.splice(index, 1);
-        index--;
-      }
-      return match;
-    });
-
-    if ('function' === typeof exports.formatArgs) {
-      args = exports.formatArgs.apply(self, args);
-    }
-    var logFn = enabled.log || exports.log || console.log.bind(console);
-    logFn.apply(self, args);
-  }
-  enabled.enabled = true;
-
-  var fn = exports.enabled(namespace) ? enabled : disabled;
-
-  fn.namespace = namespace;
-
-  return fn;
-}
-
-/**
- * Enables a debug mode by namespaces. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} namespaces
- * @api public
- */
-
-function enable(namespaces) {
-  exports.save(namespaces);
-
-  var split = (namespaces || '').split(/[\s,]+/);
-  var len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    namespaces = split[i].replace(/\*/g, '.*?');
-    if (namespaces[0] === '-') {
-      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-    } else {
-      exports.names.push(new RegExp('^' + namespaces + '$'));
-    }
-  }
-}
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-function disable() {
-  exports.enable('');
-}
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-function enabled(name) {
-  var i, len;
-  for (i = 0, len = exports.skips.length; i < len; i++) {
-    if (exports.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.names.length; i < len; i++) {
-    if (exports.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Coerce `val`.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-}).apply(this, arguments);
-
-},{"ms":106}],88:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/index.js", module);
 (function(){
 
@@ -4655,7 +1593,7 @@ module.exports =  require('./lib/');
 
 }).apply(this, arguments);
 
-},{"./lib/":89}],89:[function(require,module,exports){
+},{"./lib/":19}],19:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/index.js", module);
 (function(){
 
@@ -4671,7 +1609,7 @@ module.exports.parser = require('engine.io-parser');
 
 }).apply(this, arguments);
 
-},{"./socket":90,"engine.io-parser":98}],90:[function(require,module,exports){
+},{"./socket":20,"engine.io-parser":30}],20:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/socket.js", module);
 (function(){
 (function (global){
@@ -4775,7 +1713,7 @@ function Socket(uri, opts){
   this.cert = opts.cert || null;
   this.ca = opts.ca || null;
   this.ciphers = opts.ciphers || null;
-  this.rejectUnauthorized = opts.rejectUnauthorized === undefined ? true : opts.rejectUnauthorized;
+  this.rejectUnauthorized = opts.rejectUnauthorized === undefined ? null : opts.rejectUnauthorized;
 
   // other options for Node.js client
   var freeGlobal = typeof global == 'object' && global;
@@ -5407,7 +2345,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./transport":91,"./transports":92,"component-emitter":82,"debug":86,"engine.io-parser":98,"indexof":104,"parsejson":107,"parseqs":108,"parseuri":109}],91:[function(require,module,exports){
+},{"./transport":21,"./transports":22,"component-emitter":16,"debug":28,"engine.io-parser":30,"indexof":36,"parsejson":107,"parseqs":108,"parseuri":109}],21:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transport.js", module);
 (function(){
 /**
@@ -5568,7 +2506,7 @@ Transport.prototype.onClose = function () {
 
 }).apply(this, arguments);
 
-},{"component-emitter":82,"engine.io-parser":98}],92:[function(require,module,exports){
+},{"component-emitter":16,"engine.io-parser":30}],22:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/index.js", module);
 (function(){
 (function (global){
@@ -5629,7 +2567,7 @@ function polling(opts){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling-jsonp":93,"./polling-xhr":94,"./websocket":96,"xmlhttprequest-ssl":97}],93:[function(require,module,exports){
+},{"./polling-jsonp":23,"./polling-xhr":24,"./websocket":26,"xmlhttprequest-ssl":27}],23:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-jsonp.js", module);
 (function(){
 (function (global){
@@ -5875,7 +2813,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling":95,"component-inherit":83}],94:[function(require,module,exports){
+},{"./polling":25,"component-inherit":17}],24:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-xhr.js", module);
 (function(){
 (function (global){
@@ -6295,7 +3233,7 @@ function unloadHandler() {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling":95,"component-emitter":82,"component-inherit":83,"debug":86,"xmlhttprequest-ssl":97}],95:[function(require,module,exports){
+},{"./polling":25,"component-emitter":16,"component-inherit":17,"debug":28,"xmlhttprequest-ssl":27}],25:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling.js", module);
 (function(){
 /**
@@ -6548,7 +3486,7 @@ Polling.prototype.uri = function(){
 
 }).apply(this, arguments);
 
-},{"../transport":91,"component-inherit":83,"debug":86,"engine.io-parser":98,"parseqs":108,"xmlhttprequest-ssl":97,"yeast":153}],96:[function(require,module,exports){
+},{"../transport":21,"component-inherit":17,"debug":28,"engine.io-parser":30,"parseqs":108,"xmlhttprequest-ssl":27,"yeast":157}],26:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/websocket.js", module);
 (function(){
 (function (global){
@@ -6844,7 +3782,7 @@ WS.prototype.check = function(){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"../transport":91,"component-inherit":83,"debug":86,"engine.io-parser":98,"parseqs":108,"ws":9,"yeast":153}],97:[function(require,module,exports){
+},{"../transport":21,"component-inherit":17,"debug":28,"engine.io-parser":30,"parseqs":108,"ws":11,"yeast":157}],27:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/xmlhttprequest.js", module);
 (function(){
 // browser shim for xmlhttprequest module
@@ -6886,7 +3824,384 @@ module.exports = function(opts) {
 
 }).apply(this, arguments);
 
-},{"has-cors":103}],98:[function(require,module,exports){
+},{"has-cors":35}],28:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":29}],29:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":106}],30:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/browser.js", module);
 (function(){
 (function (global){
@@ -7488,7 +4803,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./keys":99,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":7,"blob":8,"has-binary":100,"utf8":122}],99:[function(require,module,exports){
+},{"./keys":31,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":9,"blob":10,"has-binary":32,"utf8":126}],31:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/keys.js", module);
 (function(){
 
@@ -7513,7 +4828,7 @@ module.exports = Object.keys || function keys (obj){
 
 }).apply(this, arguments);
 
-},{}],100:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/node_modules/has-binary/index.js", module);
 (function(){
 (function (global){
@@ -7579,7 +4894,7 @@ function hasBinary(data) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"isarray":105}],101:[function(require,module,exports){
+},{"isarray":37}],33:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/hammerjs/hammer.js", module);
 (function(){
 /*! Hammer.JS - v2.0.7 - 2016-04-22
@@ -10228,7 +7543,7 @@ if (typeof define === 'function' && define.amd) {
 
 }).apply(this, arguments);
 
-},{}],102:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/has-binary/index.js", module);
 (function(){
 (function (global){
@@ -10295,7 +7610,7 @@ function hasBinary(data) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"isarray":105}],103:[function(require,module,exports){
+},{"isarray":37}],35:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/has-cors/index.js", module);
 (function(){
 
@@ -10318,7 +7633,7 @@ try {
 
 }).apply(this, arguments);
 
-},{}],104:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/indexof/index.js", module);
 (function(){
 
@@ -10333,7 +7648,7 @@ module.exports = function(arr, obj){
 };
 }).apply(this, arguments);
 
-},{}],105:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/isarray/index.js", module);
 (function(){
 module.exports = Array.isArray || function (arr) {
@@ -10342,7 +7657,2672 @@ module.exports = Array.isArray || function (arr) {
 
 }).apply(this, arguments);
 
-},{}],106:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/array/last.js", module);
+(function(){
+/**
+ * Gets the last element of `array`.
+ *
+ * @static
+ * @memberOf _
+ * @category Array
+ * @param {Array} array The array to query.
+ * @returns {*} Returns the last element of `array`.
+ * @example
+ *
+ * _.last([1, 2, 3]);
+ * // => 3
+ */
+function last(array) {
+  var length = array ? array.length : 0;
+  return length ? array[length - 1] : undefined;
+}
+
+module.exports = last;
+
+}).apply(this, arguments);
+
+},{}],39:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/array/zipObject.js", module);
+(function(){
+var isArray = require('../lang/isArray');
+
+/**
+ * The inverse of `_.pairs`; this method returns an object composed from arrays
+ * of property names and values. Provide either a single two dimensional array,
+ * e.g. `[[key1, value1], [key2, value2]]` or two arrays, one of property names
+ * and one of corresponding values.
+ *
+ * @static
+ * @memberOf _
+ * @alias object
+ * @category Array
+ * @param {Array} props The property names.
+ * @param {Array} [values=[]] The property values.
+ * @returns {Object} Returns the new object.
+ * @example
+ *
+ * _.zipObject([['fred', 30], ['barney', 40]]);
+ * // => { 'fred': 30, 'barney': 40 }
+ *
+ * _.zipObject(['fred', 'barney'], [30, 40]);
+ * // => { 'fred': 30, 'barney': 40 }
+ */
+function zipObject(props, values) {
+  var index = -1,
+      length = props ? props.length : 0,
+      result = {};
+
+  if (length && !values && !isArray(props[0])) {
+    values = [];
+  }
+  while (++index < length) {
+    var key = props[index];
+    if (values) {
+      result[key] = values[index];
+    } else if (key) {
+      result[key[0]] = key[1];
+    }
+  }
+  return result;
+}
+
+module.exports = zipObject;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":93}],40:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/filter.js", module);
+(function(){
+var arrayFilter = require('../internal/arrayFilter'),
+    baseCallback = require('../internal/baseCallback'),
+    baseFilter = require('../internal/baseFilter'),
+    isArray = require('../lang/isArray');
+
+/**
+ * Iterates over elements of `collection`, returning an array of all elements
+ * `predicate` returns truthy for. The predicate is bound to `thisArg` and
+ * invoked with three arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `predicate` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `predicate` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @alias select
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [predicate=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `predicate`.
+ * @returns {Array} Returns the new filtered array.
+ * @example
+ *
+ * _.filter([4, 5, 6], function(n) {
+ *   return n % 2 == 0;
+ * });
+ * // => [4, 6]
+ *
+ * var users = [
+ *   { 'user': 'barney', 'age': 36, 'active': true },
+ *   { 'user': 'fred',   'age': 40, 'active': false }
+ * ];
+ *
+ * // using the `_.matches` callback shorthand
+ * _.pluck(_.filter(users, { 'age': 36, 'active': true }), 'user');
+ * // => ['barney']
+ *
+ * // using the `_.matchesProperty` callback shorthand
+ * _.pluck(_.filter(users, 'active', false), 'user');
+ * // => ['fred']
+ *
+ * // using the `_.property` callback shorthand
+ * _.pluck(_.filter(users, 'active'), 'user');
+ * // => ['barney']
+ */
+function filter(collection, predicate, thisArg) {
+  var func = isArray(collection) ? arrayFilter : baseFilter;
+  predicate = baseCallback(predicate, thisArg, 3);
+  return func(collection, predicate);
+}
+
+module.exports = filter;
+
+}).apply(this, arguments);
+
+},{"../internal/arrayFilter":46,"../internal/baseCallback":51,"../internal/baseFilter":54,"../lang/isArray":93}],41:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/forEach.js", module);
+(function(){
+var arrayEach = require('../internal/arrayEach'),
+    baseEach = require('../internal/baseEach'),
+    createForEach = require('../internal/createForEach');
+
+/**
+ * Iterates over elements of `collection` invoking `iteratee` for each element.
+ * The `iteratee` is bound to `thisArg` and invoked with three arguments:
+ * (value, index|key, collection). Iteratee functions may exit iteration early
+ * by explicitly returning `false`.
+ *
+ * **Note:** As with other "Collections" methods, objects with a "length" property
+ * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+ * may be used for object iteration.
+ *
+ * @static
+ * @memberOf _
+ * @alias each
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Array|Object|string} Returns `collection`.
+ * @example
+ *
+ * _([1, 2]).forEach(function(n) {
+ *   console.log(n);
+ * }).value();
+ * // => logs each value from left to right and returns the array
+ *
+ * _.forEach({ 'a': 1, 'b': 2 }, function(n, key) {
+ *   console.log(n, key);
+ * });
+ * // => logs each value-key pair and returns the object (iteration order is not guaranteed)
+ */
+var forEach = createForEach(arrayEach, baseEach);
+
+module.exports = forEach;
+
+}).apply(this, arguments);
+
+},{"../internal/arrayEach":45,"../internal/baseEach":53,"../internal/createForEach":73}],42:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/map.js", module);
+(function(){
+var arrayMap = require('../internal/arrayMap'),
+    baseCallback = require('../internal/baseCallback'),
+    baseMap = require('../internal/baseMap'),
+    isArray = require('../lang/isArray');
+
+/**
+ * Creates an array of values by running each element in `collection` through
+ * `iteratee`. The `iteratee` is bound to `thisArg` and invoked with three
+ * arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `iteratee` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `iteratee` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * Many lodash methods are guarded to work as iteratees for methods like
+ * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
+ *
+ * The guarded methods are:
+ * `ary`, `callback`, `chunk`, `clone`, `create`, `curry`, `curryRight`,
+ * `drop`, `dropRight`, `every`, `fill`, `flatten`, `invert`, `max`, `min`,
+ * `parseInt`, `slice`, `sortBy`, `take`, `takeRight`, `template`, `trim`,
+ * `trimLeft`, `trimRight`, `trunc`, `random`, `range`, `sample`, `some`,
+ * `sum`, `uniq`, and `words`
+ *
+ * @static
+ * @memberOf _
+ * @alias collect
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Array} Returns the new mapped array.
+ * @example
+ *
+ * function timesThree(n) {
+ *   return n * 3;
+ * }
+ *
+ * _.map([1, 2], timesThree);
+ * // => [3, 6]
+ *
+ * _.map({ 'a': 1, 'b': 2 }, timesThree);
+ * // => [3, 6] (iteration order is not guaranteed)
+ *
+ * var users = [
+ *   { 'user': 'barney' },
+ *   { 'user': 'fred' }
+ * ];
+ *
+ * // using the `_.property` callback shorthand
+ * _.map(users, 'user');
+ * // => ['barney', 'fred']
+ */
+function map(collection, iteratee, thisArg) {
+  var func = isArray(collection) ? arrayMap : baseMap;
+  iteratee = baseCallback(iteratee, thisArg, 3);
+  return func(collection, iteratee);
+}
+
+module.exports = map;
+
+}).apply(this, arguments);
+
+},{"../internal/arrayMap":47,"../internal/baseCallback":51,"../internal/baseMap":61,"../lang/isArray":93}],43:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/collection/some.js", module);
+(function(){
+var arraySome = require('../internal/arraySome'),
+    baseCallback = require('../internal/baseCallback'),
+    baseSome = require('../internal/baseSome'),
+    isArray = require('../lang/isArray'),
+    isIterateeCall = require('../internal/isIterateeCall');
+
+/**
+ * Checks if `predicate` returns truthy for **any** element of `collection`.
+ * The function returns as soon as it finds a passing value and does not iterate
+ * over the entire collection. The predicate is bound to `thisArg` and invoked
+ * with three arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `predicate` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `predicate` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @alias any
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [predicate=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `predicate`.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ * @example
+ *
+ * _.some([null, 0, 'yes', false], Boolean);
+ * // => true
+ *
+ * var users = [
+ *   { 'user': 'barney', 'active': true },
+ *   { 'user': 'fred',   'active': false }
+ * ];
+ *
+ * // using the `_.matches` callback shorthand
+ * _.some(users, { 'user': 'barney', 'active': false });
+ * // => false
+ *
+ * // using the `_.matchesProperty` callback shorthand
+ * _.some(users, 'active', false);
+ * // => true
+ *
+ * // using the `_.property` callback shorthand
+ * _.some(users, 'active');
+ * // => true
+ */
+function some(collection, predicate, thisArg) {
+  var func = isArray(collection) ? arraySome : baseSome;
+  if (thisArg && isIterateeCall(collection, predicate, thisArg)) {
+    predicate = undefined;
+  }
+  if (typeof predicate != 'function' || thisArg !== undefined) {
+    predicate = baseCallback(predicate, thisArg, 3);
+  }
+  return func(collection, predicate);
+}
+
+module.exports = some;
+
+}).apply(this, arguments);
+
+},{"../internal/arraySome":48,"../internal/baseCallback":51,"../internal/baseSome":67,"../internal/isIterateeCall":84,"../lang/isArray":93}],44:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/function/restParam.js", module);
+(function(){
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max;
+
+/**
+ * Creates a function that invokes `func` with the `this` binding of the
+ * created function and arguments from `start` and beyond provided as an array.
+ *
+ * **Note:** This method is based on the [rest parameter](https://developer.mozilla.org/Web/JavaScript/Reference/Functions/rest_parameters).
+ *
+ * @static
+ * @memberOf _
+ * @category Function
+ * @param {Function} func The function to apply a rest parameter to.
+ * @param {number} [start=func.length-1] The start position of the rest parameter.
+ * @returns {Function} Returns the new function.
+ * @example
+ *
+ * var say = _.restParam(function(what, names) {
+ *   return what + ' ' + _.initial(names).join(', ') +
+ *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
+ * });
+ *
+ * say('hello', 'fred', 'barney', 'pebbles');
+ * // => 'hello fred, barney, & pebbles'
+ */
+function restParam(func, start) {
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  start = nativeMax(start === undefined ? (func.length - 1) : (+start || 0), 0);
+  return function() {
+    var args = arguments,
+        index = -1,
+        length = nativeMax(args.length - start, 0),
+        rest = Array(length);
+
+    while (++index < length) {
+      rest[index] = args[start + index];
+    }
+    switch (start) {
+      case 0: return func.call(this, rest);
+      case 1: return func.call(this, args[0], rest);
+      case 2: return func.call(this, args[0], args[1], rest);
+    }
+    var otherArgs = Array(start + 1);
+    index = -1;
+    while (++index < start) {
+      otherArgs[index] = args[index];
+    }
+    otherArgs[start] = rest;
+    return func.apply(this, otherArgs);
+  };
+}
+
+module.exports = restParam;
+
+}).apply(this, arguments);
+
+},{}],45:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayEach.js", module);
+(function(){
+/**
+ * A specialized version of `_.forEach` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns `array`.
+ */
+function arrayEach(array, iteratee) {
+  var index = -1,
+      length = array.length;
+
+  while (++index < length) {
+    if (iteratee(array[index], index, array) === false) {
+      break;
+    }
+  }
+  return array;
+}
+
+module.exports = arrayEach;
+
+}).apply(this, arguments);
+
+},{}],46:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayFilter.js", module);
+(function(){
+/**
+ * A specialized version of `_.filter` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {Array} Returns the new filtered array.
+ */
+function arrayFilter(array, predicate) {
+  var index = -1,
+      length = array.length,
+      resIndex = -1,
+      result = [];
+
+  while (++index < length) {
+    var value = array[index];
+    if (predicate(value, index, array)) {
+      result[++resIndex] = value;
+    }
+  }
+  return result;
+}
+
+module.exports = arrayFilter;
+
+}).apply(this, arguments);
+
+},{}],47:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayMap.js", module);
+(function(){
+/**
+ * A specialized version of `_.map` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array.length,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+module.exports = arrayMap;
+
+}).apply(this, arguments);
+
+},{}],48:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/arraySome.js", module);
+(function(){
+/**
+ * A specialized version of `_.some` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ */
+function arraySome(array, predicate) {
+  var index = -1,
+      length = array.length;
+
+  while (++index < length) {
+    if (predicate(array[index], index, array)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+module.exports = arraySome;
+
+}).apply(this, arguments);
+
+},{}],49:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/assignWith.js", module);
+(function(){
+var keys = require('../object/keys');
+
+/**
+ * A specialized version of `_.assign` for customizing assigned values without
+ * support for argument juggling, multiple sources, and `this` binding `customizer`
+ * functions.
+ *
+ * @private
+ * @param {Object} object The destination object.
+ * @param {Object} source The source object.
+ * @param {Function} customizer The function to customize assigned values.
+ * @returns {Object} Returns `object`.
+ */
+function assignWith(object, source, customizer) {
+  var index = -1,
+      props = keys(source),
+      length = props.length;
+
+  while (++index < length) {
+    var key = props[index],
+        value = object[key],
+        result = customizer(value, source[key], key, object, source);
+
+    if ((result === result ? (result !== value) : (value === value)) ||
+        (value === undefined && !(key in object))) {
+      object[key] = result;
+    }
+  }
+  return object;
+}
+
+module.exports = assignWith;
+
+}).apply(this, arguments);
+
+},{"../object/keys":100}],50:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseAssign.js", module);
+(function(){
+var baseCopy = require('./baseCopy'),
+    keys = require('../object/keys');
+
+/**
+ * The base implementation of `_.assign` without support for argument juggling,
+ * multiple sources, and `customizer` functions.
+ *
+ * @private
+ * @param {Object} object The destination object.
+ * @param {Object} source The source object.
+ * @returns {Object} Returns `object`.
+ */
+function baseAssign(object, source) {
+  return source == null
+    ? object
+    : baseCopy(source, keys(source), object);
+}
+
+module.exports = baseAssign;
+
+}).apply(this, arguments);
+
+},{"../object/keys":100,"./baseCopy":52}],51:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseCallback.js", module);
+(function(){
+var baseMatches = require('./baseMatches'),
+    baseMatchesProperty = require('./baseMatchesProperty'),
+    bindCallback = require('./bindCallback'),
+    identity = require('../utility/identity'),
+    property = require('../utility/property');
+
+/**
+ * The base implementation of `_.callback` which supports specifying the
+ * number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {*} [func=_.identity] The value to convert to a callback.
+ * @param {*} [thisArg] The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function baseCallback(func, thisArg, argCount) {
+  var type = typeof func;
+  if (type == 'function') {
+    return thisArg === undefined
+      ? func
+      : bindCallback(func, thisArg, argCount);
+  }
+  if (func == null) {
+    return identity;
+  }
+  if (type == 'object') {
+    return baseMatches(func);
+  }
+  return thisArg === undefined
+    ? property(func)
+    : baseMatchesProperty(func, thisArg);
+}
+
+module.exports = baseCallback;
+
+}).apply(this, arguments);
+
+},{"../utility/identity":104,"../utility/property":105,"./baseMatches":62,"./baseMatchesProperty":63,"./bindCallback":69}],52:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseCopy.js", module);
+(function(){
+/**
+ * Copies properties of `source` to `object`.
+ *
+ * @private
+ * @param {Object} source The object to copy properties from.
+ * @param {Array} props The property names to copy.
+ * @param {Object} [object={}] The object to copy properties to.
+ * @returns {Object} Returns `object`.
+ */
+function baseCopy(source, props, object) {
+  object || (object = {});
+
+  var index = -1,
+      length = props.length;
+
+  while (++index < length) {
+    var key = props[index];
+    object[key] = source[key];
+  }
+  return object;
+}
+
+module.exports = baseCopy;
+
+}).apply(this, arguments);
+
+},{}],53:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseEach.js", module);
+(function(){
+var baseForOwn = require('./baseForOwn'),
+    createBaseEach = require('./createBaseEach');
+
+/**
+ * The base implementation of `_.forEach` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array|Object|string} Returns `collection`.
+ */
+var baseEach = createBaseEach(baseForOwn);
+
+module.exports = baseEach;
+
+}).apply(this, arguments);
+
+},{"./baseForOwn":56,"./createBaseEach":71}],54:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseFilter.js", module);
+(function(){
+var baseEach = require('./baseEach');
+
+/**
+ * The base implementation of `_.filter` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {Array} Returns the new filtered array.
+ */
+function baseFilter(collection, predicate) {
+  var result = [];
+  baseEach(collection, function(value, index, collection) {
+    if (predicate(value, index, collection)) {
+      result.push(value);
+    }
+  });
+  return result;
+}
+
+module.exports = baseFilter;
+
+}).apply(this, arguments);
+
+},{"./baseEach":53}],55:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseFor.js", module);
+(function(){
+var createBaseFor = require('./createBaseFor');
+
+/**
+ * The base implementation of `baseForIn` and `baseForOwn` which iterates
+ * over `object` properties returned by `keysFunc` invoking `iteratee` for
+ * each property. Iteratee functions may exit iteration early by explicitly
+ * returning `false`.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @param {Function} keysFunc The function to get the keys of `object`.
+ * @returns {Object} Returns `object`.
+ */
+var baseFor = createBaseFor();
+
+module.exports = baseFor;
+
+}).apply(this, arguments);
+
+},{"./createBaseFor":72}],56:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseForOwn.js", module);
+(function(){
+var baseFor = require('./baseFor'),
+    keys = require('../object/keys');
+
+/**
+ * The base implementation of `_.forOwn` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Object} Returns `object`.
+ */
+function baseForOwn(object, iteratee) {
+  return baseFor(object, iteratee, keys);
+}
+
+module.exports = baseForOwn;
+
+}).apply(this, arguments);
+
+},{"../object/keys":100,"./baseFor":55}],57:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseGet.js", module);
+(function(){
+var toObject = require('./toObject');
+
+/**
+ * The base implementation of `get` without support for string paths
+ * and default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array} path The path of the property to get.
+ * @param {string} [pathKey] The key representation of path.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path, pathKey) {
+  if (object == null) {
+    return;
+  }
+  if (pathKey !== undefined && pathKey in toObject(object)) {
+    path = [pathKey];
+  }
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[path[index++]];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+module.exports = baseGet;
+
+}).apply(this, arguments);
+
+},{"./toObject":90}],58:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsEqual.js", module);
+(function(){
+var baseIsEqualDeep = require('./baseIsEqualDeep'),
+    isObject = require('../lang/isObject'),
+    isObjectLike = require('./isObjectLike');
+
+/**
+ * The base implementation of `_.isEqual` without support for `this` binding
+ * `customizer` functions.
+ *
+ * @private
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @param {Function} [customizer] The function to customize comparing values.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ */
+function baseIsEqual(value, other, customizer, isLoose, stackA, stackB) {
+  if (value === other) {
+    return true;
+  }
+  if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
+    return value !== value && other !== other;
+  }
+  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isLoose, stackA, stackB);
+}
+
+module.exports = baseIsEqual;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":96,"./baseIsEqualDeep":59,"./isObjectLike":87}],59:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsEqualDeep.js", module);
+(function(){
+var equalArrays = require('./equalArrays'),
+    equalByTag = require('./equalByTag'),
+    equalObjects = require('./equalObjects'),
+    isArray = require('../lang/isArray'),
+    isTypedArray = require('../lang/isTypedArray');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    objectTag = '[object Object]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * A specialized version of `baseIsEqual` for arrays and objects which performs
+ * deep comparisons and tracks traversed objects enabling objects with circular
+ * references to be compared.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing objects.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA=[]] Tracks traversed `value` objects.
+ * @param {Array} [stackB=[]] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function baseIsEqualDeep(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var objIsArr = isArray(object),
+      othIsArr = isArray(other),
+      objTag = arrayTag,
+      othTag = arrayTag;
+
+  if (!objIsArr) {
+    objTag = objToString.call(object);
+    if (objTag == argsTag) {
+      objTag = objectTag;
+    } else if (objTag != objectTag) {
+      objIsArr = isTypedArray(object);
+    }
+  }
+  if (!othIsArr) {
+    othTag = objToString.call(other);
+    if (othTag == argsTag) {
+      othTag = objectTag;
+    } else if (othTag != objectTag) {
+      othIsArr = isTypedArray(other);
+    }
+  }
+  var objIsObj = objTag == objectTag,
+      othIsObj = othTag == objectTag,
+      isSameTag = objTag == othTag;
+
+  if (isSameTag && !(objIsArr || objIsObj)) {
+    return equalByTag(object, other, objTag);
+  }
+  if (!isLoose) {
+    var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+        othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+    if (objIsWrapped || othIsWrapped) {
+      return equalFunc(objIsWrapped ? object.value() : object, othIsWrapped ? other.value() : other, customizer, isLoose, stackA, stackB);
+    }
+  }
+  if (!isSameTag) {
+    return false;
+  }
+  // Assume cyclic values are equal.
+  // For more information on detecting circular references see https://es5.github.io/#JO.
+  stackA || (stackA = []);
+  stackB || (stackB = []);
+
+  var length = stackA.length;
+  while (length--) {
+    if (stackA[length] == object) {
+      return stackB[length] == other;
+    }
+  }
+  // Add `object` and `other` to the stack of traversed objects.
+  stackA.push(object);
+  stackB.push(other);
+
+  var result = (objIsArr ? equalArrays : equalObjects)(object, other, equalFunc, customizer, isLoose, stackA, stackB);
+
+  stackA.pop();
+  stackB.pop();
+
+  return result;
+}
+
+module.exports = baseIsEqualDeep;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":93,"../lang/isTypedArray":97,"./equalArrays":76,"./equalByTag":77,"./equalObjects":78}],60:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsMatch.js", module);
+(function(){
+var baseIsEqual = require('./baseIsEqual'),
+    toObject = require('./toObject');
+
+/**
+ * The base implementation of `_.isMatch` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to inspect.
+ * @param {Array} matchData The propery names, values, and compare flags to match.
+ * @param {Function} [customizer] The function to customize comparing objects.
+ * @returns {boolean} Returns `true` if `object` is a match, else `false`.
+ */
+function baseIsMatch(object, matchData, customizer) {
+  var index = matchData.length,
+      length = index,
+      noCustomizer = !customizer;
+
+  if (object == null) {
+    return !length;
+  }
+  object = toObject(object);
+  while (index--) {
+    var data = matchData[index];
+    if ((noCustomizer && data[2])
+          ? data[1] !== object[data[0]]
+          : !(data[0] in object)
+        ) {
+      return false;
+    }
+  }
+  while (++index < length) {
+    data = matchData[index];
+    var key = data[0],
+        objValue = object[key],
+        srcValue = data[1];
+
+    if (noCustomizer && data[2]) {
+      if (objValue === undefined && !(key in object)) {
+        return false;
+      }
+    } else {
+      var result = customizer ? customizer(objValue, srcValue, key) : undefined;
+      if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, true) : result)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+module.exports = baseIsMatch;
+
+}).apply(this, arguments);
+
+},{"./baseIsEqual":58,"./toObject":90}],61:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMap.js", module);
+(function(){
+var baseEach = require('./baseEach'),
+    isArrayLike = require('./isArrayLike');
+
+/**
+ * The base implementation of `_.map` without support for callback shorthands
+ * and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function baseMap(collection, iteratee) {
+  var index = -1,
+      result = isArrayLike(collection) ? Array(collection.length) : [];
+
+  baseEach(collection, function(value, key, collection) {
+    result[++index] = iteratee(value, key, collection);
+  });
+  return result;
+}
+
+module.exports = baseMap;
+
+}).apply(this, arguments);
+
+},{"./baseEach":53,"./isArrayLike":82}],62:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMatches.js", module);
+(function(){
+var baseIsMatch = require('./baseIsMatch'),
+    getMatchData = require('./getMatchData'),
+    toObject = require('./toObject');
+
+/**
+ * The base implementation of `_.matches` which does not clone `source`.
+ *
+ * @private
+ * @param {Object} source The object of property values to match.
+ * @returns {Function} Returns the new function.
+ */
+function baseMatches(source) {
+  var matchData = getMatchData(source);
+  if (matchData.length == 1 && matchData[0][2]) {
+    var key = matchData[0][0],
+        value = matchData[0][1];
+
+    return function(object) {
+      if (object == null) {
+        return false;
+      }
+      return object[key] === value && (value !== undefined || (key in toObject(object)));
+    };
+  }
+  return function(object) {
+    return baseIsMatch(object, matchData);
+  };
+}
+
+module.exports = baseMatches;
+
+}).apply(this, arguments);
+
+},{"./baseIsMatch":60,"./getMatchData":80,"./toObject":90}],63:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMatchesProperty.js", module);
+(function(){
+var baseGet = require('./baseGet'),
+    baseIsEqual = require('./baseIsEqual'),
+    baseSlice = require('./baseSlice'),
+    isArray = require('../lang/isArray'),
+    isKey = require('./isKey'),
+    isStrictComparable = require('./isStrictComparable'),
+    last = require('../array/last'),
+    toObject = require('./toObject'),
+    toPath = require('./toPath');
+
+/**
+ * The base implementation of `_.matchesProperty` which does not clone `srcValue`.
+ *
+ * @private
+ * @param {string} path The path of the property to get.
+ * @param {*} srcValue The value to compare.
+ * @returns {Function} Returns the new function.
+ */
+function baseMatchesProperty(path, srcValue) {
+  var isArr = isArray(path),
+      isCommon = isKey(path) && isStrictComparable(srcValue),
+      pathKey = (path + '');
+
+  path = toPath(path);
+  return function(object) {
+    if (object == null) {
+      return false;
+    }
+    var key = pathKey;
+    object = toObject(object);
+    if ((isArr || !isCommon) && !(key in object)) {
+      object = path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
+      if (object == null) {
+        return false;
+      }
+      key = last(path);
+      object = toObject(object);
+    }
+    return object[key] === srcValue
+      ? (srcValue !== undefined || (key in object))
+      : baseIsEqual(srcValue, object[key], undefined, true);
+  };
+}
+
+module.exports = baseMatchesProperty;
+
+}).apply(this, arguments);
+
+},{"../array/last":38,"../lang/isArray":93,"./baseGet":57,"./baseIsEqual":58,"./baseSlice":66,"./isKey":85,"./isStrictComparable":88,"./toObject":90,"./toPath":91}],64:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseProperty.js", module);
+(function(){
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+module.exports = baseProperty;
+
+}).apply(this, arguments);
+
+},{}],65:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/basePropertyDeep.js", module);
+(function(){
+var baseGet = require('./baseGet'),
+    toPath = require('./toPath');
+
+/**
+ * A specialized version of `baseProperty` which supports deep paths.
+ *
+ * @private
+ * @param {Array|string} path The path of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function basePropertyDeep(path) {
+  var pathKey = (path + '');
+  path = toPath(path);
+  return function(object) {
+    return baseGet(object, path, pathKey);
+  };
+}
+
+module.exports = basePropertyDeep;
+
+}).apply(this, arguments);
+
+},{"./baseGet":57,"./toPath":91}],66:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseSlice.js", module);
+(function(){
+/**
+ * The base implementation of `_.slice` without an iteratee call guard.
+ *
+ * @private
+ * @param {Array} array The array to slice.
+ * @param {number} [start=0] The start position.
+ * @param {number} [end=array.length] The end position.
+ * @returns {Array} Returns the slice of `array`.
+ */
+function baseSlice(array, start, end) {
+  var index = -1,
+      length = array.length;
+
+  start = start == null ? 0 : (+start || 0);
+  if (start < 0) {
+    start = -start > length ? 0 : (length + start);
+  }
+  end = (end === undefined || end > length) ? length : (+end || 0);
+  if (end < 0) {
+    end += length;
+  }
+  length = start > end ? 0 : ((end - start) >>> 0);
+  start >>>= 0;
+
+  var result = Array(length);
+  while (++index < length) {
+    result[index] = array[index + start];
+  }
+  return result;
+}
+
+module.exports = baseSlice;
+
+}).apply(this, arguments);
+
+},{}],67:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseSome.js", module);
+(function(){
+var baseEach = require('./baseEach');
+
+/**
+ * The base implementation of `_.some` without support for callback shorthands
+ * and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ */
+function baseSome(collection, predicate) {
+  var result;
+
+  baseEach(collection, function(value, index, collection) {
+    result = predicate(value, index, collection);
+    return !result;
+  });
+  return !!result;
+}
+
+module.exports = baseSome;
+
+}).apply(this, arguments);
+
+},{"./baseEach":53}],68:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/baseToString.js", module);
+(function(){
+/**
+ * Converts `value` to a string if it's not one. An empty string is returned
+ * for `null` or `undefined` values.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  return value == null ? '' : (value + '');
+}
+
+module.exports = baseToString;
+
+}).apply(this, arguments);
+
+},{}],69:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/bindCallback.js", module);
+(function(){
+var identity = require('../utility/identity');
+
+/**
+ * A specialized version of `baseCallback` which only supports `this` binding
+ * and specifying the number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {Function} func The function to bind.
+ * @param {*} thisArg The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function bindCallback(func, thisArg, argCount) {
+  if (typeof func != 'function') {
+    return identity;
+  }
+  if (thisArg === undefined) {
+    return func;
+  }
+  switch (argCount) {
+    case 1: return function(value) {
+      return func.call(thisArg, value);
+    };
+    case 3: return function(value, index, collection) {
+      return func.call(thisArg, value, index, collection);
+    };
+    case 4: return function(accumulator, value, index, collection) {
+      return func.call(thisArg, accumulator, value, index, collection);
+    };
+    case 5: return function(value, other, key, object, source) {
+      return func.call(thisArg, value, other, key, object, source);
+    };
+  }
+  return function() {
+    return func.apply(thisArg, arguments);
+  };
+}
+
+module.exports = bindCallback;
+
+}).apply(this, arguments);
+
+},{"../utility/identity":104}],70:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createAssigner.js", module);
+(function(){
+var bindCallback = require('./bindCallback'),
+    isIterateeCall = require('./isIterateeCall'),
+    restParam = require('../function/restParam');
+
+/**
+ * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
+ *
+ * @private
+ * @param {Function} assigner The function to assign values.
+ * @returns {Function} Returns the new assigner function.
+ */
+function createAssigner(assigner) {
+  return restParam(function(object, sources) {
+    var index = -1,
+        length = object == null ? 0 : sources.length,
+        customizer = length > 2 ? sources[length - 2] : undefined,
+        guard = length > 2 ? sources[2] : undefined,
+        thisArg = length > 1 ? sources[length - 1] : undefined;
+
+    if (typeof customizer == 'function') {
+      customizer = bindCallback(customizer, thisArg, 5);
+      length -= 2;
+    } else {
+      customizer = typeof thisArg == 'function' ? thisArg : undefined;
+      length -= (customizer ? 1 : 0);
+    }
+    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+      customizer = length < 3 ? undefined : customizer;
+      length = 1;
+    }
+    while (++index < length) {
+      var source = sources[index];
+      if (source) {
+        assigner(object, source, customizer);
+      }
+    }
+    return object;
+  });
+}
+
+module.exports = createAssigner;
+
+}).apply(this, arguments);
+
+},{"../function/restParam":44,"./bindCallback":69,"./isIterateeCall":84}],71:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createBaseEach.js", module);
+(function(){
+var getLength = require('./getLength'),
+    isLength = require('./isLength'),
+    toObject = require('./toObject');
+
+/**
+ * Creates a `baseEach` or `baseEachRight` function.
+ *
+ * @private
+ * @param {Function} eachFunc The function to iterate over a collection.
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseEach(eachFunc, fromRight) {
+  return function(collection, iteratee) {
+    var length = collection ? getLength(collection) : 0;
+    if (!isLength(length)) {
+      return eachFunc(collection, iteratee);
+    }
+    var index = fromRight ? length : -1,
+        iterable = toObject(collection);
+
+    while ((fromRight ? index-- : ++index < length)) {
+      if (iteratee(iterable[index], index, iterable) === false) {
+        break;
+      }
+    }
+    return collection;
+  };
+}
+
+module.exports = createBaseEach;
+
+}).apply(this, arguments);
+
+},{"./getLength":79,"./isLength":86,"./toObject":90}],72:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createBaseFor.js", module);
+(function(){
+var toObject = require('./toObject');
+
+/**
+ * Creates a base function for `_.forIn` or `_.forInRight`.
+ *
+ * @private
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseFor(fromRight) {
+  return function(object, iteratee, keysFunc) {
+    var iterable = toObject(object),
+        props = keysFunc(object),
+        length = props.length,
+        index = fromRight ? length : -1;
+
+    while ((fromRight ? index-- : ++index < length)) {
+      var key = props[index];
+      if (iteratee(iterable[key], key, iterable) === false) {
+        break;
+      }
+    }
+    return object;
+  };
+}
+
+module.exports = createBaseFor;
+
+}).apply(this, arguments);
+
+},{"./toObject":90}],73:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createForEach.js", module);
+(function(){
+var bindCallback = require('./bindCallback'),
+    isArray = require('../lang/isArray');
+
+/**
+ * Creates a function for `_.forEach` or `_.forEachRight`.
+ *
+ * @private
+ * @param {Function} arrayFunc The function to iterate over an array.
+ * @param {Function} eachFunc The function to iterate over a collection.
+ * @returns {Function} Returns the new each function.
+ */
+function createForEach(arrayFunc, eachFunc) {
+  return function(collection, iteratee, thisArg) {
+    return (typeof iteratee == 'function' && thisArg === undefined && isArray(collection))
+      ? arrayFunc(collection, iteratee)
+      : eachFunc(collection, bindCallback(iteratee, thisArg, 3));
+  };
+}
+
+module.exports = createForEach;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":93,"./bindCallback":69}],74:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createForOwn.js", module);
+(function(){
+var bindCallback = require('./bindCallback');
+
+/**
+ * Creates a function for `_.forOwn` or `_.forOwnRight`.
+ *
+ * @private
+ * @param {Function} objectFunc The function to iterate over an object.
+ * @returns {Function} Returns the new each function.
+ */
+function createForOwn(objectFunc) {
+  return function(object, iteratee, thisArg) {
+    if (typeof iteratee != 'function' || thisArg !== undefined) {
+      iteratee = bindCallback(iteratee, thisArg, 3);
+    }
+    return objectFunc(object, iteratee);
+  };
+}
+
+module.exports = createForOwn;
+
+}).apply(this, arguments);
+
+},{"./bindCallback":69}],75:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/createObjectMapper.js", module);
+(function(){
+var baseCallback = require('./baseCallback'),
+    baseForOwn = require('./baseForOwn');
+
+/**
+ * Creates a function for `_.mapKeys` or `_.mapValues`.
+ *
+ * @private
+ * @param {boolean} [isMapKeys] Specify mapping keys instead of values.
+ * @returns {Function} Returns the new map function.
+ */
+function createObjectMapper(isMapKeys) {
+  return function(object, iteratee, thisArg) {
+    var result = {};
+    iteratee = baseCallback(iteratee, thisArg, 3);
+
+    baseForOwn(object, function(value, key, object) {
+      var mapped = iteratee(value, key, object);
+      key = isMapKeys ? mapped : key;
+      value = isMapKeys ? value : mapped;
+      result[key] = value;
+    });
+    return result;
+  };
+}
+
+module.exports = createObjectMapper;
+
+}).apply(this, arguments);
+
+},{"./baseCallback":51,"./baseForOwn":56}],76:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/equalArrays.js", module);
+(function(){
+var arraySome = require('./arraySome');
+
+/**
+ * A specialized version of `baseIsEqualDeep` for arrays with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Array} array The array to compare.
+ * @param {Array} other The other array to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing arrays.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
+ */
+function equalArrays(array, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var index = -1,
+      arrLength = array.length,
+      othLength = other.length;
+
+  if (arrLength != othLength && !(isLoose && othLength > arrLength)) {
+    return false;
+  }
+  // Ignore non-index properties.
+  while (++index < arrLength) {
+    var arrValue = array[index],
+        othValue = other[index],
+        result = customizer ? customizer(isLoose ? othValue : arrValue, isLoose ? arrValue : othValue, index) : undefined;
+
+    if (result !== undefined) {
+      if (result) {
+        continue;
+      }
+      return false;
+    }
+    // Recursively compare arrays (susceptible to call stack limits).
+    if (isLoose) {
+      if (!arraySome(other, function(othValue) {
+            return arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB);
+          })) {
+        return false;
+      }
+    } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+module.exports = equalArrays;
+
+}).apply(this, arguments);
+
+},{"./arraySome":48}],77:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/equalByTag.js", module);
+(function(){
+/** `Object#toString` result references. */
+var boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    numberTag = '[object Number]',
+    regexpTag = '[object RegExp]',
+    stringTag = '[object String]';
+
+/**
+ * A specialized version of `baseIsEqualDeep` for comparing objects of
+ * the same `toStringTag`.
+ *
+ * **Note:** This function only supports comparing values with tags of
+ * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {string} tag The `toStringTag` of the objects to compare.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalByTag(object, other, tag) {
+  switch (tag) {
+    case boolTag:
+    case dateTag:
+      // Coerce dates and booleans to numbers, dates to milliseconds and booleans
+      // to `1` or `0` treating invalid dates coerced to `NaN` as not equal.
+      return +object == +other;
+
+    case errorTag:
+      return object.name == other.name && object.message == other.message;
+
+    case numberTag:
+      // Treat `NaN` vs. `NaN` as equal.
+      return (object != +object)
+        ? other != +other
+        : object == +other;
+
+    case regexpTag:
+    case stringTag:
+      // Coerce regexes to strings and treat strings primitives and string
+      // objects as equal. See https://es5.github.io/#x15.10.6.4 for more details.
+      return object == (other + '');
+  }
+  return false;
+}
+
+module.exports = equalByTag;
+
+}).apply(this, arguments);
+
+},{}],78:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/equalObjects.js", module);
+(function(){
+var keys = require('../object/keys');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * A specialized version of `baseIsEqualDeep` for objects with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing values.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalObjects(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var objProps = keys(object),
+      objLength = objProps.length,
+      othProps = keys(other),
+      othLength = othProps.length;
+
+  if (objLength != othLength && !isLoose) {
+    return false;
+  }
+  var index = objLength;
+  while (index--) {
+    var key = objProps[index];
+    if (!(isLoose ? key in other : hasOwnProperty.call(other, key))) {
+      return false;
+    }
+  }
+  var skipCtor = isLoose;
+  while (++index < objLength) {
+    key = objProps[index];
+    var objValue = object[key],
+        othValue = other[key],
+        result = customizer ? customizer(isLoose ? othValue : objValue, isLoose? objValue : othValue, key) : undefined;
+
+    // Recursively compare objects (susceptible to call stack limits).
+    if (!(result === undefined ? equalFunc(objValue, othValue, customizer, isLoose, stackA, stackB) : result)) {
+      return false;
+    }
+    skipCtor || (skipCtor = key == 'constructor');
+  }
+  if (!skipCtor) {
+    var objCtor = object.constructor,
+        othCtor = other.constructor;
+
+    // Non `Object` object instances with different constructors are not equal.
+    if (objCtor != othCtor &&
+        ('constructor' in object && 'constructor' in other) &&
+        !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
+          typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+module.exports = equalObjects;
+
+}).apply(this, arguments);
+
+},{"../object/keys":100}],79:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/getLength.js", module);
+(function(){
+var baseProperty = require('./baseProperty');
+
+/**
+ * Gets the "length" property value of `object`.
+ *
+ * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
+ * that affects Safari on at least iOS 8.1-8.3 ARM64.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {*} Returns the "length" value.
+ */
+var getLength = baseProperty('length');
+
+module.exports = getLength;
+
+}).apply(this, arguments);
+
+},{"./baseProperty":64}],80:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/getMatchData.js", module);
+(function(){
+var isStrictComparable = require('./isStrictComparable'),
+    pairs = require('../object/pairs');
+
+/**
+ * Gets the propery names, values, and compare flags of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the match data of `object`.
+ */
+function getMatchData(object) {
+  var result = pairs(object),
+      length = result.length;
+
+  while (length--) {
+    result[length][2] = isStrictComparable(result[length][1]);
+  }
+  return result;
+}
+
+module.exports = getMatchData;
+
+}).apply(this, arguments);
+
+},{"../object/pairs":103,"./isStrictComparable":88}],81:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/getNative.js", module);
+(function(){
+var isNative = require('../lang/isNative');
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = object == null ? undefined : object[key];
+  return isNative(value) ? value : undefined;
+}
+
+module.exports = getNative;
+
+}).apply(this, arguments);
+
+},{"../lang/isNative":95}],82:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isArrayLike.js", module);
+(function(){
+var getLength = require('./getLength'),
+    isLength = require('./isLength');
+
+/**
+ * Checks if `value` is array-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ */
+function isArrayLike(value) {
+  return value != null && isLength(getLength(value));
+}
+
+module.exports = isArrayLike;
+
+}).apply(this, arguments);
+
+},{"./getLength":79,"./isLength":86}],83:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isIndex.js", module);
+(function(){
+/** Used to detect unsigned integer values. */
+var reIsUint = /^\d+$/;
+
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+  return value > -1 && value % 1 == 0 && value < length;
+}
+
+module.exports = isIndex;
+
+}).apply(this, arguments);
+
+},{}],84:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isIterateeCall.js", module);
+(function(){
+var isArrayLike = require('./isArrayLike'),
+    isIndex = require('./isIndex'),
+    isObject = require('../lang/isObject');
+
+/**
+ * Checks if the provided arguments are from an iteratee call.
+ *
+ * @private
+ * @param {*} value The potential iteratee value argument.
+ * @param {*} index The potential iteratee index or key argument.
+ * @param {*} object The potential iteratee object argument.
+ * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
+ */
+function isIterateeCall(value, index, object) {
+  if (!isObject(object)) {
+    return false;
+  }
+  var type = typeof index;
+  if (type == 'number'
+      ? (isArrayLike(object) && isIndex(index, object.length))
+      : (type == 'string' && index in object)) {
+    var other = object[index];
+    return value === value ? (value === other) : (other !== other);
+  }
+  return false;
+}
+
+module.exports = isIterateeCall;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":96,"./isArrayLike":82,"./isIndex":83}],85:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isKey.js", module);
+(function(){
+var isArray = require('../lang/isArray'),
+    toObject = require('./toObject');
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\n\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  var type = typeof value;
+  if ((type == 'string' && reIsPlainProp.test(value)) || type == 'number') {
+    return true;
+  }
+  if (isArray(value)) {
+    return false;
+  }
+  var result = !reIsDeepProp.test(value);
+  return result || (object != null && value in toObject(object));
+}
+
+module.exports = isKey;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":93,"./toObject":90}],86:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isLength.js", module);
+(function(){
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+module.exports = isLength;
+
+}).apply(this, arguments);
+
+},{}],87:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isObjectLike.js", module);
+(function(){
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+module.exports = isObjectLike;
+
+}).apply(this, arguments);
+
+},{}],88:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/isStrictComparable.js", module);
+(function(){
+var isObject = require('../lang/isObject');
+
+/**
+ * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` if suitable for strict
+ *  equality comparisons, else `false`.
+ */
+function isStrictComparable(value) {
+  return value === value && !isObject(value);
+}
+
+module.exports = isStrictComparable;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":96}],89:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/shimKeys.js", module);
+(function(){
+var isArguments = require('../lang/isArguments'),
+    isArray = require('../lang/isArray'),
+    isIndex = require('./isIndex'),
+    isLength = require('./isLength'),
+    keysIn = require('../object/keysIn');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * A fallback implementation of `Object.keys` which creates an array of the
+ * own enumerable property names of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ */
+function shimKeys(object) {
+  var props = keysIn(object),
+      propsLength = props.length,
+      length = propsLength && object.length;
+
+  var allowIndexes = !!length && isLength(length) &&
+    (isArray(object) || isArguments(object));
+
+  var index = -1,
+      result = [];
+
+  while (++index < propsLength) {
+    var key = props[index];
+    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = shimKeys;
+
+}).apply(this, arguments);
+
+},{"../lang/isArguments":92,"../lang/isArray":93,"../object/keysIn":101,"./isIndex":83,"./isLength":86}],90:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/toObject.js", module);
+(function(){
+var isObject = require('../lang/isObject');
+
+/**
+ * Converts `value` to an object if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Object} Returns the object.
+ */
+function toObject(value) {
+  return isObject(value) ? value : Object(value);
+}
+
+module.exports = toObject;
+
+}).apply(this, arguments);
+
+},{"../lang/isObject":96}],91:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/internal/toPath.js", module);
+(function(){
+var baseToString = require('./baseToString'),
+    isArray = require('../lang/isArray');
+
+/** Used to match property names within property paths. */
+var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\n\\]|\\.)*?)\2)\]/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/**
+ * Converts `value` to property path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Array} Returns the property path array.
+ */
+function toPath(value) {
+  if (isArray(value)) {
+    return value;
+  }
+  var result = [];
+  baseToString(value).replace(rePropName, function(match, number, quote, string) {
+    result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+}
+
+module.exports = toPath;
+
+}).apply(this, arguments);
+
+},{"../lang/isArray":93,"./baseToString":68}],92:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isArguments.js", module);
+(function(){
+var isArrayLike = require('../internal/isArrayLike'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Native method references. */
+var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+
+/**
+ * Checks if `value` is classified as an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+function isArguments(value) {
+  return isObjectLike(value) && isArrayLike(value) &&
+    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
+}
+
+module.exports = isArguments;
+
+}).apply(this, arguments);
+
+},{"../internal/isArrayLike":82,"../internal/isObjectLike":87}],93:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isArray.js", module);
+(function(){
+var getNative = require('../internal/getNative'),
+    isLength = require('../internal/isLength'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** `Object#toString` result references. */
+var arrayTag = '[object Array]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeIsArray = getNative(Array, 'isArray');
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(function() { return arguments; }());
+ * // => false
+ */
+var isArray = nativeIsArray || function(value) {
+  return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag;
+};
+
+module.exports = isArray;
+
+}).apply(this, arguments);
+
+},{"../internal/getNative":81,"../internal/isLength":86,"../internal/isObjectLike":87}],94:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isFunction.js", module);
+(function(){
+var isObject = require('./isObject');
+
+/** `Object#toString` result references. */
+var funcTag = '[object Function]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in older versions of Chrome and Safari which return 'function' for regexes
+  // and Safari 8 which returns 'object' for typed array constructors.
+  return isObject(value) && objToString.call(value) == funcTag;
+}
+
+module.exports = isFunction;
+
+}).apply(this, arguments);
+
+},{"./isObject":96}],95:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isNative.js", module);
+(function(){
+var isFunction = require('./isFunction'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** Used to detect host constructors (Safari > 5). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var fnToString = Function.prototype.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * Checks if `value` is a native function.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
+ * @example
+ *
+ * _.isNative(Array.prototype.push);
+ * // => true
+ *
+ * _.isNative(_);
+ * // => false
+ */
+function isNative(value) {
+  if (value == null) {
+    return false;
+  }
+  if (isFunction(value)) {
+    return reIsNative.test(fnToString.call(value));
+  }
+  return isObjectLike(value) && reIsHostCtor.test(value);
+}
+
+module.exports = isNative;
+
+}).apply(this, arguments);
+
+},{"../internal/isObjectLike":87,"./isFunction":94}],96:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isObject.js", module);
+(function(){
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+module.exports = isObject;
+
+}).apply(this, arguments);
+
+},{}],97:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/lang/isTypedArray.js", module);
+(function(){
+var isLength = require('../internal/isLength'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    funcTag = '[object Function]',
+    mapTag = '[object Map]',
+    numberTag = '[object Number]',
+    objectTag = '[object Object]',
+    regexpTag = '[object RegExp]',
+    setTag = '[object Set]',
+    stringTag = '[object String]',
+    weakMapTag = '[object WeakMap]';
+
+var arrayBufferTag = '[object ArrayBuffer]',
+    float32Tag = '[object Float32Array]',
+    float64Tag = '[object Float64Array]',
+    int8Tag = '[object Int8Array]',
+    int16Tag = '[object Int16Array]',
+    int32Tag = '[object Int32Array]',
+    uint8Tag = '[object Uint8Array]',
+    uint8ClampedTag = '[object Uint8ClampedArray]',
+    uint16Tag = '[object Uint16Array]',
+    uint32Tag = '[object Uint32Array]';
+
+/** Used to identify `toStringTag` values of typed arrays. */
+var typedArrayTags = {};
+typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+typedArrayTags[uint32Tag] = true;
+typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+typedArrayTags[dateTag] = typedArrayTags[errorTag] =
+typedArrayTags[funcTag] = typedArrayTags[mapTag] =
+typedArrayTags[numberTag] = typedArrayTags[objectTag] =
+typedArrayTags[regexpTag] = typedArrayTags[setTag] =
+typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * Checks if `value` is classified as a typed array.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isTypedArray(new Uint8Array);
+ * // => true
+ *
+ * _.isTypedArray([]);
+ * // => false
+ */
+function isTypedArray(value) {
+  return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objToString.call(value)];
+}
+
+module.exports = isTypedArray;
+
+}).apply(this, arguments);
+
+},{"../internal/isLength":86,"../internal/isObjectLike":87}],98:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/assign.js", module);
+(function(){
+var assignWith = require('../internal/assignWith'),
+    baseAssign = require('../internal/baseAssign'),
+    createAssigner = require('../internal/createAssigner');
+
+/**
+ * Assigns own enumerable properties of source object(s) to the destination
+ * object. Subsequent sources overwrite property assignments of previous sources.
+ * If `customizer` is provided it's invoked to produce the assigned values.
+ * The `customizer` is bound to `thisArg` and invoked with five arguments:
+ * (objectValue, sourceValue, key, object, source).
+ *
+ * **Note:** This method mutates `object` and is based on
+ * [`Object.assign`](http://ecma-international.org/ecma-262/6.0/#sec-object.assign).
+ *
+ * @static
+ * @memberOf _
+ * @alias extend
+ * @category Object
+ * @param {Object} object The destination object.
+ * @param {...Object} [sources] The source objects.
+ * @param {Function} [customizer] The function to customize assigned values.
+ * @param {*} [thisArg] The `this` binding of `customizer`.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * _.assign({ 'user': 'barney' }, { 'age': 40 }, { 'user': 'fred' });
+ * // => { 'user': 'fred', 'age': 40 }
+ *
+ * // using a customizer callback
+ * var defaults = _.partialRight(_.assign, function(value, other) {
+ *   return _.isUndefined(value) ? other : value;
+ * });
+ *
+ * defaults({ 'user': 'barney' }, { 'age': 36 }, { 'user': 'fred' });
+ * // => { 'user': 'barney', 'age': 36 }
+ */
+var assign = createAssigner(function(object, source, customizer) {
+  return customizer
+    ? assignWith(object, source, customizer)
+    : baseAssign(object, source);
+});
+
+module.exports = assign;
+
+}).apply(this, arguments);
+
+},{"../internal/assignWith":49,"../internal/baseAssign":50,"../internal/createAssigner":70}],99:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/forOwn.js", module);
+(function(){
+var baseForOwn = require('../internal/baseForOwn'),
+    createForOwn = require('../internal/createForOwn');
+
+/**
+ * Iterates over own enumerable properties of an object invoking `iteratee`
+ * for each property. The `iteratee` is bound to `thisArg` and invoked with
+ * three arguments: (value, key, object). Iteratee functions may exit iteration
+ * early by explicitly returning `false`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to iterate over.
+ * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.forOwn(new Foo, function(value, key) {
+ *   console.log(key);
+ * });
+ * // => logs 'a' and 'b' (iteration order is not guaranteed)
+ */
+var forOwn = createForOwn(baseForOwn);
+
+module.exports = forOwn;
+
+}).apply(this, arguments);
+
+},{"../internal/baseForOwn":56,"../internal/createForOwn":74}],100:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/keys.js", module);
+(function(){
+var getNative = require('../internal/getNative'),
+    isArrayLike = require('../internal/isArrayLike'),
+    isObject = require('../lang/isObject'),
+    shimKeys = require('../internal/shimKeys');
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeKeys = getNative(Object, 'keys');
+
+/**
+ * Creates an array of the own enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects. See the
+ * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
+ * for more details.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keys(new Foo);
+ * // => ['a', 'b'] (iteration order is not guaranteed)
+ *
+ * _.keys('hi');
+ * // => ['0', '1']
+ */
+var keys = !nativeKeys ? shimKeys : function(object) {
+  var Ctor = object == null ? undefined : object.constructor;
+  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+      (typeof object != 'function' && isArrayLike(object))) {
+    return shimKeys(object);
+  }
+  return isObject(object) ? nativeKeys(object) : [];
+};
+
+module.exports = keys;
+
+}).apply(this, arguments);
+
+},{"../internal/getNative":81,"../internal/isArrayLike":82,"../internal/shimKeys":89,"../lang/isObject":96}],101:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/keysIn.js", module);
+(function(){
+var isArguments = require('../lang/isArguments'),
+    isArray = require('../lang/isArray'),
+    isIndex = require('../internal/isIndex'),
+    isLength = require('../internal/isLength'),
+    isObject = require('../lang/isObject');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Creates an array of the own and inherited enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keysIn(new Foo);
+ * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+ */
+function keysIn(object) {
+  if (object == null) {
+    return [];
+  }
+  if (!isObject(object)) {
+    object = Object(object);
+  }
+  var length = object.length;
+  length = (length && isLength(length) &&
+    (isArray(object) || isArguments(object)) && length) || 0;
+
+  var Ctor = object.constructor,
+      index = -1,
+      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+      result = Array(length),
+      skipIndexes = length > 0;
+
+  while (++index < length) {
+    result[index] = (index + '');
+  }
+  for (var key in object) {
+    if (!(skipIndexes && isIndex(key, length)) &&
+        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = keysIn;
+
+}).apply(this, arguments);
+
+},{"../internal/isIndex":83,"../internal/isLength":86,"../lang/isArguments":92,"../lang/isArray":93,"../lang/isObject":96}],102:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/mapValues.js", module);
+(function(){
+var createObjectMapper = require('../internal/createObjectMapper');
+
+/**
+ * Creates an object with the same keys as `object` and values generated by
+ * running each own enumerable property of `object` through `iteratee`. The
+ * iteratee function is bound to `thisArg` and invoked with three arguments:
+ * (value, key, object).
+ *
+ * If a property name is provided for `iteratee` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `iteratee` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to iterate over.
+ * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Object} Returns the new mapped object.
+ * @example
+ *
+ * _.mapValues({ 'a': 1, 'b': 2 }, function(n) {
+ *   return n * 3;
+ * });
+ * // => { 'a': 3, 'b': 6 }
+ *
+ * var users = {
+ *   'fred':    { 'user': 'fred',    'age': 40 },
+ *   'pebbles': { 'user': 'pebbles', 'age': 1 }
+ * };
+ *
+ * // using the `_.property` callback shorthand
+ * _.mapValues(users, 'age');
+ * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
+ */
+var mapValues = createObjectMapper();
+
+module.exports = mapValues;
+
+}).apply(this, arguments);
+
+},{"../internal/createObjectMapper":75}],103:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/object/pairs.js", module);
+(function(){
+var keys = require('./keys'),
+    toObject = require('../internal/toObject');
+
+/**
+ * Creates a two dimensional array of the key-value pairs for `object`,
+ * e.g. `[[key1, value1], [key2, value2]]`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the new array of key-value pairs.
+ * @example
+ *
+ * _.pairs({ 'barney': 36, 'fred': 40 });
+ * // => [['barney', 36], ['fred', 40]] (iteration order is not guaranteed)
+ */
+function pairs(object) {
+  object = toObject(object);
+
+  var index = -1,
+      props = keys(object),
+      length = props.length,
+      result = Array(length);
+
+  while (++index < length) {
+    var key = props[index];
+    result[index] = [key, object[key]];
+  }
+  return result;
+}
+
+module.exports = pairs;
+
+}).apply(this, arguments);
+
+},{"../internal/toObject":90,"./keys":100}],104:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/utility/identity.js", module);
+(function(){
+/**
+ * This method returns the first argument provided to it.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {*} value Any value.
+ * @returns {*} Returns `value`.
+ * @example
+ *
+ * var object = { 'user': 'fred' };
+ *
+ * _.identity(object) === object;
+ * // => true
+ */
+function identity(value) {
+  return value;
+}
+
+module.exports = identity;
+
+}).apply(this, arguments);
+
+},{}],105:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/lodash/utility/property.js", module);
+(function(){
+var baseProperty = require('../internal/baseProperty'),
+    basePropertyDeep = require('../internal/basePropertyDeep'),
+    isKey = require('../internal/isKey');
+
+/**
+ * Creates a function that returns the property value at `path` on a
+ * given object.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {Array|string} path The path of the property to get.
+ * @returns {Function} Returns the new function.
+ * @example
+ *
+ * var objects = [
+ *   { 'a': { 'b': { 'c': 2 } } },
+ *   { 'a': { 'b': { 'c': 1 } } }
+ * ];
+ *
+ * _.map(objects, _.property('a.b.c'));
+ * // => [2, 1]
+ *
+ * _.pluck(_.sortBy(objects, _.property(['a', 'b', 'c'])), 'a.b.c');
+ * // => [1, 2]
+ */
+function property(path) {
+  return isKey(path) ? baseProperty(path) : basePropertyDeep(path);
+}
+
+module.exports = property;
+
+}).apply(this, arguments);
+
+},{"../internal/baseProperty":64,"../internal/basePropertyDeep":65,"../internal/isKey":85}],106:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/ms/index.js", module);
 (function(){
 /**
@@ -10606,40 +10586,12 @@ _hmr["websocket:null"].initModule("node_modules/process/browser.js", module);
 // shim for using process in browser
 
 var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-(function () {
-  try {
-    cachedSetTimeout = setTimeout;
-  } catch (e) {
-    cachedSetTimeout = function () {
-      throw new Error('setTimeout is not defined');
-    }
-  }
-  try {
-    cachedClearTimeout = clearTimeout;
-  } catch (e) {
-    cachedClearTimeout = function () {
-      throw new Error('clearTimeout is not defined');
-    }
-  }
-} ())
 var queue = [];
 var draining = false;
 var currentQueue;
 var queueIndex = -1;
 
 function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
     draining = false;
     if (currentQueue.length) {
         queue = currentQueue.concat(queue);
@@ -10655,7 +10607,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = cachedSetTimeout(cleanUpNextTick);
+    var timeout = setTimeout(cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -10672,7 +10624,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    cachedClearTimeout(timeout);
+    clearTimeout(timeout);
 }
 
 process.nextTick = function (fun) {
@@ -10684,7 +10636,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        cachedSetTimeout(drainQueue, 0);
+        setTimeout(drainQueue, 0);
     }
 };
 
@@ -10823,7 +10775,7 @@ exports.Socket = require('./socket');
 
 }).apply(this, arguments);
 
-},{"./manager":112,"./socket":114,"./url":115,"debug":86,"socket.io-parser":118}],112:[function(require,module,exports){
+},{"./manager":112,"./socket":114,"./url":115,"debug":117,"socket.io-parser":120}],112:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/manager.js", module);
 (function(){
 
@@ -11386,7 +11338,7 @@ Manager.prototype.onreconnect = function(){
 
 }).apply(this, arguments);
 
-},{"./on":113,"./socket":114,"backo2":6,"component-bind":81,"component-emitter":116,"debug":86,"engine.io-client":88,"indexof":104,"socket.io-parser":118}],113:[function(require,module,exports){
+},{"./on":113,"./socket":114,"backo2":8,"component-bind":15,"component-emitter":116,"debug":117,"engine.io-client":18,"indexof":36,"socket.io-parser":120}],113:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/on.js", module);
 (function(){
 
@@ -11834,7 +11786,7 @@ Socket.prototype.compress = function(compress){
 
 }).apply(this, arguments);
 
-},{"./on":113,"component-bind":81,"component-emitter":116,"debug":86,"has-binary":102,"socket.io-parser":118,"to-array":121}],115:[function(require,module,exports){
+},{"./on":113,"component-bind":15,"component-emitter":116,"debug":117,"has-binary":34,"socket.io-parser":120,"to-array":125}],115:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/url.js", module);
 (function(){
 (function (global){
@@ -11918,7 +11870,7 @@ function url(uri, loc){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"debug":86,"parseuri":109}],116:[function(require,module,exports){
+},{"debug":117,"parseuri":109}],116:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/component-emitter/index.js", module);
 (function(){
 
@@ -12086,6 +12038,383 @@ Emitter.prototype.hasListeners = function(event){
 }).apply(this, arguments);
 
 },{}],117:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":118}],118:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":106}],119:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/binary.js", module);
 (function(){
 (function (global){
@@ -12234,7 +12563,7 @@ exports.removeBlobs = function(data, callback) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./is-buffer":119,"isarray":105}],118:[function(require,module,exports){
+},{"./is-buffer":121,"isarray":37}],120:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/index.js", module);
 (function(){
 
@@ -12640,7 +12969,7 @@ function error(data){
 
 }).apply(this, arguments);
 
-},{"./binary":117,"./is-buffer":119,"component-emitter":82,"debug":86,"isarray":105,"json3":120}],119:[function(require,module,exports){
+},{"./binary":119,"./is-buffer":121,"component-emitter":16,"debug":122,"isarray":37,"json3":124}],121:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/is-buffer.js", module);
 (function(){
 (function (global){
@@ -12661,7 +12990,384 @@ function isBuf(obj) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],120:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/browser.js", module);
+(function(){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).apply(this, arguments);
+
+},{"./debug":123}],123:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/debug.js", module);
+(function(){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).apply(this, arguments);
+
+},{"ms":106}],124:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/json3/lib/json3.js", module);
 (function(){
 (function (global){
@@ -13571,7 +14277,7 @@ _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],121:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/to-array/index.js", module);
 (function(){
 module.exports = toArray
@@ -13590,7 +14296,7 @@ function toArray(list, index) {
 
 }).apply(this, arguments);
 
-},{}],122:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
 (function(){
 (function (global){
@@ -13842,7 +14548,7 @@ _hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],123:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-autosize/index.js", module);
 (function(){
 var autosize = require('autosize')
@@ -13865,7 +14571,7 @@ exports.install = function(Vue) {
 }
 }).apply(this, arguments);
 
-},{"autosize":4}],124:[function(require,module,exports){
+},{"autosize":4}],128:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-hot-reload-api/index.js", module);
 (function(){
 var Vue // late bind
@@ -14170,7 +14876,7 @@ function format (id) {
 
 }).apply(this, arguments);
 
-},{}],125:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/before.js", module);
 (function(){
 /**
@@ -14194,7 +14900,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"../util":148}],126:[function(require,module,exports){
+},{"../util":152}],130:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/index.js", module);
 (function(){
 /**
@@ -14265,7 +14971,7 @@ function parseHeaders(str) {
 
 }).apply(this, arguments);
 
-},{"../../promise":141,"../../util":148,"./xhr":129}],127:[function(require,module,exports){
+},{"../../promise":145,"../../util":152,"./xhr":133}],131:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/jsonp.js", module);
 (function(){
 /**
@@ -14319,7 +15025,7 @@ module.exports = function (request) {
 
 }).apply(this, arguments);
 
-},{"../../promise":141,"../../util":148}],128:[function(require,module,exports){
+},{"../../promise":145,"../../util":152}],132:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xdr.js", module);
 (function(){
 /**
@@ -14362,7 +15068,7 @@ module.exports = function (request) {
 
 }).apply(this, arguments);
 
-},{"../../promise":141,"../../util":148}],129:[function(require,module,exports){
+},{"../../promise":145,"../../util":152}],133:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xhr.js", module);
 (function(){
 /**
@@ -14411,7 +15117,7 @@ module.exports = function (request) {
 
 }).apply(this, arguments);
 
-},{"../../promise":141,"../../util":148}],130:[function(require,module,exports){
+},{"../../promise":145,"../../util":152}],134:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/cors.js", module);
 (function(){
 /**
@@ -14454,7 +15160,7 @@ function crossOrigin(request) {
 
 }).apply(this, arguments);
 
-},{"../util":148,"./client/xdr":128}],131:[function(require,module,exports){
+},{"../util":152,"./client/xdr":132}],135:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/header.js", module);
 (function(){
 /**
@@ -14486,7 +15192,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"../util":148}],132:[function(require,module,exports){
+},{"../util":152}],136:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/index.js", module);
 (function(){
 /**
@@ -14589,7 +15295,7 @@ module.exports = _.http = Http;
 
 }).apply(this, arguments);
 
-},{"../promise":141,"../util":148,"./before":125,"./client":126,"./cors":130,"./header":131,"./interceptor":133,"./jsonp":134,"./method":135,"./mime":136,"./timeout":137}],133:[function(require,module,exports){
+},{"../promise":145,"../util":152,"./before":129,"./client":130,"./cors":134,"./header":135,"./interceptor":137,"./jsonp":138,"./method":139,"./mime":140,"./timeout":141}],137:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/interceptor.js", module);
 (function(){
 /**
@@ -14640,7 +15346,7 @@ function when(value, fulfilled, rejected) {
 
 }).apply(this, arguments);
 
-},{"../promise":141,"../util":148}],134:[function(require,module,exports){
+},{"../promise":145,"../util":152}],138:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/jsonp.js", module);
 (function(){
 /**
@@ -14664,7 +15370,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"./client/jsonp":127}],135:[function(require,module,exports){
+},{"./client/jsonp":131}],139:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/method.js", module);
 (function(){
 /**
@@ -14687,7 +15393,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{}],136:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/mime.js", module);
 (function(){
 /**
@@ -14729,7 +15435,7 @@ module.exports = {
 
 }).apply(this, arguments);
 
-},{"../util":148}],137:[function(require,module,exports){
+},{"../util":152}],141:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/timeout.js", module);
 (function(){
 /**
@@ -14765,7 +15471,7 @@ module.exports = function () {
 
 }).apply(this, arguments);
 
-},{}],138:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/index.js", module);
 (function(){
 /**
@@ -14824,7 +15530,7 @@ module.exports = install;
 
 }).apply(this, arguments);
 
-},{"./http":132,"./promise":141,"./resource":142,"./url":143,"./util":148}],139:[function(require,module,exports){
+},{"./http":136,"./promise":145,"./resource":146,"./url":147,"./util":152}],143:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/promise.js", module);
 (function(){
 /**
@@ -15009,7 +15715,7 @@ module.exports = Promise;
 
 }).apply(this, arguments);
 
-},{"../util":148}],140:[function(require,module,exports){
+},{"../util":152}],144:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/url-template.js", module);
 (function(){
 /**
@@ -15165,7 +15871,7 @@ exports.encodeReserved = function (str) {
 
 }).apply(this, arguments);
 
-},{}],141:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/promise.js", module);
 (function(){
 /**
@@ -15280,7 +15986,7 @@ module.exports = Promise;
 
 }).apply(this, arguments);
 
-},{"./lib/promise":139,"./util":148}],142:[function(require,module,exports){
+},{"./lib/promise":143,"./util":152}],146:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/resource.js", module);
 (function(){
 /**
@@ -15396,7 +16102,7 @@ module.exports = _.resource = Resource;
 
 }).apply(this, arguments);
 
-},{"./util":148}],143:[function(require,module,exports){
+},{"./util":152}],147:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/index.js", module);
 (function(){
 /**
@@ -15532,7 +16238,7 @@ module.exports = _.url = Url;
 
 }).apply(this, arguments);
 
-},{"../util":148,"./legacy":144,"./query":145,"./root":146,"./template":147}],144:[function(require,module,exports){
+},{"../util":152,"./legacy":148,"./query":149,"./root":150,"./template":151}],148:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/legacy.js", module);
 (function(){
 /**
@@ -15584,7 +16290,7 @@ function encodeUriQuery(value, spaces) {
 
 }).apply(this, arguments);
 
-},{"../util":148}],145:[function(require,module,exports){
+},{"../util":152}],149:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/query.js", module);
 (function(){
 /**
@@ -15614,7 +16320,7 @@ module.exports = function (options, next) {
 
 }).apply(this, arguments);
 
-},{"../util":148}],146:[function(require,module,exports){
+},{"../util":152}],150:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/root.js", module);
 (function(){
 /**
@@ -15636,7 +16342,7 @@ module.exports = function (options, next) {
 
 }).apply(this, arguments);
 
-},{"../util":148}],147:[function(require,module,exports){
+},{"../util":152}],151:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/template.js", module);
 (function(){
 /**
@@ -15658,7 +16364,7 @@ module.exports = function (options) {
 
 }).apply(this, arguments);
 
-},{"../lib/url-template":140}],148:[function(require,module,exports){
+},{"../lib/url-template":144}],152:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-resource/src/util.js", module);
 (function(){
 /**
@@ -15786,7 +16492,7 @@ function merge(target, source, deep) {
 
 }).apply(this, arguments);
 
-},{}],149:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", module);
 (function(){
 /*!
@@ -18500,7 +19206,7 @@ _hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", 
 }));
 }).apply(this, arguments);
 
-},{}],150:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-touch/vue-touch.js", module);
 (function(){
 ;(function () {
@@ -18670,7 +19376,7 @@ _hmr["websocket:null"].initModule("node_modules/vue-touch/vue-touch.js", module)
 
 }).apply(this, arguments);
 
-},{"hammerjs":101}],151:[function(require,module,exports){
+},{"hammerjs":33}],155:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue/dist/vue.common.js", module);
 (function(){
 (function (process,global){
@@ -28751,7 +29457,7 @@ module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"_process":110}],152:[function(require,module,exports){
+},{"_process":110}],156:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vueify/lib/insert-css.js", module);
 (function(){
 var inserted = exports.cache = {}
@@ -28775,7 +29481,7 @@ exports.insert = function (css) {
 
 }).apply(this, arguments);
 
-},{}],153:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/yeast/index.js", module);
 (function(){
 'use strict';
@@ -28849,7 +29555,7 @@ module.exports = yeast;
 
 }).apply(this, arguments);
 
-},{}],154:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/AddEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -28904,6 +29610,7 @@ exports.default = {
 		/**
    * Save the new event to the database
    */
+
 		save: function save() {
 			var errors = this.errorCheck();
 
@@ -29122,10 +29829,10 @@ exports.default = {
 				// when 'from' changes, save this new date into the state
 				this.fromDate = e.date.format('MMM D, YYYY');
 
-				// set the 'to' date 
+				// set the 'to' date
 				toPicker.data('DateTimePicker').minDate(e.date);
 				if (!toPickerChangeStatus) {
-					// if 'to' date hasn't been manually set yet, default it to this new 'from' date 
+					// if 'to' date hasn't been manually set yet, default it to this new 'from' date
 					toPicker.data('DateTimePicker').date(e.date.add(2, 'hour'));
 				}
 
@@ -29238,11 +29945,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],155:[function(require,module,exports){
+},{"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],159:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Alert.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Alert__container {\n  position: fixed;\n  width: 100%;\n  top: 90px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  z-index: 5000;\n}\n@media screen and (max-width: 767px) {\n  .Alert__container {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.alert {\n  opacity: 0.9;\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  .alert {\n    margin-right: 0;\n  }\n}\n.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\n.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\n.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\n.alert .alert-icon {\n  margin-right: 15px;\n  font-size: 22px;\n}\n.alert .close {\n  color: #000;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Alert__container {\n  position: fixed;\n  top: 90px;\n  right: 10px;\n  display: inline-block;\n  z-index: 5000;\n}\ndiv.alert {\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  float: right;\n  position: relative;\n  padding-left: 45px;\n  padding-right: 39px;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  div.alert {\n    margin-right: 0;\n  }\n}\ndiv.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\ndiv.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\ndiv.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\ndiv.alert .alert-link {\n  font-weight: 400;\n  color: inherit;\n}\ndiv.alert .alert-link:hover {\n  cursor: pointer;\n}\ndiv.alert .material-icons {\n  position: absolute;\n  top: 13px;\n  left: 9px;\n  font-size: 22px;\n}\ndiv.alert .close {\n  color: #000;\n  position: absolute;\n  font-size: 22px;\n  top: 14px;\n  right: 9px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29256,60 +29963,103 @@ exports.default = {
 
 	data: function data() {
 		return {
-			alerts: [],
 			alertCounter: 0,
-			type: 'info',
-			msg: 'You better check yoself'
+			type: '',
+			link: '',
+			msg: ''
 		};
 	},
 
 
 	events: {
-		// event from App to show an alert
-		displayAlert: function displayAlert(type, msg) {
+		/**
+   * Display an alert with the given type and message
+   *
+   * Event is dispatched from App.vue after a $root.banner() call
+   *
+   * @param {string} type  	The type of the alert. e.g. 'good', 'bad', 'info'
+   * @param {string} msg 		The message to display
+   * @param {string} link 	A link to route to if the user clicks the alert
+   */
+
+		Alert_display: function Alert_display(type, msg, link) {
 			// add an alert
 			this.alertCounter++;
+
 			this.msg = msg;
 			this.type = type;
+			this.link = link;
+
+			var timeout = 3000;
 
 			// choose a timeout length
-			if (this.type !== 'good') var timeout = 8000;else var timeout = 3000;
+			if (this.type !== 'good') {
+				timeout = 8000;
+			}
 
 			var self = this;
 			// set an async timer
 			setTimeout(function () {
 				// when the timer is up, remove this alert
 				self.alertCounter--;
-				if (!self.alertCounter)
-					// if there's no alerts remaining, hide
+				if (!self.alertCounter) {
+					// if there are no alerts remaining, hide
 					self.show = false;
+					self.link = '';
+				}
 			}, timeout);
 		}
 	},
 
 	computed: {
-		// returns an array of classes for the alert
-		// info and error last longer and have a close option
+		/**
+   * Returns an array of classes depending on the type of alert
+   * @return {array} 
+   */
+
 		alertClasses: function alertClasses() {
 			return {
-				'alert': true,
-				'alert-dismissable': this.type !== 'good',
 				'alert-success': this.type === 'good',
 				'alert-danger': this.type === 'bad',
 				'alert-info': this.type === 'info'
 			};
 		}
+	},
+
+	methods: {
+		/**
+   * User clicked on alert, link them if necessary
+   */
+
+		routeToLink: function routeToLink() {
+			if (this.link.length) {
+				this.$router.go(this.link);
+			}
+
+			this.show = false;
+			this.link = '';
+		},
+
+
+		/**
+   * Hide the alert
+   */
+		close: function close() {
+			this.show = false;
+			this.alertCounter = 0;
+			this.link = '';
+		}
 	}
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"Alert__container\" v-show=\"show\">\n\t<div :class=\"alertClasses\">\n\n\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'good'\">done</i>\n\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'bad'\">error</i>\n\t\t<i class=\"material-icons alert-icon pull-left\" v-show=\"type === 'info'\">info_outline</i>\n\n\t\t<!-- show X for 'info' and 'bad' (they last longer and are dismissable) -->\n\t\t<span @click=\"show = false\" class=\"close\" v-show=\"type !== 'good'\">×</span>\n\t\t<span>\n\t\t\t{{ msg }}\n\t\t</span>\n\n\t</div>\n</div>\n\t\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"Alert__container\" v-show=\"show\">\n\t<div class=\"alert alert-dismissable\" :class=\"alertClasses\">\n\n\t\t<i class=\"material-icons\" v-show=\"type === 'good'\">done</i>\n\t\t<i class=\"material-icons\" v-show=\"type === 'bad'\">error</i>\n\t\t<i class=\"material-icons\" v-show=\"type === 'info'\">info_outline</i>\n\n\t\t<span v-touch:tap=\"routeToLink()\" :class=\"[ link.length ? 'alert-link' : '' ]\">{{ msg }}</span>\n\t\t\n\t\t<span v-touch:tap=\"close()\" class=\"close\">×</span>\n\n\t</div>\n</div>\n\t\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Alert__container {\n  position: fixed;\n  width: 100%;\n  top: 90px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  z-index: 5000;\n}\n@media screen and (max-width: 767px) {\n  .Alert__container {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.alert {\n  opacity: 0.9;\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  .alert {\n    margin-right: 0;\n  }\n}\n.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\n.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\n.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\n.alert .alert-icon {\n  margin-right: 15px;\n  font-size: 22px;\n}\n.alert .close {\n  color: #000;\n}\n"] = false
+    __vueify_insert__.cache[".Alert__container {\n  position: fixed;\n  top: 90px;\n  right: 10px;\n  display: inline-block;\n  z-index: 5000;\n}\ndiv.alert {\n  border: none;\n  box-shadow: none;\n  text-shadow: none;\n  float: right;\n  position: relative;\n  padding-left: 45px;\n  padding-right: 39px;\n  margin-right: 30px;\n}\n@media screen and (max-width: 767px) {\n  div.alert {\n    margin-right: 0;\n  }\n}\ndiv.alert.alert-success {\n  background-color: #ade5a1;\n  color: #255c19;\n  background-image: none;\n}\ndiv.alert.alert-info {\n  background-color: #c2e1f1;\n  color: #184e6a;\n  background-image: none;\n}\ndiv.alert.alert-danger {\n  background-color: #edaeb4;\n  color: #97222d;\n  background-image: none;\n}\ndiv.alert .alert-link {\n  font-weight: 400;\n  color: inherit;\n}\ndiv.alert .alert-link:hover {\n  cursor: pointer;\n}\ndiv.alert .material-icons {\n  position: absolute;\n  top: 13px;\n  left: 9px;\n  font-size: 22px;\n}\ndiv.alert .close {\n  color: #000;\n  position: absolute;\n  font-size: 22px;\n  top: 14px;\n  right: 9px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -29320,7 +30070,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],156:[function(require,module,exports){
+},{"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],160:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/App.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -29365,9 +30115,6 @@ exports.default = {
 			user: {},
 			teams: [],
 			alert: false,
-			alertCounter: 0,
-			alertMessage: "You better check yoself",
-			alertType: "info",
 			toggleSidebar: true
 		};
 	},
@@ -29446,6 +30193,7 @@ exports.default = {
 
 	computed: {
 		// which teams they are a member of
+
 		memberOf: function memberOf() {
 			return this.teams.filter(function (team) {
 				return team.isMember;
@@ -29477,6 +30225,7 @@ exports.default = {
    * @param {string} title  
    * @param {string} msg  
    */
+
 		popup: function popup(type, title, msg) {
 			switch (type) {
 				case 'good':
@@ -29495,10 +30244,13 @@ exports.default = {
 		/**
    * Show a banner message using Alert component
    *
-   * @param {string} type  Possible: 'good', 'bad', 'info'
-   * @param {string} msg
+   * @param {string} type  	Possible: 'good', 'bad', 'info'
+   * @param {string} msg 		The message to display
+   * @param {string} link 	Link to route to if the user clicks the alert
    */
 		banner: function banner(type, msg) {
+			var link = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+
 			// always hide any existing alerts
 			this.alert = false;
 
@@ -29506,7 +30258,7 @@ exports.default = {
 			var self = this;
 			setTimeout(function () {
 				self.alert = true;
-				self.$broadcast('displayAlert', type, msg);
+				self.$broadcast('Alert_display', type, msg, link);
 			}, 400);
 		},
 
@@ -29578,11 +30330,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/Requests.js":173,"./Alert.vue":155,"./Nav.vue":163,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],157:[function(require,module,exports){
+},{"../mixins/Requests.js":177,"./Alert.vue":159,"./Nav.vue":167,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],161:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Calendar.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -ms-flex-preferred-size: 775px;\n      flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-flex-basis: 775px;\n      -ms-flex-preferred-size: 775px;\n          flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29649,6 +30401,7 @@ exports.default = {
   methods: {
 
     // events array changed, reload the calendar data
+
     compile: function compile() {
 
       // attach a new events array
@@ -29748,7 +30501,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".calendar-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -ms-flex-preferred-size: 775px;\n      flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n"] = false
+    __vueify_insert__.cache[".calendar-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n.calendar-wrapper .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-flex-basis: 775px;\n      -ms-flex-preferred-size: 775px;\n          flex-basis: 775px;\n  padding-bottom: 3em;\n}\n.Calendar__nav {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 15px;\n}\n.Calendar__nav .nav {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event {\n  margin: 10px 15px 0px 0px;\n  font-size: 16px;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Calendar__nav .add-event a {\n  float: right;\n}\n.Calendar__header {\n  margin: 0;\n  margin-top: 9px;\n  width: 190px;\n  text-align: center;\n}\n.Calendar__container {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-top: 45px;\n  max-width: 775px;\n  background: #f5f5f5;\n  padding: 0px 15px;\n}\n.Calendar__container .calendar {\n  background: #f9f9f9;\n}\ndiv .cal-row-head .cal-cell1 {\n  background: #f5f5f5;\n}\na[chevron=\"prev\"],\na[chevron=\"next\"] {\n  position: relative;\n  -webkit-animation-duration: 0.2s;\n  -animation-duration: 0.2s;\n}\na[chevron=\"prev\"]:hover,\na[chevron=\"next\"]:hover {\n  cursor: pointer;\n}\na[chevron=\"prev\"] .chevron,\na[chevron=\"next\"] .chevron {\n  font-size: 44px;\n}\n#cal-day-box .day-highlight.dh-event-awayGame {\n  border: 1px solid rc_yellow;\n}\n#cal-day-box .day-highlight.dh-event-homeGame {\n  border: 1px solid rc_red;\n}\n#cal-day-box .day-highlight.dh-event-practice {\n  border: 1px solid rc_blue;\n}\n#cal-day-box .day-highlight.dh-event-other {\n  border: 1px solid rc_green;\n}\n.event-homeGame {\n  background-color: rc_red;\n}\n.event-awayGame {\n  background-color: rc_yellow;\n}\n.event-practice {\n  background-color: rc_blue;\n}\n.event-other {\n  background-color: rc_green;\n}\n.day-highlight.dh-event-homeGame:hover,\n.day-highlight.dh-event-homeGame {\n  background-color: rc_red;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-awayGame:hover,\n.day-highlight.dh-event-awayGame {\n  background-color: rc_yellow;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-practice:hover,\n.day-highlight.dh-event-practice {\n  background-color: rc_blue;\n  opacity: 0.75;\n}\n.day-highlight.dh-event-other:hover,\n.day-highlight.dh-event-other {\n  background-color: rc_green;\n  opacity: 0.75;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -29759,11 +30512,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],158:[function(require,module,exports){
+},{"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],162:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/CreateTeam.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".page-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n      -ms-flex: none;\n          flex: none;\n  -ms-flex-preferred-size: 75px;\n      flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -ms-flex-preferred-size: 25%;\n      flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -ms-flex-preferred-size: 50%;\n      flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29828,6 +30581,7 @@ exports.default = {
    * 
    * @return Routes to /team/<teamname>
    */
+
 		save: function save() {
 
 			if (this.errorCheck() > 0) {
@@ -29928,6 +30682,7 @@ exports.default = {
    *
    * @param {object} response
    */
+
 		CreateTeam_dummy: function CreateTeam_dummy(response) {
 			this.dummy = response.data.dummy;
 		},
@@ -30006,6 +30761,7 @@ exports.default = {
 		/**
    * If the sport changed, change the stats in the pickers as well
    */
+
 		sport: function sport() {
 			this.initSelections(this.sport);
 		},
@@ -30060,7 +30816,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".page-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -ms-flex-preferred-size: 100%;\n      flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n      -ms-flex: none;\n          flex: none;\n  -ms-flex-preferred-size: 75px;\n      flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -ms-flex-preferred-size: 25%;\n      flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -ms-flex-preferred-size: 50%;\n      flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
+    __vueify_insert__.cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -30071,11 +30827,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsSelection.js":175,"../mixins/Validator.js":176,"./GoogleTypeahead.vue":162,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],159:[function(require,module,exports){
+},{"../mixins/StatsSelection.js":179,"../mixins/Validator.js":180,"./GoogleTypeahead.vue":166,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],163:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -30116,6 +30872,7 @@ exports.default = {
 
 	computed: {
 		// figure out if this event is a game
+
 		isGame: function isGame() {
 			return this.event.type === 1 || this.event.type === 2;
 		}
@@ -30124,6 +30881,7 @@ exports.default = {
 	methods: {
 
 		// save button was hit
+
 		updateEvent: function updateEvent() {
 
 			var momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
@@ -30256,7 +31014,7 @@ exports.default = {
 					toPicker.data('DateTimePicker').minDate(e.date);
 
 					if (!this.toPickerChange) {
-						// if the toPicker (date) hasn't been manually set yet, default it to this new fromDate 
+						// if the toPicker (date) hasn't been manually set yet, default it to this new fromDate
 						toPicker.data('DateTimePicker').date(e.date);
 					}
 				}.bind(this));
@@ -30389,7 +31147,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n"] = false
+    __vueify_insert__.cache[".edit-stats-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 767px) {\n  .edit-stats-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.edit-stats-button .btn {\n  padding-left: 14px;\n}\n.edit-stats-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.edit-submit-buttons {\n  margin-bottom: 20px;\n}\ndiv[EditEvent=\"fromTime\"],\ndiv[EditEvent=\"toTime\"] {\n  margin-top: 10px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -30400,11 +31158,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/json/stringify":5,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],160:[function(require,module,exports){
+},{"babel-runtime/core-js/json/stringify":5,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],164:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditStats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-stats-wrapper {\n  padding: 1.5em;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -ms-flex-flow: row wrap;\n        flex-flow: row wrap;\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -ms-flex-item-align: start;\n      align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".edit-stats-wrapper {\n  padding: 1.5em;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n  -webkit-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n    -webkit-order: 2;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-align-self: flex-start;\n      -ms-flex-item-align: start;\n          align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n    -webkit-order: 1;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -30475,6 +31233,7 @@ exports.default = {
 		/**
    * If the stats for this event have changed, reinitialize page
    */
+
 		eventStats: function eventStats() {
 			this.setup();
 		},
@@ -30492,6 +31251,7 @@ exports.default = {
 		/**
    * Calculate a realistic placeholder opponent score depending on the sport
    */
+
 		oppScore: function oppScore() {
 			if (this.team.sport === 'basketball') {
 				return '72';
@@ -30507,6 +31267,7 @@ exports.default = {
    * Variables have been setup from child sport component
    * Ready to display the stat table on the modal
    */
+
 		EditStats_compiled: function EditStats_compiled() {
 			var _this = this;
 
@@ -30558,6 +31319,7 @@ exports.default = {
 		/**
    * Prepare the variables before showing the table
    */
+
 		setup: function setup() {
 			this.stats = [];
 			this.ready = false;
@@ -30736,7 +31498,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-stats-wrapper {\n  padding: 1.5em;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -ms-flex-flow: row wrap;\n        flex-flow: row wrap;\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -ms-flex-item-align: start;\n      align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -ms-flex-preferred-size: 100%;\n        flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n"] = false
+    __vueify_insert__.cache[".edit-stats-wrapper {\n  padding: 1.5em;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n  -webkit-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n    -webkit-order: 2;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-align-self: flex-start;\n      -ms-flex-item-align: start;\n          align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n    -webkit-order: 1;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -30747,7 +31509,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatHelpers.js":174,"./stats/EditBasketball.vue":172,"babel-runtime/core-js/json/stringify":5,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],161:[function(require,module,exports){
+},{"../mixins/StatHelpers.js":178,"./stats/EditBasketball.vue":176,"babel-runtime/core-js/json/stringify":5,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],165:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditUser.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -30808,6 +31570,7 @@ exports.default = {
 
 	watch: {
 		// if user changed, set inputs to correct new states
+
 		user: function user() {
 			this.originalRole = this.user.role;
 			this.initialize();
@@ -30853,6 +31616,7 @@ exports.default = {
 	methods: {
 
 		// whenever the data reloads, reset the input elements and some logic
+
 		initialize: function initialize() {
 			this.confirmKick = false;
 
@@ -31017,7 +31781,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./../mixins/Validator.js":176,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],162:[function(require,module,exports){
+},{"./../mixins/Validator.js":180,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],166:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/GoogleTypeahead.vue", module);
 (function(){
 'use strict';
@@ -31041,6 +31805,7 @@ exports.default = {
 
 	watch: {
 		//if they have edited something previously selected, reset the data
+
 		location: function location(val) {
 			if (this.selected) {
 				this.selected = false;
@@ -31053,6 +31818,7 @@ exports.default = {
 
 	methods: {
 		//format the results into the necessary items
+
 		placeSelected: function placeSelected(place) {
 			var address = place.formatted_address.split(',');
 			this.city = address[0] + ', ' + address[1][1] + address[1][2];
@@ -31095,11 +31861,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":151,"vue-hot-reload-api":124}],163:[function(require,module,exports){
+},{"vue":155,"vue-hot-reload-api":128}],167:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Nav.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("#app-wrapper {\n  padding-left: 0;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 200px;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: absolute;\n}\n#sidebar-wrapper {\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  width: 0;\n  height: 100%;\n  margin-left: -200px;\n  margin-top: 5px;\n  overflow-y: auto;\n  background: #404040;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-content-wrapper {\n  width: 100%;\n  position: absolute;\n  padding: 15px;\n}\n.sidebar-nav {\n  position: absolute;\n  top: 0;\n  width: 200px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.sidebar-nav li {\n  text-indent: 20px;\n  line-height: 40px;\n}\n.sidebar-nav li a {\n  display: block;\n  margin-top: 5px;\n  text-decoration: none;\n  color: #fff;\n}\n.sidebar-nav li a.toggled {\n  text-decoration: none;\n  color: #fff;\n  background: rgba(255,255,255,0.2);\n}\n.sidebar-nav .dropdown-menu {\n  width: 200px;\n  margin: 0;\n  border-radius: 0;\n  position: relative;\n  border: 0;\n}\n.sidebar-nav .dropdown-menu li {\n  text-indent: 0px;\n  line-height: 10px;\n}\n.sidebar-nav .dropdown-menu li a {\n  color: #000;\n}\n.sidebar-nav #searchBar {\n  background: rgba(255,255,255,0.2);\n  color: #fff;\n  border-radius: 0;\n  padding-left: 20px;\n  font-size: 15px;\n}\n#app-wrapper.toggled {\n  padding-left: 0;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 0;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: relative;\n  margin-right: 0;\n}\n#sidebar-wrapper {\n  width: 200px;\n}\n#app-content-wrapper {\n  padding: 20px;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n  border: 0;\n  float: left;\n  margin: 14px 0px 8px 5px;\n}\n#hamburger .icon-bar {\n  background: #fff;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(0deg) translate(0px, 0px);\n          transform: rotate(0deg) translate(0px, 0px);\n}\n#hamburger.toggled #bottom-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(45deg) translate(-2px, -5px);\n          transform: rotate(45deg) translate(-2px, -5px);\n}\n#hamburger.toggled #top-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(-45deg) translate(1px, 3px);\n          transform: rotate(-45deg) translate(1px, 3px);\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 52px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n.navbar-nav #searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\n@media (max-width: 991px) {\n  .navbar-nav #searchBar {\n    width: 225px;\n  }\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:focus {\n  border: none;\n  outline: none;\n  box-shadow: none;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert("#app-wrapper {\n  padding-left: 0;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 200px;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: absolute;\n}\n#sidebar-wrapper {\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  width: 0;\n  height: 100%;\n  margin-left: -200px;\n  margin-top: 5px;\n  overflow-y: auto;\n  background: #404040;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-content-wrapper {\n  width: 100%;\n  position: absolute;\n  padding: 15px;\n}\n.sidebar-nav {\n  position: absolute;\n  top: 0;\n  width: 200px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.sidebar-nav li {\n  text-indent: 20px;\n  line-height: 40px;\n}\n.sidebar-nav li a {\n  display: block;\n  margin-top: 5px;\n  text-decoration: none;\n  color: #fff;\n}\n.sidebar-nav li a.toggled {\n  text-decoration: none;\n  color: #fff;\n  background: rgba(255,255,255,0.2);\n}\n.sidebar-nav .dropdown-menu {\n  width: 200px;\n  margin: 0;\n  border-radius: 0;\n  position: relative;\n  border: 0;\n}\n.sidebar-nav .dropdown-menu li {\n  text-indent: 0px;\n  line-height: 10px;\n}\n.sidebar-nav .dropdown-menu li a {\n  color: #000;\n}\n.sidebar-nav #searchBar {\n  background: rgba(255,255,255,0.2);\n  color: #fff;\n  border-radius: 0;\n  padding-left: 20px;\n  font-size: 15px;\n}\n#app-wrapper.toggled {\n  padding-left: 0;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 0;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: relative;\n  margin-right: 0;\n}\n#sidebar-wrapper {\n  width: 200px;\n}\n#app-content-wrapper {\n  padding: 20px;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n  border: 0;\n  float: left;\n  margin: 14px 0px 8px 5px;\n}\n#hamburger .icon-bar {\n  background: #fff;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(0deg) translate(0px, 0px);\n          transform: rotate(0deg) translate(0px, 0px);\n}\n#hamburger.toggled #bottom-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(45deg) translate(-2px, -5px);\n          transform: rotate(45deg) translate(-2px, -5px);\n}\n#hamburger.toggled #top-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(-45deg) translate(1px, 3px);\n          transform: rotate(-45deg) translate(1px, 3px);\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 18px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 53px;\n  left: 0;\n  border-top: 0;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n.navbar-nav #searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\n@media (max-width: 991px) {\n  .navbar-nav #searchBar {\n    width: 225px;\n  }\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:focus {\n  border: none;\n  outline: none;\n  box-shadow: none;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31148,6 +31914,7 @@ exports.default = {
 		/**
    * Perform a search for the given query
    */
+
 		gotoSearch: function gotoSearch() {
 			this.resetNav();
 			alert(this.query);
@@ -31197,7 +31964,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache["#app-wrapper {\n  padding-left: 0;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 200px;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: absolute;\n}\n#sidebar-wrapper {\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  width: 0;\n  height: 100%;\n  margin-left: -200px;\n  margin-top: 5px;\n  overflow-y: auto;\n  background: #404040;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-content-wrapper {\n  width: 100%;\n  position: absolute;\n  padding: 15px;\n}\n.sidebar-nav {\n  position: absolute;\n  top: 0;\n  width: 200px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.sidebar-nav li {\n  text-indent: 20px;\n  line-height: 40px;\n}\n.sidebar-nav li a {\n  display: block;\n  margin-top: 5px;\n  text-decoration: none;\n  color: #fff;\n}\n.sidebar-nav li a.toggled {\n  text-decoration: none;\n  color: #fff;\n  background: rgba(255,255,255,0.2);\n}\n.sidebar-nav .dropdown-menu {\n  width: 200px;\n  margin: 0;\n  border-radius: 0;\n  position: relative;\n  border: 0;\n}\n.sidebar-nav .dropdown-menu li {\n  text-indent: 0px;\n  line-height: 10px;\n}\n.sidebar-nav .dropdown-menu li a {\n  color: #000;\n}\n.sidebar-nav #searchBar {\n  background: rgba(255,255,255,0.2);\n  color: #fff;\n  border-radius: 0;\n  padding-left: 20px;\n  font-size: 15px;\n}\n#app-wrapper.toggled {\n  padding-left: 0;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 0;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: relative;\n  margin-right: 0;\n}\n#sidebar-wrapper {\n  width: 200px;\n}\n#app-content-wrapper {\n  padding: 20px;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n  border: 0;\n  float: left;\n  margin: 14px 0px 8px 5px;\n}\n#hamburger .icon-bar {\n  background: #fff;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(0deg) translate(0px, 0px);\n          transform: rotate(0deg) translate(0px, 0px);\n}\n#hamburger.toggled #bottom-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(45deg) translate(-2px, -5px);\n          transform: rotate(45deg) translate(-2px, -5px);\n}\n#hamburger.toggled #top-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(-45deg) translate(1px, 3px);\n          transform: rotate(-45deg) translate(1px, 3px);\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 16px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 52px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n.navbar-nav #searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\n@media (max-width: 991px) {\n  .navbar-nav #searchBar {\n    width: 225px;\n  }\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:focus {\n  border: none;\n  outline: none;\n  box-shadow: none;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n"] = false
+    __vueify_insert__.cache["#app-wrapper {\n  padding-left: 0;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 200px;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: absolute;\n}\n#sidebar-wrapper {\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  width: 0;\n  height: 100%;\n  margin-left: -200px;\n  margin-top: 5px;\n  overflow-y: auto;\n  background: #404040;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n#app-content-wrapper {\n  width: 100%;\n  position: absolute;\n  padding: 15px;\n}\n.sidebar-nav {\n  position: absolute;\n  top: 0;\n  width: 200px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.sidebar-nav li {\n  text-indent: 20px;\n  line-height: 40px;\n}\n.sidebar-nav li a {\n  display: block;\n  margin-top: 5px;\n  text-decoration: none;\n  color: #fff;\n}\n.sidebar-nav li a.toggled {\n  text-decoration: none;\n  color: #fff;\n  background: rgba(255,255,255,0.2);\n}\n.sidebar-nav .dropdown-menu {\n  width: 200px;\n  margin: 0;\n  border-radius: 0;\n  position: relative;\n  border: 0;\n}\n.sidebar-nav .dropdown-menu li {\n  text-indent: 0px;\n  line-height: 10px;\n}\n.sidebar-nav .dropdown-menu li a {\n  color: #000;\n}\n.sidebar-nav #searchBar {\n  background: rgba(255,255,255,0.2);\n  color: #fff;\n  border-radius: 0;\n  padding-left: 20px;\n  font-size: 15px;\n}\n#app-wrapper.toggled {\n  padding-left: 0;\n}\n#app-wrapper.toggled #sidebar-wrapper {\n  width: 0;\n}\n#app-wrapper.toggled #app-content-wrapper {\n  position: relative;\n  margin-right: 0;\n}\n#sidebar-wrapper {\n  width: 200px;\n}\n#app-content-wrapper {\n  padding: 20px;\n  position: relative;\n}\ndiv.navbar-collapse[aria-expanded='true'],\ndiv.navbar-collapse.collapsing {\n  background: #c90018;\n}\nnav.navbar {\n  background: #c90018;\n}\n#hamburger {\n  background: #c90018;\n  border: 0;\n  float: left;\n  margin: 14px 0px 8px 5px;\n}\n#hamburger .icon-bar {\n  background: #fff;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(0deg) translate(0px, 0px);\n          transform: rotate(0deg) translate(0px, 0px);\n}\n#hamburger.toggled #bottom-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(45deg) translate(-2px, -5px);\n          transform: rotate(45deg) translate(-2px, -5px);\n}\n#hamburger.toggled #top-bar {\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n  -webkit-transform: rotate(-45deg) translate(1px, 3px);\n          transform: rotate(-45deg) translate(1px, 3px);\n}\nnav.navbar.navbar-default {\n  border: 0;\n  height: 53px;\n}\nul.nav.navbar-nav.navbar-right li {\n  background: #c90018;\n}\nul.nav.navbar-nav.navbar-right li a {\n  color: #fff;\n  font-size: 15px;\n}\nul.nav.navbar-nav.navbar-right li a:hover {\n  text-shadow: 0 0 4px #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open {\n  background: #b00015;\n  box-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  text-shadow: none;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a {\n  background: #b00015;\n  padding-bottom: 18px;\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown.open a:hover {\n  color: #fff;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu {\n  top: 53px;\n  left: 0;\n  border-top: 0;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :first-of-type {\n  padding-top: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :last-of-type {\n  padding-bottom: 5px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li a {\n  text-decoration: none;\n  color: #000;\n  background: #fff;\n  padding: 5px 15px 5px 15px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li :hover {\n  text-decoration: none;\n  cursor: pointer;\n  color: #000;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu li span.badge {\n  background-color: #ccc;\n  color: #fff;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu :hover {\n  background: #eee;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header {\n  background: #fff;\n  padding-left: 15px;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-header :hover {\n  background: #fff;\n  color: #808080;\n  cursor: default;\n}\nul.nav.navbar-nav.navbar-right .dropdown .dropdown-menu .dropdown-none {\n  font-size: 15px;\n  background: #fff;\n  color: #808080;\n}\nul.nav.navbar-nav.navbar-right .dropdown .divider {\n  margin: 5px 0 5px 0;\n  background: #d9d9d9;\n}\n.badge-danger {\n  background-color: #d9534f;\n  font-size: 12px;\n  margin-bottom: 2px;\n}\n.navbar-nav #searchBar {\n  height: 15px;\n  width: 280px;\n  color: #fff;\n  margin-top: 10px;\n  background-color: #b00015;\n  font-size: 15px;\n}\n@media (max-width: 991px) {\n  .navbar-nav #searchBar {\n    width: 225px;\n  }\n}\ninput#searchBar::-webkit-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:-moz-placeholder /* Firefox 18- */ {\n  color: #fff !important;\n}\ninput#searchBar::-moz-placeholder  /* Firefox 19+ */ {\n  color: #fff !important;\n}\ninput#searchBar:-ms-input-placeholder {\n  color: #fff !important;\n}\ninput#searchBar:focus {\n  border: none;\n  outline: none;\n  box-shadow: none;\n}\ninput[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ninput[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-webkit-input-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]::-moz-placeholder {\n  color: #c4c4c4 !important;\n}\ntextarea[placeholder]:-ms-input-placeholder {\n  color: #c4c4c4 !important;\n}\n#searchIcon {\n  color: #fff;\n  position: absolute;\n  left: -26px;\n  top: 15px;\n  font-size: 1.3em;\n}\n#navLogo {\n  position: absolute;\n  height: 53px;\n  width: 180px;\n  left: 50%;\n  margin-left: -92px;\n  display: block;\n  background-color: transparent;\n}\n#navSearchDiv {\n  position: relative;\n  display: inline-block;\n  left: 25px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -31208,11 +31975,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],164:[function(require,module,exports){
+},{"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],168:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/NewsFeed.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Feed {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid #d0d0d0;\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid #d0d0d0;\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31220,7 +31987,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 
-// NewsFeed handles some of its own state without notifying parent. this 
+// NewsFeed handles some of its own state without notifying parent. this
 // is mostly due to the fact that there are transitions and for the most
 // part, the data here is inconsequential to the rest of the page
 
@@ -31248,6 +32015,7 @@ exports.default = {
 
 	events: {
 		// new feed entry from Team has been sent
+
 		updateFeed: function updateFeed(entry) {
 			// add to the feed, 'true' means this is a brand new post
 			this.format(entry, true);
@@ -31257,6 +32025,7 @@ exports.default = {
 	methods: {
 
 		// iterate through all raw feed data, format and add to the news feed
+
 		compile: function compile() {
 
 			var self = this;
@@ -31450,7 +32219,7 @@ exports.default = {
 		},
 
 
-		// returns name of player/coach 
+		// returns name of player/coach
 		lookupPlayer: function lookupPlayer(id) {
 			// returns the name of the player when given an id
 			var match = {};
@@ -31514,7 +32283,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Feed {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid #d0d0d0;\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n"] = false
+    __vueify_insert__.cache[".Feed {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 0px 2em;\n}\n.Feed__line {\n  position: absolute;\n  left: 23px;\n  width: 0;\n  height: 100%;\n  border: 2px dashed #d0d0d0;\n}\n@media screen and (max-width: 500px) {\n  .Feed__line {\n    left: 18px;\n  }\n}\n.Feed__post {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  padding: 0 2em;\n}\n.Feed__post .Feed__thumbnail {\n  height: 54px;\n  width: 54px;\n  margin-right: 2em;\n  font-size: 18px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__post .Feed__thumbnail {\n    width: 34px;\n    height: 34px;\n  }\n}\n.Feed__write {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  max-width: 775px;\n  margin-bottom: 7em;\n}\n.Feed__write .Feed__input {\n  width: 100%;\n  position: relative;\n}\n.Feed__write .Feed__input .arrow-left {\n  position: absolute;\n  top: 13px;\n  left: -10px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .Feed__input .arrow-left {\n    top: 8px;\n  }\n}\n.Feed__write .submit-button:hover {\n  cursor: pointer;\n}\n.Feed__write .submit-button span {\n  font-size: 14px;\n  color: #fff;\n}\n@media screen and (max-width: 500px) {\n  .Feed__write .submit-button span {\n    font-size: 9px;\n  }\n}\n.Feed__day {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  position: relative;\n  min-width: 775px;\n  margin-top: 3em;\n  overflow: hidden;\n}\n@media screen and (max-width: 831px) {\n  .Feed__day {\n    min-width: 0;\n  }\n}\n.Feed__day:first-child {\n  margin-top: 0;\n}\n.Feed__date {\n  text-align: center;\n  margin-bottom: 2em;\n}\n.Feed__date span {\n  color: #9f9f9f;\n  position: relative;\n  padding-left: 25px;\n}\n.Feed__date span i {\n  position: absolute;\n  left: -3px;\n  top: -3px;\n  font-size: 21px;\n}\n.Feed__entry {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 5em;\n}\n.Feed__entry:last-child {\n  margin-bottom: 1em;\n}\n.Feed__text {\n  font-size: 16px;\n  max-width: 700px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.Feed__creator {\n  margin-bottom: 1em;\n  font-size: 14px;\n}\n.Feed__timestamp {\n  position: relative;\n  margin-left: 15px;\n  color: #9f9f9f;\n}\n.Feed__timestamp .bullet {\n  position: absolute;\n  left: -13px;\n  top: -5px;\n  font-size: 20px;\n}\n.Feed__timestamp #deleteIcon {\n  font-size: 18px;\n  position: absolute;\n  right: -25px;\n  top: -1px;\n}\n.Feed__timestamp #deleteIcon:hover {\n  cursor: pointer;\n}\n.Feed__subject {\n  margin-bottom: 0.7em;\n}\n.Feed__details {\n  border-left: 5px solid #d0d0d0;\n  font-weight: bold;\n  margin-bottom: 0;\n}\n.Feed__details .win {\n  font-weight: bold;\n}\n.Feed__details .loss {\n  color: #7b7b7b;\n  font-weight: lighter;\n}\n.Feed__entry__date {\n  margin-bottom: 0.7em;\n}\n.Feed__entry__date--canceled {\n  text-decoration: line-through;\n  margin-bottom: 1em;\n}\n.Feed__entry__repeats {\n  margin-bottom: 1em;\n  color: #9f9f9f;\n}\n.Feed__thumbnail {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  padding: 20px;\n  margin-right: 2em;\n  z-index: 10;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail {\n    width: 30px;\n    height: 30px;\n    margin-right: 2em;\n  }\n}\n.Feed__thumbnail .Feed__icon {\n  font-size: 30px;\n}\n@media screen and (max-width: 500px) {\n  .Feed__thumbnail .Feed__icon {\n    font-size: 18px;\n  }\n}\n.Feed__thumbnail--write {\n  background: #329acf;\n  color: #fff;\n}\n.Feed__thumbnail--stats {\n  background: #f96a04;\n  color: #fff;\n}\n.Feed__thumbnail--newEvent {\n  background: #76af00;\n  color: #fff;\n}\n.Feed__thumbnail--updateEvent {\n  background: #f2d500;\n  color: #fff;\n}\n.Feed__thumbnail--cancelEvent {\n  background: #c90018;\n  color: #fff;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -31525,11 +32294,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],165:[function(require,module,exports){
+},{"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],169:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Roster.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column wrap;\n      flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__icons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  opacity: 0;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n@media (max-width: 767px) {\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__icons div {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__pic {\n  -ms-flex-preferred-size: 200px;\n      flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n}\n.User__details {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -ms-flex-item-align: center;\n      align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  opacity: 0;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n@media (max-width: 767px) {\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__pic {\n  -webkit-flex-basis: 200px;\n      -ms-flex-preferred-size: 200px;\n          flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31562,6 +32331,7 @@ exports.default = {
    * 
    * @param  {object} user 
    */
+
 		edit: function edit(user) {
 			//make a copy of this player for reactivity
 			user = JSON.parse((0, _stringify2.default)(user));
@@ -31628,7 +32398,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column wrap;\n      flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__icons {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  opacity: 0;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n@media (max-width: 767px) {\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__icons div {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__pic {\n  -ms-flex-preferred-size: 200px;\n      flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n}\n.User__details {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -ms-flex-item-align: center;\n      align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n"] = false
+    __vueify_insert__.cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  opacity: 0;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n@media (max-width: 767px) {\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: middle;\n  -webkit-align-items: middle;\n      -ms-flex-align: middle;\n          align-items: middle;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__pic {\n  -webkit-flex-basis: 200px;\n      -ms-flex-preferred-size: 200px;\n          flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -31639,11 +32409,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/json/stringify":5,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],166:[function(require,module,exports){
+},{"babel-runtime/core-js/json/stringify":5,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],170:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Stats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".stats-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n@media screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: #d0d0d0;\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".stats-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n@media screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: #d0d0d0;\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31694,6 +32464,7 @@ exports.default = {
 		/**
    * Stats have been altered, recompile them
    */
+
 		rawStats: function rawStats() {
 			this.$set('stats', []);
 			this.compileStats();
@@ -31716,6 +32487,7 @@ exports.default = {
 		/**
    * Stats are done being created by child sport component
    */
+
 		Stats_compiled: function Stats_compiled(stats) {
 			this.stats = stats;
 			this.compile = false;
@@ -31729,6 +32501,7 @@ exports.default = {
 		/**
    * Tell the child component to compile stats
    */
+
 		compileStats: function compileStats() {
 			this.compile = true;
 		},
@@ -31849,7 +32622,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".stats-wrapper {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n@media screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: #d0d0d0;\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
+    __vueify_insert__.cache[".stats-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n@media screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\ndiv.pagination {\n  margin: 0 auto;\n  width: 100%;\n}\nul.pagination {\n  font-size: 13px;\n  margin-top: 5px;\n}\nul.pagination li a,\nul.pagination li a:visited {\n  color: #000;\n}\nul.pagination li a:hover {\n  color: #000;\n  background-color: #d6d6d6;\n  border-color: #cacaca;\n}\nul.pagination .active a,\nul.pagination .active a:visited,\nul.pagination .active a:hover {\n  color: #fff;\n  background-color: #7ab0eb;\n  border-color: #cacaca;\n}\n.Stats__title.--noStats {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 2em;\n}\n.Stats__title.--noStats * {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Stats__overflow {\n  margin-top: 1em;\n  margin-bottom: 0.5em;\n  min-height: 20px;\n}\n.Stats__overflow span {\n  position: relative;\n  color: #d0d0d0;\n}\n.Stats__overflow span.--right {\n  padding-right: 1.5em;\n  float: right;\n}\n.Stats__overflow span.--right i {\n  top: -5px;\n  right: -9px;\n}\n.Stats__overflow span.--left {\n  float: left;\n  padding-left: 1.5em;\n}\n.Stats__overflow span.--left i {\n  top: -5px;\n  left: -9px;\n}\n.Stats__overflow span i {\n  position: absolute;\n  font-size: 30px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -31860,11 +32633,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatHelpers.js":174,"./stats/Basketball.vue":171,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],167:[function(require,module,exports){
+},{"../mixins/StatHelpers.js":178,"./stats/Basketball.vue":175,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],171:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Team.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Team {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media screen and (max-width: 1000px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -ms-flex-item-align: center;\n        align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media screen and (max-width: 1000px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-pack: start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -ms-flex-flow: column;\n        flex-flow: column;\n    -webkit-box-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -ms-flex-flow: column;\n        flex-flow: column;\n  }\n}\n.Team__text {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  color: #fff;\n}\n@media screen and (max-width: 1000px) {\n  .Team__text {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__buttons {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 35px;\n}\n.Team__buttons .--members {\n  margin-right: 5px;\n}\n.Team__buttons .--fans {\n  margin-left: 5px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -ms-flex-preferred-size: 110px;\n      flex-basis: 110px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__fans ul {\n  list-style: none;\n  font-size: 16px;\n  text-align: center;\n  padding-left: 0;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media screen and (max-width: 1000px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media screen and (max-width: 1000px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media screen and (max-width: 1000px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__buttons {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: end;\n  -webkit-align-items: flex-end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 35px;\n}\n.Team__buttons .--members {\n  margin-right: 5px;\n}\n.Team__buttons .--fans {\n  margin-left: 5px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n  margin-top: 3px;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__fans ul {\n  list-style: none;\n  font-size: 16px;\n  text-align: center;\n  padding-left: 0;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -32050,6 +32823,7 @@ exports.default = {
 	events: {
 
 		// team data has arrived from the back-end
+
 		Team_requestSuccess: function Team_requestSuccess(response) {
 			this.compile(response.data.data);
 
@@ -32194,7 +32968,7 @@ exports.default = {
 			this.team.city = meta.city;
 			this.$set('team.settings.statKeys', meta.stats);
 
-			// format the backdrop image as a style tag 
+			// format the backdrop image as a style tag
 			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
 
 			// note whether or not this user is the creator
@@ -32218,7 +32992,7 @@ exports.default = {
 		// compile meta data for users and push into this.users
 		formatUsers: function formatUsers(users) {
 			if (!users) {
-				// its possible there is a 'null' here 
+				// its possible there is a 'null' here
 				return;
 			}
 
@@ -32292,7 +33066,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Team {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media screen and (max-width: 1000px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -ms-flex-item-align: center;\n        align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media screen and (max-width: 1000px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  -webkit-box-pack: start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -ms-flex-flow: column;\n        flex-flow: column;\n    -webkit-box-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -ms-flex-flow: column;\n        flex-flow: column;\n  }\n}\n.Team__text {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: column;\n      flex-flow: column;\n  color: #fff;\n}\n@media screen and (max-width: 1000px) {\n  .Team__text {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -ms-flex-preferred-size: 1;\n      flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__buttons {\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-align: end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 35px;\n}\n.Team__buttons .--members {\n  margin-right: 5px;\n}\n.Team__buttons .--fans {\n  margin-left: 5px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -ms-flex-preferred-size: 110px;\n      flex-basis: 110px;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__fans ul {\n  list-style: none;\n  font-size: 16px;\n  text-align: center;\n  padding-left: 0;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
+    __vueify_insert__.cache[".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media screen and (max-width: 1000px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media screen and (max-width: 1000px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media screen and (max-width: 1000px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media screen and (max-width: 1000px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n.Team__location {\n  padding-left: 22px;\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 15px;\n  font-size: 16px;\n}\n.Team__buttons {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: end;\n  -webkit-align-items: flex-end;\n      -ms-flex-align: end;\n          align-items: flex-end;\n  margin-top: 35px;\n}\n.Team__buttons .--members {\n  margin-right: 5px;\n}\n.Team__buttons .--fans {\n  margin-left: 5px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media screen and (max-width: 1000px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n  margin-top: 3px;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__fans ul {\n  list-style: none;\n  font-size: 16px;\n  text-align: center;\n  padding-left: 0;\n}\n#calendarTab {\n  position: absolute;\n  top: 17px;\n  left: 69px;\n}\n#calendarTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#statsTab {\n  position: absolute;\n  top: 17px;\n  left: 84px;\n}\n#statsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#rosterTab {\n  position: absolute;\n  top: 17px;\n  left: 81px;\n}\n#rosterTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#settingsTab {\n  position: absolute;\n  top: 15px;\n  left: 74px;\n}\n#settingsTab i {\n  position: absolute;\n  font-size: 24px;\n  left: -28px;\n  top: -3px;\n}\n#noTeam {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -32303,11 +33077,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./AddEvent.vue":154,"./Calendar.vue":157,"./EditUser.vue":161,"./NewsFeed.vue":164,"./Roster.vue":165,"./Stats.vue":166,"./ViewEvent.vue":168,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],168:[function(require,module,exports){
+},{"./AddEvent.vue":158,"./Calendar.vue":161,"./EditUser.vue":165,"./NewsFeed.vue":168,"./Roster.vue":169,"./Stats.vue":170,"./ViewEvent.vue":172,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],172:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/ViewEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -32379,6 +33153,7 @@ exports.default = {
 		/**
    * Event has NOT happened yet, user is admin
    */
+
 		canEditEvent: function canEditEvent() {
 			return moment().isBefore(moment.utc(this.event.start * 1000)) && this.isAdmin;
 		},
@@ -32452,6 +33227,7 @@ exports.default = {
    *
    * @param {int} id  The id of the clicked event
    */
+
 		viewEvent: function viewEvent(id) {
 			// don't do anything if this is the same event that was clicked previously
 			if (this.event.id === id) {
@@ -32512,7 +33288,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row;\n      flex-flow: row;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-flow: row wrap;\n      flex-flow: row wrap;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n"] = false
+    __vueify_insert__.cache[".edit-button {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-button .btn {\n  padding-left: 14px;\n}\n.edit-button #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  text-align: center;\n  font-size: 25px;\n  margin-bottom: 25px;\n}\n.ViewEvent__details {\n  font-weight: bold;\n}\n.ViewEvent__type.--practice {\n  color: #329acf;\n}\n.ViewEvent__type.--home {\n  color: #c90018;\n}\n.ViewEvent__type.--away {\n  color: #f2d500;\n}\n.ViewEvent__type.--special {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -32523,7 +33299,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./EditEvent.vue":159,"./EditStats.vue":160,"./Stats.vue":166,"vue":151,"vue-hot-reload-api":124,"vueify/lib/insert-css":152}],169:[function(require,module,exports){
+},{"./EditEvent.vue":163,"./EditStats.vue":164,"./Stats.vue":170,"vue":155,"vue-hot-reload-api":128,"vueify/lib/insert-css":156}],173:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/AbstractEditStat.js", module);
 (function(){
 'use strict';
@@ -32581,7 +33357,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],170:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/AbstractStat.js", module);
 (function(){
 'use strict';
@@ -32614,6 +33390,7 @@ exports.default = {
 		/**
    * Whether to view the totals for a season or an average
    */
+
 		total: function total(val) {
 			if (val) {
 				this.done(this.totalStats);
@@ -32641,6 +33418,7 @@ exports.default = {
 		/**
    * Filter all the stats down to ones that just belong to players
    */
+
 		playerStats: function playerStats() {
 			return this.rawStats;
 		}
@@ -32651,6 +33429,7 @@ exports.default = {
    * Setup a few variables before compiling any stats
    * These are used in Stats.vue for displaying correct values
    */
+
 		setup: function setup() {
 			var _this = this;
 
@@ -32912,7 +33691,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{"../../mixins/StatHelpers.js":174}],171:[function(require,module,exports){
+},{"../../mixins/StatHelpers.js":178}],175:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/Basketball.vue", module);
 (function(){
 'use strict';
@@ -32970,6 +33749,7 @@ exports.default = {
 		/**
    * Set the key that will sort the stats table by default
    */
+
 		setDefaultSortKey: function setDefaultSortKey() {
 			if (this.type === 'teamRecent') this.sortKey = 'date';
 			if (this.type === 'teamSeason') this.sortKey = '';
@@ -33247,7 +34027,7 @@ exports.default = {
 				// they won
 				return 1;
 			} else {
-				// tie 
+				// tie
 				return 2;
 			}
 		},
@@ -33571,7 +34351,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./AbstractStat.js":170,"babel-runtime/core-js/json/stringify":5,"vue":151,"vue-hot-reload-api":124}],172:[function(require,module,exports){
+},{"./AbstractStat.js":174,"babel-runtime/core-js/json/stringify":5,"vue":155,"vue-hot-reload-api":128}],176:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/EditBasketball.vue", module);
 (function(){
 'use strict';
@@ -33599,6 +34379,7 @@ exports.default = {
 			ignore: ['date', 'win', 'opp', 'gp', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'], // keys to not show in the table
 			calculated: ['name', 'fg_', 'ft_', 'threep_'] };
 	},
+	// keys that are calculated behind the scenes
 
 
 	methods: {
@@ -33608,6 +34389,7 @@ exports.default = {
    *
    * @return {int} Number of detected errors
    */
+
 		errorCheck: function errorCheck() {
 			return function (stats) {
 				var _this = this;
@@ -33840,7 +34622,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./AbstractEditStat.js":169,"vue":151,"vue-hot-reload-api":124}],173:[function(require,module,exports){
+},{"./AbstractEditStat.js":173,"vue":155,"vue-hot-reload-api":128}],177:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Requests.js", module);
 (function(){
 "use strict";
@@ -33852,6 +34634,7 @@ exports.default = {
 	methods: {
 		// send a GET request with the given parameters
 		// execute the given event string when finished
+
 		get: function get(url) {
 			var successEvent = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 			var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
@@ -33957,7 +34740,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],174:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatHelpers.js", module);
 (function(){
 'use strict';
@@ -33975,6 +34758,7 @@ exports.default = {
    * @param {int} precision  			The amount of digits past the decimal place
    * @return {float}
    */
+
 		percentage: function percentage(part, whole) {
 			var precision = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
 
@@ -34056,7 +34840,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],175:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsSelection.js", module);
 (function(){
 'use strict';
@@ -34158,7 +34942,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],176:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Validator.js", module);
 (function(){
 'use strict';
@@ -34211,7 +34995,7 @@ exports.default = {
 				}, // the field must be an array
 				regex: function regex(args) {
 					return this.regex_(args);
-				}, // the field must be a string that matches a given regular expression. BE CAREFUL, DON'T INCLUDE PIPES! 
+				}, // the field must be a string that matches a given regular expression. BE CAREFUL, DON'T INCLUDE PIPES!
 				alpha_num: function alpha_num(args) {
 					return this.alphaNum(args);
 				}, // the field must be a string with only alphanumeric characters
@@ -34221,6 +35005,7 @@ exports.default = {
 				jersey: function jersey(args) {
 					return this.jersey_(args);
 				} },
+			// the field must be a valid jersey number
 			value_: null, // the value of the variable in question
 			path_: null, // the full path of the variable (e.g. user.name.firstname)
 			root_: null, // the name of the root of the variable (e.g. user)
@@ -34232,6 +35017,7 @@ exports.default = {
 			arrayIndex_: null, // which index of the given array to error check
 			temp_: {} };
 	},
+	// temporary useless variable to utilize $set functionality
 
 
 	methods: {
@@ -34244,6 +35030,7 @@ exports.default = {
    * @param {boolean} watch  	Whether or not to run error checking when the variable changes
    * @return {void} 
    */
+
 		registerErrorChecking: function registerErrorChecking(variable, rules) {
 			var messages = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var watch = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
@@ -34348,7 +35135,7 @@ exports.default = {
 					// new entry
 					this.errors[this.root_].$set(x, this.temp_);
 				} else {
-					// copy over existing content and the new 
+					// copy over existing content and the new
 					for (var key in this.temp_) {
 						this.errors[this.root_][x][key] = this.temp_[key];
 					}
@@ -34682,8 +35469,8 @@ exports.default = {
 					this.setError_(rule);
 					break; // no sense in continuing if it has failed a check already
 				} else {
-					this.clearError_();
-				}
+						this.clearError_();
+					}
 			}
 
 			return errors;
@@ -34747,16 +35534,16 @@ exports.default = {
    */
 		setError_: function setError_(rule) {
 			if (this.arrayIndex_ === null) {
-				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message 
+				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
 				this.$set('errors.' + this.path_, error); // store
 			} else {
-				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
-				this.$set('temp_', JSON.parse(JSON.stringify(this.errors[this.root_][this.arrayIndex_]))); // create copy
-				this.$set('temp_.' + this.key_, error); // move error message to correct key
+					var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
+					this.$set('temp_', JSON.parse(JSON.stringify(this.errors[this.root_][this.arrayIndex_]))); // create copy
+					this.$set('temp_.' + this.key_, error); // move error message to correct key
 
-				this.errors[this.root_].$set(this.arrayIndex_, this.temp_); // merge placeholder with this.errors
-				this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
-			}
+					this.errors[this.root_].$set(this.arrayIndex_, this.temp_); // merge placeholder with this.errors
+					this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
+				}
 		},
 
 
@@ -35009,7 +35796,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],177:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/routes.js", module);
 (function(){
 'use strict';
@@ -35106,11 +35893,11 @@ router.start(_App2.default, '#app');
 
 }).apply(this, arguments);
 
-},{"./components/App.vue":156,"./components/CreateTeam.vue":158,"./components/Team.vue":167,"vue":151,"vue-autosize":123,"vue-resource":138,"vue-router":149,"vue-touch":150}],1:[function(require,module,exports){
+},{"./components/App.vue":160,"./components/CreateTeam.vue":162,"./components/Team.vue":171,"vue":155,"vue-autosize":127,"vue-resource":142,"vue-router":153,"vue-touch":154}],1:[function(require,module,exports){
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":11,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":12,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":113,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":173,"hash":"t4sM5rGWWZ9SWZtUrHY2","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":175,"hash":"rZup5nhfQWJw8IUY3Nxl","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":176,"hash":"XJ9lrbXLOC795YT9Wlm/","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditUser.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":116,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":149,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":119,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"resources/assets/js/mixins/StatHelpers.js":{"index":174,"hash":"l98A8vAmkRZFvF7w03lB","parents":["resources/assets/js/components/stats/AbstractStat.js","resources/assets/js/components/EditStats.vue","resources/assets/js/components/Stats.vue"]},"node_modules/parseuri/index.js":{"index":109,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":115,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/debug/browser.js":{"index":86,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-parser/index.js","node_modules/socket.io-client/lib/socket.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":81,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":104,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":6,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":121,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/browserify-hmr/node_modules/lodash/array/zipObject.js":{"index":14,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/lang/isArray.js":{"index":68,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/browserify-hmr/node_modules/lodash/array/zipObject.js","node_modules/browserify-hmr/node_modules/lodash/collection/filter.js","node_modules/browserify-hmr/node_modules/lodash/collection/map.js","node_modules/browserify-hmr/node_modules/lodash/internal/createForEach.js","node_modules/browserify-hmr/node_modules/lodash/internal/isKey.js","node_modules/browserify-hmr/node_modules/lodash/internal/toPath.js","node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js","node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js","node_modules/browserify-hmr/node_modules/lodash/collection/some.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/arraySome.js":{"index":23,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/equalArrays.js","node_modules/browserify-hmr/node_modules/lodash/collection/some.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/arrayEach.js":{"index":20,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/forEach.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/arrayMap.js":{"index":22,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/map.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/arrayFilter.js":{"index":21,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/filter.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":120,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":148,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":105,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js","node_modules/has-binary/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":82,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseSome.js":{"index":42,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/some.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseEach.js":{"index":28,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseSome.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseFilter.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMap.js","node_modules/browserify-hmr/node_modules/lodash/collection/forEach.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseFilter.js":{"index":29,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/filter.js"]},"node_modules/browserify-hmr/node_modules/lodash/collection/filter.js":{"index":15,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js":{"index":26,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/filter.js","node_modules/browserify-hmr/node_modules/lodash/collection/map.js","node_modules/browserify-hmr/node_modules/lodash/internal/createObjectMapper.js","node_modules/browserify-hmr/node_modules/lodash/collection/some.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseMap.js":{"index":36,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/map.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isArrayLike.js":{"index":57,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseMap.js","node_modules/browserify-hmr/node_modules/lodash/internal/isIterateeCall.js","node_modules/browserify-hmr/node_modules/lodash/lang/isArguments.js","node_modules/browserify-hmr/node_modules/lodash/object/keys.js"]},"node_modules/browserify-hmr/node_modules/lodash/collection/map.js":{"index":17,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/createForOwn.js":{"index":49,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/browserify-hmr/node_modules/lodash/object/forOwn.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/bindCallback.js":{"index":44,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/createForOwn.js","node_modules/browserify-hmr/node_modules/lodash/internal/createAssigner.js","node_modules/browserify-hmr/node_modules/lodash/internal/createForEach.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/createObjectMapper.js":{"index":50,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/browserify-hmr/node_modules/lodash/object/mapValues.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseForOwn.js":{"index":31,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/createObjectMapper.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseEach.js","node_modules/browserify-hmr/node_modules/lodash/object/forOwn.js"]},"node_modules/browserify-hmr/node_modules/lodash/object/mapValues.js":{"index":77,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/assignWith.js":{"index":24,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/browserify-hmr/node_modules/lodash/object/assign.js"]},"node_modules/browserify-hmr/node_modules/lodash/object/keys.js":{"index":75,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/assignWith.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseAssign.js","node_modules/browserify-hmr/node_modules/lodash/object/pairs.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseForOwn.js","node_modules/browserify-hmr/node_modules/lodash/internal/equalObjects.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isIndex.js":{"index":58,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/isIterateeCall.js","node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js","node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js"]},"node_modules/browserify-hmr/node_modules/lodash/lang/isObject.js":{"index":71,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/isIterateeCall.js","node_modules/browserify-hmr/node_modules/lodash/internal/toObject.js","node_modules/browserify-hmr/node_modules/lodash/internal/isStrictComparable.js","node_modules/browserify-hmr/node_modules/lodash/lang/isFunction.js","node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js","node_modules/browserify-hmr/node_modules/lodash/object/keys.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isLength.js":{"index":61,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/isArrayLike.js","node_modules/browserify-hmr/node_modules/lodash/internal/createBaseEach.js","node_modules/browserify-hmr/node_modules/lodash/lang/isArray.js","node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js","node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js","node_modules/browserify-hmr/node_modules/lodash/lang/isTypedArray.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isObjectLike.js":{"index":62,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/browserify-hmr/node_modules/lodash/lang/isNative.js","node_modules/browserify-hmr/node_modules/lodash/lang/isArray.js","node_modules/browserify-hmr/node_modules/lodash/lang/isArguments.js","node_modules/browserify-hmr/node_modules/lodash/lang/isTypedArray.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/browserify-hmr/node_modules/lodash/utility/identity.js":{"index":79,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/bindCallback.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseCopy.js":{"index":27,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseAssign.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseAssign.js":{"index":25,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/browserify-hmr/node_modules/lodash/object/assign.js"]},"node_modules/browserify-hmr/node_modules/lodash/function/restParam.js":{"index":19,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/createAssigner.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/createAssigner.js":{"index":45,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/browserify-hmr/node_modules/lodash/object/assign.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isIterateeCall.js":{"index":59,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/createAssigner.js","node_modules/browserify-hmr/node_modules/lodash/collection/some.js"]},"node_modules/browserify-hmr/node_modules/lodash/object/assign.js":{"index":73,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":124,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue"]},"node_modules/socket.io-parser/binary.js":{"index":117,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/socket.io-parser/index.js":{"index":118,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":142,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/hammerjs/hammer.js":{"index":101,"hash":"GMd3rFxMDNnM5JQEpiKL","parents":["node_modules/vue-touch/vue-touch.js"]},"node_modules/vue-touch/vue-touch.js":{"index":150,"hash":"uwuR+mmbqpdzD9PBqC8T","parents":["resources/assets/js/routes.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"K4tRuJJcZkSEyIoACz4W","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":123,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":106,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/debug/debug.js"]},"node_modules/debug/debug.js":{"index":87,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/debug/browser.js"]},"node_modules/has-binary/index.js":{"index":102,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":114,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/process/browser.js":{"index":110,"hash":"kRj6Cin1xwuRMR8lV9O7","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":151,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":137,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":135,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/createForEach.js":{"index":48,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/browserify-hmr/node_modules/lodash/collection/forEach.js"]},"resources/assets/js/components/stats/AbstractStat.js":{"index":170,"hash":"eYnAwMMfASDsQ8Ieqk+E","parents":["resources/assets/js/components/stats/Basketball.vue"]},"resources/assets/js/components/stats/AbstractEditStat.js":{"index":169,"hash":"KIHcNFeMM1qU+/tVSPEd","parents":["resources/assets/js/components/stats/EditBasketball.vue"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseSlice.js":{"index":41,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/array/last.js":{"index":13,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseProperty.js":{"index":39,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/getLength.js","node_modules/browserify-hmr/node_modules/lodash/utility/property.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":162,"hash":"FhpzvByqhJJcxhr0KMqH","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":139,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":141,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":144,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":145,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":146,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":133,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":125,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":136,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":131,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":140,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":147,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":143,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/getLength.js":{"index":54,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/isArrayLike.js","node_modules/browserify-hmr/node_modules/lodash/internal/createBaseEach.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/toObject.js":{"index":65,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/createBaseEach.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseIsMatch.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseGet.js","node_modules/browserify-hmr/node_modules/lodash/internal/isKey.js","node_modules/browserify-hmr/node_modules/lodash/internal/createBaseFor.js","node_modules/browserify-hmr/node_modules/lodash/object/pairs.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatches.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/createBaseEach.js":{"index":46,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseEach.js"]},"node_modules/browserify-hmr/node_modules/lodash/collection/forEach.js":{"index":16,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseIsMatch.js":{"index":35,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseMatches.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqual.js":{"index":33,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseIsMatch.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseGet.js":{"index":32,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/basePropertyDeep.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isKey.js":{"index":60,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/browserify-hmr/node_modules/lodash/utility/property.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/isStrictComparable.js":{"index":63,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/getMatchData.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/basePropertyDeep.js":{"index":40,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/browserify-hmr/node_modules/lodash/utility/property.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/toPath.js":{"index":66,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/basePropertyDeep.js","node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/browserify-hmr/node_modules/lodash/utility/property.js":{"index":80,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/createBaseFor.js":{"index":47,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseFor.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseFor.js":{"index":30,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseForOwn.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseToString.js":{"index":43,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/toPath.js"]},"resources/assets/js/components/CreateTeam.vue":{"index":158,"hash":"LHaVakidGdMNPleY5xpS","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":152,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":127,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":134,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":128,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":130,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/lang/isFunction.js":{"index":69,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/browserify-hmr/node_modules/lodash/lang/isNative.js"]},"node_modules/browserify-hmr/node_modules/lodash/lang/isNative.js":{"index":70,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/getNative.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/getNative.js":{"index":56,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/browserify-hmr/node_modules/lodash/lang/isArray.js","node_modules/browserify-hmr/node_modules/lodash/object/keys.js"]},"node_modules/browserify-hmr/node_modules/lodash/object/pairs.js":{"index":78,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/getMatchData.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/getMatchData.js":{"index":55,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseMatches.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseMatches.js":{"index":37,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js"]},"node_modules/browserify-hmr/node_modules/lodash/lang/isArguments.js":{"index":67,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js","node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js"]},"node_modules/browserify-hmr/node_modules/lodash/object/keysIn.js":{"index":76,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/shimKeys.js":{"index":64,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/browserify-hmr/node_modules/lodash/object/keys.js"]},"node_modules/browserify-hmr/node_modules/lodash/object/forOwn.js":{"index":74,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":129,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":126,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":132,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":138,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/equalByTag.js":{"index":52,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":99,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/parsejson/index.js":{"index":107,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":108,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"resources/assets/js/components/Alert.vue":{"index":155,"hash":"q+oEEbYcX8W6cmRrUnxG","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/Nav.vue":{"index":163,"hash":"bAAEaxiey6jpBDPpQW5U","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":156,"hash":"agcvlxCBOkA3r8Zb/4jm","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":157,"hash":"nItzgM+MoaxU3PEJlkTA","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":154,"hash":"8UfaUPUcSQkah7md9+9N","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":164,"hash":"8/f+JUwYubvuoE8mSXWq","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":161,"hash":"D8px/199wykLD7SpeWVq","parents":["resources/assets/js/components/Team.vue"]},"node_modules/browser-resolve/empty.js":{"index":9,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"resources/assets/js/components/stats/EditBasketball.vue":{"index":172,"hash":"jkBJMoh5KMGvpQd2IfjL","parents":["resources/assets/js/components/EditStats.vue"]},"node_modules/engine.io-client/lib/transport.js":{"index":91,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":98,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/equalArrays.js":{"index":51,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/equalObjects.js":{"index":53,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browserify-hmr/node_modules/lodash/lang/isTypedArray.js":{"index":72,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqualDeep.js":{"index":34,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/browserify-hmr/node_modules/lodash/internal/baseMatchesProperty.js":{"index":38,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/browserify-hmr/node_modules/lodash/internal/baseCallback.js"]},"node_modules/browserify-hmr/node_modules/lodash/collection/some.js":{"index":18,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":10,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":122,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":8,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":7,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":103,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":97,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":94,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":95,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/component-inherit/index.js":{"index":83,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js"]},"node_modules/yeast/index.js":{"index":153,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":96,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":159,"hash":"RcoFcqmy1pg5joiMHZ3X","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Roster.vue"]},"resources/assets/js/components/EditStats.vue":{"index":160,"hash":"vnndj1Gl3WCo96UhdMK9","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":168,"hash":"Yc1VEiw2lTdUxG0FuSp0","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Stats.vue":{"index":166,"hash":"NGfaMyzD9Aq7uLeIPeIn","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":100,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":93,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":92,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":90,"hash":"OKrqAAXxHzyJ1GLXZsq5","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":89,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":88,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":112,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":111,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"resources/assets/js/components/stats/Basketball.vue":{"index":171,"hash":"v6qfnDYZO0cLVF7F/gS1","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/core-js/library/modules/_core.js":{"index":85,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/core-js/library/fn/json/stringify.js"]},"node_modules/core-js/library/fn/json/stringify.js":{"index":84,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":165,"hash":"Z+rx6EDLPl+XE2kW4+DG","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":167,"hash":"NG0zZoXBNPoBryNpPi0M","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":177,"hash":"YiK6EQ41qWX92lE0ALz7","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":13,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":14,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":113,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":177,"hash":"HSTRFhYEbsYDiKfsD4Nq","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":179,"hash":"FZSki5eTAZiXZzCQXwa9","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":180,"hash":"ivhcP4t3QbmJo+p09h+l","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditUser.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":116,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":153,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"resources/assets/js/mixins/StatHelpers.js":{"index":178,"hash":"VPhjwAwj0j7NpZQ5A8nK","parents":["resources/assets/js/components/stats/AbstractStat.js","resources/assets/js/components/EditStats.vue","resources/assets/js/components/Stats.vue"]},"node_modules/socket.io-parser/is-buffer.js":{"index":121,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/parseuri/index.js":{"index":109,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":115,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/node_modules/debug/browser.js":{"index":117,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":15,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":8,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":36,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":125,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":124,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":152,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":37,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/has-binary/index.js","node_modules/socket.io-parser/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":16,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":128,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/arrayFilter.js":{"index":46,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/arraySome.js":{"index":48,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/collection/some.js","node_modules/lodash/internal/equalArrays.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":47,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":45,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/vue-resource/src/resource.js":{"index":146,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":127,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/hammerjs/hammer.js":{"index":33,"hash":"GMd3rFxMDNnM5JQEpiKL","parents":["node_modules/vue-touch/vue-touch.js"]},"node_modules/vue-touch/vue-touch.js":{"index":154,"hash":"uwuR+mmbqpdzD9PBqC8T","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/binary.js":{"index":119,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/has-binary/index.js":{"index":34,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":114,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-parser/index.js":{"index":120,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/process/browser.js":{"index":110,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":155,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue","resources/assets/js/routes.js"]},"node_modules/vue-resource/src/http/method.js":{"index":139,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":141,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/ms/index.js":{"index":106,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/socket.io-client/node_modules/debug/debug.js","node_modules/socket.io-parser/node_modules/debug/debug.js","node_modules/engine.io-client/node_modules/debug/debug.js"]},"node_modules/socket.io-client/node_modules/debug/debug.js":{"index":118,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-client/node_modules/debug/browser.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":54,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/baseEach.js":{"index":53,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseSome.js":{"index":67,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":74,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":69,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/assignWith.js":{"index":49,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":100,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":75,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":51,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/some.js","node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":56,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":102,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseMap.js":{"index":61,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":82,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":42,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":93,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/collection/map.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/collection/some.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/array/zipObject.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/filter.js"]},"node_modules/lodash/internal/createForEach.js":{"index":73,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"resources/assets/js/components/stats/AbstractStat.js":{"index":174,"hash":"KjCIQfHXZLE4BILcUH+d","parents":["resources/assets/js/components/stats/Basketball.vue"]},"resources/assets/js/components/stats/AbstractEditStat.js":{"index":173,"hash":"ziqH+CLGIZQ495qmmJOc","parents":["resources/assets/js/components/stats/EditBasketball.vue"]},"node_modules/lodash/internal/isLength.js":{"index":86,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":87,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/utility/identity.js":{"index":104,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":52,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":50,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":44,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":70,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":84,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":98,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/isIndex.js":{"index":83,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":96,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":166,"hash":"Qp3iFfi7Tkfv7s8Wz3cT","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":143,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":145,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":137,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":129,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":140,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":135,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":149,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":148,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":150,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":144,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":151,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":147,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":71,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":79,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js"]},"node_modules/lodash/internal/toObject.js":{"index":90,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/collection/forEach.js":{"index":41,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":66,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":38,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":64,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/getLength.js"]},"node_modules/socket.io-parser/node_modules/debug/debug.js":{"index":123,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-parser/node_modules/debug/browser.js"]},"node_modules/socket.io-parser/node_modules/debug/browser.js":{"index":122,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-parser/index.js"]},"resources/assets/js/components/CreateTeam.vue":{"index":162,"hash":"WS+zpghoj+aIfytRkC7j","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":156,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/App.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/AddEvent.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":131,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":138,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":132,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":134,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":60,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":58,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":57,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":85,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":88,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":72,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":55,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":65,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":91,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":105,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":43,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseToString.js":{"index":68,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":133,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":130,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":136,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":142,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":107,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":31,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/parseqs/index.js":{"index":108,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"resources/assets/js/components/Alert.vue":{"index":159,"hash":"qrGTCd6najcV8eNkYkyk","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/Nav.vue":{"index":167,"hash":"PXeT9a73rYqTdEHuHHm1","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":160,"hash":"Kns+IQgpes7GGBQwssPH","parents":["resources/assets/js/routes.js"]},"resources/assets/js/components/Calendar.vue":{"index":161,"hash":"fyZH5ZfHRYq1ybYO90/f","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/AddEvent.vue":{"index":158,"hash":"IaJX1jwoteely+i2SHTT","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":165,"hash":"H57tSB86tXdV8zUvIxWP","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":168,"hash":"IC65sYNDuMuzeWD18SAH","parents":["resources/assets/js/components/Team.vue"]},"node_modules/lodash/lang/isFunction.js":{"index":94,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":95,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":81,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/array/zipObject.js":{"index":39,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/object/pairs.js":{"index":103,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":80,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":62,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isArguments.js":{"index":92,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":101,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":89,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":99,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":77,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"resources/assets/js/components/stats/EditBasketball.vue":{"index":176,"hash":"qTtY6v2noigAKDpowbke","parents":["resources/assets/js/components/EditStats.vue"]},"node_modules/browser-resolve/empty.js":{"index":11,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":21,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":30,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":78,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalArrays.js":{"index":76,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":97,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":59,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":63,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/filter.js":{"index":40,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":12,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":126,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":10,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":9,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/has-cors/index.js":{"index":35,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":27,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/node_modules/debug/debug.js":{"index":29,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/engine.io-client/node_modules/debug/browser.js"]},"node_modules/engine.io-client/node_modules/debug/browser.js":{"index":28,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/yeast/index.js":{"index":157,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":26,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/component-inherit/index.js":{"index":17,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"resources/assets/js/components/EditStats.vue":{"index":164,"hash":"pz/4owFixmU5suqyOjib","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/EditStats.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Roster.vue"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":23,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":25,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"resources/assets/js/components/EditEvent.vue":{"index":163,"hash":"sKKO36qcPRss9fTygzrD","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":172,"hash":"BEFksXGwcsSJouUdrbds","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Stats.vue":{"index":170,"hash":"ZHucaaFmX5jBfp6LmJZ2","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":32,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":24,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":22,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":20,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":19,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":18,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":112,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":111,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"resources/assets/js/components/stats/Basketball.vue":{"index":175,"hash":"shgQM31JY4V4LSv8Zc3p","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":7,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":6,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":169,"hash":"GGP0HZgBcoNC1yxCQ/L0","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":171,"hash":"n7Y91V8wQ2wN+TuJ6Oyh","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":181,"hash":"eBwaPJoK0EvAMbUNAI0G","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";
@@ -35154,6 +35941,6 @@ router.start(_App2.default, '#app');
   arguments[3], arguments[4], arguments[5], arguments[6]
 );
 
-},{"./node_modules/browserify-hmr/inc/index.js":10,"./node_modules/socket.io-client/lib/index.js":111,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":177}]},{},[1]);
+},{"./node_modules/browserify-hmr/inc/index.js":12,"./node_modules/socket.io-client/lib/index.js":111,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":181}]},{},[1]);
 
 //# sourceMappingURL=routes.js.map

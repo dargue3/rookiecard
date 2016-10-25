@@ -878,6 +878,7 @@ export default  {
 		a
 			color link_blue
 			padding 7px 8px
+			margin-top 3px
 		&:hover
 			cursor pointer
 		&.--active

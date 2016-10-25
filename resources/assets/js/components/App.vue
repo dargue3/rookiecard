@@ -49,9 +49,6 @@ export default  {
 			user: {},
 			teams: [],
 			alert: false,
-			alertCounter: 0,
-			alertMessage:  "You better check yoself",
-			alertType: "info",
 			toggleSidebar: true,
 		}
 	},
@@ -193,10 +190,11 @@ export default  {
 		/**
 		 * Show a banner message using Alert component
 		 *
-		 * @param {string} type  Possible: 'good', 'bad', 'info'
-		 * @param {string} msg
+		 * @param {string} type  	Possible: 'good', 'bad', 'info'
+		 * @param {string} msg 		The message to display
+		 * @param {string} link 	Link to route to if the user clicks the alert
 		 */
-		banner(type, msg)
+		banner(type, msg, link = '')
 		{
 			// always hide any existing alerts
 			this.alert = false;
@@ -205,7 +203,7 @@ export default  {
 			var self = this;
 			setTimeout(function() {
 				self.alert = true;
-				self.$broadcast('displayAlert', type, msg);
+				self.$broadcast('Alert_display', type, msg, link);
 			}, 400);
 		},
 
