@@ -3,7 +3,7 @@ namespace App\RC\Event;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Exceptions\ApiException;
+use App\Exceptions\TellUserException;
 use Illuminate\Support\Facades\Auth;
 use App\RC\NewsFeed\NewsFeedRepository;
 
@@ -113,32 +113,32 @@ class HandlesEventLogic
     public function makeSureTheDatesAreReasonable()
     {
         if (! is_a($this->start, Carbon::class) or ! is_a($this->end, Carbon::class)) {
-            throw new ApiException("The given dates were invalid, try re-entering them");
+            throw new TellUserException("The given dates were invalid, try re-entering them");
         }
 
         if ($this->start >= $this->end) {
-            throw new ApiException("The event ends before it starts!");
+            throw new TellUserException("The event ends before it starts!");
         }
 
         if ($this->start->year < 1900 or $this->end->year < 1900) {
-            throw new ApiException("You weren't even born yet! Pick a more recent date");
+            throw new TellUserException("You weren't even born yet! Pick a more recent date");
         }
 
         if ($this->start->year > 2100 or $this->end->year > 2100) {
-            throw new ApiException("There's being prepared, then there's you. Pick a more recent date");
+            throw new TellUserException("There's being prepared, then there's you. Pick a more recent date");
         }
 
         if ($this->end->diffInDays($this->start) > 30) {
-            throw new ApiException("This event lasts over a month. Break it up a little");
+            throw new TellUserException("This event lasts over a month. Break it up a little");
         }
 
         if ($this->repeats) {
             if ($this->until <= $this->end) {
-                throw new ApiException("The event stops repeating before it starts!");
+                throw new TellUserException("The event stops repeating before it starts!");
             }
 
             if (! is_a($this->until, Carbon::class)) {
-                throw new ApiException("The given dates were invalid, try re-entering them");
+                throw new TellUserException("The given dates were invalid, try re-entering them");
             }
 
             $this->estimateTheNumberOfEvents();
@@ -156,7 +156,7 @@ class HandlesEventLogic
         $estimate = $this->until->diffInWeeks($this->start) * count($this->days);
 
         if ($estimate > $this->limitPerRequest) {
-            throw new ApiException("We limit you to $this->limitPerRequest repeating events per request");
+            throw new TellUserException("We limit you to $this->limitPerRequest repeating events per request");
         }
     }
 
@@ -169,7 +169,7 @@ class HandlesEventLogic
     public function create()
     {
     	if ($this->event->teamHasCreatedTooManyEvents($this->team_id)) {
-    		throw new ApiException("Your team has already created too many events");
+    		throw new TellUserException("Your team has already created too many events");
     	}   
 
         if($this->repeats) {

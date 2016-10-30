@@ -9,6 +9,7 @@ export default
 			errors: {},
 			vars_: {},
 			errMsg_: {},
+			watching_: {},
 			validRules_: {
 				required: 	function(args) { return this.required_(args) },	// the field needs to have something in it
 				max: 		function(args) { return this.max_(args) }, 		// the field must be less than a given argument in length or size
@@ -88,10 +89,10 @@ export default
 
 			this.register_();
 
-			if (watch) {
+			if (watch && ! this.isArray_) {
 				// whenever this variable changes, re-run the error check
-				var root_ = this.root_;
-				this.$watch(this.root_, function() { this.errorCheck(root_) });
+				var path = this.path_;
+				this.watching_[path] = this.$watch(path, function() { this.errorCheck(path); });
 			}
 		},
 
@@ -318,7 +319,7 @@ export default
 		errorCheck(variable = null)
 		{
 			var errors = 0;
-
+			
 			if (variable === null) {
 				// check all
 				for (variable in this.vars_) {
@@ -621,11 +622,32 @@ export default
 		/**
 		 * Get rid of any previously existing error checking logic
 		 */
-		clearErrorChecking()
+		resetErrorChecking()
 		{
 			this.vars_ = {};
 			this.errors = {};
 			this.errMsg_ = {};
+
+			for (var key in this.watching_) {
+				// stop watching all registered variables
+				this.watching_[key].call();
+			}
+
+			this.watching_ = {};
+		},
+
+
+		/**
+		 * Clear out (but maintain the structure of) this.errors
+		 */
+		clearErrors(key = null)
+		{
+			for (var key in this.errors) {
+				if (typeof this.errors[key] === 'string') {
+					this.errors[key] = '';
+				}
+
+			}
 		},
 
 

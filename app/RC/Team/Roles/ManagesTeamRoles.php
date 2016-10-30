@@ -147,23 +147,26 @@ trait ManagesTeamRoles
     /**
      * Toggle the member from coach -> player or vice versa
      * 
+     * @param string $role The string version of what their role should be
      * @return parent
      */
-    public function switchMemberRole()
+    public function setMemberRole($role)
     {
         if ($this->isGhost()) { 
-            if ($this->hasRole(new GhostPlayer)) {
+            if ($role == 'coach') {
                 return $this->addRole(new GhostCoach, true);
             }
-
-            return $this->addRole(new GhostPlayer, true);
+            else if ($role == 'player') {
+                return $this->addRole(new GhostPlayer, true);
+            }
         }
 
-        if ($this->hasRole(new Player)) {
+        if ($role == 'coach') {
             return $this->addRole(new Coach, true);
         }
-
-        return $this->addRole(new Player, true);
+        else if ($role == 'player') {
+            return $this->addRole(new Player, true);
+        }
     }
 
 

@@ -169,13 +169,13 @@ class ManagesTeamRolesTest extends TestCase
 
 
     /** @test */
-    public function a_member_can_have_their_role_toggled_between_player_or_coach()
+    public function a_member_can_have_their_role_switched_between_player_or_coach()
     {
         $this->repo->addRole(new Player);
 
         $this->assertTrue($this->repo->hasRole(new Player));
 
-        $this->repo->switchMemberRole();
+        $this->repo->setMemberRole('coach');
 
         $this->assertFalse($this->repo->hasRole(new Player));
         $this->assertTrue($this->repo->hasRole(new Coach));
@@ -185,14 +185,14 @@ class ManagesTeamRolesTest extends TestCase
     /** @test */
     public function a_ghost_member_can_have_their_role_toggled_between_ghost_player_or_ghost_coach()
     {
-        $this->repo->addRole(new GhostPlayer);
+        $this->repo->addRole(new GhostCoach);
 
-        $this->assertTrue($this->repo->hasRole(new GhostPlayer));
-
-        $this->repo->switchMemberRole();
-
-        $this->assertFalse($this->repo->hasRole(new GhostPlayer));
         $this->assertTrue($this->repo->hasRole(new GhostCoach));
+
+        $this->repo->setMemberRole('player');
+
+        $this->assertFalse($this->repo->hasRole(new GhostCoach));
+        $this->assertTrue($this->repo->hasRole(new GhostPlayer));
     }
 
 

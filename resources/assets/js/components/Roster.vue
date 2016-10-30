@@ -13,16 +13,32 @@
 				<span>Fans</span>
 			</div>
 		</div>
+
+		<div class="Roster__search">
+			<input type="text" class="form-control --white" placeholder="Search by name..." v-model="search">
+		</div>
+
+
 		
 		<div v-show="tab === 'players'" class="Roster__list">
 			<div class="Roster__users">
-				<div v-for="player in players | orderBy 'lastname'" class="User">
-					<div class="User__icons">
-						<div v-show="player.isAdmin" class="admin-icon">
+				<div v-for="player in players
+										| filterBy search in 'name'
+										| orderBy 'lastname'" class="User">
+					<div v-show="! player.hasRequestedToJoin" class="User__icons">
+						<div v-show="player.isAdmin">
 							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 						</div>
-						<div v-show="isAdmin" class="edit-icon" v-touch:tap="edit(player)">
+						<div v-show="isAdmin" v-touch:tap="edit(player)">
 							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
+						</div>
+					</div>
+					<div v-show="isAdmin && player.hasRequestedToJoin" class="User__accept">
+						<div v-touch:tap="accept(player)">
+							<a><i class="material-icons accept-icon" data-toggle="tooltip" title="Add to Team">done</i></a>
+						</div>
+						<div v-touch:tap="deny(player)">
+							<a><i class="material-icons deny-icon" data-toggle="tooltip" title="Deny">close</i></a>
 						</div>
 					</div>
 					<div class="User__pic" :class="{'--ghost-pic' : player.isGhost}">
@@ -37,10 +53,13 @@
 								<span v-if="player.isGhost">{{ player.name }}</span>
 								<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
 							</div>
-							<div v-show="player.meta.positions.length" class="User__positions">
+							<div v-show="player.meta.positions" class="User__positions">
 								<span v-for="position in player.meta.positions">
 									{{ position | uppercase }}
 								</span>&nbsp;
+							</div>
+							<div v-show="player.hasRequestedToJoin" class="User__positions">
+								<span>Would like to join</span>
 							</div>
 						</div>
 						<div class="details-num">
@@ -75,12 +94,14 @@
 
 		<div v-show="tab === 'coaches'" class="Roster__list">
 			<div class="Roster__users">
-				<div v-for="coach in coaches | orderBy 'lastname'" class="User">
+				<div v-for="coach in coaches 
+										| filterBy search in 'name'
+										| orderBy 'lastname'" class="User">
 					<div class="User__icons">
-						<div v-show="coach.isAdmin" class="admin-icon">
+						<div v-show="coach.isAdmin">
 							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 						</div>
-						<div v-show="isAdmin" class="edit-icon" v-touch:tap="edit(coach)">
+						<div v-show="isAdmin" v-touch:tap="edit(coach)">
 							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 						</div>
 					</div>
@@ -124,12 +145,14 @@
 
 		<div v-show="tab === 'fans'" class="Roster__list">
 			<div class="Roster__users">
-				<div v-for="fan in fans | orderBy 'lastname'" class="User">
+				<div v-for="fan in fans 
+										| filterBy search in 'name'
+										| orderBy 'lastname'" class="User">
 					<div class="User__icons">
-						<div v-show="fan.isAdmin" class="admin-icon">
+						<div v-show="fan.isAdmin">
 							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 						</div>
-						<div v-show="isAdmin" class="edit-icon" v-touch:tap="edit(fan)">
+						<div v-show="isAdmin" v-touch:tap="edit(fan)">
 							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 						</div>
 					</div>
@@ -166,17 +189,50 @@ export default  {
 	
 	name: 'Roster',
 
-	props: ['players', 'coaches', 'fans', 'isAdmin', 'editUser'],
+	props: ['users', 'isAdmin', 'editUser'],
 
 
 	data() {
 		return {
 			tab: 'players',
+			search: '',
 		};
 	},
 
+	computed:
+	{
+		players()
+		{
+			if (! this.isAdmin) {
+				return this.users.filter((user) => {
+					return user.isPlayer;
+				});
+			}
 
-	methods: {
+			return this.users.filter((user) => {
+				return user.isPlayer || user.hasRequestedToJoin;
+			});
+		},
+
+		coaches()
+		{
+			return this.users.filter((user) => {
+				return user.isCoach
+			});
+		},
+
+
+		fans()
+		{
+			return this.users.filter((user) => {
+				return user.isFan
+			});
+		},
+	},
+
+
+	methods:
+	{
 		
 		/**
 		 * Open a modal to edit the given user
@@ -188,29 +244,28 @@ export default  {
 			//make a copy of this player for reactivity
 			user = JSON.parse(JSON.stringify(user));
 
-			var role = '';
-			if (user.isGhost) role = 'ghost_';
-			if (user.isPlayer) role += 'player'; 
-			if (user.isCoach) role += 'coach'; 
-			user.role = role;
+			if (user.isPlayer) user.role = 'player'; 
+			if (user.isCoach) user.role = 'coach'; 
 
 			this.$set('editUser', user);
 			this.$root.showModal('rosterModal');
 		},
 
 
-		//clicked the 'add user' button
+		/**
+		 * Admin wants to add a new ghost player or coach
+		 *
+		 * @param {string} role   Either 'player' or 'coach'
+		 */
 		addUser(role)
 		{
-			if(role === 'player') {
+			if (role === 'player') {
 				var isPlayer = true;
 				var isCoach = false;
-				role = 'ghost_player'
 			}
-			if(role === 'coach') {
+			if (role === 'coach') {
 				var isPlayer = false;
 				var isCoach = true;
-				role = 'ghost_coach'
 			}
 
 			var user = {
@@ -230,7 +285,37 @@ export default  {
 
 			this.$set('editUser', user);
 			this.$root.showModal('rosterModal');
-		}
+		},
+
+		/**
+		 * Admin has clicked to accept this user to the team
+		 *
+		 * @param {object} user
+		 */
+		accept(user)
+		{
+			user = JSON.parse(JSON.stringify(user));
+
+			user.acceptedByAdmin = true;
+			user.isPlayer = true;
+
+			this.edit(user);
+		},
+
+
+		/**
+		 * Admin has clicked to deny this user from joining the team
+		 * 
+		 * @param {object} user
+		 */
+		deny(user)
+		{
+			user = JSON.parse(JSON.stringify(user));
+
+			user.deniedByAdmin = true;
+
+			this.edit(user);
+		},
 
 
 	},
@@ -293,6 +378,7 @@ export default  {
 			opacity 1
 			transition opacity 0.3s ease
 	
+.User__accept
 .User__icons
 	display flex
 	position absolute
@@ -300,7 +386,7 @@ export default  {
 	left 0
 	padding-right 5px
 	flex-flow row
-	align-items middle
+	align-items center
 	background rgba(255,255,255,0.7)
 	border-top-left-radius 4px
 	border-bottom-right-radius 4px
@@ -310,9 +396,25 @@ export default  {
 		opacity 1
 	div
 		display flex
-		align-items middle
+		align-items center
 		color black
 		margin 5px 0px 2px 5px
+		
+.User__accept
+	opacity 1
+	background rgba(255,255,255,1)
+	.accept-icon
+		color rc_bright_green
+		&:hover
+			color rc_bright_green_hover
+			cursor pointer
+	.deny-icon
+		color rc_red
+		&:hover
+			color rc_red_hover
+			cursor pointer
+	.material-icons	
+		font-size 40px
 	
 		
 	
@@ -375,6 +477,15 @@ export default  {
 	font-size 14px
 	margin-top 5px
 	color rc_dark_gray
+	
+.Roster__search
+	display flex
+	flex-flow row nowrap
+	justify-content center
+	margin-bottom 20px
+	input
+		width 175px
+		height 40px
 	
 .Roster__coaches
 	@media (max-width 767px)

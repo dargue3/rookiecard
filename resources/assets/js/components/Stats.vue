@@ -14,23 +14,30 @@
 		    	</tr>
 		  	</thead>
 		  	<tbody>
-		    	<tr v-for="val in stats 
+		    	<tr v-show="index < currPage || ! showPagination" v-for="(index, val) in stats 
 		    						| filterBy filterKey
 		    						| orderBy sortKey sortOrders[sortKey]">
 			      <td v-for="key in statKeys" class="stat-entries" :class="resolveValClasses(key, val)">
-			        {{ resolveStatValue(key, val) }}
+			        {{ resolveStatValue(key, val) }} 
 			      </td>
 		    	</tr>
 		  	</tbody>
 			</table>
+			<div v-show="showPagination" class="show-more" v-touch:tap="showMore()">
+				<span>
+					<i class="material-icons --left">keyboard_arrow_down</i>
+					Show More
+					<i class="material-icons --right">keyboard_arrow_down</i>
+				</span>
+			</div>
 		</div>
 
 
 		<!-- just for calculations, doesn't display anything -->
 		<basketball v-if="sport === 'basketball'" :type="type" :event="event" :player="player"
-  							:players="players" :raw-stats="rawStats" :compile="compile" :keys.sync="statKeys" :total="total"
+  							:players="players" :raw-stats="filteredRawStats" :compile="compile" :keys.sync="statKeys" :total="total"
   							:key-names.sync="keyNames" :tooltips.sync="tooltips" :val-lookup.sync="valLookup" :sort-key.sync="sortKey" 
-  							:raw-team-stats.sync="rawTeamStats" :val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup">
+  							:val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup">
   	</basketball>	
 
 
@@ -53,7 +60,7 @@ export default {
 	mixins: [ StatHelpers ],
 
 	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'filterKey', 'sortKey',
-					'players', 'player', 'event', 'rawTeamStats'],
+					'players', 'player', 'event', 'paginate'],
 
 	components:
 	{
@@ -71,6 +78,8 @@ export default {
 			tooltips: {},
 			compile: false,
 			stats: [],
+			currPage: this.paginate,
+			filteredRawStats: [],
 			sortOrders: {},
 		}
 	},
@@ -104,8 +113,38 @@ export default {
 		},
 	},
 
+	computed:
+	{
+		/**
+		 * Whether or not to show the "Show More" paginator link
+		 */
+		showPagination()
+		{
+			if (typeof this.paginate === 'number') {
+				if (! this.compile && this.stats.length > this.paginate) {
+					if (this.currPage >= this.stats.length) {
+						return false;
+					}
+					else {
+						return true;
+					}
+				}
+			}
+
+			return false;
+		},
+	},
+
 	events: 
 	{
+		/**
+		 * Message from parent component to recompile the data
+		 */
+		Stats_recompile()
+		{
+			this.compileStats();
+		},
+
 		/**
 		 * Stats are done being created by child sport component
 		 */
@@ -126,7 +165,39 @@ export default {
 		 */
 		compileStats()
 		{
+			this.total = false;
+			this.filterRawStats();
+			this.currPage = this.paginate;
 			this.compile = true;
+		},
+
+
+		/**
+		 * Only work with raw stats from players that are players
+		 * (there could be stats from when a user was a coach, for example)
+		 */
+		filterRawStats()
+		{
+			let tempStats = [];
+			for (var index in this.rawStats) {
+				let stats = this.rawStats[index];
+				for (var player in this.players) {
+					if (stats.member_id === this.players[player].member_id) {
+						tempStats.push(stats);
+					}
+				}
+			}
+
+			this.$set('filteredRawStats', tempStats);
+		},
+
+
+		/**
+		 * Increment the amount of stats shown by 1 page (default: 10 per page)
+		 */
+		showMore()
+		{
+			this.currPage += this.paginate;
 		},
 
 
@@ -318,59 +389,26 @@ td.stat-entries
 	font-weight bold
 
 
-
-
-div.pagination
-	margin 0 auto
-	width 100%
-
-ul.pagination
-	font-size 13px
-	margin-top 5px
-	li
-		a, a:visited
-			color black
-		a:hover
-			color black
-			background-color #D6D6D6
-			border-color #CACACA			
-	.active
-		a, a:visited, a:hover
-			color white
-			background-color #7AB0EB
-			border-color #CACACA
-			
-.Stats__title.--noStats
-	display flex
-	flex-flow row
-	justify-content center
-	text-align center
-	font-size 25px
-	margin-bottom 2em
-	*
-		flex 1			
-		
-.Stats__overflow
-	margin-top 1em
-	margin-bottom 0.5em
-	min-height 20px	
-	span
-		position relative
-		color rc_lite_gray
-		&.--right
-			padding-right 1.5em
-			float right
-			i
-				top -5px
-				right -9px
+.show-more
+	position relative
+	display inline-block
+	padding 10px 100px
+	border-radius 4px
+	background white
+	color link_blue
+	&:hover
+		color link_blue_hover
+		cursor pointer
+	@media screen and (max-width 767px)
+		margin-top 15px
+	.material-icons
+		position absolute
+		font-size 19px
 		&.--left
-			float left
-			padding-left 1.5em
-			i
-				top -5px
-				left -9px
-		i
-			position absolute
-			font-size 30px	
+			top 10px
+			left 74px
+		&.--right
+			top 10px
+			right 77px			
 
 </style>

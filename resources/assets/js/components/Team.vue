@@ -46,13 +46,13 @@
 								<div class="Team__buttons">
 									<div class="btn-counter --members">
 										<template v-if="! isMember">
-											<span v-show="hasBeenInvited" class="btn-text --icon --green" @click="join('accept')">
-												<i class="material-icons">drafts</i><span>ACCEPT INVITE</span>
+											<span v-show="hasBeenInvited" class="btn-text --icon --green" v-touch:tap="respondingToInvitation()">
+												<i class="material-icons">drafts</i><span>RESPOND TO INVITE</span>
 											</span>
-											<span v-show="hasRequestedToJoin" class="btn-text --icon --red" @click="join('cancel')">
+											<span v-show="hasRequestedToJoin" class="btn-text --icon --red" v-touch:tap="join('cancel')">
 												<i class="material-icons">clear</i><span>CANCEL</span>
 											</span>
-											<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text --icon --blue" @click="join('request')">
+											<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text --icon --blue" v-touch:tap="join('request')">
 												<i class="material-icons">person_add</i><span>ASK TO JOIN</span>
 											</span>
 										</template>
@@ -85,16 +85,17 @@
 							</div> <!-- end Team__info -->
 
 							<div class="Team__tabs">
-								<div class="tab" :class="{'--active' : tab === 'calendar'}" @click="tab = 'calendar'">
+								<div class="tab" :class="{'--active' : tab === 'calendar'}" v-touch:tap="tab = 'calendar'">
 									<a>CALENDAR</a>			
 								</div>
-								<div class="tab" :class="{'--active' : tab === 'stats'}" @click="tab = 'stats'">
+								<div class="tab" :class="{'--active' : tab === 'stats'}" v-touch:tap="tab = 'stats'">
 									<a>STATS</a>	
 								</div>
-								<div class="tab" :class="{'--active' : tab === 'roster'}" @click="tab = 'roster'">
-									<a>ROSTER</a>	
+								<div class="tab" :class="{'--active' : tab === 'roster'}" v-touch:tap="tab = 'roster'">
+									<a>ROSTER</a>
+									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">{{ usersThatWantToJoin.length }}</span>
 								</div>
-								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}" @click="tab = 'settings'">
+								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}" v-touch:tap="tab = 'settings'">
 									<a>SETTINGS</a>	
 								</div>
 							</div>	
@@ -136,7 +137,7 @@
 
 							<div v-show="statsTab === 'teamRecent'">
 								<rc-stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
-													:raw-stats="stats" :players="players" :raw-team-stats.sync="rawTeamStats">
+													:raw-stats="stats" :players="players" :paginate="10">
 		        		</rc-stats>
 		        		<div v-else class="text-center">
 									<h4>No stats yet...</h4>
@@ -155,7 +156,7 @@
 									<input type="text" class="form-control --white" placeholder="Search by name..." v-model="statFilterKey">
 								</div>
 									
-			        	<rc-stats v-if="stats.length" type="playerSeason" :stat-keys="team.settings.statKeys" :total="showStatTotals" 
+			        	<rc-stats v-if="stats.length" type="playerSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
 			        						:sport="team.sport" :raw-stats="stats" :players="players" :filter-key="statFilterKey">
 		        		</rc-stats>
 		        		<div v-else class="text-center">
@@ -174,7 +175,7 @@
 									</div>
 								</div>
 			        	<rc-stats v-if="stats.length" type="teamSeason" :stat-keys="team.settings.statKeys" :raw-team-stats.sync="rawTeamStats"
-			        						:sport="team.sport" :raw-stats="stats" :players="players" :total="showStatTotals">
+			        						:sport="team.sport" :raw-stats="stats" :players="players" :total.sync="showStatTotals">
 		        		</rc-stats>
 		        		<div v-else class="text-center">
 									<h4>No stats yet...</h4>
@@ -190,8 +191,7 @@
 			      <div class="col-xs-12 Team__roster"
 			      			v-show="tab === 'roster'">
 
-			        <rc-roster :players="players" :coaches="coaches" 
-			        						:fans="fans" :edit-user.sync="editUser" 
+			        <rc-roster :users="users" :edit-user.sync="editUser" 
 			        						:is-admin="isAdmin">
 			        </rc-roster>		
 
@@ -287,8 +287,38 @@
 	          <div class="modal-body">
 	          	<div class="row">
 	            
-								<rc-edit-user v-if="editUser.member_id || editUser.new" :user="editUser" :positions="positions"></rc-edit-user>
+								<rc-edit-user v-if="editUser.member_id || editUser.new" :user="editUser" 
+															:positions="positions" :users="users"></rc-edit-user>
 
+							</div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+
+
+	    <!-- modal window for adding events -->
+	    <div class="modal" id="joinTeamModal" role="dialog" aria-hidden="true">
+	      <div class="modal-dialog">
+	        <div class="modal-content">
+	          <div class="modal-header">
+	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	            <h3 class="modal-title">Join Team?</h3>
+	          </div>
+	          <div class="modal-body">
+
+	            <div class="row JoinTeam__msg">
+								<div class="col-xs-12">
+									<span>An admin has invited you to join this team</span>
+								</div>
+	            </div>
+	            <div class="row JoinTeam__buttons">
+						    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2">
+						    	<a class="btn btn-primary btn-block btn-md" v-touch:tap="join('accept')">JOIN</a>
+						    </div>
+						    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
+						    	<a class="btn btn-delete btn-block btn-md outline" v-touch:tap="join('decline')">DECLINE</a>
+						    </div>
 							</div>
 	          </div>
 	        </div>
@@ -355,7 +385,7 @@ export default  {
 			notFound: false,
 			showStatTotals: false,
 			statFilterKey: '',
-			tab: 'calendar',
+			tab: 'roster',
 			statsTab: 'teamRecent',
 			auth: {},
 			team: {
@@ -436,10 +466,8 @@ export default  {
 			return this.hasBeenInvited;
 		},
 
-
-
 		/**
-		 * Create list of players from users
+		 * Create list of players
 		 */
 		players()
 		{
@@ -449,7 +477,7 @@ export default  {
 		},
 
 		/**
-		 * Create list of coaches from users
+		 * Create list of coaches
 		 */
 		coaches()
 		{
@@ -459,7 +487,7 @@ export default  {
 		},
 
 		/**
-		 * Create list of fans from users
+		 * Create list of fans
 		 */
 		fans()
 		{
@@ -538,11 +566,21 @@ export default  {
 				this.users = [];
 				this.formatUsers(response.data.members);
 				this.$root.banner('good', "You've joined this team");
+				this.$dispatch('App_notAFan', this.team); // remove them as a fan in the nav dropdown just in case
+				$('#joinTeamModal').modal('hide');
+			}
+			else if (this.joinAction === 'decline') {
+				this.hasBeenInvited = false;
+				this.$root.banner('good', "Invitation declined");
+				this.$dispatch('App_notInvited', this.team); // remove "invited to" section of nav dropdown
+				$('#joinTeamModal').modal('hide');
 			}
 		},
 
 
-		// new stats have been posted from ViewEvent
+		/**
+		 * New stats have been added from EditStats.vue
+		 */
 		newStats(data, entry)
 		{
 			var self = this;
@@ -623,6 +661,11 @@ export default  {
 		{
 			this.users = [];
 			this.formatUsers(members);
+
+			// delay to allow new users object time to propogate
+			setTimeout(function() {
+				this.$broadcast('Stats_recompile');
+			}.bind(this), 100);
 		},
 	},
 	
@@ -732,6 +775,13 @@ export default  {
 			this.joinAction = action;
 			this.$root.post(this.prefix + '/join', 'Team_join', { action: action });
 		},
+
+
+		respondingToInvitation()
+		{
+			this.$root.showModal('joinTeamModal');
+
+		}
 
 	}, // end methods
 
@@ -871,6 +921,7 @@ export default  {
 		display flex
 		align-items center
 		justify-content center
+		position relative
 		background-color rgba(255,255,255,0.7)
 		margin-right 5px
 		border-top-left-radius 3px
@@ -879,6 +930,18 @@ export default  {
 			color link_blue
 			padding 7px 8px
 			margin-top 3px
+		.notifications
+			position absolute
+			display flex
+			justify-content center
+			align-items center
+			top -12px
+			right -4px
+			height 25px
+			width 25px
+			background rc_red
+			color white
+			border-radius 50%
 		&:hover
 			cursor pointer
 		&.--active
@@ -908,55 +971,16 @@ export default  {
 			width 175px
 			margin-left 30px
 			height 30px
-	
-.Team__fans
-	ul
-		list-style none
-		font-size 16px
+			
+.JoinTeam__msg
+	margin-bottom 30px
+	font-size 18px
+	div
 		text-align center
-		padding-left 0
-
-#calendarTab
-	position absolute
-	top 17px
-	left 69px
-	i
-		position absolute
-		font-size 24px
-		left -28px
-		top -3px
-
-#statsTab
-	position absolute
-	top 17px
-	left 84px
-	i
-		position absolute
-		font-size 24px
-		left -28px
-		top -3px
+	
+.JoinTeam__buttons
+	margin-bottom 15px
 		
-#rosterTab
-	position absolute
-	top 17px
-	left 81px
-	i
-		position absolute
-		font-size 24px
-		left -28px
-		top -3px
-		
-#settingsTab
-	position absolute
-	top 15px
-	left 74px
-	i
-		position absolute
-		font-size 24px
-		left -28px
-		top -3px						
-
-
 
 #noTeam
 	margin-top 80px

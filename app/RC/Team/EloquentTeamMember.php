@@ -12,6 +12,7 @@ use App\RC\Team\TeamRepository;
 use Illuminate\Support\Facades\Auth;
 use App\RC\Team\Roles\RoleInterface;
 use App\Events\TeamInvitedUserToJoin;
+use App\Exceptions\TellUserException;
 use App\RC\Team\Roles\ManagesTeamRoles;
 use App\Repositories\EloquentRepository;
 use App\RC\Team\Roles\Admin;
@@ -265,7 +266,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
         	$repo = $this->newMember($user->id);
 
             $role = $this->isPlayer() ? InvitedPlayer::class : InvitedCoach::class; 
-            $repo->addRole(new $role);
+            $repo->addRole(new $role, true);
 
             // send an event saying that this user has been invited
             event(new TeamInvitedUserToJoin($repo->member->team_id, $user->id));
@@ -281,6 +282,30 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
 
 
     /**
+     * Revoke the invitation to join from the owner of this email
+     * 
+     * @param  string $email 
+     * @return EloquentTeamMember        
+     */
+    public function uninvite($email)
+    {
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            // delete the invitation of an active RC account
+            $member = TeamMember::where(['user_id' => $user->id, 'team_id' => $this->member->team_id])->first();
+            if ($member) {
+                $member->delete();
+            }
+        }
+        else {
+            // delete the invitation of an invited-to-RC account
+            TeamInvite::deleteByEmail($email, $this->member->team_id);
+        }
+    }
+
+
+    /**
      * Prepare to add this user as a new member on this team
      * 
      * @param  int $user_id
@@ -292,9 +317,15 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
 
     	$repo = (new EloquentTeamMember)->using($member);
 
-    	if ($repo->isMember() or $repo->hasBeenInvited()) {
-    		throw new Exception("The user with an id of '$user_id' is already a member of this team");
+    	if ($repo->isMember()) {
+            $this->member->delete(); // get rid of the ghost that was just made
+    		throw new TellUserException("A user with that email is already on the team");
     	}
+
+        if ($repo->hasBeenInvited()) {
+            $this->member->delete(); // get rid of the ghost that was just made
+            throw new TellUserException("A user with that email has already been invited");
+        }
 
     	return $repo;
     }
@@ -355,10 +386,29 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
         $this->using($member);
 
         if ($this->isMember() or ! $this->hasBeenInvited()) {
-        	throw new Exception("Logged-in user has not been invited to join team with id: '$team_id'");
+        	throw new Exception("Logged-in user ($this->member->user_id) has not been invited to join team ($team_id)");
         }
 
         return $this->replaceGhostWithUser();
+    }
+
+
+    /**
+     * An admin is accepting a user's request to join their team
+     * 
+     * @param  int $team_id   
+     * @param  int $member_id 
+     * @return EloquentTeamMember            
+     */
+    public function allowMemberToJoin($member_id, $team_id)
+    {
+        $this->using($member_id);
+
+        if ($this->isMember() or ! $this->hasRequestedToJoin()) {
+            throw new Exception("user ($member_id) has not requested to join team ($team_id)");
+        }
+
+        return $this->addRole(new Player, true);
     }
 
 
@@ -366,9 +416,10 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     /**
      * Convert a ghost member instance into a user-controlled member
      * 
+     * @param int $ghost_id     The member_id of the ghost being replaced
      * @return EloquentTeamMember
      */
-    public function replaceGhostWithUser()
+    public function replaceGhostWithUser($ghost_id = null)
     {   
         if ($this->hasRole(new InvitedPlayer)) {
             $this->addRole(new Player, true);
@@ -377,9 +428,14 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
             $this->addRole(new Coach, true);
         }
 
-        $ghost = $this->findGhostByEmail(Auth::user()->email);
+        if ($ghost_id != null) {
+            $ghost = $this->find($ghost_id);
+        }
+        else {
+            $ghost = $this->findGhostByEmail(Auth::user()->email);
+        }
 
-        if ($ghost) {
+        if ($ghost && $ghost->team_id == $this->member->team_id) {
             // attach ghost's relevent meta data to user
             $meta = json_decode($ghost->meta);
             unset($meta->name);
@@ -390,6 +446,11 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
             App::make(StatRepository::class)->switchOwners($ghost, $this->member); 
 
             $ghost->delete();
+        }
+
+        // if they're not replacing a ghost, give them default meta data
+        else {
+            $this->attachMetaData($this->getDefaultMetaData());
         }
 
         $this->member->save();
@@ -406,7 +467,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      */
     public function replaceUserWithGhost()
     {
-        $oldUser = $this->member;
+        $oldMember = $this->member;
 
         if ($this->hasRole(new Player)) {
             $this->addRole(new GhostPlayer, true);
@@ -415,17 +476,17 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
             $this->addRole(new GhostCoach, true);
         }
 
-        $user = User::findOrFail($this->member->user_id);
-        $meta = json_decode($this->member->meta);
+        $user = User::findOrFail($oldMember->user_id);
+        $meta = json_decode($oldMember->meta);
 
         // attach default meta data then overwrite with user's old data
-        $this->meta = json_encode($this->getDefaultMetaData($user->fullName()));
-        $this->attachMetaData((array) $meta);
+        $meta = array_merge((array) $meta, ['firstname' => $user->firstname, 'lastname' => $user->lastname]);
+        $this->attachMetaData($meta);
         $this->member->user_id = 0;
         $this->member->save();
 
         // any stats that belonged to the ghost now belong to this user
-        App::make(StatRepository::class)->switchOwners($oldUser, $this->member); 
+        App::make(StatRepository::class)->switchOwners($oldMember, $this->member); 
 
         return $this;
     }
@@ -489,12 +550,12 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
             $meta = json_decode($ghost->meta);
 
             // does this ghost's meta data contain the user's email?
-            if ($meta->email == $email) {
+            if (isset($meta->email) && $meta->email == $email) {
                 return $ghost;
             }
         }
 
-        // if we got here without finding a ghost, there isn't one
+        // there isn't one
         return null;
     }
 
@@ -526,11 +587,16 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
      * @param  array $data
      * @return EloquentTeamMember       
      */
-    public function attachMetaData(array $data)
+    public function attachMetaData(array $data, $overwrite = true)
     {
-    	$meta = (array) json_decode($this->member->meta);
+        if ($overwrite) {
+            $meta = [];
+        }
+        else {
+            $meta = (array) json_decode($this->member->meta);
+        }
 
-        foreach ($data as $key => $value) {
+    	foreach ($data as $key => $value) {
             $meta[$key] = $value;
         }
 
@@ -568,28 +634,57 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     }
 
 
+
+    /**
+     * If an email is newly included, invite that user
+     * If an email is deleted, un-invite that user
+     * 
+     * @param  array $newData 
+     * @return           
+     */
+    public function checkEmailSettings($newData)
+    {
+        $oldData = (array) json_decode($this->member->meta);
+
+        $oldEmail = $oldData['email'] ?: null;
+        $newEmail = $newData['email'] ?: null;
+
+        if ((! $oldEmail and ! $newEmail) or ($oldEmail == $newEmail)) {
+            // nothing to see here
+            return;
+        }
+
+        if ($oldEmail) {
+            $this->uninvite($oldEmail);
+        }
+        if ($newEmail) {
+            $this->invite($newEmail);
+        }
+
+        return $this;
+    }
+
+
     /**
      * Make this member's data match the arguments
      * 
-     * @param int $id  The id of the member being edited
-     * @param  array $data Array of meta data to be attached
-     * @param boolean $switchRole Whether to switch from coach -> player or vice versa
-     * @param  boolean $admin Their new admin status
+     * @param int $id           The id of the member being edited
+     * @param  array $data      Array of meta data to be attached
+     * @param string $role      Text version of this member's saved role
+     * @param  boolean $admin   Their new admin status
      * @return EloquentTeamMember
      */
-    public function editMember($id, array $data, $switchRole, $admin)
+    public function editMember($id, array $data, $role, $admin)
     {
     	$this->using($id);
 
+        $this->checkEmailSettings($data);
+
         $this->attachMetaData($data);
 
-        if ($switchRole) {
-            $this->switchMemberRole();
-        }
-
-        $this->setRole(new Admin, $admin);
-
-        return $this;
+        $this->setMemberRole($role);
+    
+        return $this->setRole(new Admin, $admin);
     }
 
 
@@ -608,13 +703,18 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     {
     	$this->using($member_id);
 
+        if ($this->hasRequestedToJoin()) {
+            $this->removeRole(new RequestedToJoin)->deleteIfTheyHaveNoRoles();
+            return $this;
+        }
+
         if ($this->isFan()) {
             $this->member->delete();
             return $this;
         }
 
         if (! $this->isMember()) {
-            throw new Exception("This user is not a member of this team");
+            throw new Exception(`This user (${$this->member->user_id}) is not a member of this team (${$this->member->team_id})`);
         }
 
         if ($this->isGhost()) {
@@ -634,12 +734,12 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     public function deleteGhost() {
 
         // delete any stats
-        App::make(StatRepository::class)->deleteByMember($this->member->id, $this->member->team_id);
+        App::make(StatRepository::class)->deleteByMember($this->member->team_id, $this->member->id);
 
         // delete any outstanding invitations this is placeholding
         $meta = json_decode($this->member->meta);
         if (isset($meta->email)) {
-            TeamInvite::where('email', $meta->email)->where('team_id', $this->member->team_id)->delete();
+            $this->uninvite($meta->email);
         }
 
         $this->member->delete();

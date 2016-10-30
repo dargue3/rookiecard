@@ -28,7 +28,7 @@
             "App\\": "app/"
         },
         "files": [
-            "app/Exceptions/ApiException.php"
+            "app/Exceptions/TellUserException.php"
         ]
     },
     "autoload-dev": {

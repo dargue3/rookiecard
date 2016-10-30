@@ -50,17 +50,19 @@ class MemberController extends Controller
      */
     public function store(Request $request, Team $team)
     {
-        // do a little bit of validation first
         $rules = [
-            'email'         => 'email',
-            'firstname'     => 'required|string|max:100',
-            'lastname'      => 'required|string|max:100',
-            'role'          => 'required|string|in:ghost_player,ghost_coach'
+            'email'             => 'email',
+            'firstname'         => 'required|string|max:100',
+            'lastname'          => 'required|string|max:100',
+            'meta'              => 'array',
+            'meta.num'          => 'regex:/^[0-9]{1,2}$/',
+            'meta.positions'    => 'array|max:2',
+            'role'              => 'required|string|in:player,coach'
         ];
 
         $this->validate($request, $rules);
 
-        if ($request->role == 'ghost_player') {
+        if ($request->role == 'player') {
             $this->member->newPlayer($team->id, $request->firstname, $request->lastname);
         }
         else {
@@ -70,7 +72,9 @@ class MemberController extends Controller
         if ($request->has('email')) {
             $this->member->invite($request->email);
         }
-
+     
+        $this->member->attachMetaData($request->meta, false);
+        
         return ['ok' => true, 'members' => $this->team->members($team->id)];
     }
 
@@ -89,22 +93,29 @@ class MemberController extends Controller
             throw new Exception("Unauthorized request");
         }
 
-        // do a little bit of validation first
         $rules = [
             'isGhost'           => 'required|boolean',
             'meta.firstname'    => 'required_if:isGhost,true|string|max:100',
             'meta.lastname'     => 'required_if:isGhost,true|string|max:100',
             'meta.email'        => 'email',
-            'meta.num'          => 'string|max:2',
+            'meta.num'          => 'regex:/^[0-9]{1,2}$/',
             'meta.positions'    => 'array|max:2',
-            'role'              => 'required|boolean',
-            'admin'             => 'required|boolean'
+            'role'              => 'required|string|in:player,coach',
+            'admin'             => 'required|boolean',
+            'requestedToJoin'   => 'boolean',
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $this->validate($request, $rules);
 
-        if ($validator->fails()) {
-            return ['ok' => false, 'errors' => $validator->errors()];
+        if ($request->requestedToJoin) {
+            $this->member->allowMemberToJoin(intval($id), $team->id);
+        }
+
+        if ($request->has('replace')) {
+            if (is_int($request->replace)) {
+                // the admin has opted for this user to replace a ghost
+                $this->member->replaceGhostWithUser($request->replace);
+            }
         }
 
         $this->member->editMember(intval($id), $request->meta, $request->role, $request->admin);

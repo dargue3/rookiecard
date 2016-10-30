@@ -1,11 +1,12 @@
 <?php
 
-use App\RC\Team\EloquentTeamMember;
-use App\TeamMember;
-use App\TeamInvite;
+use App\Stat;
 use App\Team;
 use App\User;
+use App\TeamInvite;
+use App\TeamMember;
 use App\RC\Stat\StatRepository;
+use App\RC\Team\EloquentTeamMember;
 
 use App\RC\Team\Roles\InvitedPlayer;
 use App\RC\Team\Roles\GhostPlayer;
@@ -200,19 +201,6 @@ class EloquentTeamMemberTest extends TestCase
 
 
     /** @test */
-    public function if_an_invited_email_already_is_a_member_of_this_team_there_is_an_exception_thrown()
-    {
-    	$user = factory(User::class)->create();
-    	$this->repo->newPlayer(2)->invite($user->email);
-
-    	$this->setExpectedException('Exception');
-
-    	$this->repo->newPlayer(2)->invite($user->email);
-    }
-
-
-
-    /** @test */
     public function if_an_invited_user_with_this_email_does_not_exist_it_is_added_to_rc_team_invites_table()
     {
     	$this->repo->newPlayer(2)->invite('cats@cats.com');
@@ -353,7 +341,7 @@ class EloquentTeamMemberTest extends TestCase
 
         // attach some dummy meta data
         $this->repo->using($ghost);
-        $this->repo->attachMetaData(['test' => 123]);
+        $this->repo->attachMetaData(['test' => 123, 'email' => $this->user->email]);
 
         $this->repo->acceptInvitation(2);
 
@@ -378,6 +366,25 @@ class EloquentTeamMemberTest extends TestCase
         $mock->shouldReceive('switchOwners')->once();
 
         $this->repo->acceptInvitation(2);
+    }
+
+    /** @test */
+    public function when_a_user_is_accepted_to_the_team__the_admin_can_opt_to_have_them_replace_a_ghost()
+    {
+        $team = factory(Team::class)->create();
+        $member = factory(TeamMember::class)->create(['team_id' => $team->id]);
+        $ghost = factory(TeamMember::class)->create(['team_id' => $team->id, 'user_id' => 0]);
+        factory(Stat::class, 5)->create([
+            'member_id' => $ghost->id,
+            'owner_id' => $ghost->user_id,
+            'team_id' => $ghost->team_id,
+        ]);
+
+        $this->repo->using($member)->addRole(new RequestedToJoin)->allowMemberToJoin($team->id, $member->id);
+
+        $this->repo->replaceGhostWithUser($ghost->id);
+
+        $this->assertEquals(5, Stat::where('member_id', $member->id)->count());
     }
 
 
@@ -510,6 +517,57 @@ class EloquentTeamMemberTest extends TestCase
         $this->assertFalse($teams[1]['roles']['isMember']);
         $this->assertFalse($teams[1]['roles']['isFan']);
         $this->assertTrue($teams[1]['roles']['hasBeenInvited']);
+    }
+
+
+    /** @test */
+    public function it_deletes_a_players_requested_to_join_status()
+    {
+        $team = factory(Team::class)->create();
+        $member = factory(TeamMember::class)->create(['team_id' => $team->id]);
+
+        $this->repo->using($member)->addRole(new RequestedToJoin)->deleteMember($member->id);
+
+        $this->assertFalse($this->repo->hasRole(new RequestedToJoin));
+        $this->assertEquals(0, TeamMember::all()->count());
+    }
+
+
+    /** @test */
+    public function it_deletes_a_players_requested_to_join_status_and_keeps_their_fan_status()
+    {
+        $team = factory(Team::class)->create();
+        $member = factory(TeamMember::class)->create(['team_id' => $team->id]);
+
+        $this->repo->using($member)->addRole(new RequestedToJoin)->addRole(new Fan);
+        $this->repo->deleteMember($member->id);
+
+        $this->assertFalse($this->repo->hasRole(new RequestedToJoin));
+        $this->assertTrue($this->repo->hasRole(new Fan));
+    }
+
+
+    /** @test */
+    public function it_accepts_a_players_request_to_join_a_team()
+    {
+        $team = factory(Team::class)->create();
+        $member = factory(TeamMember::class)->create(['team_id' => $team->id]);
+
+        $this->repo->using($member)->addRole(new RequestedToJoin)->allowMemberToJoin($team->id, $member->id);
+
+        $this->assertTrue($this->repo->hasRole(new Player));
+    }
+
+
+    /** @test */
+    public function it_throws_an_exception_if_trying_to_accept_a_member_that_has_not_asked_to_join()
+    {
+        $team = factory(Team::class)->create();
+        $member = factory(TeamMember::class)->create(['team_id' => $team->id]);
+
+        $this->setExpectedException('Exception');
+
+        $this->repo->using($member)->allowMemberToJoin($team->id, $member->id);
     }
 
 }

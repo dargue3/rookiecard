@@ -673,7 +673,7 @@ describe("Validator", function() {
 
         vm.registerErrorChecking('teamname', 'required|alpha_num', ['Enter a teamname', 'Only letters and numbers']);
 
-        vm.clearErrorChecking();
+        vm.resetErrorChecking();
 
         expect(vm.errors.length).toBeUndefined();
         expect(vm.vars_.length).toBeUndefined();

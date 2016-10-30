@@ -564,12 +564,12 @@ export default  {
 			var userPicker = $('[CreateTeam="userStats"]');
 			var rcPicker = $('[CreateTeam="rcStats"]');
 
-			userPicker.selectpicker('refresh');
-			rcPicker.selectpicker('refresh');
-			userPicker.selectpicker('val', this.userSelected);
-			rcPicker.selectpicker('val', this.rcSelected);
-			userPicker.selectpicker('render');
-			rcPicker.selectpicker('render');
+			userPicker.selectpicker('refresh').selectpicker('val', this.userSelected).selectpicker('render');
+			rcPicker.selectpicker('refresh').selectpicker('val', this.rcSelected).selectpicker('render');
+			// userPicker.selectpicker('val', this.userSelected);
+			// rcPicker.selectpicker('val', this.rcSelected);
+			// userPicker.selectpicker('render');
+			// rcPicker.selectpicker('render');
 		},
 	},
 

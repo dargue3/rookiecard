@@ -133,6 +133,17 @@ export default  {
 		},
 
 
+		/**
+		 * Remove a given team from nav menus
+		 */
+		App_notInvited(team)
+		{
+			this.teams = this.teams.filter(function(current) {
+				return current.teamname !== team.teamname;
+			})
+		}
+
+
 	},
 
 	computed:

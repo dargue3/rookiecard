@@ -20,7 +20,7 @@ interface TeamMemberRepository
 	public function thanksButNoThanks($team_id);
 	public function findGhostByEmail($email);
 	public function addEmailToMetaData($email);
-	public function attachMetaData(array $data);
+	public function attachMetaData(array $data, $overwite = false);
 	public function getDefaultMetaData($firstname = '', $lastname = '');
 	public function editMember($id, array $data, $role, $admin);
 	public function deleteMember($member_id);

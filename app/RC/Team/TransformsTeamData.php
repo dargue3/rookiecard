@@ -84,8 +84,14 @@ class TransformsTeamData
                 if ($member['id'] == $another['id']) continue;
                 $index = 1;
                 while ($member['abbrName'] == $another['abbrName']) {
-                    $member['abbrName'] = substring($member['firstname'], 0, $index) . '. ' . $member['lastname'];    
-                    $index++;    
+                    $member['abbrName'] = substr($member['firstname'], 0, $index) . '. ' . $member['lastname'];    
+                    $index++;
+
+                    if ($index == count($member['firstname'])) {
+                        // if two players have the exact same name, welp that's their problem
+                        $member['abbrName'] = substr($member['firstname'], 0, 1) . '. ' . $member['lastname'];
+                        break;
+                    } 
                 }
             }
         }

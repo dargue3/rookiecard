@@ -10,7 +10,7 @@ export default  {
 
 	name: 'Basketball',
 
-	props: ['type', 'event', 'players', 'rawStats', 'rawTeamStats', 'keys', 'sortKey', 'total', 'player', 'compile',
+	props: ['type', 'event', 'players', 'rawStats', 'keys', 'sortKey', 'total', 'player', 'compile',
 				'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
 
 	mixins: [ AbstractStat ],
@@ -22,6 +22,7 @@ export default  {
 		// dontAvg : the keys that should not be averaged when creating season averages
 	
 		return {
+			teamRawStats: [],
 			teamRecent: {
 				dontShow: ['name', 'gs', 'gp', 'min', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'],
 			},
@@ -68,7 +69,7 @@ export default  {
 			for (let playerStats in this.rawStats) {
 
 				// each iteration of the loop is a player's stats for an event
-				let currStats = this.rawStats[playerStats];
+				let currStats = JSON.parse(JSON.stringify(this.rawStats[playerStats]));
 
 				// if this is the first set of stats for this event seen so far
 				if (currStats.event_id !== event_id) {

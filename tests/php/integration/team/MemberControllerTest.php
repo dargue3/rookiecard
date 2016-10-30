@@ -71,12 +71,14 @@ class MemberControllerTest extends TestCase
     		'email' => $this->faker->email,
             'firstname' => $this->faker->firstName,
     		'lastname' => $this->faker->lastName,
-    		'role' => 'ghost_player',
+            'meta' => ['num' => '24', 'positions' => ['pg', '']],
+    		'role' => 'player',
     	];
     	
         $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
-    	$this->memberRepo->shouldReceive('newPlayer')->once();
-   		$this->memberRepo->shouldReceive('invite')->once();
+    	$this->memberRepo->shouldReceive('newPlayer')->once()->with(1, $data['firstname'], $data['lastname']);
+        $this->memberRepo->shouldReceive('invite')->once()->with($data['email']);
+   		$this->memberRepo->shouldReceive('attachMetaData')->once()->with(['num' => '24', 'positions' => ['pg', '']], false);
 
     	// annoying amount of mocks here, this is for fetching team's members
     	$this->teamRepo->shouldReceive('members')->once();
@@ -102,12 +104,14 @@ class MemberControllerTest extends TestCase
 				'num'           => '24',
 				'positions'     => ['pg', 'sg'],
     		],
-    		'role' 	=> true,
+    		'role' 	=> 'coach',
     		'admin'	=> false,
+            'requestedToJoin' => true,
     	];
 
         $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
         $this->memberRepo->shouldReceive('findOrFail')->once()->andReturn($member); // policy check
+        $this->memberRepo->shouldReceive('allowMemberToJoin')->once(); // making a 'requested to join' user a real user
     	$this->memberRepo->shouldReceive('editMember')->once();
 
     	// annoying amount of mocks here, this is for fetching team's members

@@ -43,7 +43,7 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $e)
     {
         // when an API Exception, 
-        if ($e instanceof ApiException) {
+        if ($e instanceof TellUserException) {
             $json = [
                 'ok' => false,
                 'error' => $e->getMessage(),

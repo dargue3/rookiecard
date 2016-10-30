@@ -46,17 +46,6 @@ export default
 		},
 	},
 
-	computed:
-	{
-		/**
-		 * Filter all the stats down to ones that just belong to players
-		 */
-		playerStats()
-		{
-			return this.rawStats;
-		},
-	},
-
 
 	methods:
 	{
@@ -128,9 +117,7 @@ export default
 			let recentStats = [];
 
 			// database just stores player stats, compile those down into raw team stats
-			if (! this.rawTeamStats.length) {
-				this.createRawTeamStats();
-			}
+			this.createRawTeamStats();
 
 			for (let x = 0; x < this.rawTeamStats.length; x++) {
 				let stats = this.addTheDateAndEvent(this.rawTeamStats[x]);
@@ -150,13 +137,14 @@ export default
 		 */
 		teamSeasonStats()
 		{
+			// database just stores player stats, compile those down into raw team stats
+			this.createRawTeamStats();
+			
 			let seasonTotals = {};
 			for (let stat in this.rawTeamStats) {
 				seasonTotals = this.sumCommonStats(this.rawTeamStats[stat], seasonTotals);
 				seasonTotals = this.editTeamStatsBeforeAddingThemToSeasonTotals(this.rawTeamStats[stat], seasonTotals);
 			}
-
-
 
 			// located in a sport's Vue component
 			this.totalStats = this.editTeamSeasonTotals(seasonTotals);
@@ -185,7 +173,7 @@ export default
 					continue;
 				}
 
-				for (let stat in stats) {
+				for (var stat in stats) {
 					playerTotals = this.sumCommonStats(stats[stat], playerTotals);
 					playerTotals = this.editPlayersStatsBeforeAddingThemToTheirSeasonTotals(stats[stat], playerTotals);
 				}
@@ -211,7 +199,7 @@ export default
 				member_id: 	player.member_id,
 			};
 
-			let stats = this.playerStats.filter(stat => stat.member_id === player.member_id);
+			let stats = this.rawStats.filter(stat => stat.member_id === player.member_id);
 
 			return { playerTotals, stats }
 		},
@@ -258,10 +246,12 @@ export default
 			stats.wins = 0;
 			stats.losses = 0;
 			stats.ties = 0;
+
 			// add a win, loss, or tie to the total depending on the outcome
-			if (this.whoWon(data) === 0) stats.losses = 1;
-			if (this.whoWon(data) === 1) stats.wins = 1;
-			if (this.whoWon(data) === 2) stats.ties = 1;
+			let outcome = this.whoWon(data)
+			if (outcome === 0) stats.losses = 1;
+			if (outcome === 1) stats.wins = 1;
+			if (outcome === 2) stats.ties = 1;
 
 			// for each key in stats, add it to the total
 			for (var key in stats) {

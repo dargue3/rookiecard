@@ -39,8 +39,21 @@ class TeamInvite extends Model
     }
 
 
+    /**
+     * Delete an invitation
+     * 
+     * @param  string $email   
+     * @param  int $team_id 
+     * @return void
+     */
+    public static function deleteByEmail($email, $team_id)
+    {
+        self::where('email', $email)->where('team_id', $team_id)->delete();
+    }
+
+
     //a new user has joined, if this email matches any in table, add them as 'invited' in TeamMember table
-    public function inviteNewUserToTeams($user) {
+    public static function inviteNewUserToTeams($user) {
 
     	$teams = self::where('email', $user->email)->get();
 

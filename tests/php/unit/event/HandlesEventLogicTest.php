@@ -111,7 +111,7 @@ class HandlesEventLogicTest extends TestCase
 
         $data['end'] = Carbon::createFromTimestamp($data['start'])->subHours(2)->timestamp;
 
-        $this->setExpectedException('App\Exceptions\ApiException');
+        $this->setExpectedException('App\Exceptions\TellUserException');
 
         new HandlesEventLogic($data, $team->id, $this->repo);
     }
@@ -125,7 +125,7 @@ class HandlesEventLogicTest extends TestCase
 
         $data['until'] = Carbon::createFromTimestamp($data['end'])->subHours(2)->timestamp;
 
-        $this->setExpectedException('App\Exceptions\ApiException');
+        $this->setExpectedException('App\Exceptions\TellUserException');
 
         new HandlesEventLogic($data, $team->id, $this->repo);
     }
@@ -139,7 +139,7 @@ class HandlesEventLogicTest extends TestCase
 
         $data['end'] = Carbon::createFromTimestamp($data['start'])->addWeeks(5)->timestamp;
 
-        $this->setExpectedException('App\Exceptions\ApiException');
+        $this->setExpectedException('App\Exceptions\TellUserException');
 
         new HandlesEventLogic($data, $team->id, $this->repo);
     }
@@ -153,7 +153,7 @@ class HandlesEventLogicTest extends TestCase
 
         $data['start'] = Carbon::create(1899, 1, 1)->timestamp;
 
-        $this->setExpectedException('App\Exceptions\ApiException');
+        $this->setExpectedException('App\Exceptions\TellUserException');
 
         new HandlesEventLogic($data, $team->id, $this->repo);
     }
@@ -167,7 +167,7 @@ class HandlesEventLogicTest extends TestCase
 
         $data['end'] = Carbon::create(2101, 1, 1)->timestamp;
 
-        $this->setExpectedException('App\Exceptions\ApiException');
+        $this->setExpectedException('App\Exceptions\TellUserException');
 
         new HandlesEventLogic($data, $team->id, $this->repo);
     }
@@ -182,7 +182,7 @@ class HandlesEventLogicTest extends TestCase
         // they'd most likely create a ton of events by saying the event repeated for several years
         $data['until'] = Carbon::createFromTimestamp($data['end'])->addYears(5)->timestamp;
 
-        $this->setExpectedException('App\Exceptions\ApiException');
+        $this->setExpectedException('App\Exceptions\TellUserException');
 
         new HandlesEventLogic($data, $team->id, $this->repo);
     }
