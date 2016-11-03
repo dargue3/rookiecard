@@ -34,6 +34,7 @@ Route::group(['prefix' => '/api/v1'], function() {
 
 	Route::resource('team/{teamname}/stats', 'StatController');
 
+	Route::get('team/{teamname}/member/randomize', 'MemberController@randomize');
 	Route::resource('team/{teamname}/member', 'MemberController');
 	
 	Route::resource('team/{teamname}/event', 'EventController');

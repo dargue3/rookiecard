@@ -438,7 +438,8 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
         if ($ghost && $ghost->team_id == $this->member->team_id) {
             // attach ghost's relevent meta data to user
             $meta = json_decode($ghost->meta);
-            unset($meta->name);
+            unset($meta->firstname);
+            unset($meta->lastname);
             unset($meta->email);
             $this->member->meta = json_encode($meta);
 
@@ -480,7 +481,7 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
         $meta = json_decode($oldMember->meta);
 
         // attach default meta data then overwrite with user's old data
-        $meta = array_merge((array) $meta, ['firstname' => $user->firstname, 'lastname' => $user->lastname]);
+        $meta = array_merge((array) $meta, ['firstname' => $user->firstname, 'lastname' => $user->lastname, 'email' => '']);
         $this->attachMetaData($meta);
         $this->member->user_id = 0;
         $this->member->save();
@@ -646,8 +647,8 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     {
         $oldData = (array) json_decode($this->member->meta);
 
-        $oldEmail = $oldData['email'] ?: null;
-        $newEmail = $newData['email'] ?: null;
+        $oldEmail = isset($oldData['email']) ? $oldData['email'] : null;
+        $newEmail = isset($newData['email']) ? $newData['email'] : null;
 
         if ((! $oldEmail and ! $newEmail) or ($oldEmail == $newEmail)) {
             // nothing to see here

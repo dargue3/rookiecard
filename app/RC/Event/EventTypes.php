@@ -55,8 +55,8 @@ trait EventTypes
      */
     public function convertTypeToString($type)
     {
-    	if (isset($this->intToString[intval($type)])) {
-            return $this->intToString[intval($type)];
+    	if (isset($this->intToString[$type])) {
+            return $this->intToString[$type];
         }
 
         throw new Exception("'$type' is an unsupported event type"); 

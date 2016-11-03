@@ -3,16 +3,16 @@
     <div class="filler"></div>
 
   	<div class="Calendar">
-      <div class="Calendar__nav">
+      <div class="Calendar__header">
 
-        <div class="nav">
+        <div class="month-nav">
           <a chevron="prev" @click="chevron('prev')"><i class="material-icons chevron">chevron_left</i></a>
-          <h3 class="Calendar__header"></h3>
+          <h3 class="Calendar__nav"></h3>
           <a chevron="next" @click="chevron('next')"><i class="material-icons chevron">chevron_right</i></a>
         </div>
         
-        <div class="add-event">
-          <a v-show="admin" @click="$root.showModal('addEventModal')">
+        <div v-show="isAdmin" class="add-event">
+          <a id="addEventTrigger">
             <i class="glyphicon glyphicon-plus"></i>
             <span>Add an Event</span>
           </a>
@@ -37,7 +37,7 @@ export default
 {
 	name: 'Calendar',
 
-	props: ['admin', 'events'],
+	props: ['isAdmin', 'events'],
 
 	data() {
 
@@ -50,7 +50,7 @@ export default
         modal: '#events-modal',
         first_event: firstDayOfYear,
         onAfterViewLoad: function(view) {
-          $('.Calendar__header').text(this.getTitle());
+          $('.Calendar__nav').text(this.getTitle());
         },
         classes: {
           months: {
@@ -62,24 +62,26 @@ export default
 
 	},
 
-  watch: {
-    events() {
+  watch:
+  {
+    events()
+    {
       this.compile();
     }
   },
 
-  ready() {
-
+  ready()
+  {
     var self = this;
     $(function() {
 
       // attach the calendar when the DOM is ready
-      self.calendar = $('.calendar').calendar(self.options);
+      
 
       // hide tooltips if on mobile (they are annoying and counterintuitive)
       // give time for DOM to settle before checking
       setTimeout(function() {
-        if(window.innerWidth < 767) {
+        if (window.innerWidth < 767) {
           $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
         }
       }, 1000);
@@ -87,17 +89,21 @@ export default
     })
   },
 
-	methods: {
-
+	methods:
+  {
     // events array changed, reload the calendar data
-    compile() {
+    compile()
+    {
+      this.calendar = $('.calendar').calendar(this.options);
 
       // attach a new events array
       var events = this.formatEvents();
-      if(events.length)
+      if (events.length) {
         var firstEvent = events[0].start;
-      else
+      }
+      else {
         var firstEvent = moment().dayOfYear(1).hour(0).minute(0).unix() * 1000;
+      }
 
       this.calendar.setOptions({ 
         events_source: events,
@@ -197,6 +203,8 @@ export default
 
 <style lang="stylus">
 
+@import '/resources/assets/stylus/variables.styl'
+
 .calendar-wrapper
   display flex 
   flex-flow row
@@ -209,24 +217,32 @@ export default
   flex-basis 775px
   padding-bottom 3em
 
-.Calendar__nav
+.Calendar__header
   flex-basis 100%
   display flex
   justify-content center
   margin-top 15px
-  .nav
+  +mobile()
+    flex-flow column
+    align-items center
+  .month-nav
     display flex
     flex 1
+    +mobile()
+      justify-content center
   .add-event
-    a
-      float right
-    margin 10px 15px 0px 0px
+    display flex
+    align-items center
+    justify-content flex-end
+    padding-right 15px
     font-size 16px
     flex 1
+    +mobile()
+      margin-top 65px
 
-.Calendar__header
+.Calendar__nav
   margin 0
-  margin-top 9px
+  margin-top 11px
   width 190px
   text-align center     
 
@@ -236,6 +252,8 @@ export default
   max-width 775px
   background whitesmoke
   padding 0px 15px
+  +mobile()
+    margin-top 30px
   .calendar
     background lighten(whitesmoke, 40%)
 
@@ -250,10 +268,10 @@ a[chevron="next"]
   position relative
   -webkit-animation-duration 0.2s
   -animation-duration 0.2s
-  &:hover
-    cursor pointer
   .chevron
     font-size 44px
+    &:hover
+      cursor pointer
     
 
 
@@ -279,18 +297,18 @@ a[chevron="next"]
 .day-highlight.dh-event-homeGame:hover,
 .day-highlight.dh-event-homeGame
   background-color rc_red
-  opacity 0.75
+  opacity 0.5
 .day-highlight.dh-event-awayGame:hover,
 .day-highlight.dh-event-awayGame
   background-color rc_yellow
-  opacity 0.75
+  opacity 0.5
 .day-highlight.dh-event-practice:hover,
 .day-highlight.dh-event-practice
   background-color rc_blue
-  opacity 0.75
+  opacity 0.5
 .day-highlight.dh-event-other:hover,
 .day-highlight.dh-event-other
   background-color rc_green
-  opacity 0.75
+  opacity 0.5
 
 </style>

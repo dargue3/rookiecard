@@ -23,7 +23,7 @@ p {
   background: #f5f5f5;
 }
 .switch-container {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   vertical-align: middle;
 }
 .switch-label {
@@ -36,7 +36,6 @@ hr {
 body {
   background: #f5f5f5;
 }
-a,
 a:visited,
 a:link {
   text-decoration: none;
@@ -46,6 +45,9 @@ a:hover {
   text-decoration: none;
   cursor: pointer;
   color: #38a9f9;
+}
+a .material-icons:hover {
+  cursor: pointer;
 }
 .nav-tabs {
   margin-top: 35px;
@@ -64,7 +66,7 @@ a:hover {
   margin-left: 8px;
   padding: 20px 40px;
 }
-@media screen and (max-width: 767px) {
+@media screen and (max-width: xs_max_width) {
   .nav-tabs li a {
     padding: 20px 30px;
   }
@@ -79,7 +81,7 @@ span.input-info {
   font-size: 15px;
   margin: 15px;
 }
-@media screen and (max-width: 767px) {
+@media screen and (max-width: xs_max_width) {
   .Tab {
     margin: 15px;
   }
@@ -511,6 +513,7 @@ textarea {
   background: #9f9f9f;
   padding: 12px 22px;
   color: #fff;
+  box-shadow: 0 1px 6px #9f9f9f;
 }
 .btn-cancel:hover,
 .btn-cancel:active,
@@ -523,6 +526,7 @@ textarea {
   background: #c90018;
   padding: 12px 22px;
   color: #fff;
+  box-shadow: 0 1px 6px #c90018;
 }
 .btn-delete:hover,
 .btn-delete:active,
@@ -535,7 +539,7 @@ textarea {
   background: #1179c9;
   padding: 12px 22px;
   text-shadow: none;
-  box-shadow: none;
+  box-shadow: 0 1px 6px #1179c9;
 }
 .btn-primary:hover,
 .btn-primary:active,
@@ -548,7 +552,7 @@ textarea {
   background: #21c230;
   text-shadow: none;
   padding: 12px 22px;
-  box-shadow: none;
+  box-shadow: 0 1px 6px #21c230;
 }
 .btn-success:hover,
 .btn-success:active,
@@ -631,6 +635,68 @@ textarea {
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
 }
+.save-button-wrapper {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+.save-button-wrapper.--center {
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.save-button-wrapper.--left {
+  -webkit-justify-content: flex-start;
+  -ms-flex-pack: start;
+  justify-content: flex-start;
+}
+.save-button-wrapper.--right {
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+}
+.save-button-group {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  margin: 15px 0;
+  width: 340px;
+  -webkit-flex-flow: row nowrap;
+  -ms-flex-flow: row nowrap;
+  flex-flow: row nowrap;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: distribute;
+  justify-content: space-around;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+@media screen and (max-width: 767px) {
+  .save-button-group {
+    -webkit-flex-flow: row wrap;
+    -ms-flex-flow: row wrap;
+    flex-flow: row wrap;
+  }
+  .save-button-group div {
+    margin-top: 10px;
+  }
+}
+.save-button-group.--one {
+  width: 160px;
+}
+.save-button-group.--two {
+  width: 340px;
+}
+.save-button-group.--three {
+  width: 500px;
+}
+.save-button-group.--four {
+  width: 660px;
+}
+.save-button-group a.btn {
+  margin: 0;
+  width: 150px;
+}
 .form-control {
   position: relative;
   font-size: 18px;
@@ -680,7 +746,7 @@ label {
   margin-bottom: 5px;
   margin-left: 1px;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   label {
     margin-top: 10px;
   }
@@ -770,30 +836,30 @@ border-color rc_lite_gray {
   animation: fade-leave 0.2s ease-out;
 }
 .slide-sm-enter {
-  -webkit-animation: slide-sm-enter 0.3s ease-in;
-  animation: slide-sm-enter 0.3s ease-in;
+  -webkit-animation: slide-sm-enter 0.35s ease-in;
+  animation: slide-sm-enter 0.35s ease-in;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   .slide-sm-enter {
-    -webkit-animation: slide-sm-phone-enter 0.3s ease-in;
-    animation: slide-sm-phone-enter 0.3s ease-in;
+    -webkit-animation: slide-sm-phone-enter 0.35s ease-in;
+    animation: slide-sm-phone-enter 0.35s ease-in;
   }
 }
 .slide-sm-leave {
-  -webkit-animation: slide-sm-leave 0.3s ease-out;
-  animation: slide-sm-leave 0.3s ease-out;
+  -webkit-animation: slide-sm-leave 0.35s ease-out;
+  animation: slide-sm-leave 0.35s ease-out;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   .slide-sm-leave {
-    -webkit-animation: slide-sm-phone-leave 0.3s ease-in;
-    animation: slide-sm-phone-leave 0.3s ease-in;
+    -webkit-animation: slide-sm-phone-leave 0.35s ease-in;
+    animation: slide-sm-phone-leave 0.35s ease-in;
   }
 }
 .slide-md-enter {
   -webkit-animation: slide-md-enter 0.3s ease-in;
   animation: slide-md-enter 0.3s ease-in;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   .slide-md-enter {
     -webkit-animation: slide-md-phone-enter 0.3s ease-in;
     animation: slide-md-phone-enter 0.3s ease-in;
@@ -803,7 +869,7 @@ border-color rc_lite_gray {
   -webkit-animation: slide-md-leave 0.3s ease-out;
   animation: slide-md-leave 0.3s ease-out;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   .slide-md-leave {
     -webkit-animation: slide-md-phone-leave 0.3s ease-in;
     animation: slide-md-phone-leave 0.3s ease-in;
@@ -813,7 +879,7 @@ border-color rc_lite_gray {
   -webkit-animation: slide-lg-enter 0.3s ease-in;
   animation: slide-lg-enter 0.3s ease-in;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   .slide-lg-enter {
     -webkit-animation: slide-lg-phone-enter 0.3s ease-in;
     animation: slide-lg-phone-enter 0.3s ease-in;
@@ -823,7 +889,7 @@ border-color rc_lite_gray {
   -webkit-animation: slide-lg-leave 0.3s ease-out;
   animation: slide-lg-leave 0.3s ease-out;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: xs_max_width) {
   .slide-lg-leave {
     -webkit-animation: slide-lg-phone-leave 0.3s ease-in;
     animation: slide-lg-phone-leave 0.3s ease-in;
@@ -934,50 +1000,50 @@ transform rotate(90deg),
 }
 @-webkit-keyframes slide-sm-enter {
   0% {
-    opacity: 0.2;
-    overflow: hidden;
+    opacity: 0;
     max-height: 0;
+    overflow: hidden;
     margin: 0;
   }
   100% {
     opacity: 1;
-    max-height: 100px;
+    max-height: 200px;
   }
 }
 @keyframes slide-sm-enter {
   0% {
-    opacity: 0.2;
-    overflow: hidden;
+    opacity: 0;
     max-height: 0;
+    overflow: hidden;
     margin: 0;
   }
   100% {
     opacity: 1;
-    max-height: 100px;
+    max-height: 200px;
   }
 }
 @-webkit-keyframes slide-sm-leave {
   0% {
     opacity: 1;
-    max-height: 100px;
+    max-height: 200px;
   }
   100% {
     opacity: 0;
-    margin: 0;
     max-height: 0;
     overflow: hidden;
+    margin: 0;
   }
 }
 @keyframes slide-sm-leave {
   0% {
     opacity: 1;
-    max-height: 100px;
+    max-height: 200px;
   }
   100% {
     opacity: 0;
-    margin: 0;
     max-height: 0;
     overflow: hidden;
+    margin: 0;
   }
 }
 @-webkit-keyframes slide-sm-phone-enter {

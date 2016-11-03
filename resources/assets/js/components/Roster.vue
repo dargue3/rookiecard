@@ -27,10 +27,10 @@
 										| orderBy 'lastname'" class="User">
 					<div v-show="! player.hasRequestedToJoin" class="User__icons">
 						<div v-show="player.isAdmin">
-							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
+							<i class="material-icons admin-icon" data-toggle="tooltip" title="Admin">font_download</i>
 						</div>
 						<div v-show="isAdmin" v-touch:tap="edit(player)">
-							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
+							<a><i class="material-icons edit-icon" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 						</div>
 					</div>
 					<div v-show="isAdmin && player.hasRequestedToJoin" class="User__accept">
@@ -71,7 +71,7 @@
 				</div>
 
 				<!-- add player placeholder -->
-				<div class="User" v-if="isAdmin">
+				<div class="User" v-show="isAdmin && ! search">
 					<div class="User__pic --add-player" v-touch:tap="addUser('player')">
 						<div>
 							<i class="material-icons">add</i>
@@ -122,7 +122,7 @@
 				</div>
 
 				<!-- add coach placeholder -->
-				<div class="User" v-if="isAdmin">
+				<div class="User" v-show="isAdmin && ! search">
 					<div class="User__pic --add-player" v-touch:tap="addUser('coach')">
 						<div>
 							<i class="material-icons">add</i>
@@ -162,7 +162,7 @@
 					<div class="User__details">
 						<div class="details-text">
 							<div class="User__name">
-								<a v-else v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
+								<a v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
 							</div>
 							<div class="User__positions">
 								<span>Since {{ fan.since }}</span>
@@ -390,8 +390,8 @@ export default  {
 	background rgba(255,255,255,0.7)
 	border-top-left-radius 4px
 	border-bottom-right-radius 4px
-	opacity 0
 	transition opacity 0.3s ease
+	opacity 0
 	@media (max-width 767px)
 		opacity 1
 	div
@@ -399,6 +399,9 @@ export default  {
 		align-items center
 		color black
 		margin 5px 0px 2px 5px
+	.material-icons.admin-icon
+		margin-bottom 5px
+		margin-left 1px
 		
 .User__accept
 	opacity 1
@@ -449,8 +452,11 @@ export default  {
 		border-bottom 0
 		.material-icons
 			font-size 100px
+			&:hover
+				cursor pointer
 		&:hover
 			color link_blue_hover
+			cursor pointer
 	
 	
 .User__details

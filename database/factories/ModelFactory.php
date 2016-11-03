@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use App\RC\Sports\Sport;
 use App\RC\User\UserRepository;
 
 $factory->define(App\User::class, function ($faker) {
@@ -123,14 +124,16 @@ $factory->define(App\Stat::class, function ($faker) {
 
     $sport = $faker->randomElement(['basketball']);
 
+    $stats = Sport::find($sport)->generate();
+
     return [
-        'owner_id'      => $faker->numberBetween(1, 100),
-        'member_id'     => $faker->numberBetween(1, 100),
-        'team_id'       => $faker->numberBetween(1, 100),
+        'owner_id'      => rand(1, 100),
+        'member_id'     => rand(1, 100),
+        'team_id'       => rand(1, 100),
         'sport'         => $sport,
         'season'        => 1,
-        'stats'         => json_encode(['test' => 123]),
-        'meta'          => json_encode(['test' => 456]),
+        'stats'         => json_encode($stats),
+        'meta'          => json_encode(['opp' => 'Test', 'oppScore' => rand(57, 93)]),
         'event_id'      => 1,
     ];
 });

@@ -1,6 +1,7 @@
 
 <template>
 	<div class="stats-wrapper">
+		<slot></slot>
 		<div class="table-responsive">
 			<table v-if="stats.length" class="table table-striped stats-table">
 				<thead>
@@ -15,12 +16,19 @@
 		  	</thead>
 		  	<tbody>
 		    	<tr v-show="index < currPage || ! showPagination" v-for="(index, val) in stats 
-		    						| filterBy filterKey
+		    						| filterBy search
 		    						| orderBy sortKey sortOrders[sortKey]">
 			      <td v-for="key in statKeys" class="stat-entries" :class="resolveValClasses(key, val)">
 			        {{ resolveStatValue(key, val) }} 
 			      </td>
 		    	</tr>
+		    	<template v-if="tableBottomLabel && ! search">
+		    		<tr>
+		    			<td v-for="key in statKeys" class="stat-entries stat-total">
+		    				{{ resolveStatValue(key, statsOnBottom) }}
+		    			</td>
+		    		</tr>
+		    	</template>
 		  	</tbody>
 			</table>
 			<div v-show="showPagination" class="show-more" v-touch:tap="showMore()">
@@ -37,7 +45,8 @@
 		<basketball v-if="sport === 'basketball'" :type="type" :event="event" :player="player"
   							:players="players" :raw-stats="filteredRawStats" :compile="compile" :keys.sync="statKeys" :total="total"
   							:key-names.sync="keyNames" :tooltips.sync="tooltips" :val-lookup.sync="valLookup" :sort-key.sync="sortKey" 
-  							:val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup">
+  							:val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup" 
+  							:stats-on-bottom.sync="statsOnBottom">
   	</basketball>	
 
 
@@ -59,8 +68,8 @@ export default {
 
 	mixins: [ StatHelpers ],
 
-	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'filterKey', 'sortKey',
-					'players', 'player', 'event', 'paginate'],
+	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'search', 'sortKey',
+					'players', 'player', 'event', 'paginate', 'tableBottomLabel'],
 
 	components:
 	{
@@ -78,6 +87,7 @@ export default {
 			tooltips: {},
 			compile: false,
 			stats: [],
+			statsOnBottom: {},
 			currPage: this.paginate,
 			filteredRawStats: [],
 			sortOrders: {},
@@ -150,8 +160,13 @@ export default {
 		 */
 		Stats_compiled(stats)
 		{
-			this.stats = stats;
 			this.compile = false;
+			this.stats = stats;
+
+			if (this.tableBottomLabel) {
+				this.statsOnBottom.abbrName = this.tableBottomLabel;
+			}
+
 			setTimeout(function() {
 				this.attachTooltips();
 			}.bind(this), 250);
@@ -173,8 +188,8 @@ export default {
 
 
 		/**
-		 * Only work with raw stats from players that are players
-		 * (there could be stats from when a user was a coach, for example)
+		 * Only compile raw stats from members that are players
+		 * e.g. There are leftover stats from when a player was given stats then changed to a coach
 		 */
 		filterRawStats()
 		{
@@ -223,6 +238,18 @@ export default {
 			return this.lastCheck(this.valLookup[key].call(this, stats[key], stats, key));
 		},
 
+
+		/**
+		 * Calculate the displayed value of the summation at the bottom of the table 
+		 * Based on closure given by AbstractStat.js
+		 *
+		 * @param {string} key
+		 * @param {object} stats
+		 */
+		resolveStatSum(key, stats)
+		{
+			return this.lastCheck(this.sumLookup[key]);
+		},
 
 
 		/**
@@ -303,6 +330,7 @@ export default {
 			}
 		},
 
+
 		/**
 		 * Attach the bootstrap tooltips when table is ready
 		 */
@@ -327,10 +355,10 @@ export default {
 
 .stats-wrapper
 	display flex
-	flex-flow row
-	justify-content center
+	flex-flow column
 	
 .table-responsive
+	align-self center
 	@media screen and (max-width 767px)
 		border 0
 
@@ -363,7 +391,14 @@ td.stat-entries
 	border 1px solid #CACACA
 	vertical-align middle !important
 	white-space nowrap
-
+	&.stat-separator
+		background-color rgba(50, 154, 207, 0.21) !important
+		height 10px
+		border 0
+	&.stat-total
+		font-weight 700
+		border-top 3px solid rc_lite_gray
+		
 .stats-table
 	font-size 13px
 	font-family 'Monda', sans-serif
@@ -378,6 +413,8 @@ td.stat-entries
 			transform rotate(0deg)
 	tr
 		user-select none
+		
+
 			
 .stat-entries.win
 	color rc_win 

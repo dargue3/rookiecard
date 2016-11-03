@@ -6,6 +6,7 @@ use Auth;
 use App\Team;
 use Validator;
 use Exception;
+use Faker\Factory;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
@@ -140,5 +141,33 @@ class MemberController extends Controller
         $this->member->deleteMember($id);
 
         return ['ok' => true, 'members' => $this->team->members($team->id)];
+    }
+
+
+    /**
+     * Return randomly generated data when creating a ghost member
+     * 
+     * @param  Team   $team 
+     * @return Illuminate\Http\Response       
+     */
+    public function randomize(Team $team)
+    {
+        $faker = Factory::create();
+
+        if ($team->gender == 0) {
+            $gender = 'male';
+        }
+        else if ($team->gender == 1) {
+            $gender = 'female';
+        }
+        else {
+            $gender = null;
+        }
+
+        return [
+            'ok'        => true,
+            'firstname' => $faker->firstName($gender),
+            'lastname'  => $faker->lastName,
+        ];
     }
 }

@@ -11,7 +11,7 @@ export default  {
 	name: 'Basketball',
 
 	props: ['type', 'event', 'players', 'rawStats', 'keys', 'sortKey', 'total', 'player', 'compile',
-				'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup'],
+				'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup', 'statsOnBottom'],
 
 	mixins: [ AbstractStat ],
 
@@ -37,7 +37,15 @@ export default  {
 			playerSeason: {
 				dontShow: ['date', 'win', 'opp'],
 				dontSum: ['fg_', 'ft_', 'threep_'],
-				dontAvg: ['dd2', 'td3', 'efg_', 'ts_', 'astto', 'eff'],
+				dontAvg: ['efg_', 'ts_', 'astto', 'eff'],
+			},
+			playerTeamSeason: {
+				dontShow: ['date', 'win', 'opp'],
+				dontSum: ['fg_', 'ft_', 'threep_'],
+				dontAvg: ['efg_', 'ts_', 'astto', 'eff'],
+			},
+			viewingEvent: {
+				dontShow: ['date', 'win', 'opp', 'gs', 'gp', 'efg_', 'ts_', 'eff', 'dd2', 'td3', 'astto'],
 			},
 		}
 	},
@@ -54,6 +62,7 @@ export default  {
 			if (this.type === 'teamSeason') this.sortKey = '';
 			if (this.type === 'playerRecent') this.sortKey = 'date';
 			if (this.type === 'playerSeason') this.sortKey = 'pts';
+			if (this.type === 'playerTeamSeason') this.sortKey = 'pts';
 		},
 
 
@@ -279,6 +288,96 @@ export default  {
 
 
 		/**
+		 * Calculate the bottom row of the table
+		 *
+		 * @param {object} playerTotals  	The compiled totals of player stats
+		 */
+		calculateBottomOfTableTotals(playerTotals)
+		{
+			let totals = {};
+			let ignore = this.neverSum.concat(['gs', 'gp', 'efg_', 'ts_', 'astto', 'eff']);
+
+			for (var index in playerTotals) {
+
+				let playerStats = playerTotals[index];
+
+				for (var key in playerStats) {
+					if (ignore.indexOf(key) !== -1) {
+						continue;
+					}
+					if (typeof totals[key] === 'undefined') {
+						totals[key] = playerStats[key];
+					}
+					else {
+						totals[key] += playerStats[key];
+					}
+				}
+			}
+
+			totals.gp = this.numberOfEvents();
+			totals.efg_ = this.efg_(totals);
+			totals.ts_ = this.ts_(totals);
+			totals.astto = this.astto(totals);
+			totals.eff = this.eff(totals, 1 / this.players.length); // efficiency is weird...
+
+			return totals;
+		},
+
+
+		/**
+		 * Calculate the bottom row of the table
+		 *
+		 * @param {object} playerAvgs  	The compiled averages of player stats
+		 */
+		calculateBottomOfTableAverages(playerAvgs)
+		{
+			let avgs = {};
+			let ignore = this.neverSum.concat(['gs', 'gp', 'efg_', 'ts_', 'astto', 'eff']);
+
+			for (var index in playerAvgs) {
+
+				let playerStats = playerAvgs[index];
+
+				for (var key in playerStats) {
+					if (ignore.indexOf(key) !== -1) {
+						continue;
+					}
+					if (typeof avgs[key] === 'undefined') {
+						avgs[key] = playerStats[key];
+					}
+					else {
+						avgs[key] += playerStats[key];
+					}
+				}
+			}
+
+			avgs.gp = this.numberOfEvents();
+
+			avgs.efg_ = this.efg_(avgs);
+			avgs.ts_ = this.ts_(avgs);
+			avgs.astto = this.astto(avgs);
+			avgs.eff = this.eff(avgs, this.players.length)
+
+			return avgs;
+		},
+
+
+		/**
+		 * Calculate how many points the team scored
+		 * Only used when viewing individual event stats
+		 */
+		calculateScore(stats)
+		{
+			let points = 0;
+			for (var index in stats) {
+				points += stats[index].pts;
+			}
+
+			return points;
+		},
+
+
+		/**
 		 * Calculates a player's effective field goal percentage
 		 *
 		 * @param {object} stats
@@ -312,12 +411,15 @@ export default  {
 		 * Calculates a player's efficiency
 		 * 
 		 * @param {object} stats
+		 * @param {boolean} multiplier  May need to multiply by number of players for team totals
 		 */
-		eff(stats)
+		eff(stats, multiplier = 1)
 		{
 			var missedFG = stats.fga - stats.fgm
 			var missedFT = stats.fta - stats.ftm
 			var eff = (stats.pts + stats.reb + stats.ast + stats.stl + stats.blk - missedFG - missedFT - stats.to) / stats.gp;
+
+			eff = eff * multiplier;
 
 			return this.round(eff, 2)
 		},

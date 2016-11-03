@@ -13,7 +13,8 @@ has(name)
 variant(name)
 	&--{name}
 		{block}
-		
+
+
 
 [v-cloak] 
 	display none	
@@ -41,7 +42,7 @@ p
 		background rc_background	
 		
 .switch-container
-	margin-bottom 20px
+	margin-bottom 25px
 	vertical-align middle
 .switch-label
 	margin 0px 30px 0px 10px	
@@ -57,14 +58,17 @@ body
 
 
 a	
-a:visited		
-a:link
-	text-decoration none
-	color link_blue
-a:hover
-	text-decoration none
-	cursor pointer
-	color link_blue_hover
+	&:visited		
+	&:link
+		text-decoration none
+		color link_blue
+	&:hover
+		text-decoration none
+		cursor pointer
+		color link_blue_hover
+	.material-icons:hover
+		cursor pointer
+
 	
 
 .nav-tabs
@@ -427,6 +431,7 @@ textarea
 	background rc_med_gray
 	padding 12px 22px
 	color white
+	box-shadow 0 1px 6px rc_med_gray
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
 		background rc_dark_gray
@@ -435,6 +440,7 @@ textarea
 	background rc_red
 	padding 12px 22px
 	color white
+	box-shadow 0 1px 6px rc_red
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
 		background rc_red_hover
@@ -443,7 +449,7 @@ textarea
 	background link_blue
 	padding 12px 22px
 	text-shadow none
-	box-shadow none
+	box-shadow 0 1px 6px link_blue
 	&:hover, &:active, &:active:focus, &:focus
 		color white
 		background link_blue_hover
@@ -452,7 +458,7 @@ textarea
 	background rc_bright_green
 	text-shadow none
 	padding 12px 22px
-	box-shadow none
+	box-shadow 0 1px 6px rc_bright_green
 	&:hover, &:active, &:active:focus, &:focus
 		color white
 		background rc_bright_green_hover
@@ -510,6 +516,38 @@ textarea
 		border 1px solid white
 		border-top-right-radius 3px
 		border-bottom-right-radius 3px
+		
+.save-button-wrapper
+	display flex
+	&.--center
+		justify-content center
+	&.--left
+		justify-content flex-start
+	&.--right
+		justify-content flex-end
+.save-button-group
+	display flex 
+	margin 15px 0
+	width 340px
+	flex-flow row nowrap
+	justify-content space-around
+	align-items center
+	@media screen and (max-width 767px)
+		flex-flow row wrap
+		div
+			margin-top 10px
+	// how many buttons? effects the width
+	&.--one 
+		width 160px
+	&.--two 
+		width 340px
+	&.--three
+		width 500px
+	&.--four
+		width 660px
+	a.btn
+		margin 0
+		width 150px
 	
 
 
@@ -673,12 +711,13 @@ input[type="text"]:focus,
 
 .slide-sm-enter
 	@media only screen and (max-width xs_max_width)
-		animation slide-sm-phone-enter 0.3s ease-in
-	animation slide-sm-enter 0.3s ease-in
+		animation slide-sm-phone-enter 0.35s ease-in
+	animation slide-sm-enter 0.35s ease-in
 .slide-sm-leave
 	@media only screen and (max-width xs_max_width)
-		animation slide-sm-phone-leave 0.3s ease-in
-	animation slide-sm-leave 0.3s ease-out
+		animation slide-sm-phone-leave 0.35s ease-in
+	animation slide-sm-leave 0.35s ease-out
+
 
 .slide-md-enter
 	@media only screen and (max-width xs_max_width)
@@ -701,24 +740,24 @@ input[type="text"]:focus,
 
 @keyframes slide-sm-enter
 	0%
-		opacity 0.2
-		overflow hidden
+		opacity 0
 		max-height 0
+		overflow hidden
 		margin 0
 	100%
 		opacity 1
-		max-height 100px
+		max-height 200px
 		
 
 @keyframes slide-sm-leave
 	0%
 		opacity 1
-		max-height 100px
+		max-height 200px
 	100%
 		opacity 0
-		margin 0
 		max-height 0
 		overflow hidden
+		margin 0
 
 @keyframes slide-sm-phone-enter
 	0%

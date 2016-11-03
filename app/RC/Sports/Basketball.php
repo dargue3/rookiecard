@@ -22,6 +22,16 @@ class Basketball extends Sport implements SportInterface
             'ftm', 'fta', 'ft_', 'ast', 'reb', 'oreb', 'stl', 'blk', 'to', 'pf', 'efg_', 'ts_', 'astto', 'eff', 'dd2', 'td3'];
 
 
+
+    /**
+     * Keys that will be used to generate random stats
+     * 
+     * @var array
+     */
+    protected $keysForGeneration = ['min', 'gs', 'pts', 'fgm', 'fga', 'threepm', 'threepa', 'ftm', 'fta', 'ast', 'reb', 'oreb', 'stl',
+    								'blk', 'to', 'pf'];
+
+
     /**
      * The stat keys that are used in tables whether the admin wants them or not
      * 
@@ -36,7 +46,7 @@ class Basketball extends Sport implements SportInterface
      * 
      * @var array
      */
-    protected $keysOnlyUsedDuringCreation = ['id', 'member_id', 'dnp', 'lastname', 'name'];
+    protected $keysOnlyUsedDuringCreation = ['id', 'member_id', 'dnp', 'lastname', 'name', 'fg_', 'threep_', 'ft_'];
 
 
     /**
@@ -82,6 +92,68 @@ class Basketball extends Sport implements SportInterface
     		}
     	}
 
+    	return $stats;
+    }
+
+
+    /**
+     * Generate random stats
+     * 
+     * @param  array $keys  Which stat keys to include
+     * @return array         
+     */
+    public function generate($keys = [])
+    {
+    	if (empty($keys)) {
+    		$keys = $this->keysForGeneration;
+    	}
+
+    	$stats = [];
+    	foreach ($keys as $key) {
+    		switch ($key) {
+    			case 'min': $stats['min'] = rand(0, 42); break;
+    			case 'gs': $stats['gs'] = true; break;
+    			case 'pts': $stats['pts'] = 0; break;
+    			case 'fgm': $stats['fgm'] = rand(0, 14); break;
+    			case 'fga': $stats['fga'] = rand($stats['fgm'], $stats['fgm'] + 10); break;
+    			case 'threepm': $stats['threepm'] = rand(0, 5); break;
+    			case 'threepa': $stats['threepa'] = rand($stats['threepm'], $stats['threepm'] + 7); break;
+    			case 'ftm': $stats['ftm'] = rand(0, 11); break;
+    			case 'fta': $stats['fta'] = rand($stats['ftm'], $stats['ftm'] + 3); break;
+    			case 'ast': $stats['ast'] = rand(0, 15); break;
+    			case 'reb': $stats['reb'] = rand(0, 17); break;
+    			case 'oreb': $stats['oreb'] = rand(0, 10); break;
+    			case 'stl': $stats['stl'] = rand(0, 11); break;
+    			case 'blk': $stats['blk'] = rand(0, 11); break;
+    			case 'to': $stats['to'] = rand(0, 8); break;
+    			case 'pf': $stats['pf'] = rand(0, 6); break;
+    		}
+    	}
+
+    	return $this->calculateRest($keys, $stats);
+    }
+
+
+    /**
+     * Calculate the rest of the stats based on the randomized seeds
+     * 
+     * @param  array $keys    The keys being used
+     * @param  array $stats   The randomized stats so far
+     * @return array          The randomized stats with extra calculated values
+     */
+    protected function calculateRest($keys, $stats)
+    {	
+    	foreach ($keys as $key) {
+    		switch ($key) {
+    			case 'fgm': $stats['pts'] += $stats['fgm'] * 2; break;
+    			case 'threepm': 
+    				$stats['pts'] += $stats['threepm'] * 3;
+    				$stats['fgm'] += $stats['threepm'];
+    				break;
+    			case 'threepa': $stats['fga'] += $stats['threepa']; break;
+    			case 'ftm': $stats['pts'] += $stats['ftm']; break;
+    		}
+    	}
     	return $stats;
     }
 

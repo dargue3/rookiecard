@@ -9,6 +9,8 @@ export default
 		return {
 			totalStats: [],
 			avgStats: [],
+			totalsOnBottom: {},
+			avgOnBottom: {},
 			neverSum: ['name', 'abbrName', 'firstname'], 	// never sum these keys in season stats
 			neverAvg: ['name', 'abbrName', 'firstname', 	// never average these keys in season stats
 								'wins', 'losses', 'ties', 'gp', 'gs'], 	
@@ -22,6 +24,9 @@ export default
 		 */
 		total(val)
 		{
+			if (! this.compile) {
+				return;
+			}
 			if (val) {
 				this.done(this.totalStats);
 			}
@@ -41,7 +46,14 @@ export default
 
 				// depending on the type of stats, call the respective function to compile them
 				// e.g. this.teamSeasonStats()
-				this[`${this.type}Stats`].call(this);
+				let stats = this[`${this.type}Stats`].call(this);
+
+				if (this.event) {
+					// need to return team's score for this event
+					this.$dispatch('ViewEvent_score', this.calculateScore(stats));
+				}
+
+				this.done(stats);
 			}
 		},
 	},
@@ -55,8 +67,7 @@ export default
 		 */
 		setup()
 		{
-			// only use the keys appropriate for this type
-			this.keys = this.keys.filter(key => this.$get(`${this.type}.dontShow`).indexOf(key) === -1)
+			this.pickKeys();
 
 			this.setDefaultSortKey();
 
@@ -67,6 +78,20 @@ export default
 				this.valClassLookup[key] = this.lookupValClasses(key);
 				this.keyClassLookup[key] = this.lookupKeyClasses(key);
 			});
+		},
+
+
+		/**
+		 * Only use the stat keys appropriate
+		 * Depends on the type of stat table and the sport
+		 */
+		pickKeys()
+		{
+			this.keys = this.keys.filter(key => this.$get(`${this.type}.dontShow`).indexOf(key) === -1);
+
+			if (this.event) {
+				this.keys = this.keys.filter(key => this.viewingEvent.dontShow.indexOf(key) === -1);
+			}
 		},
 
 
@@ -82,6 +107,15 @@ export default
 			}
 			if (! stats.length) {
 				stats = [this.markEmpty()];
+			}
+
+			if (this.$parent.tableBottomLabel) {
+				if (this.total) {
+					this.statsOnBottom = this.totalsOnBottom;
+				}
+				else {
+					this.statsOnBottom = this.avgOnBottom;
+				}
 			}
 
 			this.$dispatch('Stats_compiled', stats);
@@ -122,13 +156,12 @@ export default
 			for (let x = 0; x < this.rawTeamStats.length; x++) {
 				let stats = this.addTheDateAndEvent(this.rawTeamStats[x]);
 
-				// located in a sport's Vue component
 				stats = this.editEachTeamRecentStats(stats);
 
 				recentStats.push(stats);
 			}
 			
-			this.done(recentStats);
+			return recentStats;
 		},
 
 
@@ -151,7 +184,7 @@ export default
 
 			this.avgStats = this.editTeamSeasonAverages(this.perGame(this.totalStats));
 
-			this.done(this.avgStats);
+			return this.avgStats;
 		},
 
 
@@ -186,10 +219,32 @@ export default
 			this.totalStats = teamTotals;
 			this.avgStats = teamAvg;
 			
-			this.done(this.avgStats);
+			return this.avgStats;
 		},
 
 
+
+		/**
+		 * Calculate each player's season stats to date and also calculate the team's total
+		 */
+		playerTeamSeasonStats()
+		{
+			let avgs = this.playerSeasonStats();
+			let totals = this.totalStats;
+
+			this.totalsOnBottom = this.calculateBottomOfTableTotals(totals);
+			this.avgOnBottom = this.calculateBottomOfTableAverages(avgs);
+
+			return avgs;
+		},
+
+
+
+		/**
+		 * Filter raw stats by player and add their identifiers
+		 *
+		 * @param {object} player
+		 */
 		createPlayerStats(player)
 		{
 			let playerTotals = {
@@ -214,6 +269,7 @@ export default
 		{
 			let averaged = {};
 			let ignore = this.neverAvg.concat(this.$get(`${this.type}.dontAvg`));
+
 			for (var key in stats) {
 				if (ignore.indexOf(key) !== -1) {
 					averaged[key] = stats[key];
@@ -224,6 +280,28 @@ export default
 			}
 
 			return averaged;
+		},
+
+
+		/**
+		 * Return the number of unique events that have stats
+		 */
+		numberOfEvents()
+		{
+			let count = 0;
+			let events = [];
+
+			for (var index in this.rawStats) {
+				let id = this.rawStats[index].event_id;
+
+				// for each unique event, increment the count
+				if (events.indexOf(id) === -1) {
+					count++;
+					events.push(id);
+				}
+			}
+
+			return count;
 		},
 
 

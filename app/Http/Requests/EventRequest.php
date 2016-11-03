@@ -18,15 +18,15 @@ class EventRequest extends Request
     public function rules()
     {
         return [
-            'title'             => 'required|max:50',
-            'type'              => 'required|string|in:practice,home_game,away_game,other',
-            'start'             => 'required|integer',
-            'end'               => 'required|integer',
-            'details'           => 'max:5000',
-            'repeats'           => 'boolean',
-            'days'              => 'required_with:repeats|array',
-            'days.*'            => 'required_with:repeats|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
-            'until'             => 'required_with:repeats|integer',
+            'title'        => 'required|max:50',
+            'type'         => 'required|string|in:practice,home_game,away_game,other',
+            'start'        => 'required|integer',
+            'end'          => 'required|integer',
+            'details'      => 'max:5000',
+            'repeats'      => 'boolean',
+            'days'         => 'required_with:repeats|array',
+            'days.*'       => 'required_with:repeats|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'until'        => 'required_with:repeats|integer',
         ];
     }
 }

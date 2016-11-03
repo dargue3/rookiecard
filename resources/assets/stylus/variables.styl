@@ -1,8 +1,15 @@
-// a bunch of stylus variables used all over the site
 
-// SIZES
-xs_max_width = 767px
-sm_max_width = 991px
+// just a bunch of stylus variables used all over the site
+
+
+// MIXINS
+mobile()
+  @media only screen and (max-width: 767px)
+    {block}
+
+tablet()
+  @media only screen and (max-width: 991px)
+    {block}
 
 
 // COLORS

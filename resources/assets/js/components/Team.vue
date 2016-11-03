@@ -11,7 +11,7 @@
 			</div>
 
 			<!-- wrapper div around non-modal content for blurring -->
-			<div v-cloak v-else class="Team for-blurring">
+			<div v-else class="Team for-blurring">
 			
 
 	    	<div class="Team__details" :style="team.backdrop">
@@ -93,7 +93,7 @@
 								</div>
 								<div class="tab" :class="{'--active' : tab === 'roster'}" v-touch:tap="tab = 'roster'">
 									<a>ROSTER</a>
-									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">{{ usersThatWantToJoin.length }}</span>
+									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">1</span>
 								</div>
 								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}" v-touch:tap="tab = 'settings'">
 									<a>SETTINGS</a>	
@@ -113,7 +113,7 @@
 			      <div class="col-xs-12 Team__calendar"
 			      			v-show="tab === 'calendar'">
 
-		        	<rc-calendar :admin="isAdmin" :events="events"></rc-calendar>
+		        	<rc-calendar :is-admin="isAdmin" :events="events"></rc-calendar>
 
 			      </div>
 			    </div>
@@ -123,65 +123,53 @@
 			    <div class="row">
 			      <div class="col-xs-12 text-center Team__stats" v-show="tab === 'stats'">
 
-			      	<div class="TabButton">
-								<div class="first" :class="{'active' : statsTab === 'teamRecent'}" v-touch:tap="statsTab = 'teamRecent'">
+							<div class="TabButton --just-two stat-nav">
+								<div class="first" :class="{'active' : statsTab === 'recent'}" v-touch:tap="statsTab = 'recent'">
 									<span>Recent</span>
 								</div>
-								<div class="second" :class="{'active' : statsTab === 'playerSeason'}" v-touch:tap="statsTab = 'playerSeason'">
-									<span>Players</span>
-								</div>
-								<div class="third" :class="{'active' : statsTab === 'teamSeason'}" v-touch:tap="statsTab = 'teamSeason'">
+								<div class="second" :class="{'active' : statsTab === 'season'}" v-touch:tap="statsTab = 'season'">
 									<span>Season</span>
 								</div>
-							</div>
 
-							<div v-show="statsTab === 'teamRecent'">
+							</div>
+			      	
+							<div v-show="statsTab === 'recent'">
 								<rc-stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
 													:raw-stats="stats" :players="players" :paginate="10">
 		        		</rc-stats>
 		        		<div v-else class="text-center">
-									<h4>No stats yet...</h4>
+									<h4>No stats yet&hllip;</h4>
 								</div>
 							</div>
 
 
-							<div v-show="statsTab === 'playerSeason'">
-								<div v-show="stats.length" class="TabButton --just-two --small">
-									<div class="first" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
-										<span>Totals</span>
+							<div v-show="statsTab === 'season'">
+
+								<div class="stat-filters">
+									<div v-show="stats.length" class="TabButton --just-two --small">
+										<div class="first" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
+											<span>Averages</span>
+										</div>
+										<div class="second" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
+											<span>Totals</span>
+										</div>
+										<input type="text" class="form-control --white" placeholder="Search by name..." v-model="statSearch">
 									</div>
-									<div class="second" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
-										<span>Averages</span>
-									</div>
-									<input type="text" class="form-control --white" placeholder="Search by name..." v-model="statFilterKey">
 								</div>
-									
-			        	<rc-stats v-if="stats.length" type="playerSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
-			        						:sport="team.sport" :raw-stats="stats" :players="players" :filter-key="statFilterKey">
-		        		</rc-stats>
+								
+								
+								<template v-if="stats.length">
+									<rc-stats type="playerTeamSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
+				        						:sport="team.sport" :raw-stats="stats" :players="players" :search="statSearch"
+				        						table-bottom-label="TEAM">
+			        		</rc-stats>
+								</template>
+			        	
 		        		<div v-else class="text-center">
-									<h4>No stats yet...</h4>
+									<h4>No stats yet&hllip;</h4>
 								</div>
 		        	</div>
 							
-
-							<div v-show="statsTab === 'teamSeason'">
-								<div v-show="stats.length" class="TabButton --just-two --small">
-									<div class="first" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
-										<span>Totals</span>
-									</div>
-									<div class="second" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
-										<span>Averages</span>
-									</div>
-								</div>
-			        	<rc-stats v-if="stats.length" type="teamSeason" :stat-keys="team.settings.statKeys" :raw-team-stats.sync="rawTeamStats"
-			        						:sport="team.sport" :raw-stats="stats" :players="players" :total.sync="showStatTotals">
-		        		</rc-stats>
-		        		<div v-else class="text-center">
-									<h4>No stats yet...</h4>
-								</div>
-		        	</div>
-			        	
 			      </div>
 			    </div>
 
@@ -253,27 +241,6 @@
 			</rc-view-event>
 
 
-
-	    <!-- modal window for adding events -->
-	    <div class="modal" id="addEventModal" role="dialog" aria-hidden="true">
-	      <div class="modal-dialog">
-	        <div class="modal-content">
-	          <div class="modal-header">
-	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 class="modal-title">{{ newEventTitle  || 'New Event' }}</h3>
-	          </div>
-	          <div class="modal-body">
-	            <div class="row">
-	                 
-								<rc-add-event :new-event-title.sync="newEventTitle"></rc-add-event>
-
-	            </div>
-	          </div>
-	        </div>
-	      </div>
-	    </div>
-
-
 	    <!-- modal for editing a player in the roster -->
 			<div class="modal" id="rosterModal" role="dialog" aria-hidden="true">
 	      <div class="modal-dialog">
@@ -343,7 +310,6 @@
 
 import Calendar 	from './Calendar.vue';
 import Stats 			from './Stats.vue';
-import AddEvent 	from './AddEvent.vue';
 import ViewEvent 	from './ViewEvent.vue';
 import Roster 		from './Roster.vue';
 import NewsFeed 	from './NewsFeed.vue';
@@ -359,7 +325,6 @@ export default  {
 	{
 		'rc-calendar'		: Calendar,
 		'rc-stats'			: Stats,
-		'rc-add-event'	: AddEvent,
 		'rc-view-event'	: ViewEvent,
 		'rc-roster'			: Roster,	
 		'rc-news-feed'	: NewsFeed,	
@@ -384,9 +349,9 @@ export default  {
 			requestFinished: false,
 			notFound: false,
 			showStatTotals: false,
-			statFilterKey: '',
-			tab: 'roster',
-			statsTab: 'teamRecent',
+			statSearch: '',
+			tab: 'calendar',
+			statsTab: 'recent',
 			auth: {},
 			team: {
 				meta: {},
@@ -412,6 +377,7 @@ export default  {
 				meta: {},
 			},
 			newEventTitle: '',
+			showingEvent: false,
 		}
 	},
 
@@ -419,6 +385,9 @@ export default  {
 	{
 		var url = this.makeUrl('');
 		this.$root.get(url, 'Team_requestSuccess', [], 'Team_requestFail');
+
+
+		this.$root.unblur();
 	},
 
 	computed: {
@@ -519,6 +488,7 @@ export default  {
 			setTimeout(function() {
 				this.requestFinished = true;
 				this.$broadcast('dataReady');
+				this.checkUrlForStateChange();
 			}.bind(this), 100);
 		},
 
@@ -528,6 +498,19 @@ export default  {
 		{
 			this.requestFinished = true;
 			this.notFound = true;
+		},
+
+
+		/**
+		 * A modal window was up, but is now minimized
+		 */
+		App_modal_minimized()
+		{
+			if (this.showingEvent) {
+				// was showing an event but now it got minimized
+				// change the URL to just being /team/teamname
+				
+			}
 		},
 
 		/**
@@ -577,77 +560,31 @@ export default  {
 			}
 		},
 
+		Team_view_event(id)
+		{
+			this.$broadcast('ViewEvent_view', id);
+		},
+
 
 		/**
-		 * New stats have been added from EditStats.vue
+		 * An event was created/edited/deleted
+		 *
+		 * @param {array} events  	The new collection of events for this team
 		 */
-		newStats(data, entry)
-		{
-			var self = this;
-			data.forEach(function(val) {
-				self.stats.push(val);
-			});
-		
-			this.$broadcast('updateFeed', entry);
-		},
-
-		// updated stats have been posted from ViewEvent
-		updateStats(data, event)
-		{
-			// first erase all stats for this event
-			this.stats = this.stats.filter(function(stat) {
-				return stat.event_id !== event.id;
-			});
-
-			if (data.length) {
-				// there were new stats to add
-				data.forEach(function(val) {
-					this.stats.push(val);
-				}.bind(this));
-			}
-
-			// tell Stats.vue to re-compile the stats
-			this.$broadcast('updateStats', this.stats);
-		},
-
-		// stats have been deleted from ViewEvent
-		deleteStats(event)
-		{
-			// iterate through all stats, keep the ones not associated with this event
-			this.stats = this.stats.filter(function(stat) {
-				return stat.event_id !== event.id;
-			});
-
-			// tell Stats.vue to re-compile
-			this.$broadcast('updateStats', this.stats);
-		},
-
-
-
-
-		newEvent(events, entry)
+		Team_updated_events(events)
 		{
 			this.events = events;
-
-			this.$broadcast('updateFeed', entry);
 		},
 
-		updateEvent(events, entry)
+
+		/**
+		 * Stats were created/edited/deleted
+		 *
+		 * @param {array} stats  The new collection of stats for this team
+		 */
+		Team_updated_stats(stats)
 		{
-			this.events = events;
-
-			if (entry) {
-				this.$broadcast('updateFeed', entry);
-			}
-		},
-
-		deleteEvent(events, entry)
-		{
-			this.events = events;
-
-			if (entry) {
-				this.$broadcast('updateFeed', entry);
-			}
+			this.stats = stats;
 		},
 
 		
@@ -664,6 +601,7 @@ export default  {
 
 			// delay to allow new users object time to propogate
 			setTimeout(function() {
+				// need to recompile stats to include roster changes
 				this.$broadcast('Stats_recompile');
 			}.bind(this), 100);
 		},
@@ -777,25 +715,45 @@ export default  {
 		},
 
 
+		/**
+		 * User is responding to the invitation, show confirm/deny popup
+		 */
 		respondingToInvitation()
 		{
 			this.$root.showModal('joinTeamModal');
+		},
 
-		}
+
+		/**
+		 * Depending on what the URL is, may have to show a previous event
+		 */
+		checkUrlForStateChange()
+		{
+			if (this.$route.params.event_id) {
+				this.displayEvent(parseInt(this.$route.params.event_id));
+			}
+		},
+
+
+		displayEvent(id)
+		{
+			this.showingEvent = false;
+			for (var index in this.events) {
+				if (this.events[index].id === id) {
+					this.showingEvent = true;
+					this.$broadcast('ViewEvent_view', id);
+				}
+			}
+			if (! this.showingEvent) {
+				this.$router.replace('/team/' + this.$route.params.name);
+			}
+		},
 
 	}, // end methods
 
-	ready() {
-
-		$(function() {
-
-			$('div.modal').on('hide.bs.modal', function() {
-				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
-		    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
-			});
-
-		});
-
+	ready()
+	{
+		this.$root.unblur();
 	},
 
 };
@@ -971,6 +929,13 @@ export default  {
 			width 175px
 			margin-left 30px
 			height 30px
+	.stat-filters
+		display flex
+		justify-content flex-start
+		margin-top 0
+		.TabButton
+			margin-bottom 15px
+	
 			
 .JoinTeam__msg
 	margin-bottom 30px

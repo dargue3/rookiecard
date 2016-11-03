@@ -57,8 +57,7 @@ class StatControllerTest extends TestCase
 		$this->event = factory(Event::class)->create(['owner_id' => $this->team->id]);
 
 		$this->data = [
-			'event_id'		=> $this->event->id,
-			'meta'			=> ['test' => 123],
+			'meta'	=> ['test' => 123],
 			'stats'	=> [
 				['id' => 0, 'member_id' => 1, 'pts' => 12, 'ast' => 6, 'reb' => 8],
 				['id' => 0, 'member_id' => 2, 'pts' => 42, 'ast' => 2, 'reb' => 3],
@@ -74,6 +73,8 @@ class StatControllerTest extends TestCase
     {
     	$mock = $this->mock(HandlesStatLogic::class);
     	$mock->shouldReceive('create');
+
+    	$this->data['event_id'] = $this->event->id;
 
     	$this->call('POST', $this->url, $this->data);
 

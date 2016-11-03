@@ -19,7 +19,7 @@
 	{{-- fonts --}}
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Fira+Sans:400,500,700,300,400italic' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Monda' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Monda:400,700' rel='stylesheet' type='text/css'>
 
     <!-- css -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">

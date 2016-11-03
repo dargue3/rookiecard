@@ -10,9 +10,9 @@
 
 		
 
-		<rc-alert :show="alert" transition="fade-fast"></rc-alert>
+		<rc-alert :show="alert" transition="fade-slow"></rc-alert>
 
-		<router-view id="router" transition="fade-md" transition-mode="out-in" class="router"></router-view>
+		<router-view id="router" transition="fade-slow" transition-mode="out-in" class="router"></router-view>
 
 		</div>
 
@@ -247,6 +247,28 @@ export default  {
     	$('#' + id).modal('show');
 		},
 
+
+		unblur()
+		{
+			let self = this;
+			$(function() {
+
+				// remove blurring
+				// if user had a modal open then clicked 'back' on browser, blur persists
+				$('div.modal').modal('hide');
+				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
+		    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
+
+
+				$('div.modal').on('hide.bs.modal', function() {
+					$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
+			    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
+			    self.$broadcast('App_modal_minimized');
+				});
+		
+		});
+		}
+
 	}, // end methods
 
 	ready()
@@ -256,22 +278,8 @@ export default  {
 		// job offer
 		console.log("%cI like your style! email me and I might hire you...  dan@rookiecard.com", "color: black; font-size: large;")
 		*/
-		$(function() {
-
-			// remove blurring
-			// if user had a modal open then clicked 'back' on browser, blur persists
-			$('div.modal').modal('hide');
-			$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
-	    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
-
-
-			$('div.modal').on('hide.bs.modal', function() {
-				$('.for-blurring').addClass('modal-unblur').removeClass('modal-blur');
-		    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
-			});
-		
-		});
-
+	
+		this.unblur();
 	}
 };
 

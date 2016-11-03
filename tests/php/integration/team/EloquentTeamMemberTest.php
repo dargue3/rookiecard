@@ -214,6 +214,41 @@ class EloquentTeamMemberTest extends TestCase
 
 
     /** @test */
+    public function when_an_invited_inactive_users_email_is_overwritten_on_a_ghosts_meta_data__they_are_uninvited()
+    {
+        // this one showing an invitation to someone who is NOT part of RC yet
+        
+        $this->repo->newPlayer(2)->invite('cats@cats.com');
+
+        $this->assertCount(1, TeamInvite::all());
+
+        $this->repo->editMember($this->repo->member->id, ['email' => 'blah@gmail.com'], 'player', false);
+
+        $this->assertCount(1, TeamInvite::all());
+        $this->assertEquals('blah@gmail.com', TeamInvite::first()->email);
+    }
+
+
+
+    /** @test */
+    public function when_an_invited_active_users_email_is_overwritten_on_a_ghosts_meta_data__they_are_uninvited()
+    {
+        // this one showing an invitation to someone who is NOT part of RC yet
+        $user = factory(User::class)->create();
+
+        $this->repo->newPlayer(2)->invite($user->email);
+
+        $this->assertCount(2, TeamMember::all()); // ghost + invited user
+
+        $this->repo->editMember($this->repo->member->id, ['email' => 'blah@gmail.com'], 'player', false);
+
+        $this->assertCount(1, TeamMember::all()); // just ghost
+        $this->assertCount(1, TeamInvite::all()); // newly invited user
+    }
+
+
+
+    /** @test */
     public function a_new_member_can_request_to_join_the_team()
     {
         $this->repo->requestToJoin(5);
@@ -391,19 +426,19 @@ class EloquentTeamMemberTest extends TestCase
     /** @test */
     public function a_member_can_have_their_data_edited_to_match_inputted_arguments()
     {
-        $member = TeamMember::create(['user_id' => 1, 'team_id' => 2]);
+        $this->repo->newPlayer(2);
 
-        $this->repo->using($member)->attachMetaData(['num' => '00']);
+        $this->repo->attachMetaData(['num' => '00']);
 
         // get a new version from the db to ensure the data is saved
-        $member = TeamMember::find($member->id);
+        $member = TeamMember::find($this->repo->member->id);
 
         $meta = json_decode($member->meta);
         $this->assertEquals('00', $meta->num);
         $this->assertFalse($this->repo->hasRole(new Admin));
 
         // attach jersey number meta data and admin status
-        $this->repo->editMember($member->id, ['num' => '12', 'email' => 'cats@cats.com'], false, $admin = true);
+        $this->repo->editMember($member->id, ['num' => '12', 'email' => 'cats@cats.com'], 'player', $admin = true);
 
         $member = TeamMember::find($member->id);
 

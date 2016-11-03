@@ -3,6 +3,7 @@ namespace App\RC\Team;
 
 use App;
 use App\Team;
+use App\Stat;
 use App\Event;
 use App\NewsFeed;
 use App\TeamRole;
@@ -43,6 +44,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 
     /**
      * Find a team by a given teamname
+     * 
      * @param  string $teamname 
      * @return Team        
      */
@@ -193,6 +195,45 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     public function join($action, $team_id)
     {
         (new JoinTeam($action, $team_id))->handle();
+    }
+
+
+
+    /**
+     * Seed the team with events and stats for each player
+     *    
+     * @param int $team_id
+     * @param int $count    The number of events to create 
+     * @return void
+     */
+    public function seed($team_id, $count = 10, $erase = false)
+    {
+        $members = $this->members($team_id);
+        $sport = $this->sport($team_id);
+        $types = ['home_game', 'away_game'];
+        $oppScore = 26.8 * count($members); 
+
+        if ($erase) {
+            // want to start fresh
+            Event::where('owner_id', $team_id)->delete();
+            Stat::where('team_id', $team_id)->delete();
+        }
+
+        for ($x = 0; $x < $count; $x++) {
+            $event = factory(Event::class)->create(['owner_id' => $team_id, 'type' => $types[array_rand($types, 1)]]);
+
+            foreach ($members as $member) {
+                factory(Stat::class)->create([
+                    'sport'     => $sport->name(),
+                    'owner_id'  => $member['id'],
+                    'member_id' => $member['member_id'], 
+                    'team_id'   => $team_id,
+                    'meta'      => json_encode(['opp' => 'Test', 'oppScore' => rand($oppScore - 10, $oppScore + 10), 'event' => $event]),
+                    'stats'     => json_encode($sport->generate()),
+                    'event_id'  => $event->id,
+                ]);
+            }
+        }
     }
 
 

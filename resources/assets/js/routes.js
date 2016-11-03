@@ -54,30 +54,39 @@ var router = new VueRouter({
 
 router.map({
 
-	'/': {
+	'/':
+	{
 		name: 'home',
-		component: {
+		component:
+		{
 			template: "<h1 style='margin-top: 80px'>This is the homepage</h1>"
 		}
 	},
 
 
-
-	'/team/create': {
-		name: 'createTeam',
+	'/team/create':
+	{
 		component:  CreateTeam,
 	},
 
-	'/team/:name': {
+
+	'/team/:name':
+	{
 		name: 'team',
 		component:  Team,
 	},
 
+	'/team/:name/event/:event_id':
+	{
+		component:  Team,
+	},
 
 
-	'/:name': {
+	'/:name':
+	{
 		name: 'user',
-		component: {
+		component:
+		{
 			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name}}!</h1>"
 		}
 	},

@@ -144,4 +144,21 @@ class MemberControllerTest extends TestCase
 
     	$this->assertResponseOk();
     }
+
+
+    /** @test */
+    public function it_has_a_randomize_method_for_generating_random_ghost_names_and_jersey_numbers()
+    {
+        $member = factory(TeamMember::class)->create(['team_id' => $this->team->id]);
+
+        $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
+        $this->memberRepo->shouldReceive('using')->once()->andReturn($this->memberRepo);
+        $this->memberRepo->shouldReceive('isAdmin')->once()->andReturn(true);
+
+        $response = $this->call('GET', $this->url . 'randomize')->getOriginalContent();
+
+        $this->assertResponseOk();
+        $this->assertTrue(isset($response['firstname']));
+        $this->assertTrue(isset($response['lastname']));
+    }
 }

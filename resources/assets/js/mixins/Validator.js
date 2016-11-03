@@ -877,12 +877,15 @@ export default
 		 */
 		jersey_()
 		{
-			if (typeof this.value_ === 'string' && ! this.value_.length) {
-				return true;
+			if (typeof this.value_ === 'string') {
+				if (! this.value_.length) {
+					// skip if it is empty, let 'required' rule take care of that
+					return true;
+				}
 			}
-			else {
-				return this.regex_(/^[0-9]{1,2}$/);
-			}
+
+			this.value_ = this.value_.toString();
+			return this.regex_(/^[0-9]{1,2}$/);
 		},
 	},
 }

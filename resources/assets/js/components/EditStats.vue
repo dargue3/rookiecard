@@ -1,126 +1,156 @@
 <template>
 	<div class="edit-stats-wrapper">
 
-		
-		<div class="edit-stats-header">
-
-			<!-- notes to user -->
-			<div class="stat-notes">
-				<div class="blue-container">
-					<span><strong>Notes about stat entries:</strong></span>
-					<ul>
-						<li>
-							Any fields left empty are treated as zeros.
-						</li>
-						<li v-show="usesMinutes">
-							If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.
-						</li>
-						<li v-show="! usesMinutes">
-							If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.
-						</li>
-					</ul>
-				</div>
+		<!-- confirmation screen for deleting existing stats -->
+		<div v-if="confirmDelete" class="EditStats__confirm">
+			<div class="confirm-header">
+				<h4>Delete these stats?</h4>
 			</div>
-
-			<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->
-			<div class="edit-button">
-				<a class="btn btn-primary --chevron --lg --right" v-touch:tap="editingPastEvent = true">
-					Edit Event Details
-					<i class="material-icons btn-chevron --right">chevron_right</i>
-				</a>
-			</div>
-
+			<div class="save-button-group">
+		    <div>
+		    	<a class="btn btn-delete" v-touch:tap="confirm(true)">
+		    		<span v-show="! loading_delete">DELETE</span>
+						<spinner v-show="loading_delete" color="white"></spinner>
+		    	</a>
+		    </div>
+		    <div>
+		    	<a class="btn btn-cancel" v-touch:tap="confirm(false)">CANCEL</a>
+		    </div>
+		  </div>
 		</div>
 
-		<!-- input new stats here -->
-		<h3>Box Score</h3>
-		<form v-if="ready" @submit.prevent>
-			<div class="table-responsive stats-container">
-				<table class="table stats-table">
-					<thead>
-			    	<tr>
-			      	<th v-for="key in keys" class="stat-columns"
-			      			data-toggle="tooltip" :title="resolveTooltip(key)">
-			      		{{ resolveKeyName(key) }}
-			      	</th>
-			    	</tr>
-			  	</thead>
-			  	<tbody>
-			    	<tr v-for="(index, stat) in stats">
-				      <td v-for="key in keys" class="new-stats stat-entries">
+		<div v-else>
+			<div class="edit-stats-header">
 
-				      	<!-- show 'Did Not Play' checkbox if necessary -->
-				      	<template v-if="! usesMinutes && key === 'dnp'">
-				      		<input type="checkbox" v-model="stat[key]">
-				      	</template>
-				      	
-				      	<template v-else>
-				      		<!-- show 'Starter' checkbox if necessary -->
-				      		<template v-if="key === 'gs'">
-				      			<input type="checkbox" v-model="stat[key]">
-				      		</template>
+				<!-- notes to user -->
+				<div class="stat-notes">
+					<div class="blue-container">
+						<span><strong>Notes about stat entries:</strong></span>
+						<ul>
+							<li>
+								Any fields left empty are treated as zeros.
+							</li>
+							<li v-show="usesMinutes">
+								If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.
+							</li>
+							<li v-show="! usesMinutes">
+								If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.
+							</li>
+						</ul>
+					</div>
+				</div>
 
-				      		<!-- otherwise show normal stat input box -->
-				      		<template v-else>
-				      			<span v-if="keyIsCalculated(key)" class="stats-input">{{ resolveValue(key, stat) }}</span>
-						      	<input v-else type="text" class="form-control stats-input" :class="{'form-error' : errors[index][key]}"
-						      				number autocomplete="off" :placeholder="resolveKeyName(key)" v-model="stat[key]">
-				      		</template>
-				      		
-				      	</template>
-				      </td>
-			    	</tr>
-			  	</tbody>
-				</table>
+				<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->
+				<div class="edit-button">
+					<a class="btn btn-primary --chevron --lg --right" v-touch:tap="editingPastEvent = true">
+						Edit Event Details
+						<i class="material-icons btn-chevron --right">chevron_right</i>
+					</a>
+				</div>
+
 			</div>
 
-			<h3>Opponent Details</h3>
-			<div class="table-responsive stats-container">
-				<table class="table stats-table">
-					<thead>
-			    	<tr>
-			      	<th class="stat-columns">OPPONENT</th>
-			      	<th class="stat-columns">SCORE</th>
-			    	</tr>
-			  	</thead>
-			  	<tbody>
-			    	<tr>
-				      <td class="new-stats stat-entries">
-				      	<input type="text" class="form-control stats-input opponent" :class="{'form-error' : meta.errors.opp}"
-					      				autocomplete="off" placeholder="Georgia Tech" v-model="meta.opp">
-				      </td>
-				      <td class="new-stats stat-entries">
-				      	<input type="text" class="form-control stats-input" :class="{'form-error' : meta.errors.oppScore}"
-					      				number autocomplete="off" :placeholder="oppScore" v-model="meta.oppScore">
-				      </td>
-			    	</tr>
-			  	</tbody>
-				</table>
-			</div>
+			<!-- input new stats here -->
+			<h3>Box Score</h3>
+			<form v-if="ready" @submit.prevent>
+				<div class="table-responsive stats-container">
+					<table class="table stats-table">
+						<thead>
+				    	<tr>
+				      	<th v-for="key in keys" class="stat-columns"
+				      			data-toggle="tooltip" :title="resolveTooltip(key)">
+				      		{{ resolveKeyName(key) }}
+				      	</th>
+				    	</tr>
+				  	</thead>
+				  	<tbody>
+				    	<tr v-for="(index, stat) in stats">
+					      <td v-for="key in keys" class="new-stats stat-entries">
+
+					      	<!-- show 'Did Not Play' checkbox if necessary -->
+					      	<template v-if="! usesMinutes && key === 'dnp'">
+					      		<input type="checkbox" v-model="stat[key]">
+					      	</template>
+					      	
+					      	<template v-else>
+					      		<!-- show 'Starter' checkbox if necessary -->
+					      		<template v-if="key === 'gs'">
+					      			<input type="checkbox" v-model="stat[key]">
+					      		</template>
+
+					      		<!-- otherwise show normal stat input box -->
+					      		<template v-else>
+					      			<span v-if="keyIsCalculated(key)" class="stats-input">{{ resolveValue(key, stat) }}</span>
+							      	<input v-else type="text" class="form-control stats-input" :class="{'form-error' : errors[index][key]}"
+							      				number autocomplete="off" :placeholder="resolveKeyName(key)" v-model="stat[key]">
+					      		</template>
+					      		
+					      	</template>
+					      </td>
+				    	</tr>
+				  	</tbody>
+					</table>
+				</div>
+
+				<h3>Opponent Details</h3>
+				<div class="table-responsive stats-container">
+					<table class="table stats-table">
+						<thead>
+				    	<tr>
+				      	<th class="stat-columns">OPPONENT</th>
+				      	<th class="stat-columns">SCORE</th>
+				    	</tr>
+				  	</thead>
+				  	<tbody>
+				    	<tr>
+					      <td class="new-stats stat-entries">
+					      	<input type="text" class="form-control stats-input opponent" :class="{'form-error' : meta.errors.opp}"
+						      				autocomplete="off" placeholder="Georgia Tech" v-model="meta.opp">
+					      </td>
+					      <td class="new-stats stat-entries">
+					      	<input type="text" class="form-control stats-input" :class="{'form-error' : meta.errors.oppScore}"
+						      				number autocomplete="off" :placeholder="oppScore" v-model="meta.oppScore">
+					      </td>
+				    	</tr>
+				  	</tbody>
+					</table>
+				</div>
+
+				<div class="EditStats__footer">
+					<div v-if="correctErrors" class="errors">
+						<span>Correct errors highlighted in red before saving</span>
+					</div>
+					<div class="save-button-group --three">
+						<div>
+							<a class="btn btn-primary" v-touch:tap="save()">
+								<span v-show="! loading_save">SAVE</span>
+								<spinner v-show="loading_save" color="white"></spinner>
+							</a>
+						</div>
+						<div v-show="someSavedStats">
+							<a class="btn btn-delete" v-touch:tap="destroy()">
+								<span v-show="! loading_delete">DELETE</span>
+								<spinner v-show="loading_delete" color="white"></spinner>
+							</a>
+						</div>
+						<div>
+							<a class="btn btn-cancel" v-touch:tap="cancel()">CANCEL</a>
+						</div>
+					</div>
+				</div>
+				
+			</form>
 
 
-			<div v-if="correctErrors" class="errors">
-				<span>Correct errors highlighted in red before saving</span>
-			</div>
-			<div class="buttons">
-				<a class="btn btn-primary" v-touch:tap="save()">SAVE</a>
-				<a class="btn btn-delete" v-touch:tap="destroy()">DELETE</a>
-				<a class="btn btn-cancel" v-touch:tap="cancel()">CANCEL</a>
-			</div>
-		</form>
+			<!-- for calculating sport related variables, these don't display anything -->
 
-		<spinner v-show="! ready" color="gray"></spinner>
+			<basketball v-if="team.sport === 'basketball'" :keys.sync="keys" :compile="compile" :errors.sync="errors"
+	  							:key-names.sync="keyNames" :tooltips.sync="tooltips" :value-lookup.sync="valueLookup" 
+	  							:val-class-lookup.sync="valClassLookup" :calculated-keys.sync="calculatedKeys" 
+	  							:default-values.sync="defaultValues" :sport-specific-error-check.sync="sportSpecificErrorCheck">
+			</basketball>
 
-
-		<!-- for calculating sport related variables, these don't display anything -->
-
-		<basketball v-if="team.sport === 'basketball'" :keys.sync="keys" :compile="compile" :errors.sync="errors"
-  							:key-names.sync="keyNames" :tooltips.sync="tooltips" :value-lookup.sync="valueLookup" 
-  							:val-class-lookup.sync="valClassLookup" :calculated-keys.sync="calculatedKeys" 
-  							:default-values.sync="defaultValues" :sport-specific-error-check.sync="sportSpecificErrorCheck">
-		</basketball>
-		
-
+		</div>
 	</div>
 </template>
 
@@ -149,6 +179,7 @@ export default  {
 			stats: [],
 			compile: false,
 			ready: false,
+			someSavedStats: false,
 			meta: {
 				opp: '',
 				oppScore: '',
@@ -168,7 +199,9 @@ export default  {
 			errors: [],
 			correctErrors: false,
 			sportSpecificErrorCheck: '',
-
+			confirmDelete: false,
+			loading_save: false,
+			loading_delete: false,
 		}
 	},
 
@@ -225,26 +258,9 @@ export default  {
 			// reorder players array to be in descending order by lastname
 			this.players = this.players.sort((a, b) => a.lastname.localeCompare(b.lastname));
 
-			// initialize variables for each player
-			this.players.forEach((player, index) => {
-				this.errors[index] = {};
-				let defaults = {
-					lastname: player.lastname,
-					name: player.abbrName,
-					id: player.id,
-					member_id: player.member_id,
-				};
+			this.populateStats();
 
-				// add variables for each key
-				this.keys.forEach(key => {
-					this.errors[index][key] = '';
-					if (key !== 'name') {
-						defaults[key] = this.defaultValues[key];
-					}
-				})
-
-				this.stats.$set(index, JSON.parse(JSON.stringify(defaults)));
-			})
+			this.populateOppStats();
 
 			this.compile = false;
 			this.ready = true;
@@ -260,7 +276,22 @@ export default  {
 		 */
 		EditStats_save(response)
 		{
+			this.$dispatch('ViewEvent_cancel');
+			this.$dispatch('Team_updated_stats', response.data.stats);
 			this.$root.banner('good', 'Stats saved');
+			this.reset();
+		},
+
+		/**
+		 * The stats have been successfully deleted from the database
+		 */
+		EditStats_delete(response)
+		{
+			this.$dispatch('ViewEvent_cancel');
+			this.$dispatch('Team_updated_stats', response.data.stats);
+
+			this.$root.banner('good', 'Stats deleted');
+			this.reset();
 		},
 	},
 
@@ -273,6 +304,7 @@ export default  {
 		{
 			this.stats = [];
 			this.ready = false;
+			this.someSavedStats = false;
 
 			this.keys = this.team.settings.statKeys;
 
@@ -291,6 +323,12 @@ export default  {
 				return;
 			}
 
+			this.loading_save = true;
+
+			if (this.someSavedStats) {
+				return this.update();
+			}
+
 			let data = {
 				event_id: this.event.id,
 				stats: this.stats,
@@ -304,9 +342,45 @@ export default  {
 			this.$root.post(url, 'EditStats_save', data);
 		},
 
+
+		update()
+		{
+			let data = {
+				event_id: this.event.id,
+				stats: this.stats,
+				meta: {
+					opp: this.meta.opp,
+					oppScore: this.meta.oppScore,
+				},
+			}
+
+			let url = `${this.$parent.prefix}/stats/${this.event.id}`;
+			this.$root.put(url, 'EditStats_save', data);
+		},
+
+
+		/**
+		 * Delete any saved stats for this event
+		 */
 		destroy()
 		{
+			this.confirmDelete = true;
+		},
 
+
+		/**
+		 * User has confirmed or denied their wish to delete these stats
+		 */
+		confirm(confirm)
+		{
+			if (confirm) {
+				let url = `${this.$parent.prefix}/stats/${this.event.id}`;
+				this.loading_delete = true;
+				this.$root.delete(url, 'EditStats_delete');
+			}
+			else {
+				this.confirmDelete = false;
+			}
 		},
 
 
@@ -327,6 +401,10 @@ export default  {
 		reset()
 		{
 			this.ready = false;
+			this.someSavedStats = false;
+			this.loading_save = false;
+			this.loading_delete = false;
+			this.confirmDelete = false;
 			this.meta = {
 				opp: '',
 				oppScore: '',
@@ -335,6 +413,85 @@ export default  {
 					oppScore: '',
 				}
 			};
+		},
+
+
+		/**
+		 * Initialize the stat table with previously saved stats or defaults
+		 */
+		populateStats()
+		{
+			// does ANYONE have saved stats for this event?
+			this.someSavedStats = false;
+			let stats = [{}];
+
+			this.players.forEach((player, index) => {
+				this.errors[index] = {};
+
+				stats[index] = {
+					lastname: player.lastname,
+					name: player.abbrName,
+					id: player.id,
+					usingDefaults: true,
+					member_id: player.member_id,
+				};
+
+				let existingStats = this.eventStats.filter((stat) => stat.member_id == player.member_id);
+
+				if (existingStats.length) {
+					stats[index].usingDefaults = false;
+					this.someSavedStats = true;
+					existingStats = JSON.parse(existingStats[0].stats);
+				}
+				
+				// add the value at each key
+				this.keys.forEach(key => {
+					this.errors[index][key] = '';
+					if (stats[index].usingDefaults) {
+						// no saved stats, fallback to default values
+						stats[index][key] = this.defaultValues[key];
+					}
+					else {
+						// used previously saved stats
+						stats[index][key] = existingStats[key];
+					}
+				});
+
+				// make sure their name stays correct
+				stats[index].name = player.abbrName
+			});
+
+			if (this.someSavedStats) {
+				// at least some of the players have previously saved stats
+				stats.forEach((stat, index) => {
+					if (stat.usingDefaults) {
+						// if players didn't have anything saved at this point, mark them as DNP
+						stats[index].dnp = true;
+					}
+				});
+			}
+
+			// don't want this key in there permanently
+			stats.forEach((stat, index) => {
+				delete stats[index].usingDefaults;
+			});
+	
+
+			// save non-reactive copy
+			this.$set('stats', JSON.parse(JSON.stringify(stats)));
+		},
+
+
+		/**
+		 * Populate the opponent's section with data saved in any of the stats' meta data
+		 */
+		populateOppStats()
+		{
+			if (this.someSavedStats) {
+				let meta = JSON.parse(this.eventStats[0].meta);
+				this.meta.opp = meta.opp;
+				this.meta.oppScore = meta.oppScore;
+			}
 		},
 
 
@@ -469,7 +626,7 @@ export default  {
 @import '/resources/assets/stylus/variables.styl'
 
 .edit-stats-wrapper
-	padding 1.5em
+	padding 1em
 	h3
 		margin-top 2em
 	.buttons
@@ -549,6 +706,20 @@ input.stats-input
 	vertical-align middle !important
 	&.opponent
 		width 150px
-				
+		
+.EditStats__confirm
+	display flex
+	flex-flow row wrap
+	justify-content center
+	align-items center
+	.confirm-header
+		flex-basis 100%
+		display flex
+		justify-content center
+		
+.EditStats__footer
+	display flex
+	justify-content center
+		
 
 </style>

@@ -89,9 +89,9 @@
   				<label>Email</label>
   				<input type="text" class="form-control" :class="{ 'form-error' : errors.user.meta.email }" maxlength="100" v-model="user.meta.email"
   								autocomplete="false">
-					<span v-show="errors.user.meta.email" class="form-error">{{ errors.user.meta.email }}</span>
+					<span v-if="errors.user.meta.email" class="form-error">{{ errors.user.meta.email }}</span>
 					<template v-else>
-						<span v-show="ghostEmail" class="input-info">Editing the email will resend an invitation</span>
+						<span v-show="ghostEmail" class="input-info">Changing this deletes the invitation</span>
   					<span v-show="! ghostEmail" class="input-info">Invite someone to take this spot!</span>
 					</template>
   			</div>
@@ -105,23 +105,30 @@
 				</div>
 	    </div>
 
-
-
     	<hr>
-	    <div class="row EditUser__buttons">
-		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
-		    	<a class="btn btn-primary btn-block btn-md" @click="save()">
-		    		<spinner v-show="loading_save" color="white"></spinner>
-		    		<span v-show="! loading_save">SAVE</span>
-		    	</a>
-		    </div>
-		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
-		    	<a v-if="!user.new && !user.isGhost && !user.acceptedByAdmin" class="btn btn-delete btn-block btn-md" @click="kick()">KICK</a>
-		    	<a v-if="!user.new && user.isGhost && !user.acceptedByAdmin" class="btn btn-delete btn-block btn-md" @click="kick()">DELETE</a>
+			<div class="save-button-wrapper --center">
+	    	<div class="save-button-group --three">
+	    		<div>
+	    			<a class="btn btn-primary" v-touch:tap="save()">
+	    				<span v-show="! loading_save">SAVE</span>
+	    				<spinner v-show="loading_save" color="white"></spinner>
+	    			</a>
+	    		</div>
+	    		<div v-if="! user.new && ! user.acceptedByAdmin">
+	    			<!-- buttons bring up confirm kick screen (located at top of this file) -->
+	    			<a v-if="! user.isGhost" class="btn btn-delete" v-touch:tap="kick()">KICK</a>
+			    	<a v-if="user.isGhost" class="btn btn-delete" v-touch:tap="kick()">DELETE</a>
+	    		</div>
+	    		<div v-if="user.new">
+	    			<a class="btn btn-success" v-touch:tap="randomize()">
+	    				<span v-show="! loading_randomize">RANDOMIZE</span>
+	    				<spinner v-show="loading_randomize" color="white"></spinner>
+	    			</a>
+	    		</div>
+	    		<div>
+	    			<a class="btn btn-cancel" v-touch:tap="cancel()">CANCEL</a>
+	    		</div>
 	    	</div>
-		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-0">
-		    	<a class="btn btn-cancel btn-block btn-md outline"@click="cancel()">CANCEL</a>
-		    </div>
 	    </div>
     </form>
 	</div>	
@@ -160,6 +167,7 @@ export default  {
 			kickText: '',
 			loading_save: false,
 			loading_delete: false,
+			loading_randomize: false,
 		}
 	},
 
@@ -188,7 +196,7 @@ export default  {
 		 */
 		user(newUser, oldUser)
 		{
-			if (newUser.id !== oldUser.id) {
+			if (newUser.member_id !== oldUser.member_id) {
 				this.initialize();
 			}
 		},
@@ -202,6 +210,9 @@ export default  {
 
 	events:
 	{
+		/**
+		 * Response is back from the server after updating a user
+		 */
 		EditUser_update(response)
 		{
 			let msg = "User info saved";
@@ -215,6 +226,10 @@ export default  {
 			this.loading_save = false;
 		},
 
+
+		/**
+		 * Response is back from the server after saving a new user
+		 */
 		EditUser_new(response)
 		{
 			$('#rosterModal').modal('hide');
@@ -223,6 +238,39 @@ export default  {
 			this.loading_save = false;
 		},
 
+
+		/**
+		 * Response is back from server after getting random ghost data
+		 */
+		EditUser_randomize(response)
+		{
+			// save names from Faker
+			this.user.meta.firstname = response.data.firstname;
+			this.user.meta.lastname = response.data.lastname;
+
+			// generate random jersey number
+			this.user.meta.num = parseInt((Math.random() * (99 + 1)), 10);
+
+			// generate random positions
+			this.user.meta.positions[0] = this.positions[Math.floor(Math.random() * this.positions.length)];
+			this.user.meta.positions[1] = this.positions[Math.floor(Math.random() * this.positions.length)];
+
+			while (this.user.meta.positions[0] === this.user.meta.positions[1]) {
+				this.user.meta.positions[1] = this.positions[Math.floor(Math.random() * this.positions.length)];
+			}
+
+			// update pickers with new positions
+			$('.selectpicker[EditUser="positions[0]"]').selectpicker('val', this.user.meta.positions[0])
+			$('.selectpicker[EditUser="positions[1]"]').selectpicker('val', this.user.meta.positions[1])
+
+
+			this.loading_randomize = false;
+		},
+
+
+		/**
+		 * Response is back from server after kicking user
+		 */
 		EditUser_kick(response)
 		{
 			let msg = 'User kicked, replaced with ghost'
@@ -245,6 +293,9 @@ export default  {
 			this.loading_delete = false;
 		},
 
+		/**
+		 * Request failed when trying to save a user to the server
+		 */
 		EditUser_failed(response)
 		{
 			this.loading_save = false;
@@ -272,7 +323,7 @@ export default  {
 
 			if (this.user.isGhost) {
 				this.ghostEmail = false;
-				if (typeof this.user.meta.email === 'string' && this.user.meta.email.length) {
+				if (this.user.meta.email && this.user.meta.email.length) {
 					this.ghostEmail = true;
 				}
 			}
@@ -408,6 +459,17 @@ export default  {
 
 			let url = this.$parent.prefix + '/member/' + this.user.member_id;
 			this.$root.put(url, 'EditUser_update', data, 'EditUser_failed');
+		},
+
+
+		/**
+		 * Ask the server for randomly generated data to fill in for the ghost
+		 */
+		randomize()
+		{
+			this.loading_randomize = true;
+			let url = this.$parent.prefix + '/member/randomize';
+			this.$root.get(url, 'EditUser_randomize');
 		},
 
 

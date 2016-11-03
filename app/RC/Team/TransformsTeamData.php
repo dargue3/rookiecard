@@ -63,7 +63,7 @@ class TransformsTeamData
                 'hasBeenInvited'        => $memberRepo->hasBeenInvited(),
                 'hasRequestedToJoin'    => $memberRepo->hasRequestedToJoin(),
 		        'meta'					=> $member->meta,
-                'since'                 => $member->created_at->format('M j, Y'),
+                'since'                 => $member->created_at->format('F Y'),
 	        ];
 	    }
 
@@ -74,13 +74,13 @@ class TransformsTeamData
     /**
      * Makes sure that there are no duplicate abbreviated names
      * 
-     * @param  array $formatted 
+     * @param  array $members 
      * @return array        
      */
-    public function checkForDuplicateNames($formatted)
+    public function checkForDuplicateNames($members)
     {
-        foreach($formatted as $member) {
-            foreach ($formatted as $another) {
+        foreach($members as $member) {
+            foreach ($members as $another) {
                 if ($member['id'] == $another['id']) continue;
                 $index = 1;
                 while ($member['abbrName'] == $another['abbrName']) {
@@ -96,7 +96,7 @@ class TransformsTeamData
             }
         }
 
-        return $formatted;
+        return $members;
     }
 
 

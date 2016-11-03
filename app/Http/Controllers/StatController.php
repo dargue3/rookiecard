@@ -64,14 +64,20 @@ class StatController extends Controller
      * 
      * @param  Request $request  
      * @param  Team  $team 
+     * @param int $id
      * @return array            
      */
-    public function update(Request $request, Team $team)
+    public function update(Request $request, Team $team, $id)
     {
+        // check that this team owns this event
+        if (Auth::user()->cannot('edit-events', [$team, $id])) {
+            throw new Exception("Unauthorized Request");
+        }
+
         $data = [
-            'event'     => $this->event->findOrFail($request->event_id),
-            'meta'      => $request->meta,
-            'stats'     => $request->stats,
+            'event' => $this->event->findOrFail($id),
+            'meta'  => $request->meta,
+            'stats' => $request->stats,
         ];
 
         $this->stat->update($data, $team);
