@@ -230,7 +230,7 @@ export default  {
 				this.banner('bad', msg);
 			}
 			else {
-				this.banner('bad', 'There was a problem, refresh the page and try again');
+				this.banner('bad', 'Oops...our bad. Try refreshing the page');
 			}
 		},
 

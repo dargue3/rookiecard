@@ -41,7 +41,7 @@
 				</div>
 
 				<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->
-				<div class="edit-button">
+				<div class="edit-button --stats">
 					<a class="btn btn-primary --chevron --lg --right" v-touch:tap="editingPastEvent = true">
 						Edit Event Details
 						<i class="material-icons btn-chevron --right">chevron_right</i>
@@ -626,7 +626,7 @@ export default  {
 @import '/resources/assets/stylus/variables.styl'
 
 .edit-stats-wrapper
-	padding 1em
+	padding 1.5em
 	h3
 		margin-top 2em
 	.buttons
@@ -678,7 +678,7 @@ export default  {
 			color black
 	
 	
-.edit-button
+.edit-button.--stats
 	flex 1
 	align-self flex-start
 	position relative

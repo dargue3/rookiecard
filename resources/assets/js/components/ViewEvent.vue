@@ -28,8 +28,8 @@
 											</div>
 	        		</stats>
 
-	        		<div v-else class="col-xs-12 ViewEvent">
-								<div class="details">
+	        		<div v-else class="ViewEvent">
+								<div class="details --no-stats">
 									<span>No stats posted yet... bug an admin to post them!</span>
 								</div>
 							</div>		
@@ -39,7 +39,7 @@
 
 						<!-- show edit event page if admin and event is in the future -->
 						<edit-event v-if="canEditEvent || editingPastEvent" :saved-event="event" 
-												:editing-past-event.sync="editingPastEvent">
+												:editing-past-event.sync="editingPastEvent" :new-title.sync="newTitle">
 						</edit-event>
 
 
@@ -55,13 +55,13 @@
 						</div>		
 
 
-						<div v-if="pastEventNoStats && ! newEvent" class="col-xs-12 ViewEvent">
+						<div v-if="pastEventNoStats && ! newEvent" class="ViewEvent">
 
-							<div class="edit-button">
+							<div class="edit-button --view">
 								<a class="btn btn-primary" v-touch:tap="editingPastEvent = true">Edit Event Details</a>
 							</div>
-
 							<div v-if="event.details" class="details">
+								<hr>
 								<span>This event is over and wasn't set up as a game, so there are no stats</span>
 							</div>
 
@@ -169,14 +169,16 @@ export default  {
 		 */
 		modalTitle()
 		{
-			if (this.event.title) {
-				return this.event.title
-			}
-			else if (this.newTitle.length){
-				return this.newTitle
+			if (this.canEditEvent || this.editingPastEvent || this.newEvent) {
+				if (this.newTitle.length) {
+					return this.newTitle
+				}
+				else {
+					return 'Add an Event';
+				}
 			}
 			else {
-				return 'Add an Event';
+				return this.event.title
 			}
 		},
 
@@ -482,11 +484,12 @@ export default  {
 // import color variables
 @import '/resources/assets/stylus/variables.styl'
 
-.edit-button
+.edit-button.--view
 	position relative
 	display flex
 	flex-flow row
 	justify-content center
+	margin-bottom 25px
 	.btn
 		padding-left 14px
 	#edit-chevron
@@ -499,6 +502,8 @@ export default  {
 	display flex
 	flex-flow column
 	align-items center
+	width 100%
+	margin 0 auto
 	.time
 	.type
 		font-size 30px
@@ -515,6 +520,8 @@ export default  {
 	.details
 		font-size 18px
 		text-align center
+		&.--no-stats
+			margin 25px 0
 	
 .outcome
 	display flex

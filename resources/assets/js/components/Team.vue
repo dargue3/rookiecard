@@ -726,6 +726,7 @@ export default  {
 		 */
 		checkUrlForStateChange()
 		{
+			// does the $route have an event_id parameter set?
 			if (this.$route.params.event_id) {
 				this.displayEvent(parseInt(this.$route.params.event_id));
 			}
@@ -733,7 +734,7 @@ export default  {
 
 
 		/**
-		 * According to the URL, should be showing the user an event
+		 * According to the URL, should be showing the user an event modal
 		 */
 		displayEvent(id)
 		{
@@ -743,8 +744,10 @@ export default  {
 			for (var index in this.events) {
 				if (this.events[index].id === id) {
 					showingEvent = true;
-					// show it
-					this.$broadcast('ViewEvent_view', id);
+					// show it after small delay to allow page to keep up
+					setTimeout(function() {
+						this.$broadcast('ViewEvent_view', id);
+					}.bind(this), 500)
 				}
 			}
 			if (! showingEvent) {

@@ -74,20 +74,19 @@ router.map({
 	{
 		name: 'team',
 		component:  Team,
+		subRoutes: {
+			'/event/:event_id': {
+				component: Team,
+			},
+		},
 	},
-
-	'/team/:name/event/:event_id':
-	{
-		component:  Team,
-	},
-
 
 	'/:name':
 	{
 		name: 'user',
 		component:
 		{
-			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name}}!</h1>"
+			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name }}!</h1>"
 		}
 	},
 

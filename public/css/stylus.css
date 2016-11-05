@@ -318,17 +318,26 @@ div.modal {
   -ms-user-select: none;
   user-select: none;
 }
-.pace-inactive {
-  display: none;
+.pace-inactive .pace-progress {
+  -webkit-animation: pace 100ms ease-in;
+  animation: pace 100ms ease-in;
+  height: 0;
+  box-shadow: none;
 }
-.pace .pace-progress {
+.pace-progress {
   background: #38a9f9;
   position: fixed;
   z-index: 2000;
   top: 52px;
   right: 100%;
   width: 100%;
+  transition: width 25ms ease;
   height: 3px;
+  box-shadow: 0 0px 11px 1px #38a9f9;
+}
+.modal-open .pace-progress {
+  -webkit-filter: blur(3px);
+  filter: blur(3px);
 }
 .divider .divider-text {
   text-align: center;
@@ -963,6 +972,24 @@ transform rotate(90deg),
 .loading-spinner span.fourth {
   -webkit-animation-delay: 350ms;
   animation-delay: 350ms;
+}
+@-webkit-keyframes pace {
+  0% {
+    height: 3px;
+  }
+  100% {
+    height: 0px;
+    box-shadow: none;
+  }
+}
+@keyframes pace {
+  0% {
+    height: 3px;
+  }
+  100% {
+    height: 0px;
+    box-shadow: none;
+  }
 }
 @-webkit-keyframes fade-enter {
   0% {

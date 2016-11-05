@@ -4,7 +4,7 @@
 	<div class="col-xs-12">
     <form @submit.prevent="save()">
 
-			<div v-show="editingPastEvent" class="edit-button">
+			<div v-show="editingPastEvent" class="edit-button --edit-event">
 				<a class="btn btn-primary --chevron --med --right" v-touch:tap="editingPastEvent = false">
 					Edit Stats
 					<i class="material-icons btn-chevron --right">chevron_right</i>
@@ -312,6 +312,7 @@ export default  {
 			let untilDate = moment().add(8, 'day').hour(20).minute(0).second(0);
 
 	  	this.title =  '';
+	  	this.newTitle = '';
 	  	this.type = 'home_game';
 			this.fromDate =  fromDate.format('MMM D, YYYY');
 			this.fromTime =  fromDate.format('h:mm a');
@@ -348,6 +349,7 @@ export default  {
 			let toDate = moment(event.end * 1000);
 
 			this.title = event.title;
+			this.newTitle = this.title;
 			this.type = event.type;
 			this.momentUntil = moment();
 			this.momentFrom = fromDate
@@ -634,7 +636,10 @@ export default  {
 
 @import '/resources/assets/stylus/variables.styl'
 
-		
+.edit-button.--edit-event
+	display flex
+	justify-content flex-end
+
 .EditEvent__buttons
 	display flex
 	justify-content center

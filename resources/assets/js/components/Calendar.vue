@@ -227,6 +227,7 @@ export default
     align-items center
   .month-nav
     display flex
+    user-select none
     flex 1
     +mobile()
       justify-content center
