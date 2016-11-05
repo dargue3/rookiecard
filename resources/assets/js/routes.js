@@ -3,11 +3,15 @@ var VueRouter = require('vue-router');
 var VueResource = require('vue-resource');
 var VueAutosize = require('vue-autosize');
 var VueTouch = require('vue-touch');
+var SmoothScroll = require('smoothscroll-polyfill');
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
 Vue.use(VueAutosize);
 Vue.use(VueTouch);
+
+// attach scrolling library
+SmoothScroll.polyfill();
 
 Vue.config.debug = true;
 
@@ -50,7 +54,14 @@ var router = new VueRouter({
 	transitionOnLoad: true,
 });
 
-
+// before each new route, scroll the page to the top 
+// (but delay it so that the scroll is during the loading white screen)
+router.beforeEach(function(transition) {
+	setTimeout(function() {
+		window.scroll(0, 0);
+	}, 400);
+	transition.next();
+});
 
 router.map({
 
@@ -81,6 +92,7 @@ router.map({
 		},
 	},
 
+
 	'/:name':
 	{
 		name: 'user',
@@ -89,9 +101,6 @@ router.map({
 			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name }}!</h1>"
 		}
 	},
-
-
-
 
 
 	'*': {
