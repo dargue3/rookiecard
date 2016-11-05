@@ -14,7 +14,8 @@
 					
 						<!-- show stats if they aren't admin and is past event -->
 						<template v-if="pastEventStats">
-							<stats type="playerTeamSeason" :stat-keys="team.settings.statKeys" :event="true"
+
+							<stats v-if="eventStats.length" type="playerTeamSeason" :stat-keys="team.settings.statKeys" :event="true"
 		        					:sport="team.sport" :raw-stats="eventStats" :players="players" table-bottom-label="TEAM">
 
 		        					<div class="outcome">
@@ -26,6 +27,13 @@
 												</span>
 											</div>
 	        		</stats>
+
+	        		<div v-else class="col-xs-12 ViewEvent">
+								<div class="details">
+									<span>No stats posted yet... bug an admin to post them!</span>
+								</div>
+							</div>		
+
 						</template>
 						
 
@@ -374,6 +382,8 @@ export default  {
 			if (this.event.id === id && id !== 0) {
 				// don't do anything if this is the same event that was clicked previously
       	this.$root.showModal('viewEventModal')
+      	// set the url to /event/${event_id}
+      	this.$root.url(`/team/${this.team.teamname}/event/${id}`, {event: this.event.id});
       	return
 			}
 
@@ -390,8 +400,15 @@ export default  {
 					id: 0,
 				}
 			}
-			
 
+			id = JSON.parse(JSON.stringify(this.event.id));
+			if (this.event.id === 0) {
+				id = 'create'
+			}
+
+			// set the url to /event/${event_id}
+			this.$root.url(`/team/${this.team.teamname}/event/${id}`, {event: id});
+			
 			this.$broadcast('EditEvent_view', this.event);
 
       this.$root.showModal('viewEventModal');
@@ -503,7 +520,7 @@ export default  {
 	display flex
 	align-items center
 	font-size 25px
-	color rc_med_gray
+	color rc_lite_gray
 	margin-bottom 5px
 	width 100%
 	.away

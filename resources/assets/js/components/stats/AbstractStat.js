@@ -24,9 +24,6 @@ export default
 		 */
 		total(val)
 		{
-			if (! this.compile) {
-				return;
-			}
 			if (val) {
 				this.done(this.totalStats);
 			}

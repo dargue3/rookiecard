@@ -236,6 +236,18 @@ export default  {
 
 
 		/**
+		 * Set the URL in the bar but don't change the state at all
+		 * 
+		 * @param {string}  url 	The full URL to set the current URL address to
+		 * @param {object} data 	Any data to store in the current state history
+		 */
+		url(url, data = {})
+		{
+			window.history.replaceState(data, '', url);
+		},
+
+
+		/**
 		 * Show a bootstrap modal with a given id
 		 *
 		 * @param {string} id

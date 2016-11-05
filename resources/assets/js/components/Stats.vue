@@ -1,54 +1,55 @@
 
 <template>
-	<div class="stats-wrapper">
+	<div class="stats-with-slot-container">
 		<slot></slot>
-		<div class="table-responsive">
-			<table v-if="stats.length" class="table table-striped stats-table">
-				<thead>
-		    	<tr>
-		      	<th v-for="key in statKeys" class="stat-columns"
-		      			:class="resolveKeyClasses(key)" v-touch:tap="sortBy(key)"
-		      				data-toggle="tooltip" :title="resolveTooltip(key)">
-		      		{{ resolveKeyName(key) }}
-		      		<span class="caret" :class="resolveCaretClass(key)"></span>	      	
-		      	</th>
-		    	</tr>
-		  	</thead>
-		  	<tbody>
-		    	<tr v-show="index < currPage || ! showPagination" v-for="(index, val) in stats 
-		    						| filterBy search
-		    						| orderBy sortKey sortOrders[sortKey]">
-			      <td v-for="key in statKeys" class="stat-entries" :class="resolveValClasses(key, val)">
-			        {{ resolveStatValue(key, val) }} 
-			      </td>
-		    	</tr>
-		    	<template v-if="tableBottomLabel && ! search">
-		    		<tr>
-		    			<td v-for="key in statKeys" class="stat-entries stat-total">
-		    				{{ resolveStatValue(key, statsOnBottom) }}
-		    			</td>
-		    		</tr>
-		    	</template>
-		  	</tbody>
-			</table>
-			<div v-show="showPagination" class="show-more" v-touch:tap="showMore()">
-				<span>
-					<i class="material-icons --left">keyboard_arrow_down</i>
-					Show More
-					<i class="material-icons --right">keyboard_arrow_down</i>
-				</span>
+		<div class="stats-container">
+			<div class="table-responsive">
+				<table v-if="stats.length" class="table table-striped stats-table">
+					<thead>
+			    	<tr>
+			      	<th v-for="key in statKeys" class="stat-columns"
+			      			:class="resolveKeyClasses(key)" v-touch:tap="sortBy(key)"
+			      				data-toggle="tooltip" :title="resolveTooltip(key)">
+			      		{{ resolveKeyName(key) }}
+			      		<span class="caret" :class="resolveCaretClass(key)"></span>	      	
+			      	</th>
+			    	</tr>
+			  	</thead>
+			  	<tbody>
+			    	<tr v-show="index < currPage || ! showPagination" v-for="(index, val) in stats 
+			    						| filterBy search
+			    						| orderBy sortKey sortOrders[sortKey]">
+				      <td v-for="key in statKeys" class="stat-entries" :class="resolveValClasses(key, val)">
+				        {{ resolveStatValue(key, val) }} 
+				      </td>
+			    	</tr>
+			    	<template v-if="tableBottomLabel && ! search">
+			    		<tr>
+			    			<td v-for="key in statKeys" class="stat-entries stat-total">
+			    				{{ resolveStatValue(key, statsOnBottom) }}
+			    			</td>
+			    		</tr>
+			    	</template>
+			  	</tbody>
+				</table>
+				<div v-show="showPagination" class="show-more" v-touch:tap="showMore()">
+					<span>
+						<i class="material-icons --left">keyboard_arrow_down</i>
+						Show More
+						<i class="material-icons --right">keyboard_arrow_down</i>
+					</span>
+				</div>
 			</div>
+
+
+			<!-- just for calculations, doesn't display anything -->
+			<basketball v-if="sport === 'basketball'" :type="type" :event="event" :player="player"
+	  							:players="players" :raw-stats="filteredRawStats" :compile="compile" :keys.sync="statKeys" :total="total"
+	  							:key-names.sync="keyNames" :tooltips.sync="tooltips" :val-lookup.sync="valLookup" :sort-key.sync="sortKey" 
+	  							:val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup" 
+	  							:stats-on-bottom.sync="statsOnBottom">
+	  	</basketball>	
 		</div>
-
-
-		<!-- just for calculations, doesn't display anything -->
-		<basketball v-if="sport === 'basketball'" :type="type" :event="event" :player="player"
-  							:players="players" :raw-stats="filteredRawStats" :compile="compile" :keys.sync="statKeys" :total="total"
-  							:key-names.sync="keyNames" :tooltips.sync="tooltips" :val-lookup.sync="valLookup" :sort-key.sync="sortKey" 
-  							:val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup" 
-  							:stats-on-bottom.sync="statsOnBottom">
-  	</basketball>	
-
 
 	</div>
 </template>
@@ -353,13 +354,17 @@ export default {
 
 @import '/resources/assets/stylus/variables.styl'
 
-.stats-wrapper
+.stats-with-slot-container
 	display flex
 	flex-flow column
-	
+
+.stats-container
+	display flex
+	justify-content center
+		
 .table-responsive
 	align-self center
-	@media screen and (max-width 767px)
+	+mobile()
 		border 0
 
 table
@@ -436,7 +441,7 @@ td.stat-entries
 	&:hover
 		color link_blue_hover
 		cursor pointer
-	@media screen and (max-width 767px)
+	+mobile()
 		margin-top 15px
 	.material-icons
 		position absolute

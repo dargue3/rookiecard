@@ -283,8 +283,7 @@ export default  {
 				}
 			}
 
-			this.$set('editUser', user);
-			this.$root.showModal('rosterModal');
+			this.edit(user);
 		},
 
 		/**

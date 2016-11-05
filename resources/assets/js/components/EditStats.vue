@@ -25,7 +25,7 @@
 				<!-- notes to user -->
 				<div class="stat-notes">
 					<div class="blue-container">
-						<span><strong>Notes about stat entries:</strong></span>
+						<span><strong>Tips:</strong></span>
 						<ul>
 							<li>
 								Any fields left empty are treated as zeros.
@@ -93,7 +93,7 @@
 				</div>
 
 				<h3>Opponent Details</h3>
-				<div class="table-responsive stats-container">
+				<div class="table-responsive">
 					<table class="table stats-table">
 						<thead>
 				    	<tr>
@@ -120,7 +120,7 @@
 					<div v-if="correctErrors" class="errors">
 						<span>Correct errors highlighted in red before saving</span>
 					</div>
-					<div class="save-button-group --three">
+					<div class="save-button-group"  :class="someSavedStats ? '--three' : '--two'">
 						<div>
 							<a class="btn btn-primary" v-touch:tap="save()">
 								<span v-show="! loading_save">SAVE</span>

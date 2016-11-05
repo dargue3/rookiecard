@@ -1,10 +1,10 @@
 <template>
 	<div>
-		<div v-show="requestFinished">
+		<div v-show="requestFinished" transition="fade-slow">
 		<!-- container for template -->
 
 			<!-- no results for team, show message -->
-			<div id="noTeam" v-cloak v-show="notFound" class="f-el-fill text-center">
+			<div v-cloak v-if="notFound" class="team-not-found text-center">
 				<h3>This team doesn't exist, you could create it <a v-link="{name: 'team', params: {name: 'create'}}">here</a></h3>
 				<br>
 				<h4>If you think this is an error, try refreshing the page.</h4>
@@ -31,6 +31,7 @@
 							<div class="Team__info">
 								<div class="Team__text">
 									<h1 class="Team__name">{{ team.name }}</h1>
+									<span class="team-record">{{ team.sport | capitalize }}, 24-9</span>
 									<div class="Team__slogan">
 										<i>{{ team.slogan }}</i>
 									</div>
@@ -43,42 +44,44 @@
 									</div>	
 								</div>
 
-								<div class="Team__buttons">
-									<div class="btn-counter --members">
-										<template v-if="! isMember">
-											<span v-show="hasBeenInvited" class="btn-text --icon --green" v-touch:tap="respondingToInvitation()">
-												<i class="material-icons">drafts</i><span>RESPOND TO INVITE</span>
+								<div class="Team__right_half">
+									<div class="Team__buttons">
+										<div class="btn-counter --members">
+											<template v-if="! isMember">
+												<span v-show="hasBeenInvited" class="btn-text --icon --green" v-touch:tap="respondingToInvitation()">
+													<i class="material-icons">drafts</i><span>RESPOND TO INVITE</span>
+												</span>
+												<span v-show="hasRequestedToJoin" class="btn-text --icon --red" v-touch:tap="join('cancel')">
+													<i class="material-icons">clear</i><span>CANCEL</span>
+												</span>
+												<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text --icon --blue" v-touch:tap="join('request')">
+													<i class="material-icons">person_add</i><span>ASK TO JOIN</span>
+												</span>
+											</template>
+											<span v-else class="btn-text --icon --not-a-button">
+												<i class="material-icons">grade</i><span>MEMBERS</span>
 											</span>
-											<span v-show="hasRequestedToJoin" class="btn-text --icon --red" v-touch:tap="join('cancel')">
-												<i class="material-icons">clear</i><span>CANCEL</span>
+											<span class="btn-count">
+												<span>{{ players.length + coaches.length }}</span>
 											</span>
-											<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text --icon --blue" v-touch:tap="join('request')">
-												<i class="material-icons">person_add</i><span>ASK TO JOIN</span>
-											</span>
-										</template>
-										<span v-else class="btn-text --icon --not-a-button">
-											<i class="material-icons">grade</i><span>MEMBERS</span>
-										</span>
-										<span class="btn-count">
-											<span>{{ players.length + coaches.length }}</span>
-										</span>
-									</div>
+										</div>
 
-									<div class="btn-counter --fans">
-										<template v-if="! isMember">
-											<span v-show="! isFan" class="btn-text --icon --blue" @click="toggleFan">
-												<i class="material-icons">favorite</i><span>FAN</span>
+										<div class="btn-counter --fans">
+											<template v-if="! isMember">
+												<span v-show="! isFan" class="btn-text --icon --blue" @click="toggleFan">
+													<i class="material-icons">favorite</i><span>FAN</span>
+												</span>
+												<span v-show="isFan" class="btn-text --icon --blue" @click="toggleFan">
+													<i class="material-icons">favorite_border</i><span>UNFAN</span>
+												</span>
+											</template>
+											<span v-else class="btn-text --icon --not-a-button">
+												<i class="material-icons">favorite</i><span>FANS</span>
 											</span>
-											<span v-show="isFan" class="btn-text --icon --blue" @click="toggleFan">
-												<i class="material-icons">favorite_border</i><span>UNFAN</span>
+											<span class="btn-count" v-touch:tap="$root.showModal('fansModal')">
+												<span>{{ fans.length }}</span>
 											</span>
-										</template>
-										<span v-else class="btn-text --icon --not-a-button">
-											<i class="material-icons">favorite</i><span>FANS</span>
-										</span>
-										<span class="btn-count" v-touch:tap="$root.showModal('fansModal')">
-											<span>{{ fans.length }}</span>
-										</span>
+										</div>
 									</div>
 								</div> <!-- end  Team__buttons -->
 								
@@ -377,15 +380,12 @@ export default  {
 				meta: {},
 			},
 			newEventTitle: '',
-			showingEvent: false,
 		}
 	},
 
 	created()
 	{
-		var url = this.makeUrl('');
-		this.$root.get(url, 'Team_requestSuccess', [], 'Team_requestFail');
-
+		this.$root.get(this.prefix, 'Team_requestSuccess', [], 'Team_requestFail');
 
 		this.$root.unblur();
 	},
@@ -506,10 +506,10 @@ export default  {
 		 */
 		App_modal_minimized()
 		{
-			if (this.showingEvent) {
+			if (window.history.state) {
 				// was showing an event but now it got minimized
 				// change the URL to just being /team/teamname
-				
+				this.$root.url(`/team/${this.$route.params.name}`)
 			}
 		},
 
@@ -608,14 +608,11 @@ export default  {
 	},
 	
 
-	methods: {
-
-		makeUrl(extension)
-		{
-			return this.prefix + extension;
-		},
-
-		// method for assigning data after ajax call finishes
+	methods:
+	{
+		/**
+		 * Data has arrived from server, set all of team data
+		 */
 		compile(data)
 		{
 			this.auth = this.$root.user;
@@ -725,7 +722,7 @@ export default  {
 
 
 		/**
-		 * Depending on what the URL is, may have to show a previous event
+		 * Depending on what the URL is, user may want to see data in particular
 		 */
 		checkUrlForStateChange()
 		{
@@ -735,17 +732,24 @@ export default  {
 		},
 
 
+		/**
+		 * According to the URL, should be showing the user an event
+		 */
 		displayEvent(id)
 		{
-			this.showingEvent = false;
+			let showingEvent = false;
+
+			// see if event_id exists in any of team's events
 			for (var index in this.events) {
 				if (this.events[index].id === id) {
-					this.showingEvent = true;
+					showingEvent = true;
+					// show it
 					this.$broadcast('ViewEvent_view', id);
 				}
 			}
-			if (! this.showingEvent) {
-				this.$router.replace('/team/' + this.$route.params.name);
+			if (! showingEvent) {
+				// that event doesn't belong to them, get rid of that section of URL
+				this.$root.url(`/team/${this.$route.params.name}`);
 			}
 		},
 
@@ -781,7 +785,7 @@ export default  {
 	max-width 270px
 	padding-left 20px
 	transform translate(0, 125px)
-	@media screen and (max-width 1000px)
+	+tablet()
 		margin 10px
 		transform translate(0, 0px)
 		align-self center
@@ -797,7 +801,7 @@ export default  {
 	.filler
 		flex 1
 		min-width 290px
-		@media screen and (max-width 1000px)
+		+tablet()
 			flex 0
 			min-width 0px
 	
@@ -807,7 +811,7 @@ export default  {
 	justify-content flex-start
 	flex 3
 	padding 0
-	@media screen and (max-width 1000px)
+	+tablet()
 		justify-content center
 		flex-flow column
 		flex 1
@@ -817,27 +821,28 @@ export default  {
 .Team__info
 	display flex
 	flex-flow row
-	@media screen and (max-width 1000px)
+	+tablet()
 		justify-content center
 		flex-flow column
 	
 .Team__text
-	flex 1
 	display flex
+	flex 1
 	flex-flow column
 	color white
-	@media screen and (max-width 1000px)
+	+tablet()
 		justify-content center
 		text-align center
 	
 .Team__name		
 	flex-basis 1
 	font-size 42px
+.team-record
+	font-size 25px
 	
 .Team__location
 	padding-left 22px
-	flex-basis 1
-	margin-top 15px
+	margin-top 9px
 	font-size 16px
 	span
 		position relative
@@ -849,22 +854,34 @@ export default  {
 		
 .Team__slogan
 	flex 1
-	margin-top 15px
+	margin-top 9px
 	font-size 16px
 
-.Team__buttons
+.Team__right_half
 	flex 1
 	display flex
-	flex-flow row
-	align-items flex-end
+	flex-flow column
+	justify-content flex-end
 	margin-top 35px
 	.--members
 		margin-right 5px
 	.--fans
 		margin-left 5px
-	@media screen and (max-width 1000px)
+	+tablet()
 		justify-content center
-			
+		margin-top 10px	
+		
+.Team__buttons
+	display flex
+	flex-flow row
+	margin-bottom 6px
+	+tablet()
+		justify-content center
+		margin-top 20px
+	
+.Team__record
+	font-size 50px
+	color rc_yellow
 			
 .Team__tabs
 	display flex
@@ -872,7 +889,7 @@ export default  {
 	padding 0
 	margin-top 35px
 	font-size 17px
-	@media screen and (max-width 1000px)
+	+tablet()
 		justify-content center
 	.tab
 		flex-basis 110px
@@ -947,9 +964,8 @@ export default  {
 	margin-bottom 15px
 		
 
-#noTeam
+.team-not-found
 	margin-top 80px
-
 
 rc-stats
 	padding 2em	

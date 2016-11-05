@@ -200,10 +200,11 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 
 
     /**
-     * Seed the team with events and stats for each player
+     * Seed a given team with events and stats for each player
      *    
      * @param int $team_id
-     * @param int $count    The number of events to create 
+     * @param int $count        The number of events to create 
+     * @param boolean $erase    Whether or not to start completely fresh 
      * @return void
      */
     public function seed($team_id, $count = 10, $erase = false)
