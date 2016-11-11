@@ -14,7 +14,7 @@ if(gutils.env._.indexOf('watch') > -1) {
 
 elixir(function(mix) {
 
-	mix.browserify('routes.js')
+	mix.browserify('app.js')
       .stylus('stylus.styl')
       .stylus('variables.styl')
       .browserSync({

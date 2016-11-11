@@ -32,9 +32,6 @@ class EventController extends Controller
 
     public function __construct(EventRepository $event, TeamRepository $team)
     {
-        $this->middleware('auth');
-        $this->middleware('admin');
-
         $this->event = $event;
         $this->team = $team;
     }
@@ -50,7 +47,6 @@ class EventController extends Controller
     public function store(EventRequest $request, Team $team)
     {
         $data = $request->all();
-        $data['tz'] = $request->session()->get('timezone');
 
         $this->event->store($data, $team->id);
 
@@ -74,7 +70,6 @@ class EventController extends Controller
 
         // fetch the request data to send to the repo
         $data = $request->all();
-        $data['tz'] = $request->session()->get('timezone');
 
         $this->event->update($data, $team->id, $id);
 

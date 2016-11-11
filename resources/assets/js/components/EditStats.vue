@@ -31,21 +31,13 @@
 								Any fields left empty are treated as zeros.
 							</li>
 							<li v-show="usesMinutes">
-								If MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.
+								If MIN is zero, that player&#8217;s stats are treated as a DNP (did not play) and don&#8217;t count as zeros.
 							</li>
 							<li v-show="! usesMinutes">
-								If DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.
+								If DNP (did not play) is checked, that player&#8217;s stats are ignored and don&#8217;t count as zeros.
 							</li>
 						</ul>
 					</div>
-				</div>
-
-				<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->
-				<div class="edit-button --stats">
-					<a class="btn btn-primary --chevron --lg --right" v-touch:tap="editingPastEvent = true">
-						Edit Event Details
-						<i class="material-icons btn-chevron --right">chevron_right</i>
-					</a>
 				</div>
 
 			</div>
@@ -627,6 +619,7 @@ export default  {
 
 .edit-stats-wrapper
 	padding 1.5em
+	width 100%
 	h3
 		margin-top 2em
 	.buttons

@@ -1334,7 +1334,6 @@
         "X-Requested-With": "XMLHttpRequest"
       };
       if (this.options.headers) {
-        console.log(this.options.headers);
         extend(headers, this.options.headers);
       }
       for (headerName in headers) {

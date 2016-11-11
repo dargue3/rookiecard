@@ -68,283 +68,24 @@ module.exports = function(arraybuffer, start, end) {
 }).apply(this, arguments);
 
 },{}],4:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/autosize/dist/autosize.js", module);
-(function(){
-/*!
-	Autosize 3.0.15
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-(function (global, factory) {
-	if (typeof define === 'function' && define.amd) {
-		define(['exports', 'module'], factory);
-	} else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-		factory(exports, module);
-	} else {
-		var mod = {
-			exports: {}
-		};
-		factory(mod.exports, mod);
-		global.autosize = mod.exports;
-	}
-})(this, function (exports, module) {
-	'use strict';
-
-	var set = typeof Set === 'function' ? new Set() : (function () {
-		var list = [];
-
-		return {
-			has: function has(key) {
-				return Boolean(list.indexOf(key) > -1);
-			},
-			add: function add(key) {
-				list.push(key);
-			},
-			'delete': function _delete(key) {
-				list.splice(list.indexOf(key), 1);
-			} };
-	})();
-
-	var createEvent = function createEvent(name) {
-		return new Event(name);
-	};
-	try {
-		new Event('test');
-	} catch (e) {
-		// IE does not support `new Event()`
-		createEvent = function (name) {
-			var evt = document.createEvent('Event');
-			evt.initEvent(name, true, false);
-			return evt;
-		};
-	}
-
-	function assign(ta) {
-		var _ref = arguments[1] === undefined ? {} : arguments[1];
-
-		var _ref$setOverflowX = _ref.setOverflowX;
-		var setOverflowX = _ref$setOverflowX === undefined ? true : _ref$setOverflowX;
-		var _ref$setOverflowY = _ref.setOverflowY;
-		var setOverflowY = _ref$setOverflowY === undefined ? true : _ref$setOverflowY;
-
-		if (!ta || !ta.nodeName || ta.nodeName !== 'TEXTAREA' || set.has(ta)) return;
-
-		var heightOffset = null;
-		var overflowY = null;
-		var clientWidth = ta.clientWidth;
-
-		function init() {
-			var style = window.getComputedStyle(ta, null);
-
-			overflowY = style.overflowY;
-
-			if (style.resize === 'vertical') {
-				ta.style.resize = 'none';
-			} else if (style.resize === 'both') {
-				ta.style.resize = 'horizontal';
-			}
-
-			if (style.boxSizing === 'content-box') {
-				heightOffset = -(parseFloat(style.paddingTop) + parseFloat(style.paddingBottom));
-			} else {
-				heightOffset = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
-			}
-			// Fix when a textarea is not on document body and heightOffset is Not a Number
-			if (isNaN(heightOffset)) {
-				heightOffset = 0;
-			}
-
-			update();
-		}
-
-		function changeOverflow(value) {
-			{
-				// Chrome/Safari-specific fix:
-				// When the textarea y-overflow is hidden, Chrome/Safari do not reflow the text to account for the space
-				// made available by removing the scrollbar. The following forces the necessary text reflow.
-				var width = ta.style.width;
-				ta.style.width = '0px';
-				// Force reflow:
-				/* jshint ignore:start */
-				ta.offsetWidth;
-				/* jshint ignore:end */
-				ta.style.width = width;
-			}
-
-			overflowY = value;
-
-			if (setOverflowY) {
-				ta.style.overflowY = value;
-			}
-
-			resize();
-		}
-
-		function resize() {
-			var htmlTop = window.pageYOffset;
-			var bodyTop = document.body.scrollTop;
-			var originalHeight = ta.style.height;
-
-			ta.style.height = 'auto';
-
-			var endHeight = ta.scrollHeight + heightOffset;
-
-			if (ta.scrollHeight === 0) {
-				// If the scrollHeight is 0, then the element probably has display:none or is detached from the DOM.
-				ta.style.height = originalHeight;
-				return;
-			}
-
-			ta.style.height = endHeight + 'px';
-
-			// used to check if an update is actually necessary on window.resize
-			clientWidth = ta.clientWidth;
-
-			// prevents scroll-position jumping
-			document.documentElement.scrollTop = htmlTop;
-			document.body.scrollTop = bodyTop;
-		}
-
-		function update() {
-			var startHeight = ta.style.height;
-
-			resize();
-
-			var style = window.getComputedStyle(ta, null);
-
-			if (style.height !== ta.style.height) {
-				if (overflowY !== 'visible') {
-					changeOverflow('visible');
-				}
-			} else {
-				if (overflowY !== 'hidden') {
-					changeOverflow('hidden');
-				}
-			}
-
-			if (startHeight !== ta.style.height) {
-				var evt = createEvent('autosize:resized');
-				ta.dispatchEvent(evt);
-			}
-		}
-
-		var pageResize = function pageResize() {
-			if (ta.clientWidth !== clientWidth) {
-				update();
-			}
-		};
-
-		var destroy = (function (style) {
-			window.removeEventListener('resize', pageResize, false);
-			ta.removeEventListener('input', update, false);
-			ta.removeEventListener('keyup', update, false);
-			ta.removeEventListener('autosize:destroy', destroy, false);
-			ta.removeEventListener('autosize:update', update, false);
-			set['delete'](ta);
-
-			Object.keys(style).forEach(function (key) {
-				ta.style[key] = style[key];
-			});
-		}).bind(ta, {
-			height: ta.style.height,
-			resize: ta.style.resize,
-			overflowY: ta.style.overflowY,
-			overflowX: ta.style.overflowX,
-			wordWrap: ta.style.wordWrap });
-
-		ta.addEventListener('autosize:destroy', destroy, false);
-
-		// IE9 does not fire onpropertychange or oninput for deletions,
-		// so binding to onkeyup to catch most of those events.
-		// There is no way that I know of to detect something like 'cut' in IE9.
-		if ('onpropertychange' in ta && 'oninput' in ta) {
-			ta.addEventListener('keyup', update, false);
-		}
-
-		window.addEventListener('resize', pageResize, false);
-		ta.addEventListener('input', update, false);
-		ta.addEventListener('autosize:update', update, false);
-		set.add(ta);
-
-		if (setOverflowX) {
-			ta.style.overflowX = 'hidden';
-			ta.style.wordWrap = 'break-word';
-		}
-
-		init();
-	}
-
-	function destroy(ta) {
-		if (!(ta && ta.nodeName && ta.nodeName === 'TEXTAREA')) return;
-		var evt = createEvent('autosize:destroy');
-		ta.dispatchEvent(evt);
-	}
-
-	function update(ta) {
-		if (!(ta && ta.nodeName && ta.nodeName === 'TEXTAREA')) return;
-		var evt = createEvent('autosize:update');
-		ta.dispatchEvent(evt);
-	}
-
-	var autosize = null;
-
-	// Do nothing in Node.js environment and IE8 (or lower)
-	if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') {
-		autosize = function (el) {
-			return el;
-		};
-		autosize.destroy = function (el) {
-			return el;
-		};
-		autosize.update = function (el) {
-			return el;
-		};
-	} else {
-		autosize = function (el, options) {
-			if (el) {
-				Array.prototype.forEach.call(el.length ? el : [el], function (x) {
-					return assign(x, options);
-				});
-			}
-			return el;
-		};
-		autosize.destroy = function (el) {
-			if (el) {
-				Array.prototype.forEach.call(el.length ? el : [el], destroy);
-			}
-			return el;
-		};
-		autosize.update = function (el) {
-			if (el) {
-				Array.prototype.forEach.call(el.length ? el : [el], update);
-			}
-			return el;
-		};
-	}
-
-	module.exports = autosize;
-});
-}).apply(this, arguments);
-
-},{}],5:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/core-js/json/stringify.js", module);
 (function(){
 module.exports = { "default": require("core-js/library/fn/json/stringify"), __esModule: true };
 }).apply(this, arguments);
 
-},{"core-js/library/fn/json/stringify":9}],6:[function(require,module,exports){
+},{"core-js/library/fn/json/stringify":8}],5:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/core-js/symbol.js", module);
 (function(){
 module.exports = { "default": require("core-js/library/fn/symbol"), __esModule: true };
 }).apply(this, arguments);
 
-},{"core-js/library/fn/symbol":10}],7:[function(require,module,exports){
+},{"core-js/library/fn/symbol":9}],6:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/core-js/symbol/iterator.js", module);
 (function(){
 module.exports = { "default": require("core-js/library/fn/symbol/iterator"), __esModule: true };
 }).apply(this, arguments);
 
-},{"core-js/library/fn/symbol/iterator":11}],8:[function(require,module,exports){
+},{"core-js/library/fn/symbol/iterator":10}],7:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/helpers/typeof.js", module);
 (function(){
 "use strict";
@@ -370,7 +111,7 @@ exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.d
 };
 }).apply(this, arguments);
 
-},{"../core-js/symbol":6,"../core-js/symbol/iterator":7}],9:[function(require,module,exports){
+},{"../core-js/symbol":5,"../core-js/symbol/iterator":6}],8:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js", module);
 (function(){
 var core  = require('../../modules/_core')
@@ -380,7 +121,7 @@ module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
 };
 }).apply(this, arguments);
 
-},{"../../modules/_core":17}],10:[function(require,module,exports){
+},{"../../modules/_core":16}],9:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js", module);
 (function(){
 require('../../modules/es6.symbol');
@@ -390,7 +131,7 @@ require('../../modules/es7.symbol.observable');
 module.exports = require('../../modules/_core').Symbol;
 }).apply(this, arguments);
 
-},{"../../modules/_core":17,"../../modules/es6.object.to-string":69,"../../modules/es6.symbol":71,"../../modules/es7.symbol.async-iterator":72,"../../modules/es7.symbol.observable":73}],11:[function(require,module,exports){
+},{"../../modules/_core":16,"../../modules/es6.object.to-string":68,"../../modules/es6.symbol":70,"../../modules/es7.symbol.async-iterator":71,"../../modules/es7.symbol.observable":72}],10:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js", module);
 (function(){
 require('../../modules/es6.string.iterator');
@@ -398,7 +139,7 @@ require('../../modules/web.dom.iterable');
 module.exports = require('../../modules/_wks-ext').f('iterator');
 }).apply(this, arguments);
 
-},{"../../modules/_wks-ext":66,"../../modules/es6.string.iterator":70,"../../modules/web.dom.iterable":74}],12:[function(require,module,exports){
+},{"../../modules/_wks-ext":65,"../../modules/es6.string.iterator":69,"../../modules/web.dom.iterable":73}],11:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js", module);
 (function(){
 module.exports = function(it){
@@ -407,13 +148,13 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_add-to-unscopables.js", module);
 (function(){
 module.exports = function(){ /* empty */ };
 }).apply(this, arguments);
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js", module);
 (function(){
 var isObject = require('./_is-object');
@@ -423,7 +164,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{"./_is-object":33}],15:[function(require,module,exports){
+},{"./_is-object":32}],14:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js", module);
 (function(){
 // false -> Array#indexOf
@@ -449,7 +190,7 @@ module.exports = function(IS_INCLUDES){
 };
 }).apply(this, arguments);
 
-},{"./_to-index":58,"./_to-iobject":60,"./_to-length":61}],16:[function(require,module,exports){
+},{"./_to-index":57,"./_to-iobject":59,"./_to-length":60}],15:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_cof.js", module);
 (function(){
 var toString = {}.toString;
@@ -459,14 +200,14 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js", module);
 (function(){
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 }).apply(this, arguments);
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js", module);
 (function(){
 // optional / simple context binding
@@ -491,7 +232,7 @@ module.exports = function(fn, that, length){
 };
 }).apply(this, arguments);
 
-},{"./_a-function":12}],19:[function(require,module,exports){
+},{"./_a-function":11}],18:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_defined.js", module);
 (function(){
 // 7.2.1 RequireObjectCoercible(argument)
@@ -501,7 +242,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js", module);
 (function(){
 // Thank's IE8 for his funny defineProperty
@@ -510,7 +251,7 @@ module.exports = !require('./_fails')(function(){
 });
 }).apply(this, arguments);
 
-},{"./_fails":25}],21:[function(require,module,exports){
+},{"./_fails":24}],20:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js", module);
 (function(){
 var isObject = require('./_is-object')
@@ -522,7 +263,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{"./_global":26,"./_is-object":33}],22:[function(require,module,exports){
+},{"./_global":25,"./_is-object":32}],21:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-bug-keys.js", module);
 (function(){
 // IE 8- don't enum bug keys
@@ -531,7 +272,7 @@ module.exports = (
 ).split(',');
 }).apply(this, arguments);
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js", module);
 (function(){
 // all enumerable object keys, includes symbols
@@ -551,7 +292,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{"./_object-gops":47,"./_object-keys":50,"./_object-pie":51}],24:[function(require,module,exports){
+},{"./_object-gops":46,"./_object-keys":49,"./_object-pie":50}],23:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js", module);
 (function(){
 var global    = require('./_global')
@@ -617,7 +358,7 @@ $export.R = 128; // real proto method for `library`
 module.exports = $export;
 }).apply(this, arguments);
 
-},{"./_core":17,"./_ctx":18,"./_global":26,"./_hide":28}],25:[function(require,module,exports){
+},{"./_core":16,"./_ctx":17,"./_global":25,"./_hide":27}],24:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js", module);
 (function(){
 module.exports = function(exec){
@@ -629,7 +370,7 @@ module.exports = function(exec){
 };
 }).apply(this, arguments);
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js", module);
 (function(){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -638,7 +379,7 @@ var global = module.exports = typeof window != 'undefined' && window.Math == Mat
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 }).apply(this, arguments);
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_has.js", module);
 (function(){
 var hasOwnProperty = {}.hasOwnProperty;
@@ -647,7 +388,7 @@ module.exports = function(it, key){
 };
 }).apply(this, arguments);
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js", module);
 (function(){
 var dP         = require('./_object-dp')
@@ -660,13 +401,13 @@ module.exports = require('./_descriptors') ? function(object, key, value){
 };
 }).apply(this, arguments);
 
-},{"./_descriptors":20,"./_object-dp":42,"./_property-desc":52}],29:[function(require,module,exports){
+},{"./_descriptors":19,"./_object-dp":41,"./_property-desc":51}],28:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_html.js", module);
 (function(){
 module.exports = require('./_global').document && document.documentElement;
 }).apply(this, arguments);
 
-},{"./_global":26}],30:[function(require,module,exports){
+},{"./_global":25}],29:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js", module);
 (function(){
 module.exports = !require('./_descriptors') && !require('./_fails')(function(){
@@ -674,7 +415,7 @@ module.exports = !require('./_descriptors') && !require('./_fails')(function(){
 });
 }).apply(this, arguments);
 
-},{"./_descriptors":20,"./_dom-create":21,"./_fails":25}],31:[function(require,module,exports){
+},{"./_descriptors":19,"./_dom-create":20,"./_fails":24}],30:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_iobject.js", module);
 (function(){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
@@ -684,7 +425,7 @@ module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
 };
 }).apply(this, arguments);
 
-},{"./_cof":16}],32:[function(require,module,exports){
+},{"./_cof":15}],31:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_is-array.js", module);
 (function(){
 // 7.2.2 IsArray(argument)
@@ -694,7 +435,7 @@ module.exports = Array.isArray || function isArray(arg){
 };
 }).apply(this, arguments);
 
-},{"./_cof":16}],33:[function(require,module,exports){
+},{"./_cof":15}],32:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js", module);
 (function(){
 module.exports = function(it){
@@ -702,7 +443,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js", module);
 (function(){
 'use strict';
@@ -720,7 +461,7 @@ module.exports = function(Constructor, NAME, next){
 };
 }).apply(this, arguments);
 
-},{"./_hide":28,"./_object-create":41,"./_property-desc":52,"./_set-to-string-tag":54,"./_wks":67}],35:[function(require,module,exports){
+},{"./_hide":27,"./_object-create":40,"./_property-desc":51,"./_set-to-string-tag":53,"./_wks":66}],34:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js", module);
 (function(){
 'use strict';
@@ -795,7 +536,7 @@ module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED
 };
 }).apply(this, arguments);
 
-},{"./_export":24,"./_has":27,"./_hide":28,"./_iter-create":34,"./_iterators":37,"./_library":39,"./_object-gpo":48,"./_redefine":53,"./_set-to-string-tag":54,"./_wks":67}],36:[function(require,module,exports){
+},{"./_export":23,"./_has":26,"./_hide":27,"./_iter-create":33,"./_iterators":36,"./_library":38,"./_object-gpo":47,"./_redefine":52,"./_set-to-string-tag":53,"./_wks":66}],35:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-step.js", module);
 (function(){
 module.exports = function(done, value){
@@ -803,13 +544,13 @@ module.exports = function(done, value){
 };
 }).apply(this, arguments);
 
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_iterators.js", module);
 (function(){
 module.exports = {};
 }).apply(this, arguments);
 
-},{}],38:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js", module);
 (function(){
 var getKeys   = require('./_object-keys')
@@ -824,13 +565,13 @@ module.exports = function(object, el){
 };
 }).apply(this, arguments);
 
-},{"./_object-keys":50,"./_to-iobject":60}],39:[function(require,module,exports){
+},{"./_object-keys":49,"./_to-iobject":59}],38:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_library.js", module);
 (function(){
 module.exports = true;
 }).apply(this, arguments);
 
-},{}],40:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js", module);
 (function(){
 var META     = require('./_uid')('meta')
@@ -888,7 +629,7 @@ var meta = module.exports = {
 };
 }).apply(this, arguments);
 
-},{"./_fails":25,"./_has":27,"./_is-object":33,"./_object-dp":42,"./_uid":64}],41:[function(require,module,exports){
+},{"./_fails":24,"./_has":26,"./_is-object":32,"./_object-dp":41,"./_uid":63}],40:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js", module);
 (function(){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
@@ -933,7 +674,7 @@ module.exports = Object.create || function create(O, Properties){
 };
 }).apply(this, arguments);
 
-},{"./_an-object":14,"./_dom-create":21,"./_enum-bug-keys":22,"./_html":29,"./_object-dps":43,"./_shared-key":55}],42:[function(require,module,exports){
+},{"./_an-object":13,"./_dom-create":20,"./_enum-bug-keys":21,"./_html":28,"./_object-dps":42,"./_shared-key":54}],41:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js", module);
 (function(){
 var anObject       = require('./_an-object')
@@ -954,7 +695,7 @@ exports.f = require('./_descriptors') ? Object.defineProperty : function defineP
 };
 }).apply(this, arguments);
 
-},{"./_an-object":14,"./_descriptors":20,"./_ie8-dom-define":30,"./_to-primitive":63}],43:[function(require,module,exports){
+},{"./_an-object":13,"./_descriptors":19,"./_ie8-dom-define":29,"./_to-primitive":62}],42:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js", module);
 (function(){
 var dP       = require('./_object-dp')
@@ -972,7 +713,7 @@ module.exports = require('./_descriptors') ? Object.defineProperties : function 
 };
 }).apply(this, arguments);
 
-},{"./_an-object":14,"./_descriptors":20,"./_object-dp":42,"./_object-keys":50}],44:[function(require,module,exports){
+},{"./_an-object":13,"./_descriptors":19,"./_object-dp":41,"./_object-keys":49}],43:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js", module);
 (function(){
 var pIE            = require('./_object-pie')
@@ -993,7 +734,7 @@ exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor
 };
 }).apply(this, arguments);
 
-},{"./_descriptors":20,"./_has":27,"./_ie8-dom-define":30,"./_object-pie":51,"./_property-desc":52,"./_to-iobject":60,"./_to-primitive":63}],45:[function(require,module,exports){
+},{"./_descriptors":19,"./_has":26,"./_ie8-dom-define":29,"./_object-pie":50,"./_property-desc":51,"./_to-iobject":59,"./_to-primitive":62}],44:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js", module);
 (function(){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
@@ -1018,7 +759,7 @@ module.exports.f = function getOwnPropertyNames(it){
 
 }).apply(this, arguments);
 
-},{"./_object-gopn":46,"./_to-iobject":60}],46:[function(require,module,exports){
+},{"./_object-gopn":45,"./_to-iobject":59}],45:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js", module);
 (function(){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
@@ -1030,13 +771,13 @@ exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
 };
 }).apply(this, arguments);
 
-},{"./_enum-bug-keys":22,"./_object-keys-internal":49}],47:[function(require,module,exports){
+},{"./_enum-bug-keys":21,"./_object-keys-internal":48}],46:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gops.js", module);
 (function(){
 exports.f = Object.getOwnPropertySymbols;
 }).apply(this, arguments);
 
-},{}],48:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js", module);
 (function(){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
@@ -1054,7 +795,7 @@ module.exports = Object.getPrototypeOf || function(O){
 };
 }).apply(this, arguments);
 
-},{"./_has":27,"./_shared-key":55,"./_to-object":62}],49:[function(require,module,exports){
+},{"./_has":26,"./_shared-key":54,"./_to-object":61}],48:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js", module);
 (function(){
 var has          = require('./_has')
@@ -1076,7 +817,7 @@ module.exports = function(object, names){
 };
 }).apply(this, arguments);
 
-},{"./_array-includes":15,"./_has":27,"./_shared-key":55,"./_to-iobject":60}],50:[function(require,module,exports){
+},{"./_array-includes":14,"./_has":26,"./_shared-key":54,"./_to-iobject":59}],49:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js", module);
 (function(){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
@@ -1088,13 +829,13 @@ module.exports = Object.keys || function keys(O){
 };
 }).apply(this, arguments);
 
-},{"./_enum-bug-keys":22,"./_object-keys-internal":49}],51:[function(require,module,exports){
+},{"./_enum-bug-keys":21,"./_object-keys-internal":48}],50:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_object-pie.js", module);
 (function(){
 exports.f = {}.propertyIsEnumerable;
 }).apply(this, arguments);
 
-},{}],52:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js", module);
 (function(){
 module.exports = function(bitmap, value){
@@ -1107,13 +848,13 @@ module.exports = function(bitmap, value){
 };
 }).apply(this, arguments);
 
-},{}],53:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_redefine.js", module);
 (function(){
 module.exports = require('./_hide');
 }).apply(this, arguments);
 
-},{"./_hide":28}],54:[function(require,module,exports){
+},{"./_hide":27}],53:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js", module);
 (function(){
 var def = require('./_object-dp').f
@@ -1125,7 +866,7 @@ module.exports = function(it, tag, stat){
 };
 }).apply(this, arguments);
 
-},{"./_has":27,"./_object-dp":42,"./_wks":67}],55:[function(require,module,exports){
+},{"./_has":26,"./_object-dp":41,"./_wks":66}],54:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js", module);
 (function(){
 var shared = require('./_shared')('keys')
@@ -1135,7 +876,7 @@ module.exports = function(key){
 };
 }).apply(this, arguments);
 
-},{"./_shared":56,"./_uid":64}],56:[function(require,module,exports){
+},{"./_shared":55,"./_uid":63}],55:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_shared.js", module);
 (function(){
 var global = require('./_global')
@@ -1146,7 +887,7 @@ module.exports = function(key){
 };
 }).apply(this, arguments);
 
-},{"./_global":26}],57:[function(require,module,exports){
+},{"./_global":25}],56:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js", module);
 (function(){
 var toInteger = require('./_to-integer')
@@ -1168,7 +909,7 @@ module.exports = function(TO_STRING){
 };
 }).apply(this, arguments);
 
-},{"./_defined":19,"./_to-integer":59}],58:[function(require,module,exports){
+},{"./_defined":18,"./_to-integer":58}],57:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-index.js", module);
 (function(){
 var toInteger = require('./_to-integer')
@@ -1180,7 +921,7 @@ module.exports = function(index, length){
 };
 }).apply(this, arguments);
 
-},{"./_to-integer":59}],59:[function(require,module,exports){
+},{"./_to-integer":58}],58:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-integer.js", module);
 (function(){
 // 7.1.4 ToInteger
@@ -1191,7 +932,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{}],60:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js", module);
 (function(){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
@@ -1202,7 +943,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{"./_defined":19,"./_iobject":31}],61:[function(require,module,exports){
+},{"./_defined":18,"./_iobject":30}],60:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-length.js", module);
 (function(){
 // 7.1.15 ToLength
@@ -1213,7 +954,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{"./_to-integer":59}],62:[function(require,module,exports){
+},{"./_to-integer":58}],61:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-object.js", module);
 (function(){
 // 7.1.13 ToObject(argument)
@@ -1223,7 +964,7 @@ module.exports = function(it){
 };
 }).apply(this, arguments);
 
-},{"./_defined":19}],63:[function(require,module,exports){
+},{"./_defined":18}],62:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js", module);
 (function(){
 // 7.1.1 ToPrimitive(input [, PreferredType])
@@ -1240,7 +981,7 @@ module.exports = function(it, S){
 };
 }).apply(this, arguments);
 
-},{"./_is-object":33}],64:[function(require,module,exports){
+},{"./_is-object":32}],63:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_uid.js", module);
 (function(){
 var id = 0
@@ -1250,7 +991,7 @@ module.exports = function(key){
 };
 }).apply(this, arguments);
 
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js", module);
 (function(){
 var global         = require('./_global')
@@ -1264,13 +1005,13 @@ module.exports = function(name){
 };
 }).apply(this, arguments);
 
-},{"./_core":17,"./_global":26,"./_library":39,"./_object-dp":42,"./_wks-ext":66}],66:[function(require,module,exports){
+},{"./_core":16,"./_global":25,"./_library":38,"./_object-dp":41,"./_wks-ext":65}],65:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-ext.js", module);
 (function(){
 exports.f = require('./_wks');
 }).apply(this, arguments);
 
-},{"./_wks":67}],67:[function(require,module,exports){
+},{"./_wks":66}],66:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js", module);
 (function(){
 var store      = require('./_shared')('wks')
@@ -1286,7 +1027,7 @@ var $exports = module.exports = function(name){
 $exports.store = store;
 }).apply(this, arguments);
 
-},{"./_global":26,"./_shared":56,"./_uid":64}],68:[function(require,module,exports){
+},{"./_global":25,"./_shared":55,"./_uid":63}],67:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js", module);
 (function(){
 'use strict';
@@ -1325,13 +1066,13 @@ addToUnscopables('values');
 addToUnscopables('entries');
 }).apply(this, arguments);
 
-},{"./_add-to-unscopables":13,"./_iter-define":35,"./_iter-step":36,"./_iterators":37,"./_to-iobject":60}],69:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_iter-define":34,"./_iter-step":35,"./_iterators":36,"./_to-iobject":59}],68:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es6.object.to-string.js", module);
 (function(){
 
 }).apply(this, arguments);
 
-},{}],70:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js", module);
 (function(){
 'use strict';
@@ -1353,7 +1094,7 @@ require('./_iter-define')(String, 'String', function(iterated){
 });
 }).apply(this, arguments);
 
-},{"./_iter-define":35,"./_string-at":57}],71:[function(require,module,exports){
+},{"./_iter-define":34,"./_string-at":56}],70:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js", module);
 (function(){
 'use strict';
@@ -1593,19 +1334,19 @@ setToStringTag(Math, 'Math', true);
 setToStringTag(global.JSON, 'JSON', true);
 }).apply(this, arguments);
 
-},{"./_an-object":14,"./_descriptors":20,"./_enum-keys":23,"./_export":24,"./_fails":25,"./_global":26,"./_has":27,"./_hide":28,"./_is-array":32,"./_keyof":38,"./_library":39,"./_meta":40,"./_object-create":41,"./_object-dp":42,"./_object-gopd":44,"./_object-gopn":46,"./_object-gopn-ext":45,"./_object-gops":47,"./_object-keys":50,"./_object-pie":51,"./_property-desc":52,"./_redefine":53,"./_set-to-string-tag":54,"./_shared":56,"./_to-iobject":60,"./_to-primitive":63,"./_uid":64,"./_wks":67,"./_wks-define":65,"./_wks-ext":66}],72:[function(require,module,exports){
+},{"./_an-object":13,"./_descriptors":19,"./_enum-keys":22,"./_export":23,"./_fails":24,"./_global":25,"./_has":26,"./_hide":27,"./_is-array":31,"./_keyof":37,"./_library":38,"./_meta":39,"./_object-create":40,"./_object-dp":41,"./_object-gopd":43,"./_object-gopn":45,"./_object-gopn-ext":44,"./_object-gops":46,"./_object-keys":49,"./_object-pie":50,"./_property-desc":51,"./_redefine":52,"./_set-to-string-tag":53,"./_shared":55,"./_to-iobject":59,"./_to-primitive":62,"./_uid":63,"./_wks":66,"./_wks-define":64,"./_wks-ext":65}],71:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.async-iterator.js", module);
 (function(){
 require('./_wks-define')('asyncIterator');
 }).apply(this, arguments);
 
-},{"./_wks-define":65}],73:[function(require,module,exports){
+},{"./_wks-define":64}],72:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.observable.js", module);
 (function(){
 require('./_wks-define')('observable');
 }).apply(this, arguments);
 
-},{"./_wks-define":65}],74:[function(require,module,exports){
+},{"./_wks-define":64}],73:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js", module);
 (function(){
 require('./es6.array.iterator');
@@ -1623,7 +1364,7 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
 }
 }).apply(this, arguments);
 
-},{"./_global":26,"./_hide":28,"./_iterators":37,"./_wks":67,"./es6.array.iterator":68}],75:[function(require,module,exports){
+},{"./_global":25,"./_hide":27,"./_iterators":36,"./_wks":66,"./es6.array.iterator":67}],74:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/backo2/index.js", module);
 (function(){
 
@@ -1714,7 +1455,7 @@ Backoff.prototype.setJitter = function(jitter){
 
 }).apply(this, arguments);
 
-},{}],76:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/base64-arraybuffer/lib/base64-arraybuffer.js", module);
 (function(){
 /*
@@ -1779,7 +1520,7 @@ _hmr["websocket:null"].initModule("node_modules/base64-arraybuffer/lib/base64-ar
 
 }).apply(this, arguments);
 
-},{}],77:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/blob/index.js", module);
 (function(){
 (function (global){
@@ -1883,13 +1624,13 @@ module.exports = (function() {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],78:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browser-resolve/empty.js", module);
 (function(){
 
 }).apply(this, arguments);
 
-},{}],79:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browserify-hmr/inc/index.js", module);
 (function(){
 (function (global){
@@ -2555,7 +2296,7 @@ module.exports = main;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"../lib/has":80,"../lib/str-set":81,"lodash/array/zipObject":106,"lodash/collection/filter":107,"lodash/collection/forEach":108,"lodash/collection/map":109,"lodash/collection/some":110,"lodash/object/assign":165,"lodash/object/forOwn":166,"lodash/object/mapValues":169}],80:[function(require,module,exports){
+},{"../lib/has":79,"../lib/str-set":80,"lodash/array/zipObject":104,"lodash/collection/filter":105,"lodash/collection/forEach":106,"lodash/collection/map":107,"lodash/collection/some":108,"lodash/object/assign":163,"lodash/object/forOwn":164,"lodash/object/mapValues":167}],79:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browserify-hmr/lib/has.js", module);
 (function(){
 'use strict';
@@ -2567,7 +2308,7 @@ module.exports = has;
 
 }).apply(this, arguments);
 
-},{}],81:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/browserify-hmr/lib/str-set.js", module);
 (function(){
 'use strict';
@@ -2648,7 +2389,7 @@ module.exports = StrSet;
 
 }).apply(this, arguments);
 
-},{"./has":80}],82:[function(require,module,exports){
+},{"./has":79}],81:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/component-bind/index.js", module);
 (function(){
 /**
@@ -2677,7 +2418,7 @@ module.exports = function(obj, fn){
 
 }).apply(this, arguments);
 
-},{}],83:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/component-emitter/index.js", module);
 (function(){
 
@@ -2847,7 +2588,7 @@ Emitter.prototype.hasListeners = function(event){
 
 }).apply(this, arguments);
 
-},{}],84:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/component-inherit/index.js", module);
 (function(){
 
@@ -2859,7 +2600,7 @@ module.exports = function(a, b){
 };
 }).apply(this, arguments);
 
-},{}],85:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/index.js", module);
 (function(){
 
@@ -2867,7 +2608,7 @@ module.exports =  require('./lib/');
 
 }).apply(this, arguments);
 
-},{"./lib/":86}],86:[function(require,module,exports){
+},{"./lib/":85}],85:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/index.js", module);
 (function(){
 
@@ -2883,7 +2624,7 @@ module.exports.parser = require('engine.io-parser');
 
 }).apply(this, arguments);
 
-},{"./socket":87,"engine.io-parser":97}],87:[function(require,module,exports){
+},{"./socket":86,"engine.io-parser":96}],86:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/socket.js", module);
 (function(){
 (function (global){
@@ -3619,7 +3360,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./transport":88,"./transports":89,"component-emitter":83,"debug":95,"engine.io-parser":97,"indexof":103,"parsejson":174,"parseqs":175,"parseuri":176}],88:[function(require,module,exports){
+},{"./transport":87,"./transports":88,"component-emitter":82,"debug":94,"engine.io-parser":96,"indexof":101,"parsejson":172,"parseqs":173,"parseuri":174}],87:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transport.js", module);
 (function(){
 /**
@@ -3780,7 +3521,7 @@ Transport.prototype.onClose = function () {
 
 }).apply(this, arguments);
 
-},{"component-emitter":83,"engine.io-parser":97}],89:[function(require,module,exports){
+},{"component-emitter":82,"engine.io-parser":96}],88:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/index.js", module);
 (function(){
 (function (global){
@@ -3841,7 +3582,7 @@ function polling(opts){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling-jsonp":90,"./polling-xhr":91,"./websocket":93,"xmlhttprequest-ssl":94}],90:[function(require,module,exports){
+},{"./polling-jsonp":89,"./polling-xhr":90,"./websocket":92,"xmlhttprequest-ssl":93}],89:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-jsonp.js", module);
 (function(){
 (function (global){
@@ -4087,7 +3828,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling":92,"component-inherit":84}],91:[function(require,module,exports){
+},{"./polling":91,"component-inherit":83}],90:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling-xhr.js", module);
 (function(){
 (function (global){
@@ -4507,7 +4248,7 @@ function unloadHandler() {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./polling":92,"component-emitter":83,"component-inherit":84,"debug":95,"xmlhttprequest-ssl":94}],92:[function(require,module,exports){
+},{"./polling":91,"component-emitter":82,"component-inherit":83,"debug":94,"xmlhttprequest-ssl":93}],91:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/polling.js", module);
 (function(){
 /**
@@ -4760,7 +4501,7 @@ Polling.prototype.uri = function(){
 
 }).apply(this, arguments);
 
-},{"../transport":88,"component-inherit":84,"debug":95,"engine.io-parser":97,"parseqs":175,"xmlhttprequest-ssl":94,"yeast":225}],93:[function(require,module,exports){
+},{"../transport":87,"component-inherit":83,"debug":94,"engine.io-parser":96,"parseqs":173,"xmlhttprequest-ssl":93,"yeast":198}],92:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/transports/websocket.js", module);
 (function(){
 (function (global){
@@ -5056,7 +4797,7 @@ WS.prototype.check = function(){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"../transport":88,"component-inherit":84,"debug":95,"engine.io-parser":97,"parseqs":175,"ws":78,"yeast":225}],94:[function(require,module,exports){
+},{"../transport":87,"component-inherit":83,"debug":94,"engine.io-parser":96,"parseqs":173,"ws":77,"yeast":198}],93:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/lib/xmlhttprequest.js", module);
 (function(){
 // browser shim for xmlhttprequest module
@@ -5098,7 +4839,7 @@ module.exports = function(opts) {
 
 }).apply(this, arguments);
 
-},{"has-cors":102}],95:[function(require,module,exports){
+},{"has-cors":100}],94:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/browser.js", module);
 (function(){
 
@@ -5272,7 +5013,7 @@ function localstorage(){
 
 }).apply(this, arguments);
 
-},{"./debug":96}],96:[function(require,module,exports){
+},{"./debug":95}],95:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-client/node_modules/debug/debug.js", module);
 (function(){
 
@@ -5475,7 +5216,7 @@ function coerce(val) {
 
 }).apply(this, arguments);
 
-},{"ms":173}],97:[function(require,module,exports){
+},{"ms":171}],96:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/browser.js", module);
 (function(){
 (function (global){
@@ -6077,7 +5818,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./keys":98,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":76,"blob":77,"has-binary":99,"utf8":194}],98:[function(require,module,exports){
+},{"./keys":97,"after":2,"arraybuffer.slice":3,"base64-arraybuffer":75,"blob":76,"has-binary":98,"utf8":192}],97:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/lib/keys.js", module);
 (function(){
 
@@ -6102,7 +5843,7 @@ module.exports = Object.keys || function keys (obj){
 
 }).apply(this, arguments);
 
-},{}],99:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/engine.io-parser/node_modules/has-binary/index.js", module);
 (function(){
 (function (global){
@@ -6168,2656 +5909,7 @@ function hasBinary(data) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"isarray":104}],100:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/hammerjs/hammer.js", module);
-(function(){
-/*! Hammer.JS - v2.0.7 - 2016-04-22
- * http://hammerjs.github.io/
- *
- * Copyright (c) 2016 Jorik Tangelder;
- * Licensed under the MIT license */
-(function(window, document, exportName, undefined) {
-  'use strict';
-
-var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
-var TEST_ELEMENT = document.createElement('div');
-
-var TYPE_FUNCTION = 'function';
-
-var round = Math.round;
-var abs = Math.abs;
-var now = Date.now;
-
-/**
- * set a timeout with a given scope
- * @param {Function} fn
- * @param {Number} timeout
- * @param {Object} context
- * @returns {number}
- */
-function setTimeoutContext(fn, timeout, context) {
-    return setTimeout(bindFn(fn, context), timeout);
-}
-
-/**
- * if the argument is an array, we want to execute the fn on each entry
- * if it aint an array we don't want to do a thing.
- * this is used by all the methods that accept a single and array argument.
- * @param {*|Array} arg
- * @param {String} fn
- * @param {Object} [context]
- * @returns {Boolean}
- */
-function invokeArrayArg(arg, fn, context) {
-    if (Array.isArray(arg)) {
-        each(arg, context[fn], context);
-        return true;
-    }
-    return false;
-}
-
-/**
- * walk objects and arrays
- * @param {Object} obj
- * @param {Function} iterator
- * @param {Object} context
- */
-function each(obj, iterator, context) {
-    var i;
-
-    if (!obj) {
-        return;
-    }
-
-    if (obj.forEach) {
-        obj.forEach(iterator, context);
-    } else if (obj.length !== undefined) {
-        i = 0;
-        while (i < obj.length) {
-            iterator.call(context, obj[i], i, obj);
-            i++;
-        }
-    } else {
-        for (i in obj) {
-            obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
-        }
-    }
-}
-
-/**
- * wrap a method with a deprecation warning and stack trace
- * @param {Function} method
- * @param {String} name
- * @param {String} message
- * @returns {Function} A new function wrapping the supplied method.
- */
-function deprecate(method, name, message) {
-    var deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
-    return function() {
-        var e = new Error('get-stack-trace');
-        var stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, '')
-            .replace(/^\s+at\s+/gm, '')
-            .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@') : 'Unknown Stack Trace';
-
-        var log = window.console && (window.console.warn || window.console.log);
-        if (log) {
-            log.call(window.console, deprecationMessage, stack);
-        }
-        return method.apply(this, arguments);
-    };
-}
-
-/**
- * extend object.
- * means that properties in dest will be overwritten by the ones in src.
- * @param {Object} target
- * @param {...Object} objects_to_assign
- * @returns {Object} target
- */
-var assign;
-if (typeof Object.assign !== 'function') {
-    assign = function assign(target) {
-        if (target === undefined || target === null) {
-            throw new TypeError('Cannot convert undefined or null to object');
-        }
-
-        var output = Object(target);
-        for (var index = 1; index < arguments.length; index++) {
-            var source = arguments[index];
-            if (source !== undefined && source !== null) {
-                for (var nextKey in source) {
-                    if (source.hasOwnProperty(nextKey)) {
-                        output[nextKey] = source[nextKey];
-                    }
-                }
-            }
-        }
-        return output;
-    };
-} else {
-    assign = Object.assign;
-}
-
-/**
- * extend object.
- * means that properties in dest will be overwritten by the ones in src.
- * @param {Object} dest
- * @param {Object} src
- * @param {Boolean} [merge=false]
- * @returns {Object} dest
- */
-var extend = deprecate(function extend(dest, src, merge) {
-    var keys = Object.keys(src);
-    var i = 0;
-    while (i < keys.length) {
-        if (!merge || (merge && dest[keys[i]] === undefined)) {
-            dest[keys[i]] = src[keys[i]];
-        }
-        i++;
-    }
-    return dest;
-}, 'extend', 'Use `assign`.');
-
-/**
- * merge the values from src in the dest.
- * means that properties that exist in dest will not be overwritten by src
- * @param {Object} dest
- * @param {Object} src
- * @returns {Object} dest
- */
-var merge = deprecate(function merge(dest, src) {
-    return extend(dest, src, true);
-}, 'merge', 'Use `assign`.');
-
-/**
- * simple class inheritance
- * @param {Function} child
- * @param {Function} base
- * @param {Object} [properties]
- */
-function inherit(child, base, properties) {
-    var baseP = base.prototype,
-        childP;
-
-    childP = child.prototype = Object.create(baseP);
-    childP.constructor = child;
-    childP._super = baseP;
-
-    if (properties) {
-        assign(childP, properties);
-    }
-}
-
-/**
- * simple function bind
- * @param {Function} fn
- * @param {Object} context
- * @returns {Function}
- */
-function bindFn(fn, context) {
-    return function boundFn() {
-        return fn.apply(context, arguments);
-    };
-}
-
-/**
- * let a boolean value also be a function that must return a boolean
- * this first item in args will be used as the context
- * @param {Boolean|Function} val
- * @param {Array} [args]
- * @returns {Boolean}
- */
-function boolOrFn(val, args) {
-    if (typeof val == TYPE_FUNCTION) {
-        return val.apply(args ? args[0] || undefined : undefined, args);
-    }
-    return val;
-}
-
-/**
- * use the val2 when val1 is undefined
- * @param {*} val1
- * @param {*} val2
- * @returns {*}
- */
-function ifUndefined(val1, val2) {
-    return (val1 === undefined) ? val2 : val1;
-}
-
-/**
- * addEventListener with multiple events at once
- * @param {EventTarget} target
- * @param {String} types
- * @param {Function} handler
- */
-function addEventListeners(target, types, handler) {
-    each(splitStr(types), function(type) {
-        target.addEventListener(type, handler, false);
-    });
-}
-
-/**
- * removeEventListener with multiple events at once
- * @param {EventTarget} target
- * @param {String} types
- * @param {Function} handler
- */
-function removeEventListeners(target, types, handler) {
-    each(splitStr(types), function(type) {
-        target.removeEventListener(type, handler, false);
-    });
-}
-
-/**
- * find if a node is in the given parent
- * @method hasParent
- * @param {HTMLElement} node
- * @param {HTMLElement} parent
- * @return {Boolean} found
- */
-function hasParent(node, parent) {
-    while (node) {
-        if (node == parent) {
-            return true;
-        }
-        node = node.parentNode;
-    }
-    return false;
-}
-
-/**
- * small indexOf wrapper
- * @param {String} str
- * @param {String} find
- * @returns {Boolean} found
- */
-function inStr(str, find) {
-    return str.indexOf(find) > -1;
-}
-
-/**
- * split string on whitespace
- * @param {String} str
- * @returns {Array} words
- */
-function splitStr(str) {
-    return str.trim().split(/\s+/g);
-}
-
-/**
- * find if a array contains the object using indexOf or a simple polyFill
- * @param {Array} src
- * @param {String} find
- * @param {String} [findByKey]
- * @return {Boolean|Number} false when not found, or the index
- */
-function inArray(src, find, findByKey) {
-    if (src.indexOf && !findByKey) {
-        return src.indexOf(find);
-    } else {
-        var i = 0;
-        while (i < src.length) {
-            if ((findByKey && src[i][findByKey] == find) || (!findByKey && src[i] === find)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-}
-
-/**
- * convert array-like objects to real arrays
- * @param {Object} obj
- * @returns {Array}
- */
-function toArray(obj) {
-    return Array.prototype.slice.call(obj, 0);
-}
-
-/**
- * unique array with objects based on a key (like 'id') or just by the array's value
- * @param {Array} src [{id:1},{id:2},{id:1}]
- * @param {String} [key]
- * @param {Boolean} [sort=False]
- * @returns {Array} [{id:1},{id:2}]
- */
-function uniqueArray(src, key, sort) {
-    var results = [];
-    var values = [];
-    var i = 0;
-
-    while (i < src.length) {
-        var val = key ? src[i][key] : src[i];
-        if (inArray(values, val) < 0) {
-            results.push(src[i]);
-        }
-        values[i] = val;
-        i++;
-    }
-
-    if (sort) {
-        if (!key) {
-            results = results.sort();
-        } else {
-            results = results.sort(function sortUniqueArray(a, b) {
-                return a[key] > b[key];
-            });
-        }
-    }
-
-    return results;
-}
-
-/**
- * get the prefixed property
- * @param {Object} obj
- * @param {String} property
- * @returns {String|Undefined} prefixed
- */
-function prefixed(obj, property) {
-    var prefix, prop;
-    var camelProp = property[0].toUpperCase() + property.slice(1);
-
-    var i = 0;
-    while (i < VENDOR_PREFIXES.length) {
-        prefix = VENDOR_PREFIXES[i];
-        prop = (prefix) ? prefix + camelProp : property;
-
-        if (prop in obj) {
-            return prop;
-        }
-        i++;
-    }
-    return undefined;
-}
-
-/**
- * get a unique id
- * @returns {number} uniqueId
- */
-var _uniqueId = 1;
-function uniqueId() {
-    return _uniqueId++;
-}
-
-/**
- * get the window object of an element
- * @param {HTMLElement} element
- * @returns {DocumentView|Window}
- */
-function getWindowForElement(element) {
-    var doc = element.ownerDocument || element;
-    return (doc.defaultView || doc.parentWindow || window);
-}
-
-var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
-
-var SUPPORT_TOUCH = ('ontouchstart' in window);
-var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
-var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
-
-var INPUT_TYPE_TOUCH = 'touch';
-var INPUT_TYPE_PEN = 'pen';
-var INPUT_TYPE_MOUSE = 'mouse';
-var INPUT_TYPE_KINECT = 'kinect';
-
-var COMPUTE_INTERVAL = 25;
-
-var INPUT_START = 1;
-var INPUT_MOVE = 2;
-var INPUT_END = 4;
-var INPUT_CANCEL = 8;
-
-var DIRECTION_NONE = 1;
-var DIRECTION_LEFT = 2;
-var DIRECTION_RIGHT = 4;
-var DIRECTION_UP = 8;
-var DIRECTION_DOWN = 16;
-
-var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
-var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
-var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
-
-var PROPS_XY = ['x', 'y'];
-var PROPS_CLIENT_XY = ['clientX', 'clientY'];
-
-/**
- * create new input type manager
- * @param {Manager} manager
- * @param {Function} callback
- * @returns {Input}
- * @constructor
- */
-function Input(manager, callback) {
-    var self = this;
-    this.manager = manager;
-    this.callback = callback;
-    this.element = manager.element;
-    this.target = manager.options.inputTarget;
-
-    // smaller wrapper around the handler, for the scope and the enabled state of the manager,
-    // so when disabled the input events are completely bypassed.
-    this.domHandler = function(ev) {
-        if (boolOrFn(manager.options.enable, [manager])) {
-            self.handler(ev);
-        }
-    };
-
-    this.init();
-
-}
-
-Input.prototype = {
-    /**
-     * should handle the inputEvent data and trigger the callback
-     * @virtual
-     */
-    handler: function() { },
-
-    /**
-     * bind the events
-     */
-    init: function() {
-        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
-        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
-        this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
-    },
-
-    /**
-     * unbind the events
-     */
-    destroy: function() {
-        this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
-        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
-        this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
-    }
-};
-
-/**
- * create new input type manager
- * called by the Manager constructor
- * @param {Hammer} manager
- * @returns {Input}
- */
-function createInputInstance(manager) {
-    var Type;
-    var inputClass = manager.options.inputClass;
-
-    if (inputClass) {
-        Type = inputClass;
-    } else if (SUPPORT_POINTER_EVENTS) {
-        Type = PointerEventInput;
-    } else if (SUPPORT_ONLY_TOUCH) {
-        Type = TouchInput;
-    } else if (!SUPPORT_TOUCH) {
-        Type = MouseInput;
-    } else {
-        Type = TouchMouseInput;
-    }
-    return new (Type)(manager, inputHandler);
-}
-
-/**
- * handle input events
- * @param {Manager} manager
- * @param {String} eventType
- * @param {Object} input
- */
-function inputHandler(manager, eventType, input) {
-    var pointersLen = input.pointers.length;
-    var changedPointersLen = input.changedPointers.length;
-    var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
-    var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (pointersLen - changedPointersLen === 0));
-
-    input.isFirst = !!isFirst;
-    input.isFinal = !!isFinal;
-
-    if (isFirst) {
-        manager.session = {};
-    }
-
-    // source event is the normalized value of the domEvents
-    // like 'touchstart, mouseup, pointerdown'
-    input.eventType = eventType;
-
-    // compute scale, rotation etc
-    computeInputData(manager, input);
-
-    // emit secret event
-    manager.emit('hammer.input', input);
-
-    manager.recognize(input);
-    manager.session.prevInput = input;
-}
-
-/**
- * extend the data with some usable properties like scale, rotate, velocity etc
- * @param {Object} manager
- * @param {Object} input
- */
-function computeInputData(manager, input) {
-    var session = manager.session;
-    var pointers = input.pointers;
-    var pointersLength = pointers.length;
-
-    // store the first input to calculate the distance and direction
-    if (!session.firstInput) {
-        session.firstInput = simpleCloneInputData(input);
-    }
-
-    // to compute scale and rotation we need to store the multiple touches
-    if (pointersLength > 1 && !session.firstMultiple) {
-        session.firstMultiple = simpleCloneInputData(input);
-    } else if (pointersLength === 1) {
-        session.firstMultiple = false;
-    }
-
-    var firstInput = session.firstInput;
-    var firstMultiple = session.firstMultiple;
-    var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
-
-    var center = input.center = getCenter(pointers);
-    input.timeStamp = now();
-    input.deltaTime = input.timeStamp - firstInput.timeStamp;
-
-    input.angle = getAngle(offsetCenter, center);
-    input.distance = getDistance(offsetCenter, center);
-
-    computeDeltaXY(session, input);
-    input.offsetDirection = getDirection(input.deltaX, input.deltaY);
-
-    var overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
-    input.overallVelocityX = overallVelocity.x;
-    input.overallVelocityY = overallVelocity.y;
-    input.overallVelocity = (abs(overallVelocity.x) > abs(overallVelocity.y)) ? overallVelocity.x : overallVelocity.y;
-
-    input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
-    input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
-
-    input.maxPointers = !session.prevInput ? input.pointers.length : ((input.pointers.length >
-        session.prevInput.maxPointers) ? input.pointers.length : session.prevInput.maxPointers);
-
-    computeIntervalInputData(session, input);
-
-    // find the correct target
-    var target = manager.element;
-    if (hasParent(input.srcEvent.target, target)) {
-        target = input.srcEvent.target;
-    }
-    input.target = target;
-}
-
-function computeDeltaXY(session, input) {
-    var center = input.center;
-    var offset = session.offsetDelta || {};
-    var prevDelta = session.prevDelta || {};
-    var prevInput = session.prevInput || {};
-
-    if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
-        prevDelta = session.prevDelta = {
-            x: prevInput.deltaX || 0,
-            y: prevInput.deltaY || 0
-        };
-
-        offset = session.offsetDelta = {
-            x: center.x,
-            y: center.y
-        };
-    }
-
-    input.deltaX = prevDelta.x + (center.x - offset.x);
-    input.deltaY = prevDelta.y + (center.y - offset.y);
-}
-
-/**
- * velocity is calculated every x ms
- * @param {Object} session
- * @param {Object} input
- */
-function computeIntervalInputData(session, input) {
-    var last = session.lastInterval || input,
-        deltaTime = input.timeStamp - last.timeStamp,
-        velocity, velocityX, velocityY, direction;
-
-    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
-        var deltaX = input.deltaX - last.deltaX;
-        var deltaY = input.deltaY - last.deltaY;
-
-        var v = getVelocity(deltaTime, deltaX, deltaY);
-        velocityX = v.x;
-        velocityY = v.y;
-        velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
-        direction = getDirection(deltaX, deltaY);
-
-        session.lastInterval = input;
-    } else {
-        // use latest velocity info if it doesn't overtake a minimum period
-        velocity = last.velocity;
-        velocityX = last.velocityX;
-        velocityY = last.velocityY;
-        direction = last.direction;
-    }
-
-    input.velocity = velocity;
-    input.velocityX = velocityX;
-    input.velocityY = velocityY;
-    input.direction = direction;
-}
-
-/**
- * create a simple clone from the input used for storage of firstInput and firstMultiple
- * @param {Object} input
- * @returns {Object} clonedInputData
- */
-function simpleCloneInputData(input) {
-    // make a simple copy of the pointers because we will get a reference if we don't
-    // we only need clientXY for the calculations
-    var pointers = [];
-    var i = 0;
-    while (i < input.pointers.length) {
-        pointers[i] = {
-            clientX: round(input.pointers[i].clientX),
-            clientY: round(input.pointers[i].clientY)
-        };
-        i++;
-    }
-
-    return {
-        timeStamp: now(),
-        pointers: pointers,
-        center: getCenter(pointers),
-        deltaX: input.deltaX,
-        deltaY: input.deltaY
-    };
-}
-
-/**
- * get the center of all the pointers
- * @param {Array} pointers
- * @return {Object} center contains `x` and `y` properties
- */
-function getCenter(pointers) {
-    var pointersLength = pointers.length;
-
-    // no need to loop when only one touch
-    if (pointersLength === 1) {
-        return {
-            x: round(pointers[0].clientX),
-            y: round(pointers[0].clientY)
-        };
-    }
-
-    var x = 0, y = 0, i = 0;
-    while (i < pointersLength) {
-        x += pointers[i].clientX;
-        y += pointers[i].clientY;
-        i++;
-    }
-
-    return {
-        x: round(x / pointersLength),
-        y: round(y / pointersLength)
-    };
-}
-
-/**
- * calculate the velocity between two points. unit is in px per ms.
- * @param {Number} deltaTime
- * @param {Number} x
- * @param {Number} y
- * @return {Object} velocity `x` and `y`
- */
-function getVelocity(deltaTime, x, y) {
-    return {
-        x: x / deltaTime || 0,
-        y: y / deltaTime || 0
-    };
-}
-
-/**
- * get the direction between two points
- * @param {Number} x
- * @param {Number} y
- * @return {Number} direction
- */
-function getDirection(x, y) {
-    if (x === y) {
-        return DIRECTION_NONE;
-    }
-
-    if (abs(x) >= abs(y)) {
-        return x < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
-    }
-    return y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
-}
-
-/**
- * calculate the absolute distance between two points
- * @param {Object} p1 {x, y}
- * @param {Object} p2 {x, y}
- * @param {Array} [props] containing x and y keys
- * @return {Number} distance
- */
-function getDistance(p1, p2, props) {
-    if (!props) {
-        props = PROPS_XY;
-    }
-    var x = p2[props[0]] - p1[props[0]],
-        y = p2[props[1]] - p1[props[1]];
-
-    return Math.sqrt((x * x) + (y * y));
-}
-
-/**
- * calculate the angle between two coordinates
- * @param {Object} p1
- * @param {Object} p2
- * @param {Array} [props] containing x and y keys
- * @return {Number} angle
- */
-function getAngle(p1, p2, props) {
-    if (!props) {
-        props = PROPS_XY;
-    }
-    var x = p2[props[0]] - p1[props[0]],
-        y = p2[props[1]] - p1[props[1]];
-    return Math.atan2(y, x) * 180 / Math.PI;
-}
-
-/**
- * calculate the rotation degrees between two pointersets
- * @param {Array} start array of pointers
- * @param {Array} end array of pointers
- * @return {Number} rotation
- */
-function getRotation(start, end) {
-    return getAngle(end[1], end[0], PROPS_CLIENT_XY) + getAngle(start[1], start[0], PROPS_CLIENT_XY);
-}
-
-/**
- * calculate the scale factor between two pointersets
- * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
- * @param {Array} start array of pointers
- * @param {Array} end array of pointers
- * @return {Number} scale
- */
-function getScale(start, end) {
-    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
-}
-
-var MOUSE_INPUT_MAP = {
-    mousedown: INPUT_START,
-    mousemove: INPUT_MOVE,
-    mouseup: INPUT_END
-};
-
-var MOUSE_ELEMENT_EVENTS = 'mousedown';
-var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
-
-/**
- * Mouse events input
- * @constructor
- * @extends Input
- */
-function MouseInput() {
-    this.evEl = MOUSE_ELEMENT_EVENTS;
-    this.evWin = MOUSE_WINDOW_EVENTS;
-
-    this.pressed = false; // mousedown state
-
-    Input.apply(this, arguments);
-}
-
-inherit(MouseInput, Input, {
-    /**
-     * handle mouse events
-     * @param {Object} ev
-     */
-    handler: function MEhandler(ev) {
-        var eventType = MOUSE_INPUT_MAP[ev.type];
-
-        // on start we want to have the left mouse button down
-        if (eventType & INPUT_START && ev.button === 0) {
-            this.pressed = true;
-        }
-
-        if (eventType & INPUT_MOVE && ev.which !== 1) {
-            eventType = INPUT_END;
-        }
-
-        // mouse must be down
-        if (!this.pressed) {
-            return;
-        }
-
-        if (eventType & INPUT_END) {
-            this.pressed = false;
-        }
-
-        this.callback(this.manager, eventType, {
-            pointers: [ev],
-            changedPointers: [ev],
-            pointerType: INPUT_TYPE_MOUSE,
-            srcEvent: ev
-        });
-    }
-});
-
-var POINTER_INPUT_MAP = {
-    pointerdown: INPUT_START,
-    pointermove: INPUT_MOVE,
-    pointerup: INPUT_END,
-    pointercancel: INPUT_CANCEL,
-    pointerout: INPUT_CANCEL
-};
-
-// in IE10 the pointer types is defined as an enum
-var IE10_POINTER_TYPE_ENUM = {
-    2: INPUT_TYPE_TOUCH,
-    3: INPUT_TYPE_PEN,
-    4: INPUT_TYPE_MOUSE,
-    5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
-};
-
-var POINTER_ELEMENT_EVENTS = 'pointerdown';
-var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
-
-// IE10 has prefixed support, and case-sensitive
-if (window.MSPointerEvent && !window.PointerEvent) {
-    POINTER_ELEMENT_EVENTS = 'MSPointerDown';
-    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
-}
-
-/**
- * Pointer events input
- * @constructor
- * @extends Input
- */
-function PointerEventInput() {
-    this.evEl = POINTER_ELEMENT_EVENTS;
-    this.evWin = POINTER_WINDOW_EVENTS;
-
-    Input.apply(this, arguments);
-
-    this.store = (this.manager.session.pointerEvents = []);
-}
-
-inherit(PointerEventInput, Input, {
-    /**
-     * handle mouse events
-     * @param {Object} ev
-     */
-    handler: function PEhandler(ev) {
-        var store = this.store;
-        var removePointer = false;
-
-        var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
-        var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
-        var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
-
-        var isTouch = (pointerType == INPUT_TYPE_TOUCH);
-
-        // get index of the event in the store
-        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
-
-        // start and mouse must be down
-        if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
-            if (storeIndex < 0) {
-                store.push(ev);
-                storeIndex = store.length - 1;
-            }
-        } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
-            removePointer = true;
-        }
-
-        // it not found, so the pointer hasn't been down (so it's probably a hover)
-        if (storeIndex < 0) {
-            return;
-        }
-
-        // update the event in the store
-        store[storeIndex] = ev;
-
-        this.callback(this.manager, eventType, {
-            pointers: store,
-            changedPointers: [ev],
-            pointerType: pointerType,
-            srcEvent: ev
-        });
-
-        if (removePointer) {
-            // remove from the store
-            store.splice(storeIndex, 1);
-        }
-    }
-});
-
-var SINGLE_TOUCH_INPUT_MAP = {
-    touchstart: INPUT_START,
-    touchmove: INPUT_MOVE,
-    touchend: INPUT_END,
-    touchcancel: INPUT_CANCEL
-};
-
-var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
-var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
-
-/**
- * Touch events input
- * @constructor
- * @extends Input
- */
-function SingleTouchInput() {
-    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
-    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
-    this.started = false;
-
-    Input.apply(this, arguments);
-}
-
-inherit(SingleTouchInput, Input, {
-    handler: function TEhandler(ev) {
-        var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
-
-        // should we handle the touch events?
-        if (type === INPUT_START) {
-            this.started = true;
-        }
-
-        if (!this.started) {
-            return;
-        }
-
-        var touches = normalizeSingleTouches.call(this, ev, type);
-
-        // when done, reset the started state
-        if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
-            this.started = false;
-        }
-
-        this.callback(this.manager, type, {
-            pointers: touches[0],
-            changedPointers: touches[1],
-            pointerType: INPUT_TYPE_TOUCH,
-            srcEvent: ev
-        });
-    }
-});
-
-/**
- * @this {TouchInput}
- * @param {Object} ev
- * @param {Number} type flag
- * @returns {undefined|Array} [all, changed]
- */
-function normalizeSingleTouches(ev, type) {
-    var all = toArray(ev.touches);
-    var changed = toArray(ev.changedTouches);
-
-    if (type & (INPUT_END | INPUT_CANCEL)) {
-        all = uniqueArray(all.concat(changed), 'identifier', true);
-    }
-
-    return [all, changed];
-}
-
-var TOUCH_INPUT_MAP = {
-    touchstart: INPUT_START,
-    touchmove: INPUT_MOVE,
-    touchend: INPUT_END,
-    touchcancel: INPUT_CANCEL
-};
-
-var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
-
-/**
- * Multi-user touch events input
- * @constructor
- * @extends Input
- */
-function TouchInput() {
-    this.evTarget = TOUCH_TARGET_EVENTS;
-    this.targetIds = {};
-
-    Input.apply(this, arguments);
-}
-
-inherit(TouchInput, Input, {
-    handler: function MTEhandler(ev) {
-        var type = TOUCH_INPUT_MAP[ev.type];
-        var touches = getTouches.call(this, ev, type);
-        if (!touches) {
-            return;
-        }
-
-        this.callback(this.manager, type, {
-            pointers: touches[0],
-            changedPointers: touches[1],
-            pointerType: INPUT_TYPE_TOUCH,
-            srcEvent: ev
-        });
-    }
-});
-
-/**
- * @this {TouchInput}
- * @param {Object} ev
- * @param {Number} type flag
- * @returns {undefined|Array} [all, changed]
- */
-function getTouches(ev, type) {
-    var allTouches = toArray(ev.touches);
-    var targetIds = this.targetIds;
-
-    // when there is only one touch, the process can be simplified
-    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
-        targetIds[allTouches[0].identifier] = true;
-        return [allTouches, allTouches];
-    }
-
-    var i,
-        targetTouches,
-        changedTouches = toArray(ev.changedTouches),
-        changedTargetTouches = [],
-        target = this.target;
-
-    // get target touches from touches
-    targetTouches = allTouches.filter(function(touch) {
-        return hasParent(touch.target, target);
-    });
-
-    // collect touches
-    if (type === INPUT_START) {
-        i = 0;
-        while (i < targetTouches.length) {
-            targetIds[targetTouches[i].identifier] = true;
-            i++;
-        }
-    }
-
-    // filter changed touches to only contain touches that exist in the collected target ids
-    i = 0;
-    while (i < changedTouches.length) {
-        if (targetIds[changedTouches[i].identifier]) {
-            changedTargetTouches.push(changedTouches[i]);
-        }
-
-        // cleanup removed touches
-        if (type & (INPUT_END | INPUT_CANCEL)) {
-            delete targetIds[changedTouches[i].identifier];
-        }
-        i++;
-    }
-
-    if (!changedTargetTouches.length) {
-        return;
-    }
-
-    return [
-        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
-        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
-        changedTargetTouches
-    ];
-}
-
-/**
- * Combined touch and mouse input
- *
- * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
- * This because touch devices also emit mouse events while doing a touch.
- *
- * @constructor
- * @extends Input
- */
-
-var DEDUP_TIMEOUT = 2500;
-var DEDUP_DISTANCE = 25;
-
-function TouchMouseInput() {
-    Input.apply(this, arguments);
-
-    var handler = bindFn(this.handler, this);
-    this.touch = new TouchInput(this.manager, handler);
-    this.mouse = new MouseInput(this.manager, handler);
-
-    this.primaryTouch = null;
-    this.lastTouches = [];
-}
-
-inherit(TouchMouseInput, Input, {
-    /**
-     * handle mouse and touch events
-     * @param {Hammer} manager
-     * @param {String} inputEvent
-     * @param {Object} inputData
-     */
-    handler: function TMEhandler(manager, inputEvent, inputData) {
-        var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
-            isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
-
-        if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
-            return;
-        }
-
-        // when we're in a touch event, record touches to  de-dupe synthetic mouse event
-        if (isTouch) {
-            recordTouches.call(this, inputEvent, inputData);
-        } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
-            return;
-        }
-
-        this.callback(manager, inputEvent, inputData);
-    },
-
-    /**
-     * remove the event listeners
-     */
-    destroy: function destroy() {
-        this.touch.destroy();
-        this.mouse.destroy();
-    }
-});
-
-function recordTouches(eventType, eventData) {
-    if (eventType & INPUT_START) {
-        this.primaryTouch = eventData.changedPointers[0].identifier;
-        setLastTouch.call(this, eventData);
-    } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
-        setLastTouch.call(this, eventData);
-    }
-}
-
-function setLastTouch(eventData) {
-    var touch = eventData.changedPointers[0];
-
-    if (touch.identifier === this.primaryTouch) {
-        var lastTouch = {x: touch.clientX, y: touch.clientY};
-        this.lastTouches.push(lastTouch);
-        var lts = this.lastTouches;
-        var removeLastTouch = function() {
-            var i = lts.indexOf(lastTouch);
-            if (i > -1) {
-                lts.splice(i, 1);
-            }
-        };
-        setTimeout(removeLastTouch, DEDUP_TIMEOUT);
-    }
-}
-
-function isSyntheticEvent(eventData) {
-    var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
-    for (var i = 0; i < this.lastTouches.length; i++) {
-        var t = this.lastTouches[i];
-        var dx = Math.abs(x - t.x), dy = Math.abs(y - t.y);
-        if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
-            return true;
-        }
-    }
-    return false;
-}
-
-var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
-var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
-
-// magical touchAction value
-var TOUCH_ACTION_COMPUTE = 'compute';
-var TOUCH_ACTION_AUTO = 'auto';
-var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
-var TOUCH_ACTION_NONE = 'none';
-var TOUCH_ACTION_PAN_X = 'pan-x';
-var TOUCH_ACTION_PAN_Y = 'pan-y';
-var TOUCH_ACTION_MAP = getTouchActionProps();
-
-/**
- * Touch Action
- * sets the touchAction property or uses the js alternative
- * @param {Manager} manager
- * @param {String} value
- * @constructor
- */
-function TouchAction(manager, value) {
-    this.manager = manager;
-    this.set(value);
-}
-
-TouchAction.prototype = {
-    /**
-     * set the touchAction value on the element or enable the polyfill
-     * @param {String} value
-     */
-    set: function(value) {
-        // find out the touch-action by the event handlers
-        if (value == TOUCH_ACTION_COMPUTE) {
-            value = this.compute();
-        }
-
-        if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
-            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
-        }
-        this.actions = value.toLowerCase().trim();
-    },
-
-    /**
-     * just re-set the touchAction value
-     */
-    update: function() {
-        this.set(this.manager.options.touchAction);
-    },
-
-    /**
-     * compute the value for the touchAction property based on the recognizer's settings
-     * @returns {String} value
-     */
-    compute: function() {
-        var actions = [];
-        each(this.manager.recognizers, function(recognizer) {
-            if (boolOrFn(recognizer.options.enable, [recognizer])) {
-                actions = actions.concat(recognizer.getTouchAction());
-            }
-        });
-        return cleanTouchActions(actions.join(' '));
-    },
-
-    /**
-     * this method is called on each input cycle and provides the preventing of the browser behavior
-     * @param {Object} input
-     */
-    preventDefaults: function(input) {
-        var srcEvent = input.srcEvent;
-        var direction = input.offsetDirection;
-
-        // if the touch action did prevented once this session
-        if (this.manager.session.prevented) {
-            srcEvent.preventDefault();
-            return;
-        }
-
-        var actions = this.actions;
-        var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
-        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
-        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
-
-        if (hasNone) {
-            //do not prevent defaults if this is a tap gesture
-
-            var isTapPointer = input.pointers.length === 1;
-            var isTapMovement = input.distance < 2;
-            var isTapTouchTime = input.deltaTime < 250;
-
-            if (isTapPointer && isTapMovement && isTapTouchTime) {
-                return;
-            }
-        }
-
-        if (hasPanX && hasPanY) {
-            // `pan-x pan-y` means browser handles all scrolling/panning, do not prevent
-            return;
-        }
-
-        if (hasNone ||
-            (hasPanY && direction & DIRECTION_HORIZONTAL) ||
-            (hasPanX && direction & DIRECTION_VERTICAL)) {
-            return this.preventSrc(srcEvent);
-        }
-    },
-
-    /**
-     * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
-     * @param {Object} srcEvent
-     */
-    preventSrc: function(srcEvent) {
-        this.manager.session.prevented = true;
-        srcEvent.preventDefault();
-    }
-};
-
-/**
- * when the touchActions are collected they are not a valid value, so we need to clean things up. *
- * @param {String} actions
- * @returns {*}
- */
-function cleanTouchActions(actions) {
-    // none
-    if (inStr(actions, TOUCH_ACTION_NONE)) {
-        return TOUCH_ACTION_NONE;
-    }
-
-    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
-    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
-
-    // if both pan-x and pan-y are set (different recognizers
-    // for different directions, e.g. horizontal pan but vertical swipe?)
-    // we need none (as otherwise with pan-x pan-y combined none of these
-    // recognizers will work, since the browser would handle all panning
-    if (hasPanX && hasPanY) {
-        return TOUCH_ACTION_NONE;
-    }
-
-    // pan-x OR pan-y
-    if (hasPanX || hasPanY) {
-        return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
-    }
-
-    // manipulation
-    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
-        return TOUCH_ACTION_MANIPULATION;
-    }
-
-    return TOUCH_ACTION_AUTO;
-}
-
-function getTouchActionProps() {
-    if (!NATIVE_TOUCH_ACTION) {
-        return false;
-    }
-    var touchMap = {};
-    var cssSupports = window.CSS && window.CSS.supports;
-    ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
-
-        // If css.supports is not supported but there is native touch-action assume it supports
-        // all values. This is the case for IE 10 and 11.
-        touchMap[val] = cssSupports ? window.CSS.supports('touch-action', val) : true;
-    });
-    return touchMap;
-}
-
-/**
- * Recognizer flow explained; *
- * All recognizers have the initial state of POSSIBLE when a input session starts.
- * The definition of a input session is from the first input until the last input, with all it's movement in it. *
- * Example session for mouse-input: mousedown -> mousemove -> mouseup
- *
- * On each recognizing cycle (see Manager.recognize) the .recognize() method is executed
- * which determines with state it should be.
- *
- * If the recognizer has the state FAILED, CANCELLED or RECOGNIZED (equals ENDED), it is reset to
- * POSSIBLE to give it another change on the next cycle.
- *
- *               Possible
- *                  |
- *            +-----+---------------+
- *            |                     |
- *      +-----+-----+               |
- *      |           |               |
- *   Failed      Cancelled          |
- *                          +-------+------+
- *                          |              |
- *                      Recognized       Began
- *                                         |
- *                                      Changed
- *                                         |
- *                                  Ended/Recognized
- */
-var STATE_POSSIBLE = 1;
-var STATE_BEGAN = 2;
-var STATE_CHANGED = 4;
-var STATE_ENDED = 8;
-var STATE_RECOGNIZED = STATE_ENDED;
-var STATE_CANCELLED = 16;
-var STATE_FAILED = 32;
-
-/**
- * Recognizer
- * Every recognizer needs to extend from this class.
- * @constructor
- * @param {Object} options
- */
-function Recognizer(options) {
-    this.options = assign({}, this.defaults, options || {});
-
-    this.id = uniqueId();
-
-    this.manager = null;
-
-    // default is enable true
-    this.options.enable = ifUndefined(this.options.enable, true);
-
-    this.state = STATE_POSSIBLE;
-
-    this.simultaneous = {};
-    this.requireFail = [];
-}
-
-Recognizer.prototype = {
-    /**
-     * @virtual
-     * @type {Object}
-     */
-    defaults: {},
-
-    /**
-     * set options
-     * @param {Object} options
-     * @return {Recognizer}
-     */
-    set: function(options) {
-        assign(this.options, options);
-
-        // also update the touchAction, in case something changed about the directions/enabled state
-        this.manager && this.manager.touchAction.update();
-        return this;
-    },
-
-    /**
-     * recognize simultaneous with an other recognizer.
-     * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
-     */
-    recognizeWith: function(otherRecognizer) {
-        if (invokeArrayArg(otherRecognizer, 'recognizeWith', this)) {
-            return this;
-        }
-
-        var simultaneous = this.simultaneous;
-        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (!simultaneous[otherRecognizer.id]) {
-            simultaneous[otherRecognizer.id] = otherRecognizer;
-            otherRecognizer.recognizeWith(this);
-        }
-        return this;
-    },
-
-    /**
-     * drop the simultaneous link. it doesnt remove the link on the other recognizer.
-     * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
-     */
-    dropRecognizeWith: function(otherRecognizer) {
-        if (invokeArrayArg(otherRecognizer, 'dropRecognizeWith', this)) {
-            return this;
-        }
-
-        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        delete this.simultaneous[otherRecognizer.id];
-        return this;
-    },
-
-    /**
-     * recognizer can only run when an other is failing
-     * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
-     */
-    requireFailure: function(otherRecognizer) {
-        if (invokeArrayArg(otherRecognizer, 'requireFailure', this)) {
-            return this;
-        }
-
-        var requireFail = this.requireFail;
-        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        if (inArray(requireFail, otherRecognizer) === -1) {
-            requireFail.push(otherRecognizer);
-            otherRecognizer.requireFailure(this);
-        }
-        return this;
-    },
-
-    /**
-     * drop the requireFailure link. it does not remove the link on the other recognizer.
-     * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
-     */
-    dropRequireFailure: function(otherRecognizer) {
-        if (invokeArrayArg(otherRecognizer, 'dropRequireFailure', this)) {
-            return this;
-        }
-
-        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
-        var index = inArray(this.requireFail, otherRecognizer);
-        if (index > -1) {
-            this.requireFail.splice(index, 1);
-        }
-        return this;
-    },
-
-    /**
-     * has require failures boolean
-     * @returns {boolean}
-     */
-    hasRequireFailures: function() {
-        return this.requireFail.length > 0;
-    },
-
-    /**
-     * if the recognizer can recognize simultaneous with an other recognizer
-     * @param {Recognizer} otherRecognizer
-     * @returns {Boolean}
-     */
-    canRecognizeWith: function(otherRecognizer) {
-        return !!this.simultaneous[otherRecognizer.id];
-    },
-
-    /**
-     * You should use `tryEmit` instead of `emit` directly to check
-     * that all the needed recognizers has failed before emitting.
-     * @param {Object} input
-     */
-    emit: function(input) {
-        var self = this;
-        var state = this.state;
-
-        function emit(event) {
-            self.manager.emit(event, input);
-        }
-
-        // 'panstart' and 'panmove'
-        if (state < STATE_ENDED) {
-            emit(self.options.event + stateStr(state));
-        }
-
-        emit(self.options.event); // simple 'eventName' events
-
-        if (input.additionalEvent) { // additional event(panleft, panright, pinchin, pinchout...)
-            emit(input.additionalEvent);
-        }
-
-        // panend and pancancel
-        if (state >= STATE_ENDED) {
-            emit(self.options.event + stateStr(state));
-        }
-    },
-
-    /**
-     * Check that all the require failure recognizers has failed,
-     * if true, it emits a gesture event,
-     * otherwise, setup the state to FAILED.
-     * @param {Object} input
-     */
-    tryEmit: function(input) {
-        if (this.canEmit()) {
-            return this.emit(input);
-        }
-        // it's failing anyway
-        this.state = STATE_FAILED;
-    },
-
-    /**
-     * can we emit?
-     * @returns {boolean}
-     */
-    canEmit: function() {
-        var i = 0;
-        while (i < this.requireFail.length) {
-            if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
-                return false;
-            }
-            i++;
-        }
-        return true;
-    },
-
-    /**
-     * update the recognizer
-     * @param {Object} inputData
-     */
-    recognize: function(inputData) {
-        // make a new copy of the inputData
-        // so we can change the inputData without messing up the other recognizers
-        var inputDataClone = assign({}, inputData);
-
-        // is is enabled and allow recognizing?
-        if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
-            this.reset();
-            this.state = STATE_FAILED;
-            return;
-        }
-
-        // reset when we've reached the end
-        if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
-            this.state = STATE_POSSIBLE;
-        }
-
-        this.state = this.process(inputDataClone);
-
-        // the recognizer has recognized a gesture
-        // so trigger an event
-        if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
-            this.tryEmit(inputDataClone);
-        }
-    },
-
-    /**
-     * return the state of the recognizer
-     * the actual recognizing happens in this method
-     * @virtual
-     * @param {Object} inputData
-     * @returns {Const} STATE
-     */
-    process: function(inputData) { }, // jshint ignore:line
-
-    /**
-     * return the preferred touch-action
-     * @virtual
-     * @returns {Array}
-     */
-    getTouchAction: function() { },
-
-    /**
-     * called when the gesture isn't allowed to recognize
-     * like when another is being recognized or it is disabled
-     * @virtual
-     */
-    reset: function() { }
-};
-
-/**
- * get a usable string, used as event postfix
- * @param {Const} state
- * @returns {String} state
- */
-function stateStr(state) {
-    if (state & STATE_CANCELLED) {
-        return 'cancel';
-    } else if (state & STATE_ENDED) {
-        return 'end';
-    } else if (state & STATE_CHANGED) {
-        return 'move';
-    } else if (state & STATE_BEGAN) {
-        return 'start';
-    }
-    return '';
-}
-
-/**
- * direction cons to string
- * @param {Const} direction
- * @returns {String}
- */
-function directionStr(direction) {
-    if (direction == DIRECTION_DOWN) {
-        return 'down';
-    } else if (direction == DIRECTION_UP) {
-        return 'up';
-    } else if (direction == DIRECTION_LEFT) {
-        return 'left';
-    } else if (direction == DIRECTION_RIGHT) {
-        return 'right';
-    }
-    return '';
-}
-
-/**
- * get a recognizer by name if it is bound to a manager
- * @param {Recognizer|String} otherRecognizer
- * @param {Recognizer} recognizer
- * @returns {Recognizer}
- */
-function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
-    var manager = recognizer.manager;
-    if (manager) {
-        return manager.get(otherRecognizer);
-    }
-    return otherRecognizer;
-}
-
-/**
- * This recognizer is just used as a base for the simple attribute recognizers.
- * @constructor
- * @extends Recognizer
- */
-function AttrRecognizer() {
-    Recognizer.apply(this, arguments);
-}
-
-inherit(AttrRecognizer, Recognizer, {
-    /**
-     * @namespace
-     * @memberof AttrRecognizer
-     */
-    defaults: {
-        /**
-         * @type {Number}
-         * @default 1
-         */
-        pointers: 1
-    },
-
-    /**
-     * Used to check if it the recognizer receives valid input, like input.distance > 10.
-     * @memberof AttrRecognizer
-     * @param {Object} input
-     * @returns {Boolean} recognized
-     */
-    attrTest: function(input) {
-        var optionPointers = this.options.pointers;
-        return optionPointers === 0 || input.pointers.length === optionPointers;
-    },
-
-    /**
-     * Process the input and return the state for the recognizer
-     * @memberof AttrRecognizer
-     * @param {Object} input
-     * @returns {*} State
-     */
-    process: function(input) {
-        var state = this.state;
-        var eventType = input.eventType;
-
-        var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
-        var isValid = this.attrTest(input);
-
-        // on cancel input and we've recognized before, return STATE_CANCELLED
-        if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
-            return state | STATE_CANCELLED;
-        } else if (isRecognized || isValid) {
-            if (eventType & INPUT_END) {
-                return state | STATE_ENDED;
-            } else if (!(state & STATE_BEGAN)) {
-                return STATE_BEGAN;
-            }
-            return state | STATE_CHANGED;
-        }
-        return STATE_FAILED;
-    }
-});
-
-/**
- * Pan
- * Recognized when the pointer is down and moved in the allowed direction.
- * @constructor
- * @extends AttrRecognizer
- */
-function PanRecognizer() {
-    AttrRecognizer.apply(this, arguments);
-
-    this.pX = null;
-    this.pY = null;
-}
-
-inherit(PanRecognizer, AttrRecognizer, {
-    /**
-     * @namespace
-     * @memberof PanRecognizer
-     */
-    defaults: {
-        event: 'pan',
-        threshold: 10,
-        pointers: 1,
-        direction: DIRECTION_ALL
-    },
-
-    getTouchAction: function() {
-        var direction = this.options.direction;
-        var actions = [];
-        if (direction & DIRECTION_HORIZONTAL) {
-            actions.push(TOUCH_ACTION_PAN_Y);
-        }
-        if (direction & DIRECTION_VERTICAL) {
-            actions.push(TOUCH_ACTION_PAN_X);
-        }
-        return actions;
-    },
-
-    directionTest: function(input) {
-        var options = this.options;
-        var hasMoved = true;
-        var distance = input.distance;
-        var direction = input.direction;
-        var x = input.deltaX;
-        var y = input.deltaY;
-
-        // lock to axis?
-        if (!(direction & options.direction)) {
-            if (options.direction & DIRECTION_HORIZONTAL) {
-                direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-                hasMoved = x != this.pX;
-                distance = Math.abs(input.deltaX);
-            } else {
-                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
-                hasMoved = y != this.pY;
-                distance = Math.abs(input.deltaY);
-            }
-        }
-        input.direction = direction;
-        return hasMoved && distance > options.threshold && direction & options.direction;
-    },
-
-    attrTest: function(input) {
-        return AttrRecognizer.prototype.attrTest.call(this, input) &&
-            (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
-    },
-
-    emit: function(input) {
-
-        this.pX = input.deltaX;
-        this.pY = input.deltaY;
-
-        var direction = directionStr(input.direction);
-
-        if (direction) {
-            input.additionalEvent = this.options.event + direction;
-        }
-        this._super.emit.call(this, input);
-    }
-});
-
-/**
- * Pinch
- * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
- * @constructor
- * @extends AttrRecognizer
- */
-function PinchRecognizer() {
-    AttrRecognizer.apply(this, arguments);
-}
-
-inherit(PinchRecognizer, AttrRecognizer, {
-    /**
-     * @namespace
-     * @memberof PinchRecognizer
-     */
-    defaults: {
-        event: 'pinch',
-        threshold: 0,
-        pointers: 2
-    },
-
-    getTouchAction: function() {
-        return [TOUCH_ACTION_NONE];
-    },
-
-    attrTest: function(input) {
-        return this._super.attrTest.call(this, input) &&
-            (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
-    },
-
-    emit: function(input) {
-        if (input.scale !== 1) {
-            var inOut = input.scale < 1 ? 'in' : 'out';
-            input.additionalEvent = this.options.event + inOut;
-        }
-        this._super.emit.call(this, input);
-    }
-});
-
-/**
- * Press
- * Recognized when the pointer is down for x ms without any movement.
- * @constructor
- * @extends Recognizer
- */
-function PressRecognizer() {
-    Recognizer.apply(this, arguments);
-
-    this._timer = null;
-    this._input = null;
-}
-
-inherit(PressRecognizer, Recognizer, {
-    /**
-     * @namespace
-     * @memberof PressRecognizer
-     */
-    defaults: {
-        event: 'press',
-        pointers: 1,
-        time: 251, // minimal time of the pointer to be pressed
-        threshold: 9 // a minimal movement is ok, but keep it low
-    },
-
-    getTouchAction: function() {
-        return [TOUCH_ACTION_AUTO];
-    },
-
-    process: function(input) {
-        var options = this.options;
-        var validPointers = input.pointers.length === options.pointers;
-        var validMovement = input.distance < options.threshold;
-        var validTime = input.deltaTime > options.time;
-
-        this._input = input;
-
-        // we only allow little movement
-        // and we've reached an end event, so a tap is possible
-        if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
-            this.reset();
-        } else if (input.eventType & INPUT_START) {
-            this.reset();
-            this._timer = setTimeoutContext(function() {
-                this.state = STATE_RECOGNIZED;
-                this.tryEmit();
-            }, options.time, this);
-        } else if (input.eventType & INPUT_END) {
-            return STATE_RECOGNIZED;
-        }
-        return STATE_FAILED;
-    },
-
-    reset: function() {
-        clearTimeout(this._timer);
-    },
-
-    emit: function(input) {
-        if (this.state !== STATE_RECOGNIZED) {
-            return;
-        }
-
-        if (input && (input.eventType & INPUT_END)) {
-            this.manager.emit(this.options.event + 'up', input);
-        } else {
-            this._input.timeStamp = now();
-            this.manager.emit(this.options.event, this._input);
-        }
-    }
-});
-
-/**
- * Rotate
- * Recognized when two or more pointer are moving in a circular motion.
- * @constructor
- * @extends AttrRecognizer
- */
-function RotateRecognizer() {
-    AttrRecognizer.apply(this, arguments);
-}
-
-inherit(RotateRecognizer, AttrRecognizer, {
-    /**
-     * @namespace
-     * @memberof RotateRecognizer
-     */
-    defaults: {
-        event: 'rotate',
-        threshold: 0,
-        pointers: 2
-    },
-
-    getTouchAction: function() {
-        return [TOUCH_ACTION_NONE];
-    },
-
-    attrTest: function(input) {
-        return this._super.attrTest.call(this, input) &&
-            (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
-    }
-});
-
-/**
- * Swipe
- * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
- * @constructor
- * @extends AttrRecognizer
- */
-function SwipeRecognizer() {
-    AttrRecognizer.apply(this, arguments);
-}
-
-inherit(SwipeRecognizer, AttrRecognizer, {
-    /**
-     * @namespace
-     * @memberof SwipeRecognizer
-     */
-    defaults: {
-        event: 'swipe',
-        threshold: 10,
-        velocity: 0.3,
-        direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
-        pointers: 1
-    },
-
-    getTouchAction: function() {
-        return PanRecognizer.prototype.getTouchAction.call(this);
-    },
-
-    attrTest: function(input) {
-        var direction = this.options.direction;
-        var velocity;
-
-        if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
-            velocity = input.overallVelocity;
-        } else if (direction & DIRECTION_HORIZONTAL) {
-            velocity = input.overallVelocityX;
-        } else if (direction & DIRECTION_VERTICAL) {
-            velocity = input.overallVelocityY;
-        }
-
-        return this._super.attrTest.call(this, input) &&
-            direction & input.offsetDirection &&
-            input.distance > this.options.threshold &&
-            input.maxPointers == this.options.pointers &&
-            abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
-    },
-
-    emit: function(input) {
-        var direction = directionStr(input.offsetDirection);
-        if (direction) {
-            this.manager.emit(this.options.event + direction, input);
-        }
-
-        this.manager.emit(this.options.event, input);
-    }
-});
-
-/**
- * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
- * between the given interval and position. The delay option can be used to recognize multi-taps without firing
- * a single tap.
- *
- * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
- * multi-taps being recognized.
- * @constructor
- * @extends Recognizer
- */
-function TapRecognizer() {
-    Recognizer.apply(this, arguments);
-
-    // previous time and center,
-    // used for tap counting
-    this.pTime = false;
-    this.pCenter = false;
-
-    this._timer = null;
-    this._input = null;
-    this.count = 0;
-}
-
-inherit(TapRecognizer, Recognizer, {
-    /**
-     * @namespace
-     * @memberof PinchRecognizer
-     */
-    defaults: {
-        event: 'tap',
-        pointers: 1,
-        taps: 1,
-        interval: 300, // max time between the multi-tap taps
-        time: 250, // max time of the pointer to be down (like finger on the screen)
-        threshold: 9, // a minimal movement is ok, but keep it low
-        posThreshold: 10 // a multi-tap can be a bit off the initial position
-    },
-
-    getTouchAction: function() {
-        return [TOUCH_ACTION_MANIPULATION];
-    },
-
-    process: function(input) {
-        var options = this.options;
-
-        var validPointers = input.pointers.length === options.pointers;
-        var validMovement = input.distance < options.threshold;
-        var validTouchTime = input.deltaTime < options.time;
-
-        this.reset();
-
-        if ((input.eventType & INPUT_START) && (this.count === 0)) {
-            return this.failTimeout();
-        }
-
-        // we only allow little movement
-        // and we've reached an end event, so a tap is possible
-        if (validMovement && validTouchTime && validPointers) {
-            if (input.eventType != INPUT_END) {
-                return this.failTimeout();
-            }
-
-            var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
-            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
-
-            this.pTime = input.timeStamp;
-            this.pCenter = input.center;
-
-            if (!validMultiTap || !validInterval) {
-                this.count = 1;
-            } else {
-                this.count += 1;
-            }
-
-            this._input = input;
-
-            // if tap count matches we have recognized it,
-            // else it has began recognizing...
-            var tapCount = this.count % options.taps;
-            if (tapCount === 0) {
-                // no failing requirements, immediately trigger the tap event
-                // or wait as long as the multitap interval to trigger
-                if (!this.hasRequireFailures()) {
-                    return STATE_RECOGNIZED;
-                } else {
-                    this._timer = setTimeoutContext(function() {
-                        this.state = STATE_RECOGNIZED;
-                        this.tryEmit();
-                    }, options.interval, this);
-                    return STATE_BEGAN;
-                }
-            }
-        }
-        return STATE_FAILED;
-    },
-
-    failTimeout: function() {
-        this._timer = setTimeoutContext(function() {
-            this.state = STATE_FAILED;
-        }, this.options.interval, this);
-        return STATE_FAILED;
-    },
-
-    reset: function() {
-        clearTimeout(this._timer);
-    },
-
-    emit: function() {
-        if (this.state == STATE_RECOGNIZED) {
-            this._input.tapCount = this.count;
-            this.manager.emit(this.options.event, this._input);
-        }
-    }
-});
-
-/**
- * Simple way to create a manager with a default set of recognizers.
- * @param {HTMLElement} element
- * @param {Object} [options]
- * @constructor
- */
-function Hammer(element, options) {
-    options = options || {};
-    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
-    return new Manager(element, options);
-}
-
-/**
- * @const {string}
- */
-Hammer.VERSION = '2.0.7';
-
-/**
- * default settings
- * @namespace
- */
-Hammer.defaults = {
-    /**
-     * set if DOM events are being triggered.
-     * But this is slower and unused by simple implementations, so disabled by default.
-     * @type {Boolean}
-     * @default false
-     */
-    domEvents: false,
-
-    /**
-     * The value for the touchAction property/fallback.
-     * When set to `compute` it will magically set the correct value based on the added recognizers.
-     * @type {String}
-     * @default compute
-     */
-    touchAction: TOUCH_ACTION_COMPUTE,
-
-    /**
-     * @type {Boolean}
-     * @default true
-     */
-    enable: true,
-
-    /**
-     * EXPERIMENTAL FEATURE -- can be removed/changed
-     * Change the parent input target element.
-     * If Null, then it is being set the to main element.
-     * @type {Null|EventTarget}
-     * @default null
-     */
-    inputTarget: null,
-
-    /**
-     * force an input class
-     * @type {Null|Function}
-     * @default null
-     */
-    inputClass: null,
-
-    /**
-     * Default recognizer setup when calling `Hammer()`
-     * When creating a new Manager these will be skipped.
-     * @type {Array}
-     */
-    preset: [
-        // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
-        [RotateRecognizer, {enable: false}],
-        [PinchRecognizer, {enable: false}, ['rotate']],
-        [SwipeRecognizer, {direction: DIRECTION_HORIZONTAL}],
-        [PanRecognizer, {direction: DIRECTION_HORIZONTAL}, ['swipe']],
-        [TapRecognizer],
-        [TapRecognizer, {event: 'doubletap', taps: 2}, ['tap']],
-        [PressRecognizer]
-    ],
-
-    /**
-     * Some CSS properties can be used to improve the working of Hammer.
-     * Add them to this method and they will be set when creating a new Manager.
-     * @namespace
-     */
-    cssProps: {
-        /**
-         * Disables text selection to improve the dragging gesture. Mainly for desktop browsers.
-         * @type {String}
-         * @default 'none'
-         */
-        userSelect: 'none',
-
-        /**
-         * Disable the Windows Phone grippers when pressing an element.
-         * @type {String}
-         * @default 'none'
-         */
-        touchSelect: 'none',
-
-        /**
-         * Disables the default callout shown when you touch and hold a touch target.
-         * On iOS, when you touch and hold a touch target such as a link, Safari displays
-         * a callout containing information about the link. This property allows you to disable that callout.
-         * @type {String}
-         * @default 'none'
-         */
-        touchCallout: 'none',
-
-        /**
-         * Specifies whether zooming is enabled. Used by IE10>
-         * @type {String}
-         * @default 'none'
-         */
-        contentZooming: 'none',
-
-        /**
-         * Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
-         * @type {String}
-         * @default 'none'
-         */
-        userDrag: 'none',
-
-        /**
-         * Overrides the highlight color shown when the user taps a link or a JavaScript
-         * clickable element in iOS. This property obeys the alpha value, if specified.
-         * @type {String}
-         * @default 'rgba(0,0,0,0)'
-         */
-        tapHighlightColor: 'rgba(0,0,0,0)'
-    }
-};
-
-var STOP = 1;
-var FORCED_STOP = 2;
-
-/**
- * Manager
- * @param {HTMLElement} element
- * @param {Object} [options]
- * @constructor
- */
-function Manager(element, options) {
-    this.options = assign({}, Hammer.defaults, options || {});
-
-    this.options.inputTarget = this.options.inputTarget || element;
-
-    this.handlers = {};
-    this.session = {};
-    this.recognizers = [];
-    this.oldCssProps = {};
-
-    this.element = element;
-    this.input = createInputInstance(this);
-    this.touchAction = new TouchAction(this, this.options.touchAction);
-
-    toggleCssProps(this, true);
-
-    each(this.options.recognizers, function(item) {
-        var recognizer = this.add(new (item[0])(item[1]));
-        item[2] && recognizer.recognizeWith(item[2]);
-        item[3] && recognizer.requireFailure(item[3]);
-    }, this);
-}
-
-Manager.prototype = {
-    /**
-     * set options
-     * @param {Object} options
-     * @returns {Manager}
-     */
-    set: function(options) {
-        assign(this.options, options);
-
-        // Options that need a little more setup
-        if (options.touchAction) {
-            this.touchAction.update();
-        }
-        if (options.inputTarget) {
-            // Clean up existing event listeners and reinitialize
-            this.input.destroy();
-            this.input.target = options.inputTarget;
-            this.input.init();
-        }
-        return this;
-    },
-
-    /**
-     * stop recognizing for this session.
-     * This session will be discarded, when a new [input]start event is fired.
-     * When forced, the recognizer cycle is stopped immediately.
-     * @param {Boolean} [force]
-     */
-    stop: function(force) {
-        this.session.stopped = force ? FORCED_STOP : STOP;
-    },
-
-    /**
-     * run the recognizers!
-     * called by the inputHandler function on every movement of the pointers (touches)
-     * it walks through all the recognizers and tries to detect the gesture that is being made
-     * @param {Object} inputData
-     */
-    recognize: function(inputData) {
-        var session = this.session;
-        if (session.stopped) {
-            return;
-        }
-
-        // run the touch-action polyfill
-        this.touchAction.preventDefaults(inputData);
-
-        var recognizer;
-        var recognizers = this.recognizers;
-
-        // this holds the recognizer that is being recognized.
-        // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
-        // if no recognizer is detecting a thing, it is set to `null`
-        var curRecognizer = session.curRecognizer;
-
-        // reset when the last recognizer is recognized
-        // or when we're in a new session
-        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
-            curRecognizer = session.curRecognizer = null;
-        }
-
-        var i = 0;
-        while (i < recognizers.length) {
-            recognizer = recognizers[i];
-
-            // find out if we are allowed try to recognize the input for this one.
-            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
-            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
-            //      that is being recognized.
-            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
-            //      this can be setup with the `recognizeWith()` method on the recognizer.
-            if (session.stopped !== FORCED_STOP && ( // 1
-                    !curRecognizer || recognizer == curRecognizer || // 2
-                    recognizer.canRecognizeWith(curRecognizer))) { // 3
-                recognizer.recognize(inputData);
-            } else {
-                recognizer.reset();
-            }
-
-            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
-            // current active recognizer. but only if we don't already have an active recognizer
-            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
-                curRecognizer = session.curRecognizer = recognizer;
-            }
-            i++;
-        }
-    },
-
-    /**
-     * get a recognizer by its event name.
-     * @param {Recognizer|String} recognizer
-     * @returns {Recognizer|Null}
-     */
-    get: function(recognizer) {
-        if (recognizer instanceof Recognizer) {
-            return recognizer;
-        }
-
-        var recognizers = this.recognizers;
-        for (var i = 0; i < recognizers.length; i++) {
-            if (recognizers[i].options.event == recognizer) {
-                return recognizers[i];
-            }
-        }
-        return null;
-    },
-
-    /**
-     * add a recognizer to the manager
-     * existing recognizers with the same event name will be removed
-     * @param {Recognizer} recognizer
-     * @returns {Recognizer|Manager}
-     */
-    add: function(recognizer) {
-        if (invokeArrayArg(recognizer, 'add', this)) {
-            return this;
-        }
-
-        // remove existing
-        var existing = this.get(recognizer.options.event);
-        if (existing) {
-            this.remove(existing);
-        }
-
-        this.recognizers.push(recognizer);
-        recognizer.manager = this;
-
-        this.touchAction.update();
-        return recognizer;
-    },
-
-    /**
-     * remove a recognizer by name or instance
-     * @param {Recognizer|String} recognizer
-     * @returns {Manager}
-     */
-    remove: function(recognizer) {
-        if (invokeArrayArg(recognizer, 'remove', this)) {
-            return this;
-        }
-
-        recognizer = this.get(recognizer);
-
-        // let's make sure this recognizer exists
-        if (recognizer) {
-            var recognizers = this.recognizers;
-            var index = inArray(recognizers, recognizer);
-
-            if (index !== -1) {
-                recognizers.splice(index, 1);
-                this.touchAction.update();
-            }
-        }
-
-        return this;
-    },
-
-    /**
-     * bind event
-     * @param {String} events
-     * @param {Function} handler
-     * @returns {EventEmitter} this
-     */
-    on: function(events, handler) {
-        if (events === undefined) {
-            return;
-        }
-        if (handler === undefined) {
-            return;
-        }
-
-        var handlers = this.handlers;
-        each(splitStr(events), function(event) {
-            handlers[event] = handlers[event] || [];
-            handlers[event].push(handler);
-        });
-        return this;
-    },
-
-    /**
-     * unbind event, leave emit blank to remove all handlers
-     * @param {String} events
-     * @param {Function} [handler]
-     * @returns {EventEmitter} this
-     */
-    off: function(events, handler) {
-        if (events === undefined) {
-            return;
-        }
-
-        var handlers = this.handlers;
-        each(splitStr(events), function(event) {
-            if (!handler) {
-                delete handlers[event];
-            } else {
-                handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
-            }
-        });
-        return this;
-    },
-
-    /**
-     * emit event to the listeners
-     * @param {String} event
-     * @param {Object} data
-     */
-    emit: function(event, data) {
-        // we also want to trigger dom events
-        if (this.options.domEvents) {
-            triggerDomEvent(event, data);
-        }
-
-        // no handlers, so skip it all
-        var handlers = this.handlers[event] && this.handlers[event].slice();
-        if (!handlers || !handlers.length) {
-            return;
-        }
-
-        data.type = event;
-        data.preventDefault = function() {
-            data.srcEvent.preventDefault();
-        };
-
-        var i = 0;
-        while (i < handlers.length) {
-            handlers[i](data);
-            i++;
-        }
-    },
-
-    /**
-     * destroy the manager and unbinds all events
-     * it doesn't unbind dom events, that is the user own responsibility
-     */
-    destroy: function() {
-        this.element && toggleCssProps(this, false);
-
-        this.handlers = {};
-        this.session = {};
-        this.input.destroy();
-        this.element = null;
-    }
-};
-
-/**
- * add/remove the css properties as defined in manager.options.cssProps
- * @param {Manager} manager
- * @param {Boolean} add
- */
-function toggleCssProps(manager, add) {
-    var element = manager.element;
-    if (!element.style) {
-        return;
-    }
-    var prop;
-    each(manager.options.cssProps, function(value, name) {
-        prop = prefixed(element.style, name);
-        if (add) {
-            manager.oldCssProps[prop] = element.style[prop];
-            element.style[prop] = value;
-        } else {
-            element.style[prop] = manager.oldCssProps[prop] || '';
-        }
-    });
-    if (!add) {
-        manager.oldCssProps = {};
-    }
-}
-
-/**
- * trigger dom event
- * @param {String} event
- * @param {Object} data
- */
-function triggerDomEvent(event, data) {
-    var gestureEvent = document.createEvent('Event');
-    gestureEvent.initEvent(event, true, true);
-    gestureEvent.gesture = data;
-    data.target.dispatchEvent(gestureEvent);
-}
-
-assign(Hammer, {
-    INPUT_START: INPUT_START,
-    INPUT_MOVE: INPUT_MOVE,
-    INPUT_END: INPUT_END,
-    INPUT_CANCEL: INPUT_CANCEL,
-
-    STATE_POSSIBLE: STATE_POSSIBLE,
-    STATE_BEGAN: STATE_BEGAN,
-    STATE_CHANGED: STATE_CHANGED,
-    STATE_ENDED: STATE_ENDED,
-    STATE_RECOGNIZED: STATE_RECOGNIZED,
-    STATE_CANCELLED: STATE_CANCELLED,
-    STATE_FAILED: STATE_FAILED,
-
-    DIRECTION_NONE: DIRECTION_NONE,
-    DIRECTION_LEFT: DIRECTION_LEFT,
-    DIRECTION_RIGHT: DIRECTION_RIGHT,
-    DIRECTION_UP: DIRECTION_UP,
-    DIRECTION_DOWN: DIRECTION_DOWN,
-    DIRECTION_HORIZONTAL: DIRECTION_HORIZONTAL,
-    DIRECTION_VERTICAL: DIRECTION_VERTICAL,
-    DIRECTION_ALL: DIRECTION_ALL,
-
-    Manager: Manager,
-    Input: Input,
-    TouchAction: TouchAction,
-
-    TouchInput: TouchInput,
-    MouseInput: MouseInput,
-    PointerEventInput: PointerEventInput,
-    TouchMouseInput: TouchMouseInput,
-    SingleTouchInput: SingleTouchInput,
-
-    Recognizer: Recognizer,
-    AttrRecognizer: AttrRecognizer,
-    Tap: TapRecognizer,
-    Pan: PanRecognizer,
-    Swipe: SwipeRecognizer,
-    Pinch: PinchRecognizer,
-    Rotate: RotateRecognizer,
-    Press: PressRecognizer,
-
-    on: addEventListeners,
-    off: removeEventListeners,
-    each: each,
-    merge: merge,
-    extend: extend,
-    assign: assign,
-    inherit: inherit,
-    bindFn: bindFn,
-    prefixed: prefixed
-});
-
-// this prevents errors when Hammer is loaded in the presence of an AMD
-//  style loader but by script tag, not by the loader.
-var freeGlobal = (typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {})); // jshint ignore:line
-freeGlobal.Hammer = Hammer;
-
-if (typeof define === 'function' && define.amd) {
-    define(function() {
-        return Hammer;
-    });
-} else if (typeof module != 'undefined' && module.exports) {
-    module.exports = Hammer;
-} else {
-    window[exportName] = Hammer;
-}
-
-})(window, document, 'Hammer');
-
-}).apply(this, arguments);
-
-},{}],101:[function(require,module,exports){
+},{"isarray":102}],99:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/has-binary/index.js", module);
 (function(){
 (function (global){
@@ -8884,7 +5976,7 @@ function hasBinary(data) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"isarray":104}],102:[function(require,module,exports){
+},{"isarray":102}],100:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/has-cors/index.js", module);
 (function(){
 
@@ -8907,7 +5999,7 @@ try {
 
 }).apply(this, arguments);
 
-},{}],103:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/indexof/index.js", module);
 (function(){
 
@@ -8922,7 +6014,7 @@ module.exports = function(arr, obj){
 };
 }).apply(this, arguments);
 
-},{}],104:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/isarray/index.js", module);
 (function(){
 module.exports = Array.isArray || function (arr) {
@@ -8931,7 +6023,7 @@ module.exports = Array.isArray || function (arr) {
 
 }).apply(this, arguments);
 
-},{}],105:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/array/last.js", module);
 (function(){
 /**
@@ -8956,7 +6048,7 @@ module.exports = last;
 
 }).apply(this, arguments);
 
-},{}],106:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/array/zipObject.js", module);
 (function(){
 var isArray = require('../lang/isArray');
@@ -9005,7 +6097,7 @@ module.exports = zipObject;
 
 }).apply(this, arguments);
 
-},{"../lang/isArray":160}],107:[function(require,module,exports){
+},{"../lang/isArray":158}],105:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/collection/filter.js", module);
 (function(){
 var arrayFilter = require('../internal/arrayFilter'),
@@ -9072,7 +6164,7 @@ module.exports = filter;
 
 }).apply(this, arguments);
 
-},{"../internal/arrayFilter":113,"../internal/baseCallback":118,"../internal/baseFilter":121,"../lang/isArray":160}],108:[function(require,module,exports){
+},{"../internal/arrayFilter":111,"../internal/baseCallback":116,"../internal/baseFilter":119,"../lang/isArray":158}],106:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/collection/forEach.js", module);
 (function(){
 var arrayEach = require('../internal/arrayEach'),
@@ -9115,7 +6207,7 @@ module.exports = forEach;
 
 }).apply(this, arguments);
 
-},{"../internal/arrayEach":112,"../internal/baseEach":120,"../internal/createForEach":140}],109:[function(require,module,exports){
+},{"../internal/arrayEach":110,"../internal/baseEach":118,"../internal/createForEach":138}],107:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/collection/map.js", module);
 (function(){
 var arrayMap = require('../internal/arrayMap'),
@@ -9189,7 +6281,7 @@ module.exports = map;
 
 }).apply(this, arguments);
 
-},{"../internal/arrayMap":114,"../internal/baseCallback":118,"../internal/baseMap":128,"../lang/isArray":160}],110:[function(require,module,exports){
+},{"../internal/arrayMap":112,"../internal/baseCallback":116,"../internal/baseMap":126,"../lang/isArray":158}],108:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/collection/some.js", module);
 (function(){
 var arraySome = require('../internal/arraySome'),
@@ -9262,7 +6354,7 @@ module.exports = some;
 
 }).apply(this, arguments);
 
-},{"../internal/arraySome":115,"../internal/baseCallback":118,"../internal/baseSome":134,"../internal/isIterateeCall":151,"../lang/isArray":160}],111:[function(require,module,exports){
+},{"../internal/arraySome":113,"../internal/baseCallback":116,"../internal/baseSome":132,"../internal/isIterateeCall":149,"../lang/isArray":158}],109:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/function/restParam.js", module);
 (function(){
 /** Used as the `TypeError` message for "Functions" methods. */
@@ -9326,7 +6418,7 @@ module.exports = restParam;
 
 }).apply(this, arguments);
 
-},{}],112:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayEach.js", module);
 (function(){
 /**
@@ -9354,7 +6446,7 @@ module.exports = arrayEach;
 
 }).apply(this, arguments);
 
-},{}],113:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayFilter.js", module);
 (function(){
 /**
@@ -9385,7 +6477,7 @@ module.exports = arrayFilter;
 
 }).apply(this, arguments);
 
-},{}],114:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/arrayMap.js", module);
 (function(){
 /**
@@ -9412,7 +6504,7 @@ module.exports = arrayMap;
 
 }).apply(this, arguments);
 
-},{}],115:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/arraySome.js", module);
 (function(){
 /**
@@ -9441,7 +6533,7 @@ module.exports = arraySome;
 
 }).apply(this, arguments);
 
-},{}],116:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/assignWith.js", module);
 (function(){
 var keys = require('../object/keys');
@@ -9479,7 +6571,7 @@ module.exports = assignWith;
 
 }).apply(this, arguments);
 
-},{"../object/keys":167}],117:[function(require,module,exports){
+},{"../object/keys":165}],115:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseAssign.js", module);
 (function(){
 var baseCopy = require('./baseCopy'),
@@ -9504,7 +6596,7 @@ module.exports = baseAssign;
 
 }).apply(this, arguments);
 
-},{"../object/keys":167,"./baseCopy":119}],118:[function(require,module,exports){
+},{"../object/keys":165,"./baseCopy":117}],116:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseCallback.js", module);
 (function(){
 var baseMatches = require('./baseMatches'),
@@ -9545,7 +6637,7 @@ module.exports = baseCallback;
 
 }).apply(this, arguments);
 
-},{"../utility/identity":171,"../utility/property":172,"./baseMatches":129,"./baseMatchesProperty":130,"./bindCallback":136}],119:[function(require,module,exports){
+},{"../utility/identity":169,"../utility/property":170,"./baseMatches":127,"./baseMatchesProperty":128,"./bindCallback":134}],117:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseCopy.js", module);
 (function(){
 /**
@@ -9574,7 +6666,7 @@ module.exports = baseCopy;
 
 }).apply(this, arguments);
 
-},{}],120:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseEach.js", module);
 (function(){
 var baseForOwn = require('./baseForOwn'),
@@ -9595,7 +6687,7 @@ module.exports = baseEach;
 
 }).apply(this, arguments);
 
-},{"./baseForOwn":123,"./createBaseEach":138}],121:[function(require,module,exports){
+},{"./baseForOwn":121,"./createBaseEach":136}],119:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseFilter.js", module);
 (function(){
 var baseEach = require('./baseEach');
@@ -9623,7 +6715,7 @@ module.exports = baseFilter;
 
 }).apply(this, arguments);
 
-},{"./baseEach":120}],122:[function(require,module,exports){
+},{"./baseEach":118}],120:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseFor.js", module);
 (function(){
 var createBaseFor = require('./createBaseFor');
@@ -9646,7 +6738,7 @@ module.exports = baseFor;
 
 }).apply(this, arguments);
 
-},{"./createBaseFor":139}],123:[function(require,module,exports){
+},{"./createBaseFor":137}],121:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseForOwn.js", module);
 (function(){
 var baseFor = require('./baseFor'),
@@ -9669,7 +6761,7 @@ module.exports = baseForOwn;
 
 }).apply(this, arguments);
 
-},{"../object/keys":167,"./baseFor":122}],124:[function(require,module,exports){
+},{"../object/keys":165,"./baseFor":120}],122:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseGet.js", module);
 (function(){
 var toObject = require('./toObject');
@@ -9704,7 +6796,7 @@ module.exports = baseGet;
 
 }).apply(this, arguments);
 
-},{"./toObject":157}],125:[function(require,module,exports){
+},{"./toObject":155}],123:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsEqual.js", module);
 (function(){
 var baseIsEqualDeep = require('./baseIsEqualDeep'),
@@ -9738,7 +6830,7 @@ module.exports = baseIsEqual;
 
 }).apply(this, arguments);
 
-},{"../lang/isObject":163,"./baseIsEqualDeep":126,"./isObjectLike":154}],126:[function(require,module,exports){
+},{"../lang/isObject":161,"./baseIsEqualDeep":124,"./isObjectLike":152}],124:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsEqualDeep.js", module);
 (function(){
 var equalArrays = require('./equalArrays'),
@@ -9846,7 +6938,7 @@ module.exports = baseIsEqualDeep;
 
 }).apply(this, arguments);
 
-},{"../lang/isArray":160,"../lang/isTypedArray":164,"./equalArrays":143,"./equalByTag":144,"./equalObjects":145}],127:[function(require,module,exports){
+},{"../lang/isArray":158,"../lang/isTypedArray":162,"./equalArrays":141,"./equalByTag":142,"./equalObjects":143}],125:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseIsMatch.js", module);
 (function(){
 var baseIsEqual = require('./baseIsEqual'),
@@ -9904,7 +6996,7 @@ module.exports = baseIsMatch;
 
 }).apply(this, arguments);
 
-},{"./baseIsEqual":125,"./toObject":157}],128:[function(require,module,exports){
+},{"./baseIsEqual":123,"./toObject":155}],126:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMap.js", module);
 (function(){
 var baseEach = require('./baseEach'),
@@ -9933,7 +7025,7 @@ module.exports = baseMap;
 
 }).apply(this, arguments);
 
-},{"./baseEach":120,"./isArrayLike":149}],129:[function(require,module,exports){
+},{"./baseEach":118,"./isArrayLike":147}],127:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMatches.js", module);
 (function(){
 var baseIsMatch = require('./baseIsMatch'),
@@ -9969,7 +7061,7 @@ module.exports = baseMatches;
 
 }).apply(this, arguments);
 
-},{"./baseIsMatch":127,"./getMatchData":147,"./toObject":157}],130:[function(require,module,exports){
+},{"./baseIsMatch":125,"./getMatchData":145,"./toObject":155}],128:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseMatchesProperty.js", module);
 (function(){
 var baseGet = require('./baseGet'),
@@ -10020,7 +7112,7 @@ module.exports = baseMatchesProperty;
 
 }).apply(this, arguments);
 
-},{"../array/last":105,"../lang/isArray":160,"./baseGet":124,"./baseIsEqual":125,"./baseSlice":133,"./isKey":152,"./isStrictComparable":155,"./toObject":157,"./toPath":158}],131:[function(require,module,exports){
+},{"../array/last":103,"../lang/isArray":158,"./baseGet":122,"./baseIsEqual":123,"./baseSlice":131,"./isKey":150,"./isStrictComparable":153,"./toObject":155,"./toPath":156}],129:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseProperty.js", module);
 (function(){
 /**
@@ -10040,7 +7132,7 @@ module.exports = baseProperty;
 
 }).apply(this, arguments);
 
-},{}],132:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/basePropertyDeep.js", module);
 (function(){
 var baseGet = require('./baseGet'),
@@ -10065,7 +7157,7 @@ module.exports = basePropertyDeep;
 
 }).apply(this, arguments);
 
-},{"./baseGet":124,"./toPath":158}],133:[function(require,module,exports){
+},{"./baseGet":122,"./toPath":156}],131:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseSlice.js", module);
 (function(){
 /**
@@ -10103,7 +7195,7 @@ module.exports = baseSlice;
 
 }).apply(this, arguments);
 
-},{}],134:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseSome.js", module);
 (function(){
 var baseEach = require('./baseEach');
@@ -10132,7 +7224,7 @@ module.exports = baseSome;
 
 }).apply(this, arguments);
 
-},{"./baseEach":120}],135:[function(require,module,exports){
+},{"./baseEach":118}],133:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/baseToString.js", module);
 (function(){
 /**
@@ -10151,7 +7243,7 @@ module.exports = baseToString;
 
 }).apply(this, arguments);
 
-},{}],136:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/bindCallback.js", module);
 (function(){
 var identity = require('../utility/identity');
@@ -10196,7 +7288,7 @@ module.exports = bindCallback;
 
 }).apply(this, arguments);
 
-},{"../utility/identity":171}],137:[function(require,module,exports){
+},{"../utility/identity":169}],135:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/createAssigner.js", module);
 (function(){
 var bindCallback = require('./bindCallback'),
@@ -10243,7 +7335,7 @@ module.exports = createAssigner;
 
 }).apply(this, arguments);
 
-},{"../function/restParam":111,"./bindCallback":136,"./isIterateeCall":151}],138:[function(require,module,exports){
+},{"../function/restParam":109,"./bindCallback":134,"./isIterateeCall":149}],136:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/createBaseEach.js", module);
 (function(){
 var getLength = require('./getLength'),
@@ -10280,7 +7372,7 @@ module.exports = createBaseEach;
 
 }).apply(this, arguments);
 
-},{"./getLength":146,"./isLength":153,"./toObject":157}],139:[function(require,module,exports){
+},{"./getLength":144,"./isLength":151,"./toObject":155}],137:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/createBaseFor.js", module);
 (function(){
 var toObject = require('./toObject');
@@ -10313,7 +7405,7 @@ module.exports = createBaseFor;
 
 }).apply(this, arguments);
 
-},{"./toObject":157}],140:[function(require,module,exports){
+},{"./toObject":155}],138:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/createForEach.js", module);
 (function(){
 var bindCallback = require('./bindCallback'),
@@ -10339,7 +7431,7 @@ module.exports = createForEach;
 
 }).apply(this, arguments);
 
-},{"../lang/isArray":160,"./bindCallback":136}],141:[function(require,module,exports){
+},{"../lang/isArray":158,"./bindCallback":134}],139:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/createForOwn.js", module);
 (function(){
 var bindCallback = require('./bindCallback');
@@ -10364,7 +7456,7 @@ module.exports = createForOwn;
 
 }).apply(this, arguments);
 
-},{"./bindCallback":136}],142:[function(require,module,exports){
+},{"./bindCallback":134}],140:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/createObjectMapper.js", module);
 (function(){
 var baseCallback = require('./baseCallback'),
@@ -10396,7 +7488,7 @@ module.exports = createObjectMapper;
 
 }).apply(this, arguments);
 
-},{"./baseCallback":118,"./baseForOwn":123}],143:[function(require,module,exports){
+},{"./baseCallback":116,"./baseForOwn":121}],141:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/equalArrays.js", module);
 (function(){
 var arraySome = require('./arraySome');
@@ -10453,7 +7545,7 @@ module.exports = equalArrays;
 
 }).apply(this, arguments);
 
-},{"./arraySome":115}],144:[function(require,module,exports){
+},{"./arraySome":113}],142:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/equalByTag.js", module);
 (function(){
 /** `Object#toString` result references. */
@@ -10507,7 +7599,7 @@ module.exports = equalByTag;
 
 }).apply(this, arguments);
 
-},{}],145:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/equalObjects.js", module);
 (function(){
 var keys = require('../object/keys');
@@ -10580,7 +7672,7 @@ module.exports = equalObjects;
 
 }).apply(this, arguments);
 
-},{"../object/keys":167}],146:[function(require,module,exports){
+},{"../object/keys":165}],144:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/getLength.js", module);
 (function(){
 var baseProperty = require('./baseProperty');
@@ -10601,7 +7693,7 @@ module.exports = getLength;
 
 }).apply(this, arguments);
 
-},{"./baseProperty":131}],147:[function(require,module,exports){
+},{"./baseProperty":129}],145:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/getMatchData.js", module);
 (function(){
 var isStrictComparable = require('./isStrictComparable'),
@@ -10628,7 +7720,7 @@ module.exports = getMatchData;
 
 }).apply(this, arguments);
 
-},{"../object/pairs":170,"./isStrictComparable":155}],148:[function(require,module,exports){
+},{"../object/pairs":168,"./isStrictComparable":153}],146:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/getNative.js", module);
 (function(){
 var isNative = require('../lang/isNative');
@@ -10650,7 +7742,7 @@ module.exports = getNative;
 
 }).apply(this, arguments);
 
-},{"../lang/isNative":162}],149:[function(require,module,exports){
+},{"../lang/isNative":160}],147:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isArrayLike.js", module);
 (function(){
 var getLength = require('./getLength'),
@@ -10671,7 +7763,7 @@ module.exports = isArrayLike;
 
 }).apply(this, arguments);
 
-},{"./getLength":146,"./isLength":153}],150:[function(require,module,exports){
+},{"./getLength":144,"./isLength":151}],148:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isIndex.js", module);
 (function(){
 /** Used to detect unsigned integer values. */
@@ -10701,7 +7793,7 @@ module.exports = isIndex;
 
 }).apply(this, arguments);
 
-},{}],151:[function(require,module,exports){
+},{}],149:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isIterateeCall.js", module);
 (function(){
 var isArrayLike = require('./isArrayLike'),
@@ -10735,7 +7827,7 @@ module.exports = isIterateeCall;
 
 }).apply(this, arguments);
 
-},{"../lang/isObject":163,"./isArrayLike":149,"./isIndex":150}],152:[function(require,module,exports){
+},{"../lang/isObject":161,"./isArrayLike":147,"./isIndex":148}],150:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isKey.js", module);
 (function(){
 var isArray = require('../lang/isArray'),
@@ -10769,7 +7861,7 @@ module.exports = isKey;
 
 }).apply(this, arguments);
 
-},{"../lang/isArray":160,"./toObject":157}],153:[function(require,module,exports){
+},{"../lang/isArray":158,"./toObject":155}],151:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isLength.js", module);
 (function(){
 /**
@@ -10795,7 +7887,7 @@ module.exports = isLength;
 
 }).apply(this, arguments);
 
-},{}],154:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isObjectLike.js", module);
 (function(){
 /**
@@ -10813,7 +7905,7 @@ module.exports = isObjectLike;
 
 }).apply(this, arguments);
 
-},{}],155:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/isStrictComparable.js", module);
 (function(){
 var isObject = require('../lang/isObject');
@@ -10834,7 +7926,7 @@ module.exports = isStrictComparable;
 
 }).apply(this, arguments);
 
-},{"../lang/isObject":163}],156:[function(require,module,exports){
+},{"../lang/isObject":161}],154:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/shimKeys.js", module);
 (function(){
 var isArguments = require('../lang/isArguments'),
@@ -10881,7 +7973,7 @@ module.exports = shimKeys;
 
 }).apply(this, arguments);
 
-},{"../lang/isArguments":159,"../lang/isArray":160,"../object/keysIn":168,"./isIndex":150,"./isLength":153}],157:[function(require,module,exports){
+},{"../lang/isArguments":157,"../lang/isArray":158,"../object/keysIn":166,"./isIndex":148,"./isLength":151}],155:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/toObject.js", module);
 (function(){
 var isObject = require('../lang/isObject');
@@ -10901,7 +7993,7 @@ module.exports = toObject;
 
 }).apply(this, arguments);
 
-},{"../lang/isObject":163}],158:[function(require,module,exports){
+},{"../lang/isObject":161}],156:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/internal/toPath.js", module);
 (function(){
 var baseToString = require('./baseToString'),
@@ -10935,7 +8027,7 @@ module.exports = toPath;
 
 }).apply(this, arguments);
 
-},{"../lang/isArray":160,"./baseToString":135}],159:[function(require,module,exports){
+},{"../lang/isArray":158,"./baseToString":133}],157:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/lang/isArguments.js", module);
 (function(){
 var isArrayLike = require('../internal/isArrayLike'),
@@ -10975,7 +8067,7 @@ module.exports = isArguments;
 
 }).apply(this, arguments);
 
-},{"../internal/isArrayLike":149,"../internal/isObjectLike":154}],160:[function(require,module,exports){
+},{"../internal/isArrayLike":147,"../internal/isObjectLike":152}],158:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/lang/isArray.js", module);
 (function(){
 var getNative = require('../internal/getNative'),
@@ -11021,7 +8113,7 @@ module.exports = isArray;
 
 }).apply(this, arguments);
 
-},{"../internal/getNative":148,"../internal/isLength":153,"../internal/isObjectLike":154}],161:[function(require,module,exports){
+},{"../internal/getNative":146,"../internal/isLength":151,"../internal/isObjectLike":152}],159:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/lang/isFunction.js", module);
 (function(){
 var isObject = require('./isObject');
@@ -11065,7 +8157,7 @@ module.exports = isFunction;
 
 }).apply(this, arguments);
 
-},{"./isObject":163}],162:[function(require,module,exports){
+},{"./isObject":161}],160:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/lang/isNative.js", module);
 (function(){
 var isFunction = require('./isFunction'),
@@ -11119,7 +8211,7 @@ module.exports = isNative;
 
 }).apply(this, arguments);
 
-},{"../internal/isObjectLike":154,"./isFunction":161}],163:[function(require,module,exports){
+},{"../internal/isObjectLike":152,"./isFunction":159}],161:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/lang/isObject.js", module);
 (function(){
 /**
@@ -11153,7 +8245,7 @@ module.exports = isObject;
 
 }).apply(this, arguments);
 
-},{}],164:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/lang/isTypedArray.js", module);
 (function(){
 var isLength = require('../internal/isLength'),
@@ -11233,7 +8325,7 @@ module.exports = isTypedArray;
 
 }).apply(this, arguments);
 
-},{"../internal/isLength":153,"../internal/isObjectLike":154}],165:[function(require,module,exports){
+},{"../internal/isLength":151,"../internal/isObjectLike":152}],163:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/object/assign.js", module);
 (function(){
 var assignWith = require('../internal/assignWith'),
@@ -11282,7 +8374,7 @@ module.exports = assign;
 
 }).apply(this, arguments);
 
-},{"../internal/assignWith":116,"../internal/baseAssign":117,"../internal/createAssigner":137}],166:[function(require,module,exports){
+},{"../internal/assignWith":114,"../internal/baseAssign":115,"../internal/createAssigner":135}],164:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/object/forOwn.js", module);
 (function(){
 var baseForOwn = require('../internal/baseForOwn'),
@@ -11321,7 +8413,7 @@ module.exports = forOwn;
 
 }).apply(this, arguments);
 
-},{"../internal/baseForOwn":123,"../internal/createForOwn":141}],167:[function(require,module,exports){
+},{"../internal/baseForOwn":121,"../internal/createForOwn":139}],165:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/object/keys.js", module);
 (function(){
 var getNative = require('../internal/getNative'),
@@ -11372,7 +8464,7 @@ module.exports = keys;
 
 }).apply(this, arguments);
 
-},{"../internal/getNative":148,"../internal/isArrayLike":149,"../internal/shimKeys":156,"../lang/isObject":163}],168:[function(require,module,exports){
+},{"../internal/getNative":146,"../internal/isArrayLike":147,"../internal/shimKeys":154,"../lang/isObject":161}],166:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/object/keysIn.js", module);
 (function(){
 var isArguments = require('../lang/isArguments'),
@@ -11442,7 +8534,7 @@ module.exports = keysIn;
 
 }).apply(this, arguments);
 
-},{"../internal/isIndex":150,"../internal/isLength":153,"../lang/isArguments":159,"../lang/isArray":160,"../lang/isObject":163}],169:[function(require,module,exports){
+},{"../internal/isIndex":148,"../internal/isLength":151,"../lang/isArguments":157,"../lang/isArray":158,"../lang/isObject":161}],167:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/object/mapValues.js", module);
 (function(){
 var createObjectMapper = require('../internal/createObjectMapper');
@@ -11494,7 +8586,7 @@ module.exports = mapValues;
 
 }).apply(this, arguments);
 
-},{"../internal/createObjectMapper":142}],170:[function(require,module,exports){
+},{"../internal/createObjectMapper":140}],168:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/object/pairs.js", module);
 (function(){
 var keys = require('./keys'),
@@ -11533,7 +8625,7 @@ module.exports = pairs;
 
 }).apply(this, arguments);
 
-},{"../internal/toObject":157,"./keys":167}],171:[function(require,module,exports){
+},{"../internal/toObject":155,"./keys":165}],169:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/utility/identity.js", module);
 (function(){
 /**
@@ -11559,7 +8651,7 @@ module.exports = identity;
 
 }).apply(this, arguments);
 
-},{}],172:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/lodash/utility/property.js", module);
 (function(){
 var baseProperty = require('../internal/baseProperty'),
@@ -11596,7 +8688,7 @@ module.exports = property;
 
 }).apply(this, arguments);
 
-},{"../internal/baseProperty":131,"../internal/basePropertyDeep":132,"../internal/isKey":152}],173:[function(require,module,exports){
+},{"../internal/baseProperty":129,"../internal/basePropertyDeep":130,"../internal/isKey":150}],171:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/ms/index.js", module);
 (function(){
 /**
@@ -11727,7 +8819,7 @@ function plural(ms, n, name) {
 
 }).apply(this, arguments);
 
-},{}],174:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/parsejson/index.js", module);
 (function(){
 (function (global){
@@ -11766,7 +8858,7 @@ module.exports = function parsejson(data) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],175:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/parseqs/index.js", module);
 (function(){
 /**
@@ -11809,7 +8901,7 @@ exports.decode = function(qs){
 
 }).apply(this, arguments);
 
-},{}],176:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/parseuri/index.js", module);
 (function(){
 /**
@@ -11854,7 +8946,7 @@ module.exports = function parseuri(str) {
 
 }).apply(this, arguments);
 
-},{}],177:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/process/browser.js", module);
 (function(){
 // shim for using process in browser
@@ -11951,7 +9043,7 @@ process.umask = function() { return 0; };
 
 }).apply(this, arguments);
 
-},{}],178:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/smoothscroll-polyfill/dist/smoothscroll.js", module);
 (function(){
 /*
@@ -12248,7 +9340,7 @@ _hmr["websocket:null"].initModule("node_modules/smoothscroll-polyfill/dist/smoot
 
 }).apply(this, arguments);
 
-},{}],179:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/index.js", module);
 (function(){
 
@@ -12346,7 +9438,7 @@ exports.Socket = require('./socket');
 
 }).apply(this, arguments);
 
-},{"./manager":180,"./socket":182,"./url":183,"debug":185,"socket.io-parser":188}],180:[function(require,module,exports){
+},{"./manager":178,"./socket":180,"./url":181,"debug":183,"socket.io-parser":186}],178:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/manager.js", module);
 (function(){
 
@@ -12909,7 +10001,7 @@ Manager.prototype.onreconnect = function(){
 
 }).apply(this, arguments);
 
-},{"./on":181,"./socket":182,"backo2":75,"component-bind":82,"component-emitter":184,"debug":185,"engine.io-client":85,"indexof":103,"socket.io-parser":188}],181:[function(require,module,exports){
+},{"./on":179,"./socket":180,"backo2":74,"component-bind":81,"component-emitter":182,"debug":183,"engine.io-client":84,"indexof":101,"socket.io-parser":186}],179:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/on.js", module);
 (function(){
 
@@ -12939,7 +10031,7 @@ function on(obj, ev, fn) {
 
 }).apply(this, arguments);
 
-},{}],182:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/socket.js", module);
 (function(){
 
@@ -13357,7 +10449,7 @@ Socket.prototype.compress = function(compress){
 
 }).apply(this, arguments);
 
-},{"./on":181,"component-bind":82,"component-emitter":184,"debug":185,"has-binary":101,"socket.io-parser":188,"to-array":193}],183:[function(require,module,exports){
+},{"./on":179,"component-bind":81,"component-emitter":182,"debug":183,"has-binary":99,"socket.io-parser":186,"to-array":191}],181:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/lib/url.js", module);
 (function(){
 (function (global){
@@ -13441,7 +10533,7 @@ function url(uri, loc){
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"debug":185,"parseuri":176}],184:[function(require,module,exports){
+},{"debug":183,"parseuri":174}],182:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/component-emitter/index.js", module);
 (function(){
 
@@ -13608,7 +10700,7 @@ Emitter.prototype.hasListeners = function(event){
 
 }).apply(this, arguments);
 
-},{}],185:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/browser.js", module);
 (function(){
 
@@ -13782,7 +10874,7 @@ function localstorage(){
 
 }).apply(this, arguments);
 
-},{"./debug":186}],186:[function(require,module,exports){
+},{"./debug":184}],184:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-client/node_modules/debug/debug.js", module);
 (function(){
 
@@ -13985,7 +11077,7 @@ function coerce(val) {
 
 }).apply(this, arguments);
 
-},{"ms":173}],187:[function(require,module,exports){
+},{"ms":171}],185:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/binary.js", module);
 (function(){
 (function (global){
@@ -14134,7 +11226,7 @@ exports.removeBlobs = function(data, callback) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"./is-buffer":189,"isarray":104}],188:[function(require,module,exports){
+},{"./is-buffer":187,"isarray":102}],186:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/index.js", module);
 (function(){
 
@@ -14540,7 +11632,7 @@ function error(data){
 
 }).apply(this, arguments);
 
-},{"./binary":187,"./is-buffer":189,"component-emitter":83,"debug":190,"isarray":104,"json3":192}],189:[function(require,module,exports){
+},{"./binary":185,"./is-buffer":187,"component-emitter":82,"debug":188,"isarray":102,"json3":190}],187:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/is-buffer.js", module);
 (function(){
 (function (global){
@@ -14561,7 +11653,7 @@ function isBuf(obj) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],190:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/browser.js", module);
 (function(){
 
@@ -14735,7 +11827,7 @@ function localstorage(){
 
 }).apply(this, arguments);
 
-},{"./debug":191}],191:[function(require,module,exports){
+},{"./debug":189}],189:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/debug/debug.js", module);
 (function(){
 
@@ -14938,7 +12030,7 @@ function coerce(val) {
 
 }).apply(this, arguments);
 
-},{"ms":173}],192:[function(require,module,exports){
+},{"ms":171}],190:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/json3/lib/json3.js", module);
 (function(){
 (function (global){
@@ -15848,7 +12940,7 @@ _hmr["websocket:null"].initModule("node_modules/socket.io-parser/node_modules/js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],193:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/to-array/index.js", module);
 (function(){
 module.exports = toArray
@@ -15867,7 +12959,7 @@ function toArray(list, index) {
 
 }).apply(this, arguments);
 
-},{}],194:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
 (function(){
 (function (global){
@@ -16119,30 +13211,152 @@ _hmr["websocket:null"].initModule("node_modules/utf8/utf8.js", module);
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{}],195:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-autosize/index.js", module);
+},{}],193:[function(require,module,exports){
+_hmr["websocket:null"].initModule("node_modules/vue-focus/dist/vue-focus.common.js", module);
 (function(){
-var autosize = require('autosize')
+(function (process){
+'use strict';
 
-exports.install = function(Vue) {
-  Vue.directive('autosize', {
-    bind: function() {
-      autosize(this.el)
-    },
+var Vue = require('vue');
+var Vue__default = 'default' in Vue ? Vue['default'] : Vue;
 
-    update: function(value) {
-      this.el.value = value
-      autosize.update(this.el)
-    },
+// @NOTE: We have to use Vue.nextTick because the element might not be
+//        present at the time model changes, but will be in the next batch.
+//        But because we use Vue.nextTick, the directive may already be unbound
+//        by the time the callback executes, so we have to make sure it was not.
 
-    unbind: function() {
-      autosize.destroy(this.el)
+var focus = {
+  priority: 1000,
+
+  bind: function() {
+    var self = this;
+    this.bound = true;
+
+    this.focus = function() {
+      if (self.bound === true) {
+        self.el.focus();
+      }
+    };
+
+    this.blur = function() {
+      if (self.bound === true) {
+        self.el.blur();
+      }
+    };
+  },
+
+  update: function(value) {
+    if (value) {
+      Vue__default.nextTick(this.focus);
+    } else {
+      Vue__default.nextTick(this.blur);
     }
-  })
-}
+  },
+
+  unbind: function() {
+    this.bound = false;
+  },
+};
+
+var focusModel = {
+  twoWay: true,
+  priority: 1000,
+
+  bind: function() {
+    Vue.util.warn(
+      this.name + '="' +
+      this.expression + '" is deprecated, ' +
+      'use v-focus="' + this.expression + '" @focus="' + this.expression + ' = true" @blur="' + this.expression + ' = false" instead'
+    );
+
+    var self = this;
+    this.bound = true;
+
+    this.focus = function() {
+      if (self.bound === true) {
+        self.el.focus();
+      }
+    };
+
+    this.blur = function() {
+      if (self.bound === true) {
+        self.el.blur();
+      }
+    };
+
+    this.focusHandler = function() {
+      self.set(true);
+    };
+
+    this.blurHandler = function() {
+      self.set(false);
+    };
+
+    Vue.util.on(this.el, 'focus', this.focusHandler);
+    Vue.util.on(this.el, 'blur', this.blurHandler);
+  },
+
+  update: function(value) {
+    if (value === true) {
+      Vue__default.nextTick(this.focus);
+    } else if (value === false) {
+      Vue__default.nextTick(this.blur);
+    } else {
+      if (process.env.NODE_ENV !== 'production') {
+        Vue.util.warn(
+          this.name + '="' +
+          this.expression + '" expects a boolean value, ' +
+          'got ' + JSON.stringify(value)
+        );
+      }
+    }
+  },
+
+  unbind: function() {
+    Vue.util.off(this.el, 'focus', this.focusHandler);
+    Vue.util.off(this.el, 'blur', this.blurHandler);
+    this.bound = false;
+  },
+};
+
+var focusAuto = {
+  priority: 100,
+  bind: function() {
+    Vue.util.warn(
+      this.name + ' is deprecated, ' +
+      'use v-focus="true" instead'
+    );
+
+    var self = this;
+    this.bound = true;
+
+    Vue__default.nextTick(function() {
+      if (self.bound === true) {
+        self.el.focus();
+      }
+    });
+  },
+  unbind: function(){
+    this.bound = false;
+  },
+};
+
+var mixin = {
+  directives: {
+    focus: focus,
+    focusModel: focusModel,
+    focusAuto: focusAuto,
+  },
+};
+
+exports.focus = focus;
+exports.focusModel = focusModel;
+exports.focusAuto = focusAuto;
+exports.mixin = mixin;
+}).call(this,require('_process'))
 }).apply(this, arguments);
 
-},{"autosize":4}],196:[function(require,module,exports){
+},{"_process":175,"vue":196}],194:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-hot-reload-api/index.js", module);
 (function(){
 var Vue // late bind
@@ -16447,1623 +13661,7 @@ function format (id) {
 
 }).apply(this, arguments);
 
-},{}],197:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/before.js", module);
-(function(){
-/**
- * Before Interceptor.
- */
-
-var _ = require('../util');
-
-module.exports = {
-
-    request: function (request) {
-
-        if (_.isFunction(request.beforeSend)) {
-            request.beforeSend.call(this, request);
-        }
-
-        return request;
-    }
-
-};
-
-}).apply(this, arguments);
-
-},{"../util":220}],198:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/index.js", module);
-(function(){
-/**
- * Base client.
- */
-
-var _ = require('../../util');
-var Promise = require('../../promise');
-var xhrClient = require('./xhr');
-
-module.exports = function (request) {
-
-    var response = (request.client || xhrClient)(request);
-
-    return Promise.resolve(response).then(function (response) {
-
-        if (response.headers) {
-
-            var headers = parseHeaders(response.headers);
-
-            response.headers = function (name) {
-
-                if (name) {
-                    return headers[_.toLower(name)];
-                }
-
-                return headers;
-            };
-
-        }
-
-        response.ok = response.status >= 200 && response.status < 300;
-
-        return response;
-    });
-
-};
-
-function parseHeaders(str) {
-
-    var headers = {}, value, name, i;
-
-    if (_.isString(str)) {
-        _.each(str.split('\n'), function (row) {
-
-            i = row.indexOf(':');
-            name = _.trim(_.toLower(row.slice(0, i)));
-            value = _.trim(row.slice(i + 1));
-
-            if (headers[name]) {
-
-                if (_.isArray(headers[name])) {
-                    headers[name].push(value);
-                } else {
-                    headers[name] = [headers[name], value];
-                }
-
-            } else {
-
-                headers[name] = value;
-            }
-
-        });
-    }
-
-    return headers;
-}
-
-}).apply(this, arguments);
-
-},{"../../promise":213,"../../util":220,"./xhr":201}],199:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/jsonp.js", module);
-(function(){
-/**
- * JSONP client.
- */
-
-var _ = require('../../util');
-var Promise = require('../../promise');
-
-module.exports = function (request) {
-    return new Promise(function (resolve) {
-
-        var callback = '_jsonp' + Math.random().toString(36).substr(2), response = {request: request, data: null}, handler, script;
-
-        request.params[request.jsonp] = callback;
-        request.cancel = function () {
-            handler({type: 'cancel'});
-        };
-
-        script = document.createElement('script');
-        script.src = _.url(request);
-        script.type = 'text/javascript';
-        script.async = true;
-
-        window[callback] = function (data) {
-            response.data = data;
-        };
-
-        handler = function (event) {
-
-            if (event.type === 'load' && response.data !== null) {
-                response.status = 200;
-            } else if (event.type === 'error') {
-                response.status = 404;
-            } else {
-                response.status = 0;
-            }
-
-            resolve(response);
-
-            delete window[callback];
-            document.body.removeChild(script);
-        };
-
-        script.onload = handler;
-        script.onerror = handler;
-
-        document.body.appendChild(script);
-    });
-};
-
-}).apply(this, arguments);
-
-},{"../../promise":213,"../../util":220}],200:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xdr.js", module);
-(function(){
-/**
- * XDomain client (Internet Explorer).
- */
-
-var _ = require('../../util');
-var Promise = require('../../promise');
-
-module.exports = function (request) {
-    return new Promise(function (resolve) {
-
-        var xdr = new XDomainRequest(), response = {request: request}, handler;
-
-        request.cancel = function () {
-            xdr.abort();
-        };
-
-        xdr.open(request.method, _.url(request), true);
-
-        handler = function (event) {
-
-            response.data = xdr.responseText;
-            response.status = xdr.status;
-            response.statusText = xdr.statusText;
-
-            resolve(response);
-        };
-
-        xdr.timeout = 0;
-        xdr.onload = handler;
-        xdr.onabort = handler;
-        xdr.onerror = handler;
-        xdr.ontimeout = function () {};
-        xdr.onprogress = function () {};
-
-        xdr.send(request.data);
-    });
-};
-
-}).apply(this, arguments);
-
-},{"../../promise":213,"../../util":220}],201:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/client/xhr.js", module);
-(function(){
-/**
- * XMLHttp client.
- */
-
-var _ = require('../../util');
-var Promise = require('../../promise');
-
-module.exports = function (request) {
-    return new Promise(function (resolve) {
-
-        var xhr = new XMLHttpRequest(), response = {request: request}, handler;
-
-        request.cancel = function () {
-            xhr.abort();
-        };
-
-        xhr.open(request.method, _.url(request), true);
-
-        if (_.isPlainObject(request.xhr)) {
-            _.extend(xhr, request.xhr);
-        }
-
-        _.each(request.headers || {}, function (value, header) {
-            xhr.setRequestHeader(header, value);
-        });
-
-        handler = function (event) {
-
-            response.data = xhr.responseText;
-            response.status = xhr.status;
-            response.statusText = xhr.statusText;
-            response.headers = xhr.getAllResponseHeaders();
-
-            resolve(response);
-        };
-
-        xhr.onload = handler;
-        xhr.onabort = handler;
-        xhr.onerror = handler;
-
-        xhr.send(request.data);
-    });
-};
-
-}).apply(this, arguments);
-
-},{"../../promise":213,"../../util":220}],202:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/cors.js", module);
-(function(){
-/**
- * CORS Interceptor.
- */
-
-var _ = require('../util');
-var xdrClient = require('./client/xdr');
-var xhrCors = 'withCredentials' in new XMLHttpRequest();
-var originUrl = _.url.parse(location.href);
-
-module.exports = {
-
-    request: function (request) {
-
-        if (request.crossOrigin === null) {
-            request.crossOrigin = crossOrigin(request);
-        }
-
-        if (request.crossOrigin) {
-
-            if (!xhrCors) {
-                request.client = xdrClient;
-            }
-
-            request.emulateHTTP = false;
-        }
-
-        return request;
-    }
-
-};
-
-function crossOrigin(request) {
-
-    var requestUrl = _.url.parse(_.url(request));
-
-    return (requestUrl.protocol !== originUrl.protocol || requestUrl.host !== originUrl.host);
-}
-
-}).apply(this, arguments);
-
-},{"../util":220,"./client/xdr":200}],203:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/header.js", module);
-(function(){
-/**
- * Header Interceptor.
- */
-
-var _ = require('../util');
-
-module.exports = {
-
-    request: function (request) {
-
-        request.method = request.method.toUpperCase();
-        request.headers = _.extend({}, _.http.headers.common,
-            !request.crossOrigin ? _.http.headers.custom : {},
-            _.http.headers[request.method.toLowerCase()],
-            request.headers
-        );
-
-        if (_.isPlainObject(request.data) && /^(GET|JSONP)$/i.test(request.method)) {
-            _.extend(request.params, request.data);
-            delete request.data;
-        }
-
-        return request;
-    }
-
-};
-
-}).apply(this, arguments);
-
-},{"../util":220}],204:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/index.js", module);
-(function(){
-/**
- * Service for sending network requests.
- */
-
-var _ = require('../util');
-var Client = require('./client');
-var Promise = require('../promise');
-var interceptor = require('./interceptor');
-var jsonType = {'Content-Type': 'application/json'};
-
-function Http(url, options) {
-
-    var client = Client, request, promise;
-
-    Http.interceptors.forEach(function (handler) {
-        client = interceptor(handler, this.$vm)(client);
-    }, this);
-
-    options = _.isObject(url) ? url : _.extend({url: url}, options);
-    request = _.merge({}, Http.options, this.$options, options);
-    promise = client(request).bind(this.$vm).then(function (response) {
-
-        return response.ok ? response : Promise.reject(response);
-
-    }, function (response) {
-
-        if (response instanceof Error) {
-            _.error(response);
-        }
-
-        return Promise.reject(response);
-    });
-
-    if (request.success) {
-        promise.success(request.success);
-    }
-
-    if (request.error) {
-        promise.error(request.error);
-    }
-
-    return promise;
-}
-
-Http.options = {
-    method: 'get',
-    data: '',
-    params: {},
-    headers: {},
-    xhr: null,
-    jsonp: 'callback',
-    beforeSend: null,
-    crossOrigin: null,
-    emulateHTTP: false,
-    emulateJSON: false,
-    timeout: 0
-};
-
-Http.interceptors = [
-    require('./before'),
-    require('./timeout'),
-    require('./jsonp'),
-    require('./method'),
-    require('./mime'),
-    require('./header'),
-    require('./cors')
-];
-
-Http.headers = {
-    put: jsonType,
-    post: jsonType,
-    patch: jsonType,
-    delete: jsonType,
-    common: {'Accept': 'application/json, text/plain, */*'},
-    custom: {'X-Requested-With': 'XMLHttpRequest'}
-};
-
-['get', 'put', 'post', 'patch', 'delete', 'jsonp'].forEach(function (method) {
-
-    Http[method] = function (url, data, success, options) {
-
-        if (_.isFunction(data)) {
-            options = success;
-            success = data;
-            data = undefined;
-        }
-
-        if (_.isObject(success)) {
-            options = success;
-            success = undefined;
-        }
-
-        return this(url, _.extend({method: method, data: data, success: success}, options));
-    };
-});
-
-module.exports = _.http = Http;
-
-}).apply(this, arguments);
-
-},{"../promise":213,"../util":220,"./before":197,"./client":198,"./cors":202,"./header":203,"./interceptor":205,"./jsonp":206,"./method":207,"./mime":208,"./timeout":209}],205:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/interceptor.js", module);
-(function(){
-/**
- * Interceptor factory.
- */
-
-var _ = require('../util');
-var Promise = require('../promise');
-
-module.exports = function (handler, vm) {
-
-    return function (client) {
-
-        if (_.isFunction(handler)) {
-            handler = handler.call(vm, Promise);
-        }
-
-        return function (request) {
-
-            if (_.isFunction(handler.request)) {
-                request = handler.request.call(vm, request);
-            }
-
-            return when(request, function (request) {
-                return when(client(request), function (response) {
-
-                    if (_.isFunction(handler.response)) {
-                        response = handler.response.call(vm, response);
-                    }
-
-                    return response;
-                });
-            });
-        };
-    };
-};
-
-function when(value, fulfilled, rejected) {
-
-    var promise = Promise.resolve(value);
-
-    if (arguments.length < 2) {
-        return promise;
-    }
-
-    return promise.then(fulfilled, rejected);
-}
-
-}).apply(this, arguments);
-
-},{"../promise":213,"../util":220}],206:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/jsonp.js", module);
-(function(){
-/**
- * JSONP Interceptor.
- */
-
-var jsonpClient = require('./client/jsonp');
-
-module.exports = {
-
-    request: function (request) {
-
-        if (request.method == 'JSONP') {
-            request.client = jsonpClient;
-        }
-
-        return request;
-    }
-
-};
-
-}).apply(this, arguments);
-
-},{"./client/jsonp":199}],207:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/method.js", module);
-(function(){
-/**
- * HTTP method override Interceptor.
- */
-
-module.exports = {
-
-    request: function (request) {
-
-        if (request.emulateHTTP && /^(PUT|PATCH|DELETE)$/i.test(request.method)) {
-            request.headers['X-HTTP-Method-Override'] = request.method;
-            request.method = 'POST';
-        }
-
-        return request;
-    }
-
-};
-
-}).apply(this, arguments);
-
-},{}],208:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/mime.js", module);
-(function(){
-/**
- * Mime Interceptor.
- */
-
-var _ = require('../util');
-
-module.exports = {
-
-    request: function (request) {
-
-        if (request.emulateJSON && _.isPlainObject(request.data)) {
-            request.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-            request.data = _.url.params(request.data);
-        }
-
-        if (_.isObject(request.data) && /FormData/i.test(request.data.toString())) {
-            delete request.headers['Content-Type'];
-        }
-
-        if (_.isPlainObject(request.data)) {
-            request.data = JSON.stringify(request.data);
-        }
-
-        return request;
-    },
-
-    response: function (response) {
-
-        try {
-            response.data = JSON.parse(response.data);
-        } catch (e) {}
-
-        return response;
-    }
-
-};
-
-}).apply(this, arguments);
-
-},{"../util":220}],209:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/http/timeout.js", module);
-(function(){
-/**
- * Timeout Interceptor.
- */
-
-module.exports = function () {
-
-    var timeout;
-
-    return {
-
-        request: function (request) {
-
-            if (request.timeout) {
-                timeout = setTimeout(function () {
-                    request.cancel();
-                }, request.timeout);
-            }
-
-            return request;
-        },
-
-        response: function (response) {
-
-            clearTimeout(timeout);
-
-            return response;
-        }
-
-    };
-};
-
-}).apply(this, arguments);
-
-},{}],210:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/index.js", module);
-(function(){
-/**
- * Install plugin.
- */
-
-function install(Vue) {
-
-    var _ = require('./util');
-
-    _.config = Vue.config;
-    _.warning = Vue.util.warn;
-    _.nextTick = Vue.util.nextTick;
-
-    Vue.url = require('./url');
-    Vue.http = require('./http');
-    Vue.resource = require('./resource');
-    Vue.Promise = require('./promise');
-
-    Object.defineProperties(Vue.prototype, {
-
-        $url: {
-            get: function () {
-                return _.options(Vue.url, this, this.$options.url);
-            }
-        },
-
-        $http: {
-            get: function () {
-                return _.options(Vue.http, this, this.$options.http);
-            }
-        },
-
-        $resource: {
-            get: function () {
-                return Vue.resource.bind(this);
-            }
-        },
-
-        $promise: {
-            get: function () {
-                return function (executor) {
-                    return new Vue.Promise(executor, this);
-                }.bind(this);
-            }
-        }
-
-    });
-}
-
-if (window.Vue) {
-    Vue.use(install);
-}
-
-module.exports = install;
-
-}).apply(this, arguments);
-
-},{"./http":204,"./promise":213,"./resource":214,"./url":215,"./util":220}],211:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/promise.js", module);
-(function(){
-/**
- * Promises/A+ polyfill v1.1.4 (https://github.com/bramstein/promis)
- */
-
-var _ = require('../util');
-
-var RESOLVED = 0;
-var REJECTED = 1;
-var PENDING  = 2;
-
-function Promise(executor) {
-
-    this.state = PENDING;
-    this.value = undefined;
-    this.deferred = [];
-
-    var promise = this;
-
-    try {
-        executor(function (x) {
-            promise.resolve(x);
-        }, function (r) {
-            promise.reject(r);
-        });
-    } catch (e) {
-        promise.reject(e);
-    }
-}
-
-Promise.reject = function (r) {
-    return new Promise(function (resolve, reject) {
-        reject(r);
-    });
-};
-
-Promise.resolve = function (x) {
-    return new Promise(function (resolve, reject) {
-        resolve(x);
-    });
-};
-
-Promise.all = function all(iterable) {
-    return new Promise(function (resolve, reject) {
-        var count = 0, result = [];
-
-        if (iterable.length === 0) {
-            resolve(result);
-        }
-
-        function resolver(i) {
-            return function (x) {
-                result[i] = x;
-                count += 1;
-
-                if (count === iterable.length) {
-                    resolve(result);
-                }
-            };
-        }
-
-        for (var i = 0; i < iterable.length; i += 1) {
-            Promise.resolve(iterable[i]).then(resolver(i), reject);
-        }
-    });
-};
-
-Promise.race = function race(iterable) {
-    return new Promise(function (resolve, reject) {
-        for (var i = 0; i < iterable.length; i += 1) {
-            Promise.resolve(iterable[i]).then(resolve, reject);
-        }
-    });
-};
-
-var p = Promise.prototype;
-
-p.resolve = function resolve(x) {
-    var promise = this;
-
-    if (promise.state === PENDING) {
-        if (x === promise) {
-            throw new TypeError('Promise settled with itself.');
-        }
-
-        var called = false;
-
-        try {
-            var then = x && x['then'];
-
-            if (x !== null && typeof x === 'object' && typeof then === 'function') {
-                then.call(x, function (x) {
-                    if (!called) {
-                        promise.resolve(x);
-                    }
-                    called = true;
-
-                }, function (r) {
-                    if (!called) {
-                        promise.reject(r);
-                    }
-                    called = true;
-                });
-                return;
-            }
-        } catch (e) {
-            if (!called) {
-                promise.reject(e);
-            }
-            return;
-        }
-
-        promise.state = RESOLVED;
-        promise.value = x;
-        promise.notify();
-    }
-};
-
-p.reject = function reject(reason) {
-    var promise = this;
-
-    if (promise.state === PENDING) {
-        if (reason === promise) {
-            throw new TypeError('Promise settled with itself.');
-        }
-
-        promise.state = REJECTED;
-        promise.value = reason;
-        promise.notify();
-    }
-};
-
-p.notify = function notify() {
-    var promise = this;
-
-    _.nextTick(function () {
-        if (promise.state !== PENDING) {
-            while (promise.deferred.length) {
-                var deferred = promise.deferred.shift(),
-                    onResolved = deferred[0],
-                    onRejected = deferred[1],
-                    resolve = deferred[2],
-                    reject = deferred[3];
-
-                try {
-                    if (promise.state === RESOLVED) {
-                        if (typeof onResolved === 'function') {
-                            resolve(onResolved.call(undefined, promise.value));
-                        } else {
-                            resolve(promise.value);
-                        }
-                    } else if (promise.state === REJECTED) {
-                        if (typeof onRejected === 'function') {
-                            resolve(onRejected.call(undefined, promise.value));
-                        } else {
-                            reject(promise.value);
-                        }
-                    }
-                } catch (e) {
-                    reject(e);
-                }
-            }
-        }
-    });
-};
-
-p.then = function then(onResolved, onRejected) {
-    var promise = this;
-
-    return new Promise(function (resolve, reject) {
-        promise.deferred.push([onResolved, onRejected, resolve, reject]);
-        promise.notify();
-    });
-};
-
-p.catch = function (onRejected) {
-    return this.then(undefined, onRejected);
-};
-
-module.exports = Promise;
-
-}).apply(this, arguments);
-
-},{"../util":220}],212:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/lib/url-template.js", module);
-(function(){
-/**
- * URL Template v2.0.6 (https://github.com/bramstein/url-template)
- */
-
-exports.expand = function (url, params, variables) {
-
-    var tmpl = this.parse(url), expanded = tmpl.expand(params);
-
-    if (variables) {
-        variables.push.apply(variables, tmpl.vars);
-    }
-
-    return expanded;
-};
-
-exports.parse = function (template) {
-
-    var operators = ['+', '#', '.', '/', ';', '?', '&'], variables = [];
-
-    return {
-        vars: variables,
-        expand: function (context) {
-            return template.replace(/\{([^\{\}]+)\}|([^\{\}]+)/g, function (_, expression, literal) {
-                if (expression) {
-
-                    var operator = null, values = [];
-
-                    if (operators.indexOf(expression.charAt(0)) !== -1) {
-                        operator = expression.charAt(0);
-                        expression = expression.substr(1);
-                    }
-
-                    expression.split(/,/g).forEach(function (variable) {
-                        var tmp = /([^:\*]*)(?::(\d+)|(\*))?/.exec(variable);
-                        values.push.apply(values, exports.getValues(context, operator, tmp[1], tmp[2] || tmp[3]));
-                        variables.push(tmp[1]);
-                    });
-
-                    if (operator && operator !== '+') {
-
-                        var separator = ',';
-
-                        if (operator === '?') {
-                            separator = '&';
-                        } else if (operator !== '#') {
-                            separator = operator;
-                        }
-
-                        return (values.length !== 0 ? operator : '') + values.join(separator);
-                    } else {
-                        return values.join(',');
-                    }
-
-                } else {
-                    return exports.encodeReserved(literal);
-                }
-            });
-        }
-    };
-};
-
-exports.getValues = function (context, operator, key, modifier) {
-
-    var value = context[key], result = [];
-
-    if (this.isDefined(value) && value !== '') {
-        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-            value = value.toString();
-
-            if (modifier && modifier !== '*') {
-                value = value.substring(0, parseInt(modifier, 10));
-            }
-
-            result.push(this.encodeValue(operator, value, this.isKeyOperator(operator) ? key : null));
-        } else {
-            if (modifier === '*') {
-                if (Array.isArray(value)) {
-                    value.filter(this.isDefined).forEach(function (value) {
-                        result.push(this.encodeValue(operator, value, this.isKeyOperator(operator) ? key : null));
-                    }, this);
-                } else {
-                    Object.keys(value).forEach(function (k) {
-                        if (this.isDefined(value[k])) {
-                            result.push(this.encodeValue(operator, value[k], k));
-                        }
-                    }, this);
-                }
-            } else {
-                var tmp = [];
-
-                if (Array.isArray(value)) {
-                    value.filter(this.isDefined).forEach(function (value) {
-                        tmp.push(this.encodeValue(operator, value));
-                    }, this);
-                } else {
-                    Object.keys(value).forEach(function (k) {
-                        if (this.isDefined(value[k])) {
-                            tmp.push(encodeURIComponent(k));
-                            tmp.push(this.encodeValue(operator, value[k].toString()));
-                        }
-                    }, this);
-                }
-
-                if (this.isKeyOperator(operator)) {
-                    result.push(encodeURIComponent(key) + '=' + tmp.join(','));
-                } else if (tmp.length !== 0) {
-                    result.push(tmp.join(','));
-                }
-            }
-        }
-    } else {
-        if (operator === ';') {
-            result.push(encodeURIComponent(key));
-        } else if (value === '' && (operator === '&' || operator === '?')) {
-            result.push(encodeURIComponent(key) + '=');
-        } else if (value === '') {
-            result.push('');
-        }
-    }
-
-    return result;
-};
-
-exports.isDefined = function (value) {
-    return value !== undefined && value !== null;
-};
-
-exports.isKeyOperator = function (operator) {
-    return operator === ';' || operator === '&' || operator === '?';
-};
-
-exports.encodeValue = function (operator, value, key) {
-
-    value = (operator === '+' || operator === '#') ? this.encodeReserved(value) : encodeURIComponent(value);
-
-    if (key) {
-        return encodeURIComponent(key) + '=' + value;
-    } else {
-        return value;
-    }
-};
-
-exports.encodeReserved = function (str) {
-    return str.split(/(%[0-9A-Fa-f]{2})/g).map(function (part) {
-        if (!/%[0-9A-Fa-f]/.test(part)) {
-            part = encodeURI(part);
-        }
-        return part;
-    }).join('');
-};
-
-}).apply(this, arguments);
-
-},{}],213:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/promise.js", module);
-(function(){
-/**
- * Promise adapter.
- */
-
-var _ = require('./util');
-var PromiseObj = window.Promise || require('./lib/promise');
-
-function Promise(executor, context) {
-
-    if (executor instanceof PromiseObj) {
-        this.promise = executor;
-    } else {
-        this.promise = new PromiseObj(executor.bind(context));
-    }
-
-    this.context = context;
-}
-
-Promise.all = function (iterable, context) {
-    return new Promise(PromiseObj.all(iterable), context);
-};
-
-Promise.resolve = function (value, context) {
-    return new Promise(PromiseObj.resolve(value), context);
-};
-
-Promise.reject = function (reason, context) {
-    return new Promise(PromiseObj.reject(reason), context);
-};
-
-Promise.race = function (iterable, context) {
-    return new Promise(PromiseObj.race(iterable), context);
-};
-
-var p = Promise.prototype;
-
-p.bind = function (context) {
-    this.context = context;
-    return this;
-};
-
-p.then = function (fulfilled, rejected) {
-
-    if (fulfilled && fulfilled.bind && this.context) {
-        fulfilled = fulfilled.bind(this.context);
-    }
-
-    if (rejected && rejected.bind && this.context) {
-        rejected = rejected.bind(this.context);
-    }
-
-    this.promise = this.promise.then(fulfilled, rejected);
-
-    return this;
-};
-
-p.catch = function (rejected) {
-
-    if (rejected && rejected.bind && this.context) {
-        rejected = rejected.bind(this.context);
-    }
-
-    this.promise = this.promise.catch(rejected);
-
-    return this;
-};
-
-p.finally = function (callback) {
-
-    return this.then(function (value) {
-            callback.call(this);
-            return value;
-        }, function (reason) {
-            callback.call(this);
-            return PromiseObj.reject(reason);
-        }
-    );
-};
-
-p.success = function (callback) {
-
-    _.warn('The `success` method has been deprecated. Use the `then` method instead.');
-
-    return this.then(function (response) {
-        return callback.call(this, response.data, response.status, response) || response;
-    });
-};
-
-p.error = function (callback) {
-
-    _.warn('The `error` method has been deprecated. Use the `catch` method instead.');
-
-    return this.catch(function (response) {
-        return callback.call(this, response.data, response.status, response) || response;
-    });
-};
-
-p.always = function (callback) {
-
-    _.warn('The `always` method has been deprecated. Use the `finally` method instead.');
-
-    var cb = function (response) {
-        return callback.call(this, response.data, response.status, response) || response;
-    };
-
-    return this.then(cb, cb);
-};
-
-module.exports = Promise;
-
-}).apply(this, arguments);
-
-},{"./lib/promise":211,"./util":220}],214:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/resource.js", module);
-(function(){
-/**
- * Service for interacting with RESTful services.
- */
-
-var _ = require('./util');
-
-function Resource(url, params, actions, options) {
-
-    var self = this, resource = {};
-
-    actions = _.extend({},
-        Resource.actions,
-        actions
-    );
-
-    _.each(actions, function (action, name) {
-
-        action = _.merge({url: url, params: params || {}}, options, action);
-
-        resource[name] = function () {
-            return (self.$http || _.http)(opts(action, arguments));
-        };
-    });
-
-    return resource;
-}
-
-function opts(action, args) {
-
-    var options = _.extend({}, action), params = {}, data, success, error;
-
-    switch (args.length) {
-
-        case 4:
-
-            error = args[3];
-            success = args[2];
-
-        case 3:
-        case 2:
-
-            if (_.isFunction(args[1])) {
-
-                if (_.isFunction(args[0])) {
-
-                    success = args[0];
-                    error = args[1];
-
-                    break;
-                }
-
-                success = args[1];
-                error = args[2];
-
-            } else {
-
-                params = args[0];
-                data = args[1];
-                success = args[2];
-
-                break;
-            }
-
-        case 1:
-
-            if (_.isFunction(args[0])) {
-                success = args[0];
-            } else if (/^(POST|PUT|PATCH)$/i.test(options.method)) {
-                data = args[0];
-            } else {
-                params = args[0];
-            }
-
-            break;
-
-        case 0:
-
-            break;
-
-        default:
-
-            throw 'Expected up to 4 arguments [params, data, success, error], got ' + args.length + ' arguments';
-    }
-
-    options.data = data;
-    options.params = _.extend({}, options.params, params);
-
-    if (success) {
-        options.success = success;
-    }
-
-    if (error) {
-        options.error = error;
-    }
-
-    return options;
-}
-
-Resource.actions = {
-
-    get: {method: 'GET'},
-    save: {method: 'POST'},
-    query: {method: 'GET'},
-    update: {method: 'PUT'},
-    remove: {method: 'DELETE'},
-    delete: {method: 'DELETE'}
-
-};
-
-module.exports = _.resource = Resource;
-
-}).apply(this, arguments);
-
-},{"./util":220}],215:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/index.js", module);
-(function(){
-/**
- * Service for URL templating.
- */
-
-var _ = require('../util');
-var ie = document.documentMode;
-var el = document.createElement('a');
-
-function Url(url, params) {
-
-    var options = url, transform;
-
-    if (_.isString(url)) {
-        options = {url: url, params: params};
-    }
-
-    options = _.merge({}, Url.options, this.$options, options);
-
-    Url.transforms.forEach(function (handler) {
-        transform = factory(handler, transform, this.$vm);
-    }, this);
-
-    return transform(options);
-};
-
-/**
- * Url options.
- */
-
-Url.options = {
-    url: '',
-    root: null,
-    params: {}
-};
-
-/**
- * Url transforms.
- */
-
-Url.transforms = [
-    require('./template'),
-    require('./legacy'),
-    require('./query'),
-    require('./root')
-];
-
-/**
- * Encodes a Url parameter string.
- *
- * @param {Object} obj
- */
-
-Url.params = function (obj) {
-
-    var params = [], escape = encodeURIComponent;
-
-    params.add = function (key, value) {
-
-        if (_.isFunction(value)) {
-            value = value();
-        }
-
-        if (value === null) {
-            value = '';
-        }
-
-        this.push(escape(key) + '=' + escape(value));
-    };
-
-    serialize(params, obj);
-
-    return params.join('&').replace(/%20/g, '+');
-};
-
-/**
- * Parse a URL and return its components.
- *
- * @param {String} url
- */
-
-Url.parse = function (url) {
-
-    if (ie) {
-        el.href = url;
-        url = el.href;
-    }
-
-    el.href = url;
-
-    return {
-        href: el.href,
-        protocol: el.protocol ? el.protocol.replace(/:$/, '') : '',
-        port: el.port,
-        host: el.host,
-        hostname: el.hostname,
-        pathname: el.pathname.charAt(0) === '/' ? el.pathname : '/' + el.pathname,
-        search: el.search ? el.search.replace(/^\?/, '') : '',
-        hash: el.hash ? el.hash.replace(/^#/, '') : ''
-    };
-};
-
-function factory(handler, next, vm) {
-    return function (options) {
-        return handler.call(vm, options, next);
-    };
-}
-
-function serialize(params, obj, scope) {
-
-    var array = _.isArray(obj), plain = _.isPlainObject(obj), hash;
-
-    _.each(obj, function (value, key) {
-
-        hash = _.isObject(value) || _.isArray(value);
-
-        if (scope) {
-            key = scope + '[' + (plain || hash ? key : '') + ']';
-        }
-
-        if (!scope && array) {
-            params.add(value.name, value.value);
-        } else if (hash) {
-            serialize(params, value, key);
-        } else {
-            params.add(key, value);
-        }
-    });
-}
-
-module.exports = _.url = Url;
-
-}).apply(this, arguments);
-
-},{"../util":220,"./legacy":216,"./query":217,"./root":218,"./template":219}],216:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/legacy.js", module);
-(function(){
-/**
- * Legacy Transform.
- */
-
-var _ = require('../util');
-
-module.exports = function (options, next) {
-
-    var variables = [], url = next(options);
-
-    url = url.replace(/(\/?):([a-z]\w*)/gi, function (match, slash, name) {
-
-        _.warn('The `:' + name + '` parameter syntax has been deprecated. Use the `{' + name + '}` syntax instead.');
-
-        if (options.params[name]) {
-            variables.push(name);
-            return slash + encodeUriSegment(options.params[name]);
-        }
-
-        return '';
-    });
-
-    variables.forEach(function (key) {
-        delete options.params[key];
-    });
-
-    return url;
-};
-
-function encodeUriSegment(value) {
-
-    return encodeUriQuery(value, true).
-        replace(/%26/gi, '&').
-        replace(/%3D/gi, '=').
-        replace(/%2B/gi, '+');
-}
-
-function encodeUriQuery(value, spaces) {
-
-    return encodeURIComponent(value).
-        replace(/%40/gi, '@').
-        replace(/%3A/gi, ':').
-        replace(/%24/g, '$').
-        replace(/%2C/gi, ',').
-        replace(/%20/g, (spaces ? '%20' : '+'));
-}
-
-}).apply(this, arguments);
-
-},{"../util":220}],217:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/query.js", module);
-(function(){
-/**
- * Query Parameter Transform.
- */
-
-var _ = require('../util');
-
-module.exports = function (options, next) {
-
-    var urlParams = Object.keys(_.url.options.params), query = {}, url = next(options);
-
-   _.each(options.params, function (value, key) {
-        if (urlParams.indexOf(key) === -1) {
-            query[key] = value;
-        }
-    });
-
-    query = _.url.params(query);
-
-    if (query) {
-        url += (url.indexOf('?') == -1 ? '?' : '&') + query;
-    }
-
-    return url;
-};
-
-}).apply(this, arguments);
-
-},{"../util":220}],218:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/root.js", module);
-(function(){
-/**
- * Root Prefix Transform.
- */
-
-var _ = require('../util');
-
-module.exports = function (options, next) {
-
-    var url = next(options);
-
-    if (_.isString(options.root) && !url.match(/^(https?:)?\//)) {
-        url = options.root + '/' + url;
-    }
-
-    return url;
-};
-
-}).apply(this, arguments);
-
-},{"../util":220}],219:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/url/template.js", module);
-(function(){
-/**
- * URL Template (RFC 6570) Transform.
- */
-
-var UrlTemplate = require('../lib/url-template');
-
-module.exports = function (options) {
-
-    var variables = [], url = UrlTemplate.expand(options.url, options.params, variables);
-
-    variables.forEach(function (key) {
-        delete options.params[key];
-    });
-
-    return url;
-};
-
-}).apply(this, arguments);
-
-},{"../lib/url-template":212}],220:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-resource/src/util.js", module);
-(function(){
-/**
- * Utility functions.
- */
-
-var _ = exports, array = [], console = window.console;
-
-_.warn = function (msg) {
-    if (console && _.warning && (!_.config.silent || _.config.debug)) {
-        console.warn('[VueResource warn]: ' + msg);
-    }
-};
-
-_.error = function (msg) {
-    if (console) {
-        console.error(msg);
-    }
-};
-
-_.trim = function (str) {
-    return str.replace(/^\s*|\s*$/g, '');
-};
-
-_.toLower = function (str) {
-    return str ? str.toLowerCase() : '';
-};
-
-_.isArray = Array.isArray;
-
-_.isString = function (val) {
-    return typeof val === 'string';
-};
-
-_.isFunction = function (val) {
-    return typeof val === 'function';
-};
-
-_.isObject = function (obj) {
-    return obj !== null && typeof obj === 'object';
-};
-
-_.isPlainObject = function (obj) {
-    return _.isObject(obj) && Object.getPrototypeOf(obj) == Object.prototype;
-};
-
-_.options = function (fn, obj, options) {
-
-    options = options || {};
-
-    if (_.isFunction(options)) {
-        options = options.call(obj);
-    }
-
-    return _.merge(fn.bind({$vm: obj, $options: options}), fn, {$options: options});
-};
-
-_.each = function (obj, iterator) {
-
-    var i, key;
-
-    if (typeof obj.length == 'number') {
-        for (i = 0; i < obj.length; i++) {
-            iterator.call(obj[i], obj[i], i);
-        }
-    } else if (_.isObject(obj)) {
-        for (key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                iterator.call(obj[key], obj[key], key);
-            }
-        }
-    }
-
-    return obj;
-};
-
-_.defaults = function (target, source) {
-
-    for (var key in source) {
-        if (target[key] === undefined) {
-            target[key] = source[key];
-        }
-    }
-
-    return target;
-};
-
-_.extend = function (target) {
-
-    var args = array.slice.call(arguments, 1);
-
-    args.forEach(function (arg) {
-        merge(target, arg);
-    });
-
-    return target;
-};
-
-_.merge = function (target) {
-
-    var args = array.slice.call(arguments, 1);
-
-    args.forEach(function (arg) {
-        merge(target, arg, true);
-    });
-
-    return target;
-};
-
-function merge(target, source, deep) {
-    for (var key in source) {
-        if (deep && (_.isPlainObject(source[key]) || _.isArray(source[key]))) {
-            if (_.isPlainObject(source[key]) && !_.isPlainObject(target[key])) {
-                target[key] = {};
-            }
-            if (_.isArray(source[key]) && !_.isArray(target[key])) {
-                target[key] = [];
-            }
-            merge(target[key], source[key], deep);
-        } else if (source[key] !== undefined) {
-            target[key] = source[key];
-        }
-    }
-}
-
-}).apply(this, arguments);
-
-},{}],221:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", module);
 (function(){
 /*!
@@ -20777,177 +16375,7 @@ _hmr["websocket:null"].initModule("node_modules/vue-router/dist/vue-router.js", 
 }));
 }).apply(this, arguments);
 
-},{}],222:[function(require,module,exports){
-_hmr["websocket:null"].initModule("node_modules/vue-touch/vue-touch.js", module);
-(function(){
-;(function () {
-
-  var vueTouch = {}
-  var Hammer = typeof require === 'function'
-    ? require('hammerjs')
-    : window.Hammer
-  var gestures = ['tap', 'pan', 'pinch', 'press', 'rotate', 'swipe']
-  var directions = ['up', 'down', 'left', 'right', 'horizontal', 'vertical', 'all']
-  var customEvents = {}
-
-  if (!Hammer) {
-    throw new Error('[vue-touch] cannot locate Hammer.js.')
-  }
-
-  // exposed global options
-  vueTouch.config = {}
-
-  vueTouch.install = function (Vue) {
-
-    Vue.directive('touch', {
-
-      isFn: true,
-      acceptStatement: true,
-      priority: Vue.directive('on').priority,
-
-      bind: function () {
-        if (!this.el.hammer) {
-          this.el.hammer = new Hammer.Manager(this.el)
-        }
-        var mc = this.mc = this.el.hammer
-        // determine event type
-        var event = this.arg
-        if (!event) {
-          console.warn('[vue-touch] event type argument is required.')
-        }
-        var recognizerType, recognizer
-
-        if (customEvents[event]) {
-          // custom event
-          var custom = customEvents[event]
-          recognizerType = custom.type
-          recognizer = new Hammer[capitalize(recognizerType)](custom)
-          recognizer.recognizeWith(mc.recognizers)
-          mc.add(recognizer)
-        } else {
-          // built-in event
-          for (var i = 0; i < gestures.length; i++) {
-            if (event.indexOf(gestures[i]) === 0) {
-              recognizerType = gestures[i]
-              break
-            }
-          }
-          if (!recognizerType) {
-            console.warn('[vue-touch] invalid event type: ' + event)
-            return
-          }
-          recognizer = mc.get(recognizerType)
-          if (!recognizer) {
-            // add recognizer
-            recognizer = new Hammer[capitalize(recognizerType)]()
-            // make sure multiple recognizers work together...
-            recognizer.recognizeWith(mc.recognizers)
-            mc.add(recognizer)
-          }
-          // apply global options
-          var globalOptions = vueTouch.config[recognizerType]
-          if (globalOptions) {
-            guardDirections(globalOptions)
-            recognizer.set(globalOptions)
-          }
-          // apply local options
-          var localOptions =
-            this.el.hammerOptions &&
-            this.el.hammerOptions[recognizerType]
-          if (localOptions) {
-            guardDirections(localOptions)
-            recognizer.set(localOptions)
-          }
-        }
-        this.recognizer = recognizer
-      },
-
-      update: function (fn) {
-        var mc = this.mc
-        var event = this.arg
-        // teardown old handler
-        if (this.handler) {
-          mc.off(event, this.handler)
-        }
-        if (typeof fn !== 'function') {
-          this.handler = null
-          console.warn(
-            '[vue-touch] invalid handler function for v-touch: ' +
-            this.arg + '="' + this.descriptor.raw
-          )
-        } else {
-          mc.on(event, (this.handler = fn))
-        }
-      },
-
-      unbind: function () {
-        if (this.handler) {
-          this.mc.off(this.arg, this.handler)
-        }
-        if (!Object.keys(this.mc.handlers).length) {
-          this.mc.destroy()
-          this.el.hammer = null
-        }
-      }
-    })
-
-    Vue.directive('touch-options', {
-      priority: Vue.directive('on').priority + 1,
-      update: function (options) {
-        var opts = this.el.hammerOptions || (this.el.hammerOptions = {})
-        if (!this.arg) {
-          console.warn('[vue-touch] recognizer type argument for v-touch-options is required.')
-        } else {
-          opts[this.arg] = options
-        }
-      }
-    })
-  }
-
-  /**
-   * Register a custom event.
-   *
-   * @param {String} event
-   * @param {Object} options - a Hammer.js recognizer option object.
-   *                           required fields:
-   *                           - type: the base recognizer to use for this event
-   */
-
-  vueTouch.registerCustomEvent = function (event, options) {
-    options.event = event
-    customEvents[event] = options
-  }
-
-  function capitalize (str) {
-    return str.charAt(0).toUpperCase() + str.slice(1)
-  }
-
-  function guardDirections (options) {
-    var dir = options.direction
-    if (typeof dir === 'string') {
-      var hammerDirection = 'DIRECTION_' + dir.toUpperCase()
-      if (directions.indexOf(dir) > -1 && Hammer.hasOwnProperty(hammerDirection)) {
-        options.direction = Hammer[hammerDirection]
-      } else {
-        console.warn('[vue-touch] invalid direction: ' + dir)
-      }
-    }
-  }
-
-  if (typeof exports == "object") {
-    module.exports = vueTouch
-  } else if (typeof define == "function" && define.amd) {
-    define([], function(){ return vueTouch })
-  } else if (window.Vue) {
-    window.VueTouch = vueTouch
-    Vue.use(vueTouch)
-  }
-
-})()
-
-}).apply(this, arguments);
-
-},{"hammerjs":100}],223:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vue/dist/vue.common.js", module);
 (function(){
 (function (process,global){
@@ -31028,7 +26456,7 @@ module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 }).apply(this, arguments);
 
-},{"_process":177}],224:[function(require,module,exports){
+},{"_process":175}],197:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/vueify/lib/insert-css.js", module);
 (function(){
 var inserted = exports.cache = {}
@@ -31052,7 +26480,7 @@ exports.insert = function (css) {
 
 }).apply(this, arguments);
 
-},{}],225:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 _hmr["websocket:null"].initModule("node_modules/yeast/index.js", module);
 (function(){
 'use strict';
@@ -31126,7 +26554,7 @@ module.exports = yeast;
 
 }).apply(this, arguments);
 
-},{}],226:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Alert.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -31251,11 +26679,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],227:[function(require,module,exports){
+},{"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],200:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/App.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".router {\n  margin-top: 53px;\n  min-height: 100%;\n  position: relative;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31300,7 +26728,7 @@ exports.default = {
 	data: function data() {
 
 		return {
-			prefix: '/api/v1/',
+			prefix: '/api/v1',
 			user: {},
 			teams: [],
 			alert: false,
@@ -31309,18 +26737,10 @@ exports.default = {
 	},
 	created: function created() {
 		// get logged-in user data
-		var url = this.prefix + 'user/auth';
+		var auth_id = document.getElementById('app').getAttribute('auth-id');
+		var url = this.prefix + '/user/' + auth_id;
 
-		var self = this;
-		this.$http.get(url).then(function (response) {
-			if (!response.data.ok) {
-				throw response.data.error;
-			}
-
-			self.$emit('App_data', response);
-		}).catch(function (error) {
-			self.errorMsg(error);
-		});
+		this.get(url, 'App_data');
 	},
 
 
@@ -31346,7 +26766,7 @@ exports.default = {
 
 			if (updated) {
 				// notifications were cleared for this team, send ajax request to save to server
-				var url = this.prefix + 'user/auth/team/' + id;
+				var url = this.prefix + '/user/auth/team/' + id;
 				this.$http.post(url);
 			}
 		},
@@ -31518,6 +26938,29 @@ exports.default = {
 		},
 
 
+		// Returns a function, that, as long as it continues to be invoked, will not
+		// be triggered. The function will be called after it stops being called for
+		// N milliseconds. If `immediate` is passed, trigger the function on the
+		// leading edge, instead of the trailing.
+		debounce: function debounce(func, wait) {
+			var immediate = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+			var timeout;
+			return function () {
+				var context = this,
+				    args = arguments;
+				var later = function later() {
+					timeout = null;
+					if (!immediate) func.apply(context, args);
+				};
+				var callNow = immediate && !timeout;
+				clearTimeout(timeout);
+				timeout = setTimeout(later, wait);
+				if (callNow) func.apply(context, args);
+			};
+		},
+
+
 		/**
    * Show a bootstrap modal with a given id
    *
@@ -31564,7 +27007,7 @@ if (module.hot) {(function () {  module.hot.accept()
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".router {\n  margin-top: 50px;\n  min-height: 100%;\n  position: relative;\n}\n"] = false
+    __vueify_insert__.cache[".router {\n  margin-top: 53px;\n  min-height: 100%;\n  position: relative;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -31575,7 +27018,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/Requests.js":244,"./Alert.vue":226,"./Nav.vue":234,"babel-runtime/helpers/typeof":8,"smoothscroll-polyfill":178,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],228:[function(require,module,exports){
+},{"../mixins/Requests.js":219,"./Alert.vue":199,"./Nav.vue":207,"babel-runtime/helpers/typeof":7,"smoothscroll-polyfill":176,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],201:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Calendar.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -31759,11 +27202,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],229:[function(require,module,exports){
+},{"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],202:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/CreateTeam.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31803,7 +27246,7 @@ exports.default = {
 	},
 	data: function data() {
 		return {
-			prefix: this.$root.prefix + 'team/create',
+			prefix: this.$root.prefix + '/team/create',
 			page: 'info',
 			name: '',
 			teamname: '',
@@ -31817,7 +27260,9 @@ exports.default = {
 			slogan: '',
 			players: [{ firstname: '', lastname: '', email: '' }],
 			coaches: [{ firstname: '', lastname: '', email: '' }],
-			dummy: [{ firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com' }]
+			dummy: [{ firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com' }],
+			checkingAvailability: false,
+			nameAvailable: true
 		};
 	},
 
@@ -31897,7 +27342,7 @@ exports.default = {
    * @return {void} 
    */
 		attachErrorChecking: function attachErrorChecking() {
-			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers'];
+			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Numbers and letters only'];
 			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', msg);
 			this.registerErrorChecking('name', 'required', 'Enter a name');
 			this.registerErrorChecking('city', 'required', 'Search for your city');
@@ -31936,16 +27381,19 @@ exports.default = {
 
 
 		/**
-   * Request returned whether or not this teamname is available
-   *
-   * @param {object} response
+   * Request back from the server about whether this team URL is available
    */
-		CreateTeam_available: function CreateTeam_available(response) {
-			if (response.data.available) {
-				this.errors.teamname = '';
+		CreateTeam_availability: function CreateTeam_availability(response) {
+			if (!response.data.available) {
+				this.errors.teamname = 'Already taken';
+				this.nameAvailable = false;
 			} else {
-				this.errors.teamname = 'Already taken, try another';
+				this.nameAvailable = true;
 			}
+
+			this.$root.debounce(function () {
+				this.checkingAvailability = false;
+			}, 750).call(this);
 		},
 
 
@@ -32026,11 +27474,12 @@ exports.default = {
    * If the teamname changed, ask the server if this name is in use yet
    */
 		teamname: function teamname() {
-			if (!this.errors.teamname && this.teamname.length) {
-				// ask the server if this teamname is available
-				var url = this.prefix + '/' + this.teamname;
-				this.$root.post(url, 'CreateTeam_available');
-			}
+			this.$root.debounce(function () {
+				if (!this.checkingAvailability && this.errorCheck('teamname') === 0) {
+					this.checkingAvailability = true;
+					this.$root.post(this.$root.prefix + '/team/create/' + this.teamname, 'CreateTeam_availability');
+				}
+			}, 750).call(this);
 		}
 	},
 
@@ -32048,22 +27497,14 @@ exports.default = {
 		}.bind(this));
 	}
 };
-
-/*Dropzone.options.createTeamDropzone = {
-	paramName: 'pic',
-	dictDefaultMessage: 'Drag and drop a file or click here',
-	headers: {'X-CSRF-TOKEN': $('#_token').attr('value') },
-	maxFiles: 1,
-	maxFilesize: 10,
-};*/
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team URL</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" placeholder=\"whsbasketball16\" required=\"\" debounce=\"600\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"basketball\">Basketball</option>    \n\t              <option value=\"baseball\" disabled=\"\">Baseball</option>    \n\t              <option value=\"softball\" disabled=\"\">Softball</option>    \n\t              <option value=\"football\" disabled=\"\">Football</option>    \n            \t</select>\n\t\t\t\t\t\t\t<span class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>I am a...</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"player\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"coach\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"fan\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sex</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"male\">Men</option>\n\t\t\t\t\t\t\t\t<option value=\"female\">Women</option>\n\t\t\t\t\t\t\t\t<option value=\"coed\">Co-ed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Cowell Stadium\" v-model=\"homefield\">\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"city\" :long.sync=\"long\" :lat.sync=\"lat\" label=\"City / Town\" :error=\"errors.city\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\n\t\t\t\t\t<!-- <div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<form action=\"/team/create/unhfootball/pic\" class=\"dropzone\" id=\"create-team-dropzone\"></form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div> -->\n\t\t\t\t\t\n\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existent back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.info }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by team admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.stats }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that are on this team.</p>\n\t\t\t\t\t\t<p>Your team will be populated with \"ghost\" users.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to join, add their email.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Players</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a player -->\n\t\t\t\t\t<div v-show=\"userIsA == 'player'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"player in players\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.firstname\" :class=\"{'form-error' : errors.players[$index].firstname}\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].firstname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.lastname\" :class=\"{'form-error' : errors.players[$index].lastname}\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].lastname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.email\" :class=\"{'form-error' : errors.players[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"players.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"players.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Coaches</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a coach -->\n\t\t\t\t\t<div v-show=\"userIsA == 'coach'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"coach in coaches\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.firstname\" :class=\"{'form-error' : errors.coaches[$index].firstname}\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].firstname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.lastname\" :class=\"{'form-error' : errors.coaches[$index].lastname}\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].lastname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.email\" :class=\"{'form-error' : errors.coaches[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"coaches.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"coaches.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.roster }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2016 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\t\t<div class=\"page-wrapper\">\n\t\t\t\n\t\t\t<div class=\"CreateTeam\">\n\t\t\t\n\n\t\t\t\t<div v-show=\"page === 'info'\" class=\"CreateTeam__title\">\n\t\t\t\t\t<h2>Manage your team on Rookiecard</h2>\n\t\t\t\t\t<p>Organize your calendar, stats, and roster in one place</p>\n\t\t\t\t\t<p>Fully automated email notifications for new events, cancelations, and more</p>\n\t\t\t\t\t<p>Fans can stay updated on team activities</p>\n\t\t\t\t</div>\n\n\n\n\t\t\t\t<!-- Basic info -->\n\t\t\t\t<div v-show=\"page === 'info'\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Team Info</h3>\n\t\t\t\t\t\t<p>First tell us some basic info about your team</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 1 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.name}\" required=\"\" maxlength=\"25\" placeholder=\"WHS Varsity Basketball\" v-model=\"name\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.name }}</span>\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Team URL</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.teamname}\" maxlength=\"18\" placeholder=\"whsbasketball16\" required=\"\" v-model=\"teamname\">\n\t\t\t\t\t\t\t<span v-show=\"errors.teamname\" class=\"form-error\">{{ errors.teamname }}</span>\n\t\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ teamname }}</span>\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sport</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"sport\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"sport\">\n\t              <option value=\"basketball\">Basketball</option>    \n\t              <option value=\"baseball\" disabled=\"\">Baseball</option>    \n\t              <option value=\"softball\" disabled=\"\">Softball</option>    \n\t              <option value=\"football\" disabled=\"\">Football</option>    \n            \t</select>\n\t\t\t\t\t\t\t<span class=\"input-info\">More coming soon!</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>I am a...</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userIsA\" class=\"selectpicker form-control show-tick\" required=\"\" v-model=\"userIsA\">\n\t\t\t\t\t\t\t\t<option value=\"player\">Player</option>\n\t\t\t\t\t\t\t\t<option value=\"coach\">Coach</option>\n\t\t\t\t\t\t\t\t<option value=\"fan\">Fan</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Sex</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" createteam=\"gender\" v-model=\"gender\">\n\t\t\t\t\t\t\t\t<option value=\"male\">Men</option>\n\t\t\t\t\t\t\t\t<option value=\"female\">Women</option>\n\t\t\t\t\t\t\t\t<option value=\"coed\">Co-ed</option>\n\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Home Field</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Cowell Stadium\" v-model=\"homefield\">\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<google-autocomplete :city.sync=\"city\" :long.sync=\"long\" :lat.sync=\"lat\" label=\"City / Town\" :error=\"errors.city\">\n\t\t\t\t\t\t</google-autocomplete>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t\t<span class=\"remaining\"><strong>{{ slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" maxlength=\"50\" placeholder=\"Home of the Warriors\" v-model=\"slogan\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.slogan }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div><!-- empty as placeholder for non-existent back button --></div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.info }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\n\n\t\t\t\t</div> <!-- end of team info -->\n\t\t\t\t\n\n\n\n\t\t\t\t<div v-show=\"page === 'stats'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Stats</h3>\n\t\t\t\t\t\t<p>Choose the stats you want to track for your team and players</p>\n\t\t\t\t\t\t<p>These can be changed at any time</p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 2 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div class=\"CreateTeam__inputs\">\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Inputted by team admin</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"userStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"userSelected\">\n\t              <option v-for=\"stat in userStatsList\" :value=\"userStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>      \n            \t</select>\n            \t<p v-for=\"stat in userStatsList\">{{ userStatsList[stat] }}</p> \n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Calculated by Rookiecard</label>\n\t\t\t\t\t\t\t<select data-style=\"btn-select btn-lg\" createteam=\"rcStats\" class=\"selectpicker form-control show-tick\" data-selected-text-format=\"count\" multiple=\"\" required=\"\" data-size=\"false\" v-model=\"rcSelected\">\n\t              <option v-for=\"stat in rcStatsList\" :value=\"rcStatKeys[$index]\" :disabled=\"stat.disabled\">{{ stat.val }}</option>       \n            \t</select>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'info'\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>BACK\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary --chevron --sm --right\" @click=\"changePage\">NEXT\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.stats }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\n\n\n\t\t\t\t<div v-show=\"page === 'roster'\">\n\n\t\t\t\t\t<div class=\"CreateTeam__header\">\n\t\t\t\t\t\t<h3>Roster</h3>\n\t\t\t\t\t\t<p>Enter info about the players and coaches that are on this team.</p>\n\t\t\t\t\t\t<p>Your team will be populated with \"ghost\" users.</p>\n\t\t\t\t\t\t<p>If you'd like to invite someone to join, add their email.</p>\n\t\t\t\t\t\t<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>Step 3 / 3</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<hr>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Players</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a player -->\n\t\t\t\t\t<div v-show=\"userIsA == 'player'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"player in players\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.firstname\" :class=\"{'form-error' : errors.players[$index].firstname}\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].firstname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.lastname\" :class=\"{'form-error' : errors.players[$index].lastname}\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].lastname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"player.email\" :class=\"{'form-error' : errors.players[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.players[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"players.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"players.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<hr class=\"CreateTeam__separator\">\n\n\t\t\t\t\t<h4 class=\"CreateTeam__subheader\">Coaches</h4>\n\t\t\t\t\t<!-- disabled inputs to show logged-in user as a coach -->\n\t\t\t\t\t<div v-show=\"userIsA == 'coach'\" class=\"CreateTeam__inputs\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.firstname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.lastname\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"$root.user.email\" disabled=\"\">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div v-for=\"coach in coaches\" class=\"CreateTeam__inputs\" transition=\"slide-sm\">\n\t\t\t\t\t\t<div class=\"--name\">\n\t\t\t\t\t\t\t<label>First Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.firstname\" :class=\"{'form-error' : errors.coaches[$index].firstname}\" :placeholder=\"dummy[$index].firstname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].firstname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--name\">\t\n\t\t\t\t\t\t\t<label>Last Name</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.lastname\" :class=\"{'form-error' : errors.coaches[$index].lastname}\" :placeholder=\"dummy[$index].lastname\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].lastname }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"--email\">\n\t\t\t\t\t\t\t<label>Email</label>\n\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" v-model=\"coach.email\" :class=\"{'form-error' : errors.coaches[$index].email}\" :placeholder=\"dummy[$index].email\" maxlength=\"100\">\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.coaches[$index].email }}</span>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"add-user\">\n            <i @click=\"coaches.push({firstname: '', lastname: '', email: ''})\" class=\"glyphicon glyphicon-plus\">\n            </i>\n            <i @click=\"coaches.pop()\" class=\"glyphicon glyphicon-minus\">\n            </i>\n\t\t\t\t\t</div>\n\t\t\t\t\t\t  \n\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"CreateTeam__buttons\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-cancel --chevron --sm --left\" @click=\"page = 'stats'\">BACK\n\t\t\t\t\t\t\t\t<i class=\"material-icons btn-chevron --left\">chevron_left</i>\n\t\t\t\t\t\t\t</a>\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<a class=\"btn btn-primary save\" @click=\"save\">CREATE TEAM</a>\n\t\t\t\t\t\t\t<span class=\"form-error\">{{ errors.page.roster }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\n\t\t\t\t</div> <!-- end of stats  -->\n\t\t\t\t\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\n\t\t\t<!-- include the footer at bottom -->\n\t\t<div class=\"Footer --light\">\n\t    <p>® 2017 Rookiecard LLC</p>\n\t\t</div>\n\n\t</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs .remaining {\n  font-size: 13px;\n  color: #9f9f9f;\n  float: right;\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
+    __vueify_insert__.cache[".page-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.CreateTeam {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin-top: 40px;\n  margin-bottom: 100px;\n  padding: 20px;\n  background: #fff;\n  max-width: 750px;\n}\n.CreateTeam div,\n.CreateTeam hr {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  margin: 25px 20px 0px 25px;\n}\n.CreateTeam__header h3 {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  margin-bottom: 20px;\n}\n.CreateTeam__header div {\n  margin-top: 10px;\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n}\n.CreateTeam__header div span {\n  color: #7b7b7b;\n}\n.CreateTeam__header p {\n  font-size: 15px;\n}\n.CreateTeam__subheader {\n  margin-left: 20px;\n}\n.CreateTeam__subheader:first-child {\n  margin-top: 20px;\n}\n.CreateTeam__title {\n  text-align: center;\n  margin-bottom: 10px;\n}\n.CreateTeam__title h2 {\n  margin-bottom: 20px;\n}\n.CreateTeam__title p {\n  font-size: 15px;\n  color: #7b7b7b;\n}\n.CreateTeam__inputs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 25px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs {\n    margin-top: 50px;\n  }\n}\n.CreateTeam__inputs div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin: 5px 20px;\n}\n@media screen and (max-width: 767px) {\n  .CreateTeam__inputs div {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n}\n.CreateTeam__inputs div.--smallSelect {\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n      -ms-flex: none;\n          flex: none;\n  -webkit-flex-basis: 75px;\n      -ms-flex-preferred-size: 75px;\n          flex-basis: 75px;\n}\n.CreateTeam__inputs div.--name {\n  -webkit-flex-basis: 25%;\n      -ms-flex-preferred-size: 25%;\n          flex-basis: 25%;\n}\n.CreateTeam__inputs div.--email {\n  -webkit-flex-basis: 50%;\n      -ms-flex-preferred-size: 50%;\n          flex-basis: 50%;\n}\n.CreateTeam__inputs div.dropdown-menu.open {\n  margin: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .bs-actionsbox {\n  margin: 5px 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .btn-group {\n  margin-left: 0px;\n}\n.CreateTeam__inputs div.dropdown-menu.open .text-muted {\n  color: #329acf;\n}\n.CreateTeam__inputs div.dropdown-menu .disabled a {\n  color: #d0d0d0;\n}\n.CreateTeam__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-top: 50px;\n}\n.CreateTeam__buttons div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.CreateTeam__buttons a.--right {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons a.--left {\n  float: left;\n  margin-left: 20px;\n}\n.CreateTeam__buttons a.save {\n  float: right;\n  margin-right: 20px;\n}\n.CreateTeam__buttons span.form-error {\n  float: right;\n  margin-right: 20px;\n  margin-top: 10px;\n}\n.CreateTeam__separator {\n  margin-right: 20px;\n  margin-left: 20px;\n}\n.add-user {\n  margin: 25px;\n  text-align: center;\n  font-size: 20px;\n}\n.add-user .glyphicon:hover {\n  cursor: pointer;\n}\n.add-user .glyphicon-minus {\n  color: #fc001e;\n  margin-left: 10px;\n}\n.add-user .glyphicon-plus {\n  color: #1179c9;\n  margin-right: 10px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -32074,7 +27515,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatsSelection.js":246,"../mixins/Validator.js":247,"./GoogleTypeahead.vue":233,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],230:[function(require,module,exports){
+},{"../mixins/StatsSelection.js":221,"../mixins/Validator.js":222,"./GoogleTypeahead.vue":206,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],203:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditEvent.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -32532,7 +27973,7 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div class=\"col-xs-12\">\n    <form @submit.prevent=\"save()\">\n\n\t\t\t<div v-show=\"editingPastEvent\" class=\"edit-button --edit-event\">\n\t\t\t\t<a class=\"btn btn-primary --chevron --med --right\" v-touch:tap=\"editingPastEvent = false\">\n\t\t\t\t\tEdit Stats\n\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t</a>\n\t\t\t</div>\n\n\t    <div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label>Title</label>\n            <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.title}\" placeholder=\"vs. Georgia Tech\" maxlength=\"50\" v-model=\"title\" autocomplete=\"off\">\n            <span v-show=\"errors.title\" class=\"form-error\">{{ errors.title }}</span>\n          </div>\n          <div class=\"col-xs-12 col-sm-6\">\n            <label>Type</label>\n            <select v-model=\"type\" data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" editevent=\"type\">\n              <option value=\"practice\" class=\"practice\">Practice</option>    \n              <option value=\"home_game\" class=\"homeGame\">Home Game</option>\n              <option value=\"away_game\" class=\"awayGame\">Away Game</option>\n              <option value=\"other\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n\t\t\t\t\t\t<!-- from - date -->\n            <label>Starts at</label>\n            <div class=\"input-group date\" editevent=\"fromDate\">\n          \t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.start }\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n\t\t\t\t\t\t<!-- from - time -->\n            <div class=\"input-group date\" editevent=\"fromTime\">\n          \t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.start }\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.start\" class=\"form-error\">{{ errors.start }}</span>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n          \t<!-- to - date -->\n            <label>Ends at</label>\n            <div class=\"input-group date\" editevent=\"toDate\">\n              <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.end }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date\" editevent=\"toTime\">\n              <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.end }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.end\" class=\"form-error\">{{ errors.end }}</span>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div v-show=\"! savedEvent\" class=\"row EditEvent__repeats\">\n        <div class=\"col-xs-12\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditEvent\">\n\t\t\t\t\t\t<span class=\"switch-label\">This event repeats…</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\t    <div v-show=\"! savedEvent &amp;&amp; repeats\" class=\"row EditEvent__days\" transition=\"slide-sm\">\n        <div class=\"col-xs-12 col-sm-6\" :class=\"{'form-error' : errors.days }\">\n          <label for=\"days\">Every</label>\n          <select name=\"days[]\" class=\"selectpicker form-control show-tick\" editevent=\"days\" data-style=\"btn-select btn-lg\" data-selected-text-format=\"count>2\" title=\"\" multiple=\"\" v-model=\"days\">\n              <option>Sunday</option>\n              <option>Monday</option>\n              <option>Tuesday</option>\n              <option>Wednesday</option>\n              <option>Thursday</option>\n              <option>Friday</option>\n              <option>Saturday</option>\n          </select>\n          <span v-show=\"errors.days\" class=\"form-error\">{{ errors.days }}</span>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <label for=\"until\">Until</label>\n          <div class=\"input-group date\" editevent=\"until\">\n            <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.until }\">\n            <span class=\"input-group-addon\">\n              <span class=\"glyphicon glyphicon-calendar\"></span>\n            </span>\n          </div>\n          <span v-show=\"errors.until\" class=\"form-error\">{{ errors.until }}</span>\n        </div>\n\t    </div>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12\">\n          <label>Extra details about this event</label>\n          <textarea v-autosize=\"details\" name=\"details\" class=\"form-control\" maxlength=\"5000\" rows=\"1\" placeholder=\"Remember your water bottle!\" v-model=\"details\"></textarea>\n        </div>\n\t    </div>\n    \t<hr>\n\t    <div class=\"EditEvent__buttons\">\n\t      <div class=\"save-button-group\" :class=\"savedEvent ? '--three' : '--two'\">\n\t      \t<div>\n\t      \t\t<a class=\"btn btn-primary\" v-touch:tap=\"save()\">\n\t      \t\t\t<span v-show=\"! loading_save\">SAVE</span>\n\t      \t\t\t<spinner v-show=\"loading_save\" color=\"white\"></spinner>\n\t      \t\t</a>\n\t      \t</div>\n\t      \t<div v-if=\"savedEvent\">\n\t      \t\t<a class=\"btn btn-delete\" v-touch:tap=\"destroy()\">\n\t      \t\t\t<span v-show=\"! loading_delete\">DELETE</span>\n\t      \t\t\t<spinner v-show=\"loading_delete\" color=\"white\"></spinner>\n\t      \t\t</a>\n\t      \t</div>\n\t      \t<div>\n\t      \t\t<a class=\"btn btn-cancel\" v-touch:tap=\"cancel()\">CANCEL</a>\n\t      \t</div>\n\t      </div>\n\t    </div>\n    </form>\n\t</div>\n\t\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\t<div class=\"col-xs-12\">\n    <form @submit.prevent=\"save()\">\n\n\t\t\t<div class=\"row\">\n        <div class=\"form-group\">\n          <div class=\"col-xs-12 col-sm-6\">\n            <label>Title</label>\n            <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.title}\" placeholder=\"vs. Georgia Tech\" maxlength=\"50\" v-model=\"title\" autocomplete=\"off\">\n            <span v-show=\"errors.title\" class=\"form-error\">{{ errors.title }}</span>\n          </div>\n          <div class=\"col-xs-12 col-sm-6\">\n            <label>Type</label>\n            <select v-model=\"type\" data-style=\"btn-select btn-lg\" class=\"selectpicker form-control show-tick\" editevent=\"type\">\n              <option value=\"practice\" class=\"practice\">Practice</option>    \n              <option value=\"home_game\" class=\"homeGame\">Home Game</option>\n              <option value=\"away_game\" class=\"awayGame\">Away Game</option>\n              <option value=\"other\" class=\"other\">Other</option>\n            </select>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n\t\t\t\t\t\t<!-- from - date -->\n            <label>Starts at</label>\n            <div class=\"input-group date\" editevent=\"fromDate\">\n          \t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.start }\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n\t\t\t\t\t\t<!-- from - time -->\n            <div class=\"input-group date\" editevent=\"fromTime\">\n          \t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.start }\">\n              <span class=\"input-group-addon\">\n              \t<span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.start\" class=\"form-error\">{{ errors.start }}</span>\n          </div>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <div class=\"form-group\">\n          \t<!-- to - date -->\n            <label>Ends at</label>\n            <div class=\"input-group date\" editevent=\"toDate\">\n              <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.end }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-calendar\"></span>\n              </span>\n            </div>\n            <!-- to - time -->\n            <div class=\"input-group date\" editevent=\"toTime\">\n              <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.end }\">\n              <span class=\"input-group-addon\">\n                <span class=\"glyphicon glyphicon-time\"></span>\n              </span>\n            </div>\n            <span v-show=\"errors.end\" class=\"form-error\">{{ errors.end }}</span>\n          </div>\n        </div>\n\t    </div>\n\t    <br>\n\t    <div v-show=\"! savedEvent\" class=\"row EditEvent__repeats\">\n        <div class=\"col-xs-12\">\n          <div class=\"switch-container\">\n\t\t\t\t\t\t<input type=\"checkbox\" bootstrap-switch=\"EditEvent\">\n\t\t\t\t\t\t<span class=\"switch-label\">This event repeats…</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t    </div>\n\t    <div v-show=\"! savedEvent &amp;&amp; repeats\" class=\"row EditEvent__days\" transition=\"slide-sm\">\n        <div class=\"col-xs-12 col-sm-6\" :class=\"{'form-error' : errors.days }\">\n          <label for=\"days\">Every</label>\n          <select name=\"days[]\" class=\"selectpicker form-control show-tick\" editevent=\"days\" data-style=\"btn-select btn-lg\" data-selected-text-format=\"count>2\" title=\"\" multiple=\"\" v-model=\"days\">\n              <option>Sunday</option>\n              <option>Monday</option>\n              <option>Tuesday</option>\n              <option>Wednesday</option>\n              <option>Thursday</option>\n              <option>Friday</option>\n              <option>Saturday</option>\n          </select>\n          <span v-show=\"errors.days\" class=\"form-error\">{{ errors.days }}</span>\n        </div>\n        <div class=\"col-xs-12 col-sm-6\">\n          <label for=\"until\">Until</label>\n          <div class=\"input-group date\" editevent=\"until\">\n            <input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.until }\">\n            <span class=\"input-group-addon\">\n              <span class=\"glyphicon glyphicon-calendar\"></span>\n            </span>\n          </div>\n          <span v-show=\"errors.until\" class=\"form-error\">{{ errors.until }}</span>\n        </div>\n\t    </div>\n\t    <div class=\"row\">\n        <div class=\"col-xs-12\">\n          <label>Extra details about this event</label>\n          <textarea v-autosize=\"details\" name=\"details\" class=\"form-control\" maxlength=\"5000\" rows=\"1\" placeholder=\"Remember your water bottle!\" v-model=\"details\"></textarea>\n        </div>\n\t    </div>\n    \t<hr>\n\t    <div class=\"EditEvent__buttons\">\n\t      <div class=\"save-button-group\" :class=\"savedEvent ? '--three' : '--two'\">\n\t      \t<div>\n\t      \t\t<a class=\"btn btn-primary\" v-touch:tap=\"save()\">\n\t      \t\t\t<span v-show=\"! loading_save\">SAVE</span>\n\t      \t\t\t<spinner v-show=\"loading_save\" color=\"white\"></spinner>\n\t      \t\t</a>\n\t      \t</div>\n\t      \t<div v-if=\"savedEvent\">\n\t      \t\t<a class=\"btn btn-delete\" v-touch:tap=\"destroy()\">\n\t      \t\t\t<span v-show=\"! loading_delete\">DELETE</span>\n\t      \t\t\t<spinner v-show=\"loading_delete\" color=\"white\"></spinner>\n\t      \t\t</a>\n\t      \t</div>\n\t      \t<div>\n\t      \t\t<a class=\"btn btn-cancel\" v-touch:tap=\"cancel()\">CANCEL</a>\n\t      \t</div>\n\t      </div>\n\t    </div>\n    </form>\n\t</div>\n\t\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -32549,11 +27990,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/json/stringify":5,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],231:[function(require,module,exports){
+},{"babel-runtime/core-js/json/stringify":4,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],204:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditStats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-stats-wrapper {\n  padding: 1.5em;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n  -webkit-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n    -webkit-order: 2;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button.--stats {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-align-self: flex-start;\n      -ms-flex-item-align: start;\n          align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button.--stats {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n    -webkit-order: 1;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n.EditStats__confirm {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n.EditStats__confirm .confirm-header {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.EditStats__footer {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".edit-stats-wrapper {\n  padding: 1.5em;\n  width: 100%;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n  -webkit-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n    -webkit-order: 2;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button.--stats {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-align-self: flex-start;\n      -ms-flex-item-align: start;\n          align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button.--stats {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n    -webkit-order: 1;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n.EditStats__confirm {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n.EditStats__confirm .confirm-header {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.EditStats__footer {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33008,13 +28449,13 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"edit-stats-wrapper\">\n\n\t<!-- confirmation screen for deleting existing stats -->\n\t<div v-if=\"confirmDelete\" class=\"EditStats__confirm\">\n\t\t<div class=\"confirm-header\">\n\t\t\t<h4>Delete these stats?</h4>\n\t\t</div>\n\t\t<div class=\"save-button-group\">\n\t    <div>\n\t    \t<a class=\"btn btn-delete\" v-touch:tap=\"confirm(true)\">\n\t    \t\t<span v-show=\"! loading_delete\">DELETE</span>\n\t\t\t\t\t<spinner v-show=\"loading_delete\" color=\"white\"></spinner>\n\t    \t</a>\n\t    </div>\n\t    <div>\n\t    \t<a class=\"btn btn-cancel\" v-touch:tap=\"confirm(false)\">CANCEL</a>\n\t    </div>\n\t  </div>\n\t</div>\n\n\t<div v-else=\"\">\n\t\t<div class=\"edit-stats-header\">\n\n\t\t\t<!-- notes to user -->\n\t\t\t<div class=\"stat-notes\">\n\t\t\t\t<div class=\"blue-container\">\n\t\t\t\t\t<span><strong>Tips:</strong></span>\n\t\t\t\t\t<ul>\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\tAny fields left empty are treated as zeros.\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li v-show=\"usesMinutes\">\n\t\t\t\t\t\t\tIf MIN is zero, that player's stats are treated as a DNP (did not play) and don't count as zeros.\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li v-show=\"! usesMinutes\">\n\t\t\t\t\t\t\tIf DNP (did not play) is checked, that player's stats are ignored and don't count as zeros.\n\t\t\t\t\t\t</li>\n\t\t\t\t\t</ul>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- if user clicks this, show form to edit event details, value travels up to ViewEvent.vue -->\n\t\t\t<div class=\"edit-button --stats\">\n\t\t\t\t<a class=\"btn btn-primary --chevron --lg --right\" v-touch:tap=\"editingPastEvent = true\">\n\t\t\t\t\tEdit Event Details\n\t\t\t\t\t<i class=\"material-icons btn-chevron --right\">chevron_right</i>\n\t\t\t\t</a>\n\t\t\t</div>\n\n\t\t</div>\n\n\t\t<!-- input new stats here -->\n\t\t<h3>Box Score</h3>\n\t\t<form v-if=\"ready\" @submit.prevent=\"\">\n\t\t\t<div class=\"table-responsive stats-container\">\n\t\t\t\t<table class=\"table stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th v-for=\"key in keys\" class=\"stat-columns\" data-toggle=\"tooltip\" :title=\"resolveTooltip(key)\">\n\t\t\t      \t\t{{ resolveKeyName(key) }}\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-for=\"(index, stat) in stats\">\n\t\t\t\t      <td v-for=\"key in keys\" class=\"new-stats stat-entries\">\n\n\t\t\t\t      \t<!-- show 'Did Not Play' checkbox if necessary -->\n\t\t\t\t      \t<template v-if=\"! usesMinutes &amp;&amp; key === 'dnp'\">\n\t\t\t\t      \t\t<input type=\"checkbox\" v-model=\"stat[key]\">\n\t\t\t\t      \t</template>\n\t\t\t\t      \t\n\t\t\t\t      \t<template v-else=\"\">\n\t\t\t\t      \t\t<!-- show 'Starter' checkbox if necessary -->\n\t\t\t\t      \t\t<template v-if=\"key === 'gs'\">\n\t\t\t\t      \t\t\t<input type=\"checkbox\" v-model=\"stat[key]\">\n\t\t\t\t      \t\t</template>\n\n\t\t\t\t      \t\t<!-- otherwise show normal stat input box -->\n\t\t\t\t      \t\t<template v-else=\"\">\n\t\t\t\t      \t\t\t<span v-if=\"keyIsCalculated(key)\" class=\"stats-input\">{{ resolveValue(key, stat) }}</span>\n\t\t\t\t\t\t      \t<input v-else=\"\" type=\"text\" class=\"form-control stats-input\" :class=\"{'form-error' : errors[index][key]}\" number=\"\" autocomplete=\"off\" :placeholder=\"resolveKeyName(key)\" v-model=\"stat[key]\">\n\t\t\t\t      \t\t</template>\n\t\t\t\t      \t\t\n\t\t\t\t      \t</template>\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t\t\t<h3>Opponent Details</h3>\n\t\t\t<div class=\"table-responsive\">\n\t\t\t\t<table class=\"table stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th class=\"stat-columns\">OPPONENT</th>\n\t\t\t      \t<th class=\"stat-columns\">SCORE</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr>\n\t\t\t\t      <td class=\"new-stats stat-entries\">\n\t\t\t\t      \t<input type=\"text\" class=\"form-control stats-input opponent\" :class=\"{'form-error' : meta.errors.opp}\" autocomplete=\"off\" placeholder=\"Georgia Tech\" v-model=\"meta.opp\">\n\t\t\t\t      </td>\n\t\t\t\t      <td class=\"new-stats stat-entries\">\n\t\t\t\t      \t<input type=\"text\" class=\"form-control stats-input\" :class=\"{'form-error' : meta.errors.oppScore}\" number=\"\" autocomplete=\"off\" :placeholder=\"oppScore\" v-model=\"meta.oppScore\">\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t\t\t<div class=\"EditStats__footer\">\n\t\t\t\t<div v-if=\"correctErrors\" class=\"errors\">\n\t\t\t\t\t<span>Correct errors highlighted in red before saving</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"save-button-group\" :class=\"someSavedStats ? '--three' : '--two'\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<a class=\"btn btn-primary\" v-touch:tap=\"save()\">\n\t\t\t\t\t\t\t<span v-show=\"! loading_save\">SAVE</span>\n\t\t\t\t\t\t\t<spinner v-show=\"loading_save\" color=\"white\"></spinner>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"someSavedStats\">\n\t\t\t\t\t\t<a class=\"btn btn-delete\" v-touch:tap=\"destroy()\">\n\t\t\t\t\t\t\t<span v-show=\"! loading_delete\">DELETE</span>\n\t\t\t\t\t\t\t<spinner v-show=\"loading_delete\" color=\"white\"></spinner>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<a class=\"btn btn-cancel\" v-touch:tap=\"cancel()\">CANCEL</a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</form>\n\n\n\t\t<!-- for calculating sport related variables, these don't display anything -->\n\n\t\t<basketball v-if=\"team.sport === 'basketball'\" :keys.sync=\"keys\" :compile=\"compile\" :errors.sync=\"errors\" :key-names.sync=\"keyNames\" :tooltips.sync=\"tooltips\" :value-lookup.sync=\"valueLookup\" :val-class-lookup.sync=\"valClassLookup\" :calculated-keys.sync=\"calculatedKeys\" :default-values.sync=\"defaultValues\" :sport-specific-error-check.sync=\"sportSpecificErrorCheck\">\n\t\t</basketball>\n\n\t</div>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"edit-stats-wrapper\">\n\n\t<!-- confirmation screen for deleting existing stats -->\n\t<div v-if=\"confirmDelete\" class=\"EditStats__confirm\">\n\t\t<div class=\"confirm-header\">\n\t\t\t<h4>Delete these stats?</h4>\n\t\t</div>\n\t\t<div class=\"save-button-group\">\n\t    <div>\n\t    \t<a class=\"btn btn-delete\" v-touch:tap=\"confirm(true)\">\n\t    \t\t<span v-show=\"! loading_delete\">DELETE</span>\n\t\t\t\t\t<spinner v-show=\"loading_delete\" color=\"white\"></spinner>\n\t    \t</a>\n\t    </div>\n\t    <div>\n\t    \t<a class=\"btn btn-cancel\" v-touch:tap=\"confirm(false)\">CANCEL</a>\n\t    </div>\n\t  </div>\n\t</div>\n\n\t<div v-else=\"\">\n\t\t<div class=\"edit-stats-header\">\n\n\t\t\t<!-- notes to user -->\n\t\t\t<div class=\"stat-notes\">\n\t\t\t\t<div class=\"blue-container\">\n\t\t\t\t\t<span><strong>Tips:</strong></span>\n\t\t\t\t\t<ul>\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\tAny fields left empty are treated as zeros.\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li v-show=\"usesMinutes\">\n\t\t\t\t\t\t\tIf MIN is zero, that player’s stats are treated as a DNP (did not play) and don’t count as zeros.\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li v-show=\"! usesMinutes\">\n\t\t\t\t\t\t\tIf DNP (did not play) is checked, that player’s stats are ignored and don’t count as zeros.\n\t\t\t\t\t\t</li>\n\t\t\t\t\t</ul>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t</div>\n\n\t\t<!-- input new stats here -->\n\t\t<h3>Box Score</h3>\n\t\t<form v-if=\"ready\" @submit.prevent=\"\">\n\t\t\t<div class=\"table-responsive stats-container\">\n\t\t\t\t<table class=\"table stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th v-for=\"key in keys\" class=\"stat-columns\" data-toggle=\"tooltip\" :title=\"resolveTooltip(key)\">\n\t\t\t      \t\t{{ resolveKeyName(key) }}\n\t\t\t      \t</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr v-for=\"(index, stat) in stats\">\n\t\t\t\t      <td v-for=\"key in keys\" class=\"new-stats stat-entries\">\n\n\t\t\t\t      \t<!-- show 'Did Not Play' checkbox if necessary -->\n\t\t\t\t      \t<template v-if=\"! usesMinutes &amp;&amp; key === 'dnp'\">\n\t\t\t\t      \t\t<input type=\"checkbox\" v-model=\"stat[key]\">\n\t\t\t\t      \t</template>\n\t\t\t\t      \t\n\t\t\t\t      \t<template v-else=\"\">\n\t\t\t\t      \t\t<!-- show 'Starter' checkbox if necessary -->\n\t\t\t\t      \t\t<template v-if=\"key === 'gs'\">\n\t\t\t\t      \t\t\t<input type=\"checkbox\" v-model=\"stat[key]\">\n\t\t\t\t      \t\t</template>\n\n\t\t\t\t      \t\t<!-- otherwise show normal stat input box -->\n\t\t\t\t      \t\t<template v-else=\"\">\n\t\t\t\t      \t\t\t<span v-if=\"keyIsCalculated(key)\" class=\"stats-input\">{{ resolveValue(key, stat) }}</span>\n\t\t\t\t\t\t      \t<input v-else=\"\" type=\"text\" class=\"form-control stats-input\" :class=\"{'form-error' : errors[index][key]}\" number=\"\" autocomplete=\"off\" :placeholder=\"resolveKeyName(key)\" v-model=\"stat[key]\">\n\t\t\t\t      \t\t</template>\n\t\t\t\t      \t\t\n\t\t\t\t      \t</template>\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t\t\t<h3>Opponent Details</h3>\n\t\t\t<div class=\"table-responsive\">\n\t\t\t\t<table class=\"table stats-table\">\n\t\t\t\t\t<thead>\n\t\t\t    \t<tr>\n\t\t\t      \t<th class=\"stat-columns\">OPPONENT</th>\n\t\t\t      \t<th class=\"stat-columns\">SCORE</th>\n\t\t\t    \t</tr>\n\t\t\t  \t</thead>\n\t\t\t  \t<tbody>\n\t\t\t    \t<tr>\n\t\t\t\t      <td class=\"new-stats stat-entries\">\n\t\t\t\t      \t<input type=\"text\" class=\"form-control stats-input opponent\" :class=\"{'form-error' : meta.errors.opp}\" autocomplete=\"off\" placeholder=\"Georgia Tech\" v-model=\"meta.opp\">\n\t\t\t\t      </td>\n\t\t\t\t      <td class=\"new-stats stat-entries\">\n\t\t\t\t      \t<input type=\"text\" class=\"form-control stats-input\" :class=\"{'form-error' : meta.errors.oppScore}\" number=\"\" autocomplete=\"off\" :placeholder=\"oppScore\" v-model=\"meta.oppScore\">\n\t\t\t\t      </td>\n\t\t\t    \t</tr>\n\t\t\t  \t</tbody>\n\t\t\t\t</table>\n\t\t\t</div>\n\n\t\t\t<div class=\"EditStats__footer\">\n\t\t\t\t<div v-if=\"correctErrors\" class=\"errors\">\n\t\t\t\t\t<span>Correct errors highlighted in red before saving</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"save-button-group\" :class=\"someSavedStats ? '--three' : '--two'\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<a class=\"btn btn-primary\" v-touch:tap=\"save()\">\n\t\t\t\t\t\t\t<span v-show=\"! loading_save\">SAVE</span>\n\t\t\t\t\t\t\t<spinner v-show=\"loading_save\" color=\"white\"></spinner>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"someSavedStats\">\n\t\t\t\t\t\t<a class=\"btn btn-delete\" v-touch:tap=\"destroy()\">\n\t\t\t\t\t\t\t<span v-show=\"! loading_delete\">DELETE</span>\n\t\t\t\t\t\t\t<spinner v-show=\"loading_delete\" color=\"white\"></spinner>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<a class=\"btn btn-cancel\" v-touch:tap=\"cancel()\">CANCEL</a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</form>\n\n\n\t\t<!-- for calculating sport related variables, these don't display anything -->\n\n\t\t<basketball v-if=\"team.sport === 'basketball'\" :keys.sync=\"keys\" :compile=\"compile\" :errors.sync=\"errors\" :key-names.sync=\"keyNames\" :tooltips.sync=\"tooltips\" :value-lookup.sync=\"valueLookup\" :val-class-lookup.sync=\"valClassLookup\" :calculated-keys.sync=\"calculatedKeys\" :default-values.sync=\"defaultValues\" :sport-specific-error-check.sync=\"sportSpecificErrorCheck\">\n\t\t</basketball>\n\n\t</div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-stats-wrapper {\n  padding: 1.5em;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n  -webkit-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n    -webkit-order: 2;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button.--stats {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-align-self: flex-start;\n      -ms-flex-item-align: start;\n          align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button.--stats {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n    -webkit-order: 1;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n.EditStats__confirm {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n.EditStats__confirm .confirm-header {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.EditStats__footer {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n"] = false
+    __vueify_insert__.cache[".edit-stats-wrapper {\n  padding: 1.5em;\n  width: 100%;\n}\n.edit-stats-wrapper h3 {\n  margin-top: 2em;\n}\n.edit-stats-wrapper .buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-top: 20px;\n  padding-top: 30px;\n  border-top: 2px solid #f5f5f5;\n}\n.edit-stats-wrapper .buttons .btn {\n  min-width: 150px;\n  margin: 0px 10px;\n}\n.edit-stats-wrapper .errors {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  color: #f00;\n}\n.edit-stats-header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 20px;\n}\n@media screen and (max-width: 1000px) {\n  .edit-stats-header {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.stat-notes {\n  -webkit-box-flex: 2;\n  -webkit-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n@media screen and (max-width: 1000px) {\n  .stat-notes {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    text-align: center;\n    -webkit-box-ordinal-group: 3;\n    -webkit-order: 2;\n        -ms-flex-order: 2;\n            order: 2;\n  }\n}\n.stat-notes .blue-container {\n  background-color: #cce6f3;\n  padding: 15px;\n  display: inline-block;\n}\n.stat-notes .blue-container ul {\n  list-style: none;\n  padding-left: 0;\n  margin: 20px 0 0 0;\n}\n.stat-notes .blue-container ul li {\n  margin-bottom: 10px;\n}\n.stat-notes .blue-container ul li:last-child {\n  margin-bottom: 0;\n}\n.stat-notes .blue-container span {\n  color: #000;\n}\n.edit-button.--stats {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-align-self: flex-start;\n      -ms-flex-item-align: start;\n          align-self: flex-start;\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin: 0;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n}\n@media screen and (max-width: 1000px) {\n  .edit-button.--stats {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n    -webkit-box-ordinal-group: 2;\n    -webkit-order: 1;\n        -ms-flex-order: 1;\n            order: 1;\n    margin-bottom: 25px;\n  }\n}\ninput.stats-input {\n  margin: 0 auto;\n  width: 42px;\n  height: 0;\n  padding: 12px 0px;\n  background-color: #f5f5f5;\n  font-size: 14px;\n  box-sizing: initial;\n  text-align: center;\n  vertical-align: middle !important;\n}\ninput.stats-input.opponent {\n  width: 150px;\n}\n.EditStats__confirm {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n.EditStats__confirm .confirm-header {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.EditStats__footer {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -33025,7 +28466,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatHelpers.js":245,"./stats/EditBasketball.vue":243,"babel-runtime/core-js/json/stringify":5,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],232:[function(require,module,exports){
+},{"../mixins/StatHelpers.js":220,"./stats/EditBasketball.vue":218,"babel-runtime/core-js/json/stringify":4,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],205:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/EditUser.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -33226,13 +28667,13 @@ exports.default = {
 		setErrorChecking: function setErrorChecking() {
 			this.resetErrorChecking(); // reset any previous error checks
 
-			this.registerErrorChecking('user.meta.num', 'jersey', 'Choose between 00-99');
+			this.registerErrorChecking('user.meta.num', 'regex:^[0-9]{1,2}$', 'Choose between 00-99');
 
 			//  extra details to check if editing a ghost
 			if (this.user.isGhost) {
 				this.registerErrorChecking('user.meta.firstname', 'required', 'Enter a first name');
 				this.registerErrorChecking('user.meta.lastname', 'required', 'Enter a last name');
-				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email');
+				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email', false);
 			}
 		},
 		renderPickers: function renderPickers() {
@@ -33323,6 +28764,11 @@ exports.default = {
 				role: this.user.role,
 				admin: this.user.isAdmin
 			};
+
+			if (this.user.isFan) {
+				// add a role of 'fan' just to make server-side validation smoother
+				data.role = 'fan';
+			}
 
 			if (this.user.acceptedByAdmin) {
 				// they were accepted by the team admin to join the team
@@ -33425,7 +28871,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./../mixins/Validator.js":247,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],233:[function(require,module,exports){
+},{"./../mixins/Validator.js":222,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],206:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/GoogleTypeahead.vue", module);
 (function(){
 'use strict';
@@ -33445,23 +28891,24 @@ exports.default = {
 			selected: false
 		};
 	},
-
-
-	watch: {
-		//if they have edited something previously selected, reset the data
-
-		location: function location(val) {
-			if (this.selected) {
-				this.selected = false;
-				this.city = '';
-				this.lat = '';
-				this.long = '';
+	watch: function watch() {
+		city();
+		{
+			if (!this.selected) {
+				this.location = this.city + ', United States';
 			}
 		}
 	},
+	created: function created() {
+		// if city is already filled in when starting, default the v-model to that value
+		if (this.city) {
+			this.location = this.city + ', United States';
+		}
+	},
+
 
 	methods: {
-		//format the results into the necessary items
+		// format the results into the necessary items
 
 		placeSelected: function placeSelected(place) {
 			var address = place.formatted_address.split(',');
@@ -33475,7 +28922,7 @@ exports.default = {
 	ready: function ready() {
 		var self = this;
 		$(function () {
-			//when the page is loaded, init google maps api
+			// when the page is loaded, init google maps api
 			var input = document.getElementById('placeSearch');
 			var options = {
 				types: ['(cities)'],
@@ -33483,10 +28930,9 @@ exports.default = {
 			};
 			var autocomplete = new google.maps.places.Autocomplete(input, options);
 
-			//set up listener, tell this.placeSelected when there was a selection
+			// set up listener, tell this.placeSelected when there was a selection
 			autocomplete.addListener('place_changed', function () {
-				var place = autocomplete.getPlace();
-				self.placeSelected(place);
+				self.placeSelected(autocomplete.getPlace());
 			});
 		});
 	}
@@ -33505,7 +28951,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":223,"vue-hot-reload-api":196}],234:[function(require,module,exports){
+},{"vue":196,"vue-hot-reload-api":194}],207:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Nav.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -33599,10 +29045,13 @@ exports.default = {
 			this.toggle = !this.toggle;
 			this.teamDropdown = false;
 			this.optionsDropdown = false;
+		},
+		logout: function logout() {
+			window.location = '/logout';
 		}
 	} };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n    <div class=\"container\">\n      <div class=\"navbar-header\">\n        <div id=\"hamburger\" class=\"navbar-toggle\" :class=\"{'toggled' : !toggle}\" v-touch:tap=\"toggle = !toggle\">\n          <span id=\"top-bar\" class=\"icon-bar\"></span>\n          <span id=\"bottom-bar\" class=\"icon-bar\"></span>\n        </div>\n        <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n      </div>\n\n      <div id=\"sidebar-wrapper\">\n        <ul class=\"sidebar-nav\">\n        \t<li>\n        \t\t<form @submit.prevent=\"gotoSearch()\">\n        \t\t\t<input id=\"searchBar\" type=\"text\" class=\"form-control\" placeholder=\"Search...\" v-model=\"query\">\n        \t\t</form>\n        \t</li>\n          <li>\n          \t<a @click=\"gotoProfile()\">Profile</a>\n          </li>\n          <li class=\"dropdown teams-dropdown open\">\n            <a class=\"dropdown-toggle\" v-touch:tap=\"teamDropdown = !teamDropdown\" :class=\"{'toggled' : teamDropdown}\">\n              <span v-cloak=\"\" v-show=\"totalCount > 0\" class=\"badge badge-danger\">{{ totalCount }}&nbsp;</span>Teams <span class=\"caret\"></span>\n            </a>\n              \n            <ul v-show=\"teamDropdown\" class=\"dropdown-menu dropdown-menu-left\">\n          \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n              <li v-for=\"team in memberOf\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"memberOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n              <li v-for=\"team in fanOf\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"fanOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n              <li v-for=\"team in invitedTo\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"invitedTo.length\" class=\"divider\"></li>\n\n              <li><a @click=\"gotoTeam('create')\" class=\"nav-link\">Create a Team</a></li>\n\n            </ul>\n          </li>\n          <li class=\"dropdown options-dropdown open\">\n            <a class=\"dropdown-toggle\" v-touch:tap=\"optionsDropdown = !optionsDropdown\" :class=\"{'toggled' : optionsDropdown}\">\n            \tOptions <span class=\"caret\"></span>\n            </a>\n            <ul v-show=\"optionsDropdown\" class=\"dropdown-menu\" role=\"menu\">\n              <li><a @click=\"gotoOptions('settings')\" class=\"nav-link\">Settings</a></li>\n              <li><a @click=\"gotoOptions('help')\" class=\"nav-link\">Help</a></li>\n              <li><a @click=\"gotoOptions('feedback')\" class=\"nav-link\">Submit Feedback</a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n            </ul>\n          </li>\n        </ul>\n      </div>\n\n          \n      <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n        <!-- search bar -->\n        <ul class=\"nav navbar-nav\">\n          <div id=\"navSearchDiv\">\n            <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n            <form @submit.prevent=\"gotoSearch()\">\n        \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form search-bar\" placeholder=\"Search players and teams...\" v-model=\"query\">\n        \t\t</form>\n          </div>\n        </ul>\n\n        <!-- nav links -->\n        <ul class=\"nav navbar-nav navbar-right\">\n          <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n          <li class=\"dropdown teams-dropdown\">\n            <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n              <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span class=\"caret\"></span></a>\n            <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n          \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n              <li v-for=\"team in memberOf\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"memberOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n              <li v-for=\"team in fanOf\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"fanOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n              <li v-for=\"team in invitedTo\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"invitedTo.length\" class=\"divider\"></li>\n\n              <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n            </ul>\n          </li>\n          <li class=\"dropdown options-dropdown\">\n            <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span class=\"caret\"></span></a>\n            <ul class=\"dropdown-menu\" role=\"menu\">\n              <li><a class=\"nav-link\">Settings</a></li>\n              <li><a class=\"nav-link\">Help</a></li>\n              <li><a class=\"nav-link\">Submit Feedback</a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"/logout\" class=\"nav-link\">Log out</a></li>\n            </ul>\n          </li>\n        </ul>\n      </div>\n    </div>\n  </nav>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<nav class=\"navbar navbar-default navbar-fixed-top no-highlight\" role=\"navigation\">\n    <div class=\"container\">\n      <div class=\"navbar-header\">\n        <div id=\"hamburger\" class=\"navbar-toggle\" :class=\"{'toggled' : !toggle}\" v-touch:tap=\"toggle = !toggle\">\n          <span id=\"top-bar\" class=\"icon-bar\"></span>\n          <span id=\"bottom-bar\" class=\"icon-bar\"></span>\n        </div>\n        <a v-link=\"{name: 'home'}\"><img id=\"navLogo\" src=\"/images/logo.png\" class=\"navbar-brand navbar-brand-centered\"></a>\n      </div>\n\n      <div id=\"sidebar-wrapper\">\n        <ul class=\"sidebar-nav\">\n        \t<li>\n        \t\t<form @submit.prevent=\"gotoSearch()\">\n        \t\t\t<input id=\"searchBar\" type=\"text\" class=\"form-control\" placeholder=\"Search...\" v-model=\"query\">\n        \t\t</form>\n        \t</li>\n          <li>\n          \t<a @click=\"gotoProfile()\">Profile</a>\n          </li>\n          <li class=\"dropdown teams-dropdown open\">\n            <a class=\"dropdown-toggle\" v-touch:tap=\"teamDropdown = !teamDropdown\" :class=\"{'toggled' : teamDropdown}\">\n              <span v-cloak=\"\" v-show=\"totalCount > 0\" class=\"badge badge-danger\">{{ totalCount }}&nbsp;</span>Teams <span class=\"caret\"></span>\n            </a>\n              \n            <ul v-show=\"teamDropdown\" class=\"dropdown-menu dropdown-menu-left\">\n          \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n              <li v-for=\"team in memberOf\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"memberOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n              <li v-for=\"team in fanOf\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"fanOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n              <li v-for=\"team in invitedTo\">\n              \t<a @click=\"gotoTeam(team.teamname)\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"invitedTo.length\" class=\"divider\"></li>\n\n              <li><a @click=\"gotoTeam('create')\" class=\"nav-link\">Create a Team</a></li>\n\n            </ul>\n          </li>\n          <li class=\"dropdown options-dropdown open\">\n            <a class=\"dropdown-toggle\" v-touch:tap=\"optionsDropdown = !optionsDropdown\" :class=\"{'toggled' : optionsDropdown}\">\n            \tOptions <span class=\"caret\"></span>\n            </a>\n            <ul v-show=\"optionsDropdown\" class=\"dropdown-menu\" role=\"menu\">\n              <li><a @click=\"gotoOptions('settings')\" class=\"nav-link\">Settings</a></li>\n              <li><a @click=\"gotoOptions('help')\" class=\"nav-link\">Help</a></li>\n              <li><a @click=\"gotoOptions('feedback')\" class=\"nav-link\">Submit Feedback</a></li>\n              <li class=\"divider\"></li>\n              <li><a class=\"nav-link\" v-touch:tap=\"logout()\">Log out</a></li>\n            </ul>\n          </li>\n        </ul>\n      </div>\n\n          \n      <div class=\"collapse navbar-collapse text-center\" id=\"navbar-left\">\n\n        <!-- search bar -->\n        <ul class=\"nav navbar-nav\">\n          <div id=\"navSearchDiv\">\n            <i id=\"searchIcon\" class=\"glyphicon glyphicon-search\"></i>\n\n            <form @submit.prevent=\"gotoSearch()\">\n        \t\t\t<input id=\"searchBar\" class=\"form-control navbar-form search-form search-bar\" placeholder=\"Search players and teams...\" v-model=\"query\">\n        \t\t</form>\n          </div>\n        </ul>\n\n        <!-- nav links -->\n        <ul class=\"nav navbar-nav navbar-right\">\n          <li><a v-link=\"{name: 'user', params: {name: user.username}}\" class=\"nav-link\">Profile</a></li>\n          <li class=\"dropdown teams-dropdown\">\n            <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n              <span v-cloak=\"\" class=\"badge badge-danger\">{{ totalCount }}</span>&nbsp;Teams <span class=\"caret\"></span></a>\n            <ul class=\"dropdown-menu dropdown-menu-left\" role=\"menu\">\n\n          \t\t<li v-if=\"memberOf.length\" class=\"dropdown-header\"><small>MEMBER OF</small></li>\n              <li v-for=\"team in memberOf\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"memberOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"fanOf.length\" class=\"dropdown-header\"><small>FAN OF</small></li>\n              <li v-for=\"team in fanOf\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"fanOf.length\" class=\"divider\"></li>\n\n              <li v-if=\"invitedTo.length\" class=\"dropdown-header\"><small>INVITED TO</small></li>\n              <li v-for=\"team in invitedTo\">\n              \t<a v-link=\"{name: 'team', params: {name: team.teamname}}\" class=\"nav-link\">\n              \t\t<span v-show=\"team.notifications\" class=\"badge badge-danger\">{{ team.notifications }}</span>\n              \t\t{{ team.name }}\n              \t</a>\n              </li>\n              <li v-if=\"invitedTo.length\" class=\"divider\"></li>\n\n              <li><a v-link=\"{name: 'team', params: {name: 'create'}}\" class=\"nav-link\">Create a Team</a></li>\n\n            </ul>\n          </li>\n          <li class=\"dropdown options-dropdown\">\n            <a class=\"dropdown-toggle\" data-toggle=\"dropdown\">Options <span class=\"caret\"></span></a>\n            <ul class=\"dropdown-menu\" role=\"menu\">\n              <li><a class=\"nav-link\">Settings</a></li>\n              <li><a class=\"nav-link\">Help</a></li>\n              <li><a class=\"nav-link\">Submit Feedback</a></li>\n              <li class=\"divider\"></li>\n              <li><a class=\"nav-link\" v-touch:tap=\"logout()\">Log out</a></li>\n            </ul>\n          </li>\n        </ul>\n      </div>\n    </div>\n  </nav>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33619,7 +29068,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],235:[function(require,module,exports){
+},{"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],208:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/NewsFeed.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
@@ -33938,11 +29387,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],236:[function(require,module,exports){
+},{"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],209:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Roster.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__accept,\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n  opacity: 0;\n}\n@media (max-width: 767px) {\n  .User__accept,\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__accept div,\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__accept .material-icons.admin-icon,\n.User__icons .material-icons.admin-icon {\n  margin-bottom: 5px;\n  margin-left: 1px;\n}\n.User__accept {\n  opacity: 1;\n  background: #fff;\n}\n.User__accept .accept-icon {\n  color: #21c230;\n}\n.User__accept .accept-icon:hover {\n  color: #1dda17;\n  cursor: pointer;\n}\n.User__accept .deny-icon {\n  color: #c90018;\n}\n.User__accept .deny-icon:hover {\n  color: #fc001e;\n  cursor: pointer;\n}\n.User__accept .material-icons {\n  font-size: 40px;\n}\n.User__pic {\n  -webkit-flex-basis: 200px;\n      -ms-flex-preferred-size: 200px;\n          flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player .material-icons:hover {\n  cursor: pointer;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n.Roster__search {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Roster__search input {\n  width: 175px;\n  height: 40px;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media only screen and (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background: #fff;\n  border-radius: 4px;\n  box-shadow: 0 -4px 30px #d0d0d0;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 215px;\n  margin: 20px 20px;\n  box-shadow: 0 0px 5px #d0d0d0;\n}\n@media only screen and (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User :before,\n.User :after {\n  border-radius: 4px;\n}\n.User__accept,\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n  opacity: 0;\n}\n@media only screen and (max-width: 767px) {\n  .User__accept,\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__accept div,\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__accept .material-icons.admin-icon,\n.User__icons .material-icons.admin-icon {\n  margin-bottom: 5px;\n  margin-left: 1px;\n}\n.User__accept {\n  opacity: 1;\n  background: #fff;\n}\n.User__accept .accept-icon {\n  color: #21c230;\n}\n.User__accept .accept-icon:hover {\n  color: #1dda17;\n  cursor: pointer;\n}\n.User__accept .deny-icon {\n  color: #c90018;\n}\n.User__accept .deny-icon:hover {\n  color: #fc001e;\n  cursor: pointer;\n}\n.User__accept .material-icons {\n  font-size: 40px;\n}\n.User__pic {\n  -webkit-flex-basis: 215px;\n      -ms-flex-preferred-size: 215px;\n          flex-basis: 215px;\n  height: 215px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player .material-icons:hover {\n  cursor: pointer;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n  background: #c8c8c8;\n  cursor: pointer;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  display: block;\n  width: 170px;\n  padding-right: 5px;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n}\n.User__details .details-text:hover {\n  overflow: visible;\n  text-overflow: none;\n  white-space: wrap;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n.Roster__search {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Roster__search input {\n  width: 175px;\n  height: 40px;\n}\n@media only screen and (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media only screen and (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34088,13 +29537,13 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"Roster\">\n\n\t<div class=\"TabButton\">\n\t\t<div class=\"first\" :class=\"{'active' : tab === 'players'}\" v-touch:tap=\"tab = 'players'\">\n\t\t\t<span>Players</span>\n\t\t</div>\n\t\t<div class=\"second\" :class=\"{'active' : tab === 'coaches'}\" v-touch:tap=\"tab = 'coaches'\">\n\t\t\t<span>Coaches</span>\n\t\t</div>\n\t\t<div class=\"third\" :class=\"{'active' : tab === 'fans'}\" v-touch:tap=\"tab = 'fans'\">\n\t\t\t<span>Fans</span>\n\t\t</div>\n\t</div>\n\n\t<div class=\"Roster__search\">\n\t\t<input type=\"text\" class=\"form-control --white\" placeholder=\"Search by name...\" v-model=\"search\">\n\t</div>\n\n\n\t\n\t<div v-show=\"tab === 'players'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"player in players\n\t\t\t\t\t\t\t\t\t| filterBy search in 'name'\n\t\t\t\t\t\t\t\t\t| orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div v-show=\"! player.hasRequestedToJoin\" class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"player.isAdmin\">\n\t\t\t\t\t\t<i class=\"material-icons admin-icon\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" v-touch:tap=\"edit(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons edit-icon\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div v-show=\"isAdmin &amp;&amp; player.hasRequestedToJoin\" class=\"User__accept\">\n\t\t\t\t\t<div v-touch:tap=\"accept(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons accept-icon\" data-toggle=\"tooltip\" title=\"Add to Team\">done</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-touch:tap=\"deny(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons deny-icon\" data-toggle=\"tooltip\" title=\"Deny\">close</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\" :class=\"{'--ghost-pic' : player.isGhost}\">\n\t\t\t\t\t<img v-if=\"! player.isGhost\" :src=\"player.pic\" :alt=\"player.name\" height=\"200\" width=\"200\">\n\t\t\t\t\t<div v-else=\"\">\n\t\t\t\t\t\t<span>{{ player.firstname[0] }}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span v-if=\"player.isGhost\">{{ player.name }}</span>\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: player.username}}\">{{ player.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div v-show=\"player.meta.positions\" class=\"User__positions\">\n\t\t\t\t\t\t\t<span v-for=\"position in player.meta.positions\">\n\t\t\t\t\t\t\t\t{{ position | uppercase }}\n\t\t\t\t\t\t\t</span>&nbsp;\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div v-show=\"player.hasRequestedToJoin\" class=\"User__positions\">\n\t\t\t\t\t\t\t<span>Would like to join</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"details-num\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>{{ player.meta.num }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- add player placeholder -->\n\t\t\t<div class=\"User\" v-show=\"isAdmin &amp;&amp; ! search\">\n\t\t\t\t<div class=\"User__pic --add-player\" v-touch:tap=\"addUser('player')\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<i class=\"material-icons\">add</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span>Add a Player</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! isAdmin &amp;&amp; ! players.length\">\n\t\t\t\t<h3>No players yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\t<div v-show=\"tab === 'coaches'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"coach in coaches \n\t\t\t\t\t\t\t\t\t| filterBy search in 'name'\n\t\t\t\t\t\t\t\t\t| orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"coach.isAdmin\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" v-touch:tap=\"edit(coach)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\" :class=\"{'--ghost-pic' : coach.isGhost}\">\n\t\t\t\t\t<img v-if=\"! coach.isGhost\" :src=\"coach.pic\" :alt=\"coach.name\" height=\"200\" width=\"200\">\n\t\t\t\t\t<div v-else=\"\">\n\t\t\t\t\t\t<span>{{ coach.firstname[0] }}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span v-if=\"coach.isGhost\">{{ coach.name }}</span>\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: coach.username}}\">{{ coach.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- add coach placeholder -->\n\t\t\t<div class=\"User\" v-show=\"isAdmin &amp;&amp; ! search\">\n\t\t\t\t<div class=\"User__pic --add-player\" v-touch:tap=\"addUser('coach')\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<i class=\"material-icons\">add</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span>Add a Coach</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! isAdmin &amp;&amp; ! coaches.length\">\n\t\t\t\t<h3>No coaches yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\t<div v-show=\"tab === 'fans'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"fan in fans \n\t\t\t\t\t\t\t\t\t| filterBy search in 'name'\n\t\t\t\t\t\t\t\t\t| orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"fan.isAdmin\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" v-touch:tap=\"edit(fan)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\">\n\t\t\t\t\t<img :src=\"fan.pic\" :alt=\"fan.name\" height=\"200\" width=\"200\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: fan.username}}\">{{ fan.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"User__positions\">\n\t\t\t\t\t\t\t<span>Since {{ fan.since }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! fans.length\">\n\t\t\t\t<h3>No fans yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\n</div>\t\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"Roster\">\n\n\t<div class=\"TabButton\">\n\t\t<div class=\"first\" :class=\"{'active' : tab === 'players'}\" v-touch:tap=\"tab = 'players'\">\n\t\t\t<span>Players</span>\n\t\t</div>\n\t\t<div class=\"second\" :class=\"{'active' : tab === 'coaches'}\" v-touch:tap=\"tab = 'coaches'\">\n\t\t\t<span>Coaches</span>\n\t\t</div>\n\t\t<div class=\"third\" :class=\"{'active' : tab === 'fans'}\" v-touch:tap=\"tab = 'fans'\">\n\t\t\t<span>Fans</span>\n\t\t</div>\n\t</div>\n\n\t<div class=\"Roster__search\">\n\t\t<input type=\"text\" class=\"form-control --white\" placeholder=\"Search by name...\" v-model=\"search\">\n\t</div>\n\n\n\t\n\t<div v-show=\"tab === 'players'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"player in players\n\t\t\t\t\t\t\t\t\t| filterBy search in 'name'\n\t\t\t\t\t\t\t\t\t| orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div v-show=\"! player.hasRequestedToJoin\" class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"player.isAdmin\">\n\t\t\t\t\t\t<i class=\"material-icons admin-icon\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" v-touch:tap=\"edit(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons edit-icon\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div v-show=\"isAdmin &amp;&amp; player.hasRequestedToJoin\" class=\"User__accept\">\n\t\t\t\t\t<div v-touch:tap=\"accept(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons accept-icon\" data-toggle=\"tooltip\" title=\"Add to Team\">done</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-touch:tap=\"deny(player)\">\n\t\t\t\t\t\t<a><i class=\"material-icons deny-icon\" data-toggle=\"tooltip\" title=\"Deny\">close</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\" :class=\"{'--ghost-pic' : player.isGhost}\">\n\t\t\t\t\t<img v-if=\"! player.isGhost\" :src=\"player.pic\" :alt=\"player.name\" height=\"215\" width=\"215\">\n\t\t\t\t\t<div v-else=\"\">\n\t\t\t\t\t\t<span>{{ player.firstname[0] }}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t\t<span v-if=\"player.isGhost\">{{ player.name }}</span>\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: player.username}}\">{{ player.name }}</a>\n\t\t\t\t\t\t<div v-show=\"player.meta.positions\" class=\"User__positions\">\n\t\t\t\t\t\t\t<span v-for=\"position in player.meta.positions\">\n\t\t\t\t\t\t\t\t{{ position | uppercase }}\n\t\t\t\t\t\t\t</span>&nbsp;\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div v-show=\"player.hasRequestedToJoin\" class=\"User__positions\">\n\t\t\t\t\t\t\t<span>Would like to join</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"details-num\">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<span>{{ player.meta.num }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- add player placeholder -->\n\t\t\t<div class=\"User\" v-show=\"isAdmin &amp;&amp; ! search\">\n\t\t\t\t<div class=\"User__pic --add-player\" v-touch:tap=\"addUser('player')\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<i class=\"material-icons\">add</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span>Add a Player</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! isAdmin &amp;&amp; ! players.length\">\n\t\t\t\t<h3>No players yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\t<div v-show=\"tab === 'coaches'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"coach in coaches \n\t\t\t\t\t\t\t\t\t| filterBy search in 'name'\n\t\t\t\t\t\t\t\t\t| orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"coach.isAdmin\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" v-touch:tap=\"edit(coach)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\" :class=\"{'--ghost-pic' : coach.isGhost}\">\n\t\t\t\t\t<img v-if=\"! coach.isGhost\" :src=\"coach.pic\" :alt=\"coach.name\" height=\"215\" width=\"215\">\n\t\t\t\t\t<div v-else=\"\">\n\t\t\t\t\t\t<span>{{ coach.firstname[0] }}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span v-if=\"coach.isGhost\">{{ coach.name }}</span>\n\t\t\t\t\t\t\t<a v-else=\"\" v-link=\"{name: 'user', params: {name: coach.username}}\">{{ coach.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<!-- add coach placeholder -->\n\t\t\t<div class=\"User\" v-show=\"isAdmin &amp;&amp; ! search\">\n\t\t\t\t<div class=\"User__pic --add-player\" v-touch:tap=\"addUser('coach')\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<i class=\"material-icons\">add</i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<span>Add a Coach</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! isAdmin &amp;&amp; ! coaches.length\">\n\t\t\t\t<h3>No coaches yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\t<div v-show=\"tab === 'fans'\" class=\"Roster__list\">\n\t\t<div class=\"Roster__users\">\n\t\t\t<div v-for=\"fan in fans \n\t\t\t\t\t\t\t\t\t| filterBy search in 'name'\n\t\t\t\t\t\t\t\t\t| orderBy 'lastname'\" class=\"User\">\n\t\t\t\t<div class=\"User__icons\">\n\t\t\t\t\t<div v-show=\"fan.isAdmin\">\n\t\t\t\t\t\t<i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Admin\">font_download</i>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div v-show=\"isAdmin\" v-touch:tap=\"edit(fan)\">\n\t\t\t\t\t\t<a><i class=\"material-icons\" data-toggle=\"tooltip\" title=\"Edit\">mode_edit</i></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__pic\">\n\t\t\t\t\t<img :src=\"fan.pic\" :alt=\"fan.name\" height=\"215\" width=\"215\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"User__details\">\n\t\t\t\t\t<div class=\"details-text\">\n\t\t\t\t\t\t<div class=\"User__name\">\n\t\t\t\t\t\t\t<a v-link=\"{name: 'user', params: {name: fan.username}}\">{{ fan.name }}</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"User__positions\">\n\t\t\t\t\t\t\t<span>Since {{ fan.since }}</span>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div v-if=\"! fans.length\">\n\t\t\t\t<h3>No fans yet...</h3>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\n\n\n</div>\t\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 200px;\n  margin: 20px 20px;\n}\n@media (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User__accept,\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n  opacity: 0;\n}\n@media (max-width: 767px) {\n  .User__accept,\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__accept div,\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__accept .material-icons.admin-icon,\n.User__icons .material-icons.admin-icon {\n  margin-bottom: 5px;\n  margin-left: 1px;\n}\n.User__accept {\n  opacity: 1;\n  background: #fff;\n}\n.User__accept .accept-icon {\n  color: #21c230;\n}\n.User__accept .accept-icon:hover {\n  color: #1dda17;\n  cursor: pointer;\n}\n.User__accept .deny-icon {\n  color: #c90018;\n}\n.User__accept .deny-icon:hover {\n  color: #fc001e;\n  cursor: pointer;\n}\n.User__accept .material-icons {\n  font-size: 40px;\n}\n.User__pic {\n  -webkit-flex-basis: 200px;\n      -ms-flex-preferred-size: 200px;\n          flex-basis: 200px;\n  height: 200px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player .material-icons:hover {\n  cursor: pointer;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  width: 175px;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n.Roster__search {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Roster__search input {\n  width: 175px;\n  height: 40px;\n}\n@media (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n"] = false
+    __vueify_insert__.cache[".Roster {\n  margin: 0 auto;\n  max-width: 775px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n@media (max-width: 775px) {\n  .Roster {\n    padding: 0px 15px;\n  }\n}\n.Roster .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.Roster__header {\n  margin-bottom: -10px;\n}\n@media only screen and (max-width: 767px) {\n  .Roster__header {\n    text-align: center;\n  }\n}\n.Roster__list {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Roster__users {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  background: #fff;\n  border-radius: 4px;\n  box-shadow: 0 -4px 30px #d0d0d0;\n}\n.User {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column wrap;\n      -ms-flex-flow: column wrap;\n          flex-flow: column wrap;\n  width: 215px;\n  margin: 20px 20px;\n  box-shadow: 0 0px 5px #d0d0d0;\n}\n@media only screen and (max-width: 767px) {\n  .User {\n    margin: 10px 20px;\n  }\n}\n.User:hover .User__icons {\n  opacity: 1;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n}\n.User :before,\n.User :after {\n  border-radius: 4px;\n}\n.User__accept,\n.User__icons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  position: absolute;\n  top: 0;\n  left: 0;\n  padding-right: 5px;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: rgba(255,255,255,0.7);\n  border-top-left-radius: 4px;\n  border-bottom-right-radius: 4px;\n  -webkit-transition: opacity 0.3s ease;\n  transition: opacity 0.3s ease;\n  opacity: 0;\n}\n@media only screen and (max-width: 767px) {\n  .User__accept,\n  .User__icons {\n    opacity: 1;\n  }\n}\n.User__accept div,\n.User__icons div {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  color: #000;\n  margin: 5px 0px 2px 5px;\n}\n.User__accept .material-icons.admin-icon,\n.User__icons .material-icons.admin-icon {\n  margin-bottom: 5px;\n  margin-left: 1px;\n}\n.User__accept {\n  opacity: 1;\n  background: #fff;\n}\n.User__accept .accept-icon {\n  color: #21c230;\n}\n.User__accept .accept-icon:hover {\n  color: #1dda17;\n  cursor: pointer;\n}\n.User__accept .deny-icon {\n  color: #c90018;\n}\n.User__accept .deny-icon:hover {\n  color: #fc001e;\n  cursor: pointer;\n}\n.User__accept .material-icons {\n  font-size: 40px;\n}\n.User__pic {\n  -webkit-flex-basis: 215px;\n      -ms-flex-preferred-size: 215px;\n          flex-basis: 215px;\n  height: 215px;\n}\n.User__pic img {\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--ghost-pic {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  font-size: 75px;\n  background: #d7ecf6;\n  color: #9f9f9f;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  background: #d0d0d0;\n  border-top-right-radius: 4px;\n  border-top-left-radius: 4px;\n  color: #1179c9;\n  border: 1px solid #ddd;\n  border-bottom: 0;\n}\n.User__pic.--add-player .material-icons {\n  font-size: 100px;\n}\n.User__pic.--add-player .material-icons:hover {\n  cursor: pointer;\n}\n.User__pic.--add-player:hover {\n  color: #38a9f9;\n  background: #c8c8c8;\n  cursor: pointer;\n}\n.User__details {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  padding: 10px;\n  background: #e9e9e9;\n  border-bottom-right-radius: 4px;\n  border-bottom-left-radius: 4px;\n  border: 1px solid #ddd;\n  border-top: 0;\n}\n.User__details .details-text {\n  font-size: 18px;\n  display: block;\n  width: 170px;\n  padding-right: 5px;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n}\n.User__details .details-text:hover {\n  overflow: visible;\n  text-overflow: none;\n  white-space: wrap;\n}\n.User__details .details-num {\n  font-size: 25px;\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n  color: #c90018;\n  width: 25px;\n}\n.User__positions {\n  font-size: 14px;\n  margin-top: 5px;\n  color: #7b7b7b;\n}\n.Roster__search {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Roster__search input {\n  width: 175px;\n  height: 40px;\n}\n@media only screen and (max-width: 767px) {\n  .Roster__coaches {\n    text-align: center;\n  }\n}\n.Roster__coaches ul {\n  padding-left: 0;\n  list-style: none;\n  font-size: 18px;\n}\n.Roster__coaches ul .edit-icon {\n  visibility: hidden;\n}\n@media only screen and (max-width: 767px) {\n  .Roster__coaches ul .edit-icon {\n    visibility: visible;\n  }\n}\n.Roster__coaches ul .edit-icon:hover {\n  cursor: pointer;\n}\n.Roster__coaches ul li:hover .edit-icon {\n  visibility: visible;\n}\n.Roster__coaches .add-coach {\n  font-size: 18px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -34105,11 +29554,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"babel-runtime/core-js/json/stringify":5,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],237:[function(require,module,exports){
+},{"babel-runtime/core-js/json/stringify":4,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],210:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Stats.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".stats-with-slot-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.stats-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.table-responsive {\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n}\n@media only screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\ntd.stat-entries.stat-separator {\n  background-color: rgba(50,154,207,0.21) !important;\n  height: 10px;\n  border: 0;\n}\ntd.stat-entries.stat-total {\n  font-weight: 700;\n  border-top: 3px solid #d0d0d0;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\n.show-more {\n  position: relative;\n  display: inline-block;\n  padding: 10px 100px;\n  border-radius: 4px;\n  background: #fff;\n  color: #1179c9;\n}\n.show-more:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n@media only screen and (max-width: 767px) {\n  .show-more {\n    margin-top: 15px;\n  }\n}\n.show-more .material-icons {\n  position: absolute;\n  font-size: 19px;\n}\n.show-more .material-icons.--left {\n  top: 10px;\n  left: 74px;\n}\n.show-more .material-icons.--right {\n  top: 10px;\n  right: 77px;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".stats-with-slot-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  width: 100%;\n}\n.stats-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.table-responsive {\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n}\n@media only screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\ntd.stat-entries.stat-separator {\n  background-color: rgba(50,154,207,0.21) !important;\n  height: 10px;\n  border: 0;\n}\ntd.stat-entries.stat-total {\n  font-weight: 700;\n  border-top: 3px solid #d0d0d0;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\n.show-more {\n  position: relative;\n  display: inline-block;\n  padding: 10px 100px;\n  border-radius: 4px;\n  background: #fff;\n  color: #1179c9;\n}\n.show-more:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n@media only screen and (max-width: 767px) {\n  .show-more {\n    margin-top: 15px;\n  }\n}\n.show-more .material-icons {\n  position: absolute;\n  font-size: 19px;\n}\n.show-more .material-icons.--left {\n  top: 10px;\n  left: 74px;\n}\n.show-more .material-icons.--right {\n  top: 10px;\n  right: 77px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34133,7 +29582,7 @@ exports.default = {
 
 	mixins: [_StatHelpers2.default],
 
-	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'search', 'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel'],
+	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'teamRecord', 'search', 'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel'],
 
 	components: {
 		'basketball': _Basketball2.default
@@ -34390,13 +29839,13 @@ exports.default = {
 
 // sports
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"stats-with-slot-container\">\n\t<slot></slot>\n\t<div class=\"stats-container\">\n\t\t<div class=\"table-responsive\">\n\t\t\t<table v-if=\"stats.length\" class=\"table table-striped stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr>\n\t\t      \t<th v-for=\"key in statKeys\" class=\"stat-columns\" :class=\"resolveKeyClasses(key)\" v-touch:tap=\"sortBy(key)\" data-toggle=\"tooltip\" :title=\"resolveTooltip(key)\">\n\t\t      \t\t{{ resolveKeyName(key) }}\n\t\t      \t\t<span class=\"caret\" :class=\"resolveCaretClass(key)\"></span>\t      \t\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr v-show=\"index < currPage || ! showPagination\" v-for=\"(index, val) in stats \n\t\t    \t\t\t\t\t\t| filterBy search\n\t\t    \t\t\t\t\t\t| orderBy sortKey sortOrders[sortKey]\">\n\t\t\t      <td v-for=\"key in statKeys\" class=\"stat-entries\" :class=\"resolveValClasses(key, val)\">\n\t\t\t        {{ resolveStatValue(key, val) }} \n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t    \t<template v-if=\"tableBottomLabel &amp;&amp; ! search\">\n\t\t    \t\t<tr>\n\t\t    \t\t\t<td v-for=\"key in statKeys\" class=\"stat-entries stat-total\">\n\t\t    \t\t\t\t{{ resolveStatValue(key, statsOnBottom) }}\n\t\t    \t\t\t</td>\n\t\t    \t\t</tr>\n\t\t    \t</template>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t\t<div v-show=\"showPagination\" class=\"show-more\" v-touch:tap=\"showMore()\">\n\t\t\t\t<span>\n\t\t\t\t\t<i class=\"material-icons --left\">keyboard_arrow_down</i>\n\t\t\t\t\tShow More\n\t\t\t\t\t<i class=\"material-icons --right\">keyboard_arrow_down</i>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- just for calculations, doesn't display anything -->\n\t\t<basketball v-if=\"sport === 'basketball'\" :type=\"type\" :event=\"event\" :player=\"player\" :players=\"players\" :raw-stats=\"filteredRawStats\" :compile=\"compile\" :keys.sync=\"statKeys\" :total=\"total\" :key-names.sync=\"keyNames\" :tooltips.sync=\"tooltips\" :val-lookup.sync=\"valLookup\" :sort-key.sync=\"sortKey\" :val-class-lookup.sync=\"valClassLookup\" :key-class-lookup.sync=\"keyClassLookup\" :stats-on-bottom.sync=\"statsOnBottom\">\n  \t</basketball>\t\n\t</div>\n\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"stats-with-slot-container\">\n\t<div class=\"stats-container\">\n\t\t<div class=\"table-responsive\">\n\t\t\t<slot class=\"test-case\"></slot>\n\t\t\t<table v-if=\"stats.length\" class=\"table table-striped stats-table\">\n\t\t\t\t<thead>\n\t\t    \t<tr>\n\t\t      \t<th v-for=\"key in statKeys\" class=\"stat-columns\" :class=\"resolveKeyClasses(key)\" v-touch:tap=\"sortBy(key)\" data-toggle=\"tooltip\" :title=\"resolveTooltip(key)\">\n\t\t      \t\t{{ resolveKeyName(key) }}\n\t\t      \t\t<span class=\"caret\" :class=\"resolveCaretClass(key)\"></span>\t      \t\n\t\t      \t</th>\n\t\t    \t</tr>\n\t\t  \t</thead>\n\t\t  \t<tbody>\n\t\t    \t<tr v-show=\"index < currPage || ! showPagination\" v-for=\"(index, val) in stats \n\t\t    \t\t\t\t\t\t| filterBy search\n\t\t    \t\t\t\t\t\t| orderBy sortKey sortOrders[sortKey]\">\n\t\t\t      <td v-for=\"key in statKeys\" class=\"stat-entries\" :class=\"resolveValClasses(key, val)\">\n\t\t\t        {{ resolveStatValue(key, val) }} \n\t\t\t      </td>\n\t\t    \t</tr>\n\t\t    \t<template v-if=\"tableBottomLabel &amp;&amp; ! search\">\n\t\t    \t\t<tr>\n\t\t    \t\t\t<td v-for=\"key in statKeys\" class=\"stat-entries stat-total\">\n\t\t    \t\t\t\t{{ resolveStatValue(key, statsOnBottom) }}\n\t\t    \t\t\t</td>\n\t\t    \t\t</tr>\n\t\t    \t</template>\n\t\t  \t</tbody>\n\t\t\t</table>\n\t\t\t<div v-show=\"showPagination\" class=\"show-more\" v-touch:tap=\"showMore()\">\n\t\t\t\t<span>\n\t\t\t\t\t<i class=\"material-icons --left\">keyboard_arrow_down</i>\n\t\t\t\t\tShow More\n\t\t\t\t\t<i class=\"material-icons --right\">keyboard_arrow_down</i>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t</div>\n\n\n\t\t<!-- just for calculations, doesn't display anything -->\n\t\t<basketball v-if=\"sport === 'basketball'\" :type=\"type\" :event=\"event\" :player=\"player\" :record.sync=\"teamRecord\" :players=\"players\" :raw-stats=\"filteredRawStats\" :compile=\"compile\" :keys.sync=\"statKeys\" :total=\"total\" :key-names.sync=\"keyNames\" :tooltips.sync=\"tooltips\" :val-lookup.sync=\"valLookup\" :sort-key.sync=\"sortKey\" :val-class-lookup.sync=\"valClassLookup\" :key-class-lookup.sync=\"keyClassLookup\" :stats-on-bottom.sync=\"statsOnBottom\">\n  \t</basketball>\t\n\t</div>\n\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".stats-with-slot-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n}\n.stats-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.table-responsive {\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n}\n@media only screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\ntd.stat-entries.stat-separator {\n  background-color: rgba(50,154,207,0.21) !important;\n  height: 10px;\n  border: 0;\n}\ntd.stat-entries.stat-total {\n  font-weight: 700;\n  border-top: 3px solid #d0d0d0;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\n.show-more {\n  position: relative;\n  display: inline-block;\n  padding: 10px 100px;\n  border-radius: 4px;\n  background: #fff;\n  color: #1179c9;\n}\n.show-more:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n@media only screen and (max-width: 767px) {\n  .show-more {\n    margin-top: 15px;\n  }\n}\n.show-more .material-icons {\n  position: absolute;\n  font-size: 19px;\n}\n.show-more .material-icons.--left {\n  top: 10px;\n  left: 74px;\n}\n.show-more .material-icons.--right {\n  top: 10px;\n  right: 77px;\n}\n"] = false
+    __vueify_insert__.cache[".stats-with-slot-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  width: 100%;\n}\n.stats-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.table-responsive {\n  -webkit-align-self: center;\n      -ms-flex-item-align: center;\n          align-self: center;\n}\n@media only screen and (max-width: 767px) {\n  .table-responsive {\n    border: 0;\n  }\n}\ntable th.stat-columns {\n  background-color: #329acf;\n  border: 1px solid #cacaca;\n  color: #fff;\n  text-align: center;\n  font-weight: 300;\n  white-space: nowrap;\n}\ntable th.stat-columns:hover {\n  cursor: pointer;\n}\ntable th.stat-columns.col-sort {\n  background-color: #c90018;\n  border-bottom: 2px solid #cacaca;\n}\n.table-striped tbody tr:nth-child(even) td {\n  background-color: #f0f0f0;\n}\n.table-striped tbody tr:nth-child(odd) td {\n  background-color: #fff;\n}\ntd.stat-entries {\n  border: 1px solid #cacaca;\n  vertical-align: middle !important;\n  white-space: nowrap;\n}\ntd.stat-entries.stat-separator {\n  background-color: rgba(50,154,207,0.21) !important;\n  height: 10px;\n  border: 0;\n}\ntd.stat-entries.stat-total {\n  font-weight: 700;\n  border-top: 3px solid #d0d0d0;\n}\n.stats-table {\n  font-size: 13px;\n  font-family: 'Monda', sans-serif;\n  text-align: center;\n  width: auto;\n}\n.stats-table .caret {\n  margin: 0 0 3px 0;\n  -webkit-transition: all 0.2s;\n  transition: all 0.2s;\n}\n.stats-table .caret.asc {\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n.stats-table .caret.desc {\n  -webkit-transform: rotate(0deg);\n          transform: rotate(0deg);\n}\n.stats-table tr {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n.stat-entries.win {\n  color: #f3b700;\n}\n.stat-entries.loss {\n  color: rgba(38,51,255,0.72);\n  font-weight: bold;\n}\n.stat-entries.tie {\n  color: #7b7b7b;\n  font-weight: bold;\n}\n.show-more {\n  position: relative;\n  display: inline-block;\n  padding: 10px 100px;\n  border-radius: 4px;\n  background: #fff;\n  color: #1179c9;\n}\n.show-more:hover {\n  color: #38a9f9;\n  cursor: pointer;\n}\n@media only screen and (max-width: 767px) {\n  .show-more {\n    margin-top: 15px;\n  }\n}\n.show-more .material-icons {\n  position: absolute;\n  font-size: 19px;\n}\n.show-more .material-icons.--left {\n  top: 10px;\n  left: 74px;\n}\n.show-more .material-icons.--right {\n  top: 10px;\n  right: 77px;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -34407,11 +29856,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"../mixins/StatHelpers.js":245,"./stats/Basketball.vue":242,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],238:[function(require,module,exports){
+},{"../mixins/StatHelpers.js":220,"./stats/Basketball.vue":217,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],211:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/Team.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media only screen and (max-width: 991px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media only screen and (max-width: 991px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media only screen and (max-width: 991px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n.team-record {\n  font-size: 25px;\n}\n.Team__location {\n  padding-left: 22px;\n  margin-top: 9px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 9px;\n  font-size: 16px;\n}\n.Team__right_half {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  margin-top: 35px;\n}\n.Team__right_half .--members {\n  margin-right: 5px;\n}\n.Team__right_half .--fans {\n  margin-left: 5px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__right_half {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 10px;\n  }\n}\n.Team__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 6px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 20px;\n  }\n}\n.Team__record {\n  font-size: 50px;\n  color: #f2d500;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  position: relative;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n  margin-top: 3px;\n}\n.Team__tabs .tab .notifications {\n  position: absolute;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  top: -12px;\n  right: -4px;\n  height: 25px;\n  width: 25px;\n  background: #c90018;\n  color: #fff;\n  border-radius: 50%;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__stats .stat-filters {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 0;\n}\n.Team__stats .stat-filters .TabButton {\n  margin-bottom: 15px;\n}\n.JoinTeam__msg {\n  margin-bottom: 30px;\n  font-size: 18px;\n}\n.JoinTeam__msg div {\n  text-align: center;\n}\n.JoinTeam__buttons {\n  margin-bottom: 15px;\n}\n.team-not-found {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media only screen and (max-width: 991px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media only screen and (max-width: 991px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media only screen and (max-width: 991px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__name {\n    font-size: 35px;\n  }\n}\n.team-record {\n  font-size: 25px;\n}\n@media only screen and (max-width: 991px) {\n  .team-record {\n    font-size: 23px;\n  }\n}\n.Team__location {\n  padding-left: 22px;\n  margin-top: 9px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 9px;\n  font-size: 16px;\n  font-style: italic;\n}\n.Team__right_half {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  margin-top: 35px;\n}\n.Team__right_half .--members {\n  margin-right: 5px;\n}\n.Team__right_half .--fans {\n  margin-left: 5px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__right_half {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 10px;\n  }\n}\n.Team__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 6px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 20px;\n  }\n}\n.Team__record {\n  font-size: 50px;\n  color: #f2d500;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  position: relative;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n  margin-top: 3px;\n}\n.Team__tabs .tab .notifications {\n  position: absolute;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  top: -12px;\n  right: -4px;\n  height: 25px;\n  width: 25px;\n  background: #c90018;\n  color: #fff;\n  border-radius: 50%;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__stats .stat-filters {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 0;\n}\n.Team__stats .stat-filters .TabButton {\n  margin-bottom: 15px;\n}\n.JoinTeam__msg {\n  margin-bottom: 30px;\n  font-size: 18px;\n}\n.JoinTeam__msg div {\n  text-align: center;\n}\n.JoinTeam__buttons {\n  margin-bottom: 15px;\n}\n.team-not-found {\n  margin-top: 80px;\n}\nstats {\n  padding: 2em;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34442,6 +29891,10 @@ var _EditUser = require('./EditUser.vue');
 
 var _EditUser2 = _interopRequireDefault(_EditUser);
 
+var _TeamSettings = require('./TeamSettings.vue');
+
+var _TeamSettings2 = _interopRequireDefault(_TeamSettings);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
@@ -34451,12 +29904,13 @@ exports.default = {
 	props: [],
 
 	components: {
-		'rc-calendar': _Calendar2.default,
-		'rc-stats': _Stats2.default,
-		'rc-view-event': _ViewEvent2.default,
-		'rc-roster': _Roster2.default,
-		'rc-news-feed': _NewsFeed2.default,
-		'rc-edit-user': _EditUser2.default
+		'calendar': _Calendar2.default,
+		'stats': _Stats2.default,
+		'view-event': _ViewEvent2.default,
+		'roster': _Roster2.default,
+		'news-feed': _NewsFeed2.default,
+		'edit-user': _EditUser2.default,
+		'settings': _TeamSettings2.default
 	},
 
 	route: {
@@ -34464,7 +29918,7 @@ exports.default = {
 	},
 
 	data: function data() {
-		var prefix = this.$parent.prefix + 'team/';
+		var prefix = this.$parent.prefix + '/team/';
 		var teamname = this.$route.params.name;
 
 		// set new title
@@ -34502,7 +29956,14 @@ exports.default = {
 				lastname: '',
 				meta: {}
 			},
-			newEventTitle: ''
+			newEventTitle: '',
+			settingsSaved: true,
+			focused: {
+				name: false,
+				slogan: false,
+				homefield: false,
+				city: false
+			}
 		};
 	},
 	created: function created() {
@@ -34513,6 +29974,18 @@ exports.default = {
 
 
 	computed: {
+		/**
+   * Format the backdrop image into a style tag
+   */
+
+		backdropPhoto: function backdropPhoto() {
+			return 'background-image: url(\'' + this.team.backdrop + '\');';
+		},
+
+
+		/**
+   * Is the logged-in user a member of this team?
+   */
 		isMember: function isMember() {
 			return this.isPlayer || this.isCoach;
 		},
@@ -34616,9 +30089,9 @@ exports.default = {
    * A modal window was up, but is now minimized
    */
 		App_modal_minimized: function App_modal_minimized() {
-			if (window.history.state) {
-				// was showing an event but now it got minimized
-				// change the URL to just being /team/teamname
+			if (window.history.state && this.requestFinished) {
+				// there was a URL state change within this modal window
+				// change the URL to just being '/team/teamname' again
 				this.$root.url('/team/' + this.$route.params.name);
 			}
 		},
@@ -34718,14 +30191,12 @@ exports.default = {
 			this.formatUsers(data.members);
 
 			// store meta data about team
-			var meta = JSON.parse(data.team.meta);
-			this.team.slogan = meta.slogan;
-			this.team.homefield = meta.homefield;
-			this.team.city = meta.city;
+			var meta = JSON.parse(this.team.meta);
 			this.$set('team.settings.statKeys', meta.stats);
-
-			// format the backdrop image as a style tag
-			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
+			this.$set('team.slogan', meta.slogan);
+			this.$set('team.city', meta.city);
+			this.$set('team.homefield', meta.homefield);
+			this.$set('team.record', '0-0');
 
 			// note whether or not this user is the creator
 			if (this.team.creator_id === this.auth.id) {
@@ -34851,13 +30322,13 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<div v-show=\"requestFinished\" transition=\"fade-slow\">\n\t<!-- container for template -->\n\n\t\t<!-- no results for team, show message -->\n\t\t<div v-cloak=\"\" v-if=\"notFound\" class=\"team-not-found text-center\">\n\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t<br>\n\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t</div>\n\n\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t<div v-else=\"\" class=\"Team for-blurring\">\n\t\t\n\n    \t<div class=\"Team__details\" :style=\"team.backdrop\">\n\t\t\t\t\n\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">{{ team.name }}</h1>\n\t\t\t\t\t\t\t\t<span class=\"team-record\">{{ team.sport | capitalize }}, 24-9</span>\n\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t<i>{{ team.slogan }}</i>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"team.homefield\">{{ team.homefield  + ', '}}</span>\n\t\t\t\t\t\t\t\t\t\t<span>{{ team.city }}</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__right_half\">\n\t\t\t\t\t\t\t\t<div class=\"Team__buttons\">\n\t\t\t\t\t\t\t\t\t<div class=\"btn-counter --members\">\n\t\t\t\t\t\t\t\t\t\t<template v-if=\"! isMember\">\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"hasBeenInvited\" class=\"btn-text --icon --green\" v-touch:tap=\"respondingToInvitation()\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">drafts</i><span>RESPOND TO INVITE</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"hasRequestedToJoin\" class=\"btn-text --icon --red\" v-touch:tap=\"join('cancel')\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">clear</i><span>CANCEL</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"! hasBeenInvited &amp;&amp; ! hasRequestedToJoin\" class=\"btn-text --icon --blue\" v-touch:tap=\"join('request')\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">person_add</i><span>ASK TO JOIN</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t<span v-else=\"\" class=\"btn-text --icon --not-a-button\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">grade</i><span>MEMBERS</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span class=\"btn-count\">\n\t\t\t\t\t\t\t\t\t\t\t<span>{{ players.length + coaches.length }}</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t<div class=\"btn-counter --fans\">\n\t\t\t\t\t\t\t\t\t\t<template v-if=\"! isMember\">\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"! isFan\" class=\"btn-text --icon --blue\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite</i><span>FAN</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"isFan\" class=\"btn-text --icon --blue\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite_border</i><span>UNFAN</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t<span v-else=\"\" class=\"btn-text --icon --not-a-button\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite</i><span>FANS</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span class=\"btn-count\" v-touch:tap=\"$root.showModal('fansModal')\">\n\t\t\t\t\t\t\t\t\t\t\t<span>{{ fans.length }}</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div> <!-- end  Team__buttons -->\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div> <!-- end Team__info -->\n\n\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" v-touch:tap=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t<a>CALENDAR</a>\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" v-touch:tap=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t<a>STATS</a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" v-touch:tap=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t<a>ROSTER</a>\n\t\t\t\t\t\t\t\t<span v-show=\"usersThatWantToJoin.length &amp;&amp; isAdmin\" class=\"notifications\">1</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" v-touch:tap=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t<a>SETTINGS</a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\n\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t  <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t        \t<rc-calendar :is-admin=\"isAdmin\" :events=\"events\"></rc-calendar>\n\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t\t\t\t\t<div class=\"TabButton --just-two stat-nav\">\n\t\t\t\t\t\t\t<div class=\"first\" :class=\"{'active' : statsTab === 'recent'}\" v-touch:tap=\"statsTab = 'recent'\">\n\t\t\t\t\t\t\t\t<span>Recent</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"second\" :class=\"{'active' : statsTab === 'season'}\" v-touch:tap=\"statsTab = 'season'\">\n\t\t\t\t\t\t\t\t<span>Season</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\t\t      \t\n\t\t\t\t\t\t<div v-show=\"statsTab === 'recent'\">\n\t\t\t\t\t\t\t<rc-stats v-if=\"stats.length\" type=\"teamRecent\" :stat-keys=\"team.settings.statKeys\" :sport=\"team.sport\" :raw-stats=\"stats\" :players=\"players\" :paginate=\"10\">\n\t        \t\t</rc-stats>\n\t        \t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t\t\t\t<h4>No stats yet&amp;hllip;</h4>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<div v-show=\"statsTab === 'season'\">\n\n\t\t\t\t\t\t\t<div class=\"stat-filters\">\n\t\t\t\t\t\t\t\t<div v-show=\"stats.length\" class=\"TabButton --just-two --small\">\n\t\t\t\t\t\t\t\t\t<div class=\"first\" :class=\"{'active' : showStatTotals === false}\" v-touch:tap=\"showStatTotals = false\">\n\t\t\t\t\t\t\t\t\t\t<span>Averages</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"second\" :class=\"{'active' : showStatTotals === true}\" v-touch:tap=\"showStatTotals = true\">\n\t\t\t\t\t\t\t\t\t\t<span>Totals</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control --white\" placeholder=\"Search by name...\" v-model=\"statSearch\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<template v-if=\"stats.length\">\n\t\t\t\t\t\t\t\t<rc-stats type=\"playerTeamSeason\" :stat-keys=\"team.settings.statKeys\" :total.sync=\"showStatTotals\" :sport=\"team.sport\" :raw-stats=\"stats\" :players=\"players\" :search=\"statSearch\" table-bottom-label=\"TEAM\">\n\t\t        \t\t</rc-stats>\n\t\t\t\t\t\t\t</template>\n\t\t        \t\n\t        \t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t\t\t\t<h4>No stats yet&amp;hllip;</h4>\n\t\t\t\t\t\t\t</div>\n\t        \t</div>\n\t\t\t\t\t\t\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__roster\" v-show=\"tab === 'roster'\">\n\n\t\t        <rc-roster :users=\"users\" :edit-user.sync=\"editUser\" :is-admin=\"isAdmin\">\n\t\t        </rc-roster>\t\t\n\n\t\t      </div>\n\t\t    </div>\n\n\n\t\t     <div class=\"row\">\n\t\t      <div class=\"col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit\" v-show=\"tab === 'settings'\">\n\n\t        \t<h3>Settings</h3>\n\t        \t\n\n\t\t        \t\n\t\t      </div>\n\t\t    </div>\n\t    </div>\n\n\t\t\t\n\t\t\t<div class=\"row\">\n\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t<!-- <rc-news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></rc-news-feed> -->\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<!-- include the footer at bottom -->\n\t\t\t<div class=\"Footer\">\n\t\t    <p>® 2017 Rookiecard LLC</p>\n\t\t\t</div>\n\n\t\t</div>\n\t  <!--  end of blurring wrapper --> \n\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n    <!-- inside here is complex logic handling what happens when an event is clicked on from calendar or news feed -->\n\t\t<rc-view-event :is-admin=\"isAdmin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :players=\"players\">\n\t\t</rc-view-event>\n\n\n    <!-- modal for editing a player in the roster -->\n\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 v-show=\"(editUser.member_id) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.isPlayer\" class=\"modal-title\">Add a Player</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.isCoach\" class=\"modal-title\">Add a Coach</h3>\n          </div>\n          <div class=\"modal-body\">\n          \t<div class=\"row\">\n            \n\t\t\t\t\t\t\t<rc-edit-user v-if=\"editUser.member_id || editUser.new\" :user=\"editUser\" :positions=\"positions\" :users=\"users\"></rc-edit-user>\n\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"joinTeamModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Join Team?</h3>\n          </div>\n          <div class=\"modal-body\">\n\n            <div class=\"row JoinTeam__msg\">\n\t\t\t\t\t\t\t<div class=\"col-xs-12\">\n\t\t\t\t\t\t\t\t<span>An admin has invited you to join this team</span>\n\t\t\t\t\t\t\t</div>\n            </div>\n            <div class=\"row JoinTeam__buttons\">\n\t\t\t\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t\t\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" v-touch:tap=\"join('accept')\">JOIN</a>\n\t\t\t\t\t    </div>\n\t\t\t\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t\t\t\t    \t<a class=\"btn btn-delete btn-block btn-md outline\" v-touch:tap=\"join('decline')\">DECLINE</a>\n\t\t\t\t\t    </div>\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n\n <!-- end container for template -->\n  </div>  \n</div>\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\t<div v-show=\"requestFinished\" transition=\"fade-slow\">\n\t<!-- container for template -->\n\n\t\t<!-- no results for team, show message -->\n\t\t<div v-cloak=\"\" v-if=\"notFound\" class=\"team-not-found text-center\">\n\t\t\t<h3>This team doesn't exist, you could create it <a v-link=\"{name: 'team', params: {name: 'create'}}\">here</a></h3>\n\t\t\t<br>\n\t\t\t<h4>If you think this is an error, try refreshing the page.</h4>\n\t\t</div>\n\n\t\t<!-- wrapper div around non-modal content for blurring -->\n\t\t<div v-else=\"\" class=\"Team for-blurring\">\n\t\t\n\n    \t<div class=\"Team__details\" :style=\"backdropPhoto\">\n\t\t\t\t\n\t\t\t\t<div class=\"Team__pic\">\n\t\t\t\t\t<img width=\"250\" height=\"250\" :src=\"team.pic\">\n\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t<div class=\"black-container\">\n\t\t\t\t\t\n\t\t\t\t\t<div class=\"filler\"></div>\t\t\t\t\t\t\n\n\t\t\t\t\t<div class=\"Team__info__tabs\">\n\n\t\t\t\t\t\t<div class=\"filler\"></div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"Team__info\">\n\t\t\t\t\t\t\t<div class=\"Team__text\">\n\t\t\t\t\t\t\t\t<h1 class=\"Team__name\">\n\t\t\t\t\t\t\t\t\t<span :class=\"{'text-typing --white' : focused.name }\">{{ team.name }}</span>\n\t\t\t\t\t\t\t\t</h1>\n\t\t\t\t\t\t\t\t<span class=\"team-record\">{{ team.sport | capitalize }}, {{ team.record }}</span>\n\t\t\t\t\t\t\t\t<div class=\"Team__slogan\">\n\t\t\t\t\t\t\t\t\t<span :class=\"{'text-typing --white' : focused.slogan }\">{{ team.slogan }}</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-show=\"team.city || team.homefield\" class=\"Team__location\">\n\t\t\t\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons no-highlight\">place</i>\n\t\t\t\t\t\t\t\t\t\t<span v-if=\"team.homefield\" :class=\"{'text-typing --white' : focused.homefield }\">{{ team.homefield }}</span>,\n\t\t\t\t\t\t\t\t\t\t<span :class=\"{'text-typing --white' : focused.city }\">{{ team.city }}</span>\n\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t</div>\t\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class=\"Team__right_half\">\n\t\t\t\t\t\t\t\t<div class=\"Team__buttons\">\n\t\t\t\t\t\t\t\t\t<div class=\"btn-counter --members\">\n\t\t\t\t\t\t\t\t\t\t<template v-if=\"! isMember\">\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"hasBeenInvited\" class=\"btn-text --icon --green\" v-touch:tap=\"respondingToInvitation()\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">drafts</i><span>RESPOND TO INVITE</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"hasRequestedToJoin\" class=\"btn-text --icon --red\" v-touch:tap=\"join('cancel')\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">clear</i><span>CANCEL</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"! hasBeenInvited &amp;&amp; ! hasRequestedToJoin\" class=\"btn-text --icon --blue\" v-touch:tap=\"join('request')\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">person_add</i><span>ASK TO JOIN</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t<span v-else=\"\" class=\"btn-text --icon --not-a-button\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">grade</i><span>MEMBERS</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span class=\"btn-count\">\n\t\t\t\t\t\t\t\t\t\t\t<span>{{ players.length + coaches.length }}</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t<div class=\"btn-counter --fans\">\n\t\t\t\t\t\t\t\t\t\t<template v-if=\"! isMember\">\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"! isFan\" class=\"btn-text --icon --blue\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite</i><span>FAN</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t<span v-show=\"isFan\" class=\"btn-text --icon --blue\" @click=\"toggleFan\">\n\t\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite_border</i><span>UNFAN</span>\n\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t<span v-else=\"\" class=\"btn-text --icon --not-a-button\">\n\t\t\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">favorite</i><span>FANS</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t<span class=\"btn-count\">\n\t\t\t\t\t\t\t\t\t\t\t<span>{{ fans.length }}</span>\n\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div> <!-- end  Team__buttons -->\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div> <!-- end Team__info -->\n\n\t\t\t\t\t\t<div class=\"Team__tabs\">\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'calendar'}\" v-touch:tap=\"tab = 'calendar'\">\n\t\t\t\t\t\t\t\t<a>CALENDAR</a>\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'stats'}\" v-touch:tap=\"tab = 'stats'\">\n\t\t\t\t\t\t\t\t<a>STATS</a>\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"tab\" :class=\"{'--active' : tab === 'roster'}\" v-touch:tap=\"tab = 'roster'\">\n\t\t\t\t\t\t\t\t<a>ROSTER</a>\n\t\t\t\t\t\t\t\t<span v-show=\"usersThatWantToJoin.length &amp;&amp; isAdmin\" class=\"notifications\">usersThatWantToJoin.length</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-show=\"isAdmin\" class=\"tab\" :class=\"{'--active' : tab === 'settings'}\" v-touch:tap=\"tab = 'settings'\">\n\t\t\t\t\t\t\t\t<a>SETTINGS</a>\n\t\t\t\t\t\t\t\t<span v-show=\"! settingsSaved &amp;&amp; isAdmin\" transition=\"fade-slow\" class=\"notifications\">!</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div> <!-- end team well -->\n\n\n\n\t\t\t\n\t\t\t<div> <!-- begin calendar/roster/stats/newsfeed container -->\n\n\n\t\t\t  <div class=\"row\">\n\t\t      <div class=\"col-xs-12 Team__calendar\" v-show=\"tab === 'calendar'\">\n\n\t        \t<calendar :is-admin=\"isAdmin\" :events=\"events\"></calendar>\n\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div class=\"col-xs-12 text-center Team__stats\" v-show=\"tab === 'stats'\">\n\n\t\t\t\t\t\t<div class=\"TabButton --just-two stat-nav\">\n\t\t\t\t\t\t\t<div class=\"first\" :class=\"{'active' : statsTab === 'recent'}\" v-touch:tap=\"statsTab = 'recent'\">\n\t\t\t\t\t\t\t\t<span>Recent</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"second\" :class=\"{'active' : statsTab === 'season'}\" v-touch:tap=\"statsTab = 'season'\">\n\t\t\t\t\t\t\t\t<span>Season</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\t\t      \t\n\t\t\t\t\t\t<div v-show=\"statsTab === 'recent'\">\n\t\t\t\t\t\t\t<stats v-if=\"stats.length\" type=\"teamRecent\" :stat-keys=\"team.settings.statKeys\" :sport=\"team.sport\" :raw-stats=\"stats\" :players=\"players\" :paginate=\"10\" :team-record.sync=\"team.record\">\n\t        \t\t</stats>\n\t        \t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t\t\t\t<h4>No stats yet…</h4>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\n\t\t\t\t\t\t<div v-show=\"statsTab === 'season'\">\n\n\t\t\t\t\t\t\t<div class=\"stat-filters\">\n\t\t\t\t\t\t\t\t<div v-show=\"stats.length\" class=\"TabButton --just-two --small\">\n\t\t\t\t\t\t\t\t\t<div class=\"first\" :class=\"{'active' : showStatTotals === false}\" v-touch:tap=\"showStatTotals = false\">\n\t\t\t\t\t\t\t\t\t\t<span>Averages</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class=\"second\" :class=\"{'active' : showStatTotals === true}\" v-touch:tap=\"showStatTotals = true\">\n\t\t\t\t\t\t\t\t\t\t<span>Totals</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control --white\" placeholder=\"Search by name...\" v-model=\"statSearch\">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<template v-if=\"stats.length\">\n\t\t\t\t\t\t\t\t<stats type=\"playerTeamSeason\" :stat-keys=\"team.settings.statKeys\" :total.sync=\"showStatTotals\" :sport=\"team.sport\" :raw-stats=\"stats\" :players=\"players\" :search=\"statSearch\" table-bottom-label=\"TEAM\">\n\t\t        \t\t</stats>\n\t\t\t\t\t\t\t</template>\n\t\t        \t\n\t        \t\t<div v-else=\"\" class=\"text-center\">\n\t\t\t\t\t\t\t\t<h4>No stats yet…</h4>\n\t\t\t\t\t\t\t</div>\n\t        \t</div>\n\t\t\t\t\t\t\n\t\t      </div>\n\t\t    </div>\n\n\n\n\t\t    <div class=\"row\">\n\t\t      <div v-show=\"tab === 'roster'\" class=\"col-xs-12\">\n\n\t\t        <roster :users=\"users\" :edit-user.sync=\"editUser\" :is-admin=\"isAdmin\"></roster>\t\t\n\n\t\t      </div>\n\t\t    </div>\n\n\n\t\t     <div class=\"row\">\n\t\t      <div v-show=\"tab === 'settings'\" class=\"col-xs-12\">\n\t        \t\n\t        \t<settings :team=\"team\" :is-admin=\"isAdmin\" :settings-saved.sync=\"settingsSaved\" :focused.sync=\"focused\"></settings>\n\n\t\t      </div>\n\t\t    </div>\n\t    </div>\n\n\t\t\t\n\t\t\t<div class=\"row\">\n\t\t\t\t<div class=\"col-xs-12 Team__feed\">\n\t\t\t\t\t<div class=\"row\">\n\n\t\t\t\t\t\t<div class=\"col-xs-12 Team__feed_divider\">\n\t\t\t\t\t\t\t<div class=\"divider\">\n\t\t\t\t\t\t\t\t<div class=\"divider-text\">\n\t\t\t\t\t\t\t\t\t<span class=\"--twotone\">NEWS FEED</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"row\">\n\t\t\t\t\t\t<div class=\"col-xs-12\">\n\n\t\t\t\t\t\t\t<!-- <news-feed type=\"team\" :feed=\"feed\" :users=\"users\"></news-feed> -->\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<!-- include the footer at bottom -->\n\t\t\t<div class=\"Footer\">\n\t\t    <p>® 2017 Rookiecard LLC</p>\n\t\t\t</div>\n\n\t\t</div>\n\t  <!--  end of blurring wrapper --> \n\t  <!-- keep modals below here so the background blurs properly -->\n\n\n\n    <!-- inside here is complex logic handling what happens when an event is clicked on from calendar or news feed -->\n\t\t<view-event :is-admin=\"isAdmin\" :events=\"events\" :stats=\"stats\" :team=\"team\" :players=\"players\">\n\t\t</view-event>\n\n\n    <!-- modal for editing a player in the roster -->\n\t\t<div class=\"modal\" id=\"rosterModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 v-show=\"(editUser.member_id) &amp;&amp; !editUser.new\" class=\"modal-title\">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.isPlayer\" class=\"modal-title\">Add a Player</h3>\n            <h3 v-show=\"editUser.new &amp;&amp; editUser.isCoach\" class=\"modal-title\">Add a Coach</h3>\n          </div>\n          <div class=\"modal-body\">\n          \t<div class=\"row\">\n            \n\t\t\t\t\t\t\t<edit-user v-if=\"editUser.member_id || editUser.new\" :user=\"editUser\" :positions=\"positions\" :users=\"users\"></edit-user>\n\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n    <!-- modal window for adding events -->\n    <div class=\"modal\" id=\"joinTeamModal\" role=\"dialog\" aria-hidden=\"true\">\n      <div class=\"modal-dialog\">\n        <div class=\"modal-content\">\n          <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n            <h3 class=\"modal-title\">Join Team?</h3>\n          </div>\n          <div class=\"modal-body\">\n\n            <div class=\"row JoinTeam__msg\">\n\t\t\t\t\t\t\t<div class=\"col-xs-12\">\n\t\t\t\t\t\t\t\t<span>An admin has invited you to join this team</span>\n\t\t\t\t\t\t\t</div>\n            </div>\n            <div class=\"row JoinTeam__buttons\">\n\t\t\t\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-2\">\n\t\t\t\t\t    \t<a class=\"btn btn-primary btn-block btn-md\" v-touch:tap=\"join('accept')\">JOIN</a>\n\t\t\t\t\t    </div>\n\t\t\t\t\t    <div class=\"col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1\">\n\t\t\t\t\t    \t<a class=\"btn btn-delete btn-block btn-md outline\" v-touch:tap=\"join('decline')\">DECLINE</a>\n\t\t\t\t\t    </div>\n\t\t\t\t\t\t</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n\n\n\n <!-- end container for template -->\n  </div>  \n</div>\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media only screen and (max-width: 991px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media only screen and (max-width: 991px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media only screen and (max-width: 991px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n.team-record {\n  font-size: 25px;\n}\n.Team__location {\n  padding-left: 22px;\n  margin-top: 9px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 9px;\n  font-size: 16px;\n}\n.Team__right_half {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  margin-top: 35px;\n}\n.Team__right_half .--members {\n  margin-right: 5px;\n}\n.Team__right_half .--fans {\n  margin-left: 5px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__right_half {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 10px;\n  }\n}\n.Team__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 6px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 20px;\n  }\n}\n.Team__record {\n  font-size: 50px;\n  color: #f2d500;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  position: relative;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n  margin-top: 3px;\n}\n.Team__tabs .tab .notifications {\n  position: absolute;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  top: -12px;\n  right: -4px;\n  height: 25px;\n  width: 25px;\n  background: #c90018;\n  color: #fff;\n  border-radius: 50%;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__stats .stat-filters {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 0;\n}\n.Team__stats .stat-filters .TabButton {\n  margin-bottom: 15px;\n}\n.JoinTeam__msg {\n  margin-bottom: 30px;\n  font-size: 18px;\n}\n.JoinTeam__msg div {\n  text-align: center;\n}\n.JoinTeam__buttons {\n  margin-bottom: 15px;\n}\n.team-not-found {\n  margin-top: 80px;\n}\nrc-stats {\n  padding: 2em;\n}\n"] = false
+    __vueify_insert__.cache[".Team {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.Team__details {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  margin-bottom: 35px;\n  background-size: cover;\n  background-attachment: fixed;\n}\n.Team__pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  max-width: 270px;\n  padding-left: 20px;\n  -webkit-transform: translate(0, 125px);\n          transform: translate(0, 125px);\n}\n@media only screen and (max-width: 991px) {\n  .Team__pic {\n    margin: 10px;\n    -webkit-transform: translate(0, 0px);\n            transform: translate(0, 0px);\n    -webkit-align-self: center;\n        -ms-flex-item-align: center;\n            align-self: center;\n    padding: 0;\n  }\n}\n.Team__pic img {\n  border-radius: 50%;\n  border: 5px solid #fff;\n}\n.black-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  background: rgba(0,0,0,0.7);\n}\n.black-container .filler {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  min-width: 290px;\n}\n@media only screen and (max-width: 991px) {\n  .black-container .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n    min-width: 0px;\n  }\n}\n.Team__info__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  padding: 0;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n    -webkit-box-flex: 1;\n    -webkit-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n  }\n  .Team__info__tabs .filler {\n    -webkit-box-flex: 0;\n    -webkit-flex: 0;\n        -ms-flex: 0;\n            flex: 0;\n  }\n}\n.Team__info {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n}\n@media only screen and (max-width: 991px) {\n  .Team__info {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    -webkit-flex-flow: column;\n        -ms-flex-flow: column;\n            flex-flow: column;\n  }\n}\n.Team__text {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  color: #fff;\n}\n@media only screen and (max-width: 991px) {\n  .Team__text {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    text-align: center;\n  }\n}\n.Team__name {\n  -webkit-flex-basis: 1;\n      -ms-flex-preferred-size: 1;\n          flex-basis: 1;\n  font-size: 42px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__name {\n    font-size: 35px;\n  }\n}\n.team-record {\n  font-size: 25px;\n}\n@media only screen and (max-width: 991px) {\n  .team-record {\n    font-size: 23px;\n  }\n}\n.Team__location {\n  padding-left: 22px;\n  margin-top: 9px;\n  font-size: 16px;\n}\n.Team__location span {\n  position: relative;\n}\n.Team__location .material-icons {\n  position: absolute;\n  font-size: 21px;\n  left: -27px;\n  top: -2px;\n}\n.Team__slogan {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  margin-top: 9px;\n  font-size: 16px;\n  font-style: italic;\n}\n.Team__right_half {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  margin-top: 35px;\n}\n.Team__right_half .--members {\n  margin-right: 5px;\n}\n.Team__right_half .--fans {\n  margin-left: 5px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__right_half {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 10px;\n  }\n}\n.Team__buttons {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  margin-bottom: 6px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__buttons {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    margin-top: 20px;\n  }\n}\n.Team__record {\n  font-size: 50px;\n  color: #f2d500;\n}\n.Team__tabs {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  padding: 0;\n  margin-top: 35px;\n  font-size: 17px;\n}\n@media only screen and (max-width: 991px) {\n  .Team__tabs {\n    -webkit-box-pack: center;\n    -webkit-justify-content: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n  }\n}\n.Team__tabs .tab {\n  -webkit-flex-basis: 110px;\n      -ms-flex-preferred-size: 110px;\n          flex-basis: 110px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  position: relative;\n  background-color: rgba(255,255,255,0.7);\n  margin-right: 5px;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n}\n.Team__tabs .tab a {\n  color: #1179c9;\n  padding: 7px 8px;\n  margin-top: 3px;\n}\n.Team__tabs .tab .notifications {\n  position: absolute;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  top: -12px;\n  right: -4px;\n  height: 25px;\n  width: 25px;\n  background: #c90018;\n  color: #fff;\n  border-radius: 50%;\n}\n.Team__tabs .tab:hover {\n  cursor: pointer;\n}\n.Team__tabs .tab.--active {\n  background-color: #f5f5f5;\n}\n.Team__tabs .tab.--active a,\n.Team__tabs .tab.--active:hover {\n  cursor: default;\n  color: #000;\n}\n.Team__feed {\n  background: #f5f5f5;\n  margin-top: 4em;\n}\n.Team__feed_divider {\n  margin: 65px 0px 105px 0px;\n}\n.Team__stats {\n  padding: 0 2em;\n}\n.Team__stats .TabButton {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 60px;\n}\n.Team__stats .TabButton.--just-two {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 20px;\n}\n.Team__stats .TabButton.--just-two input {\n  width: 175px;\n  margin-left: 30px;\n  height: 30px;\n}\n.Team__stats .stat-filters {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: start;\n  -webkit-justify-content: flex-start;\n      -ms-flex-pack: start;\n          justify-content: flex-start;\n  margin-top: 0;\n}\n.Team__stats .stat-filters .TabButton {\n  margin-bottom: 15px;\n}\n.JoinTeam__msg {\n  margin-bottom: 30px;\n  font-size: 18px;\n}\n.JoinTeam__msg div {\n  text-align: center;\n}\n.JoinTeam__buttons {\n  margin-bottom: 15px;\n}\n.team-not-found {\n  margin-top: 80px;\n}\nstats {\n  padding: 2em;\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -34868,11 +30339,11 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./Calendar.vue":228,"./EditUser.vue":232,"./NewsFeed.vue":235,"./Roster.vue":236,"./Stats.vue":237,"./ViewEvent.vue":239,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],239:[function(require,module,exports){
-_hmr["websocket:null"].initModule("resources/assets/js/components/ViewEvent.vue", module);
+},{"./Calendar.vue":201,"./EditUser.vue":205,"./NewsFeed.vue":208,"./Roster.vue":209,"./Stats.vue":210,"./TeamSettings.vue":212,"./ViewEvent.vue":214,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],212:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/TeamSettings.vue", module);
 (function(){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert(".edit-button.--view {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 25px;\n}\n.edit-button.--view .btn {\n  padding-left: 14px;\n}\n.edit-button.--view #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 100%;\n  margin: 0 auto;\n}\n.ViewEvent .time,\n.ViewEvent .type {\n  font-size: 30px;\n  margin-bottom: 30px;\n  text-align: center;\n}\n.ViewEvent .time.--practice,\n.ViewEvent .type.--practice {\n  color: #329acf;\n}\n.ViewEvent .time.--home_game,\n.ViewEvent .type.--home_game {\n  color: #c90018;\n}\n.ViewEvent .time.--away_game,\n.ViewEvent .type.--away_game {\n  color: #f2d500;\n}\n.ViewEvent .time.--other,\n.ViewEvent .type.--other {\n  color: #76af00;\n}\n.ViewEvent .details {\n  font-size: 18px;\n  text-align: center;\n}\n.ViewEvent .details.--no-stats {\n  margin: 25px 0;\n}\n.outcome {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  font-size: 25px;\n  color: #d0d0d0;\n  margin-bottom: 5px;\n  width: 100%;\n}\n.outcome .away {\n  padding-right: 15px;\n  padding-top: 2px;\n  border-right: 2px solid #e9e9e9;\n}\n.outcome .home {\n  padding-left: 15px;\n  padding-top: 2px;\n  border-left: 1px solid #e9e9e9;\n}\n.outcome .win {\n  color: #f3b700;\n}\n.outcome .separator {\n  font-size: 40px;\n  color: #d0d0d0;\n}\n.modal .stats-wrapper {\n  padding: 15px;\n}\n.type.--practice {\n  color: #329acf;\n}\n.type.--home_game {\n  color: #c90018;\n}\n.type.--away_game {\n  color: #f2d500;\n}\n.type.--other {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n")
+var __vueify_style__ = __vueify_insert__.insert(".Settings {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  max-width: 775px;\n  margin: 0 auto;\n}\n.Settings__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  margin: 0 auto;\n  margin-bottom: 10px;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  max-width: 775px;\n}\n.Settings__header .save {\n  width: 183px;\n}\n.Settings__header .save .btn {\n  margin: 0;\n  width: 100%;\n}\n.Settings__header .save .btn.btn-cancel:hover {\n  background: #9f9f9f;\n  cursor: default;\n}\n.Settings__header .header {\n  margin-left: 21px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n.Settings__header .header h2 {\n  margin: 0;\n}\n.settings-nav {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  font-size: 20px;\n  color: #1179c9;\n}\n.settings-nav ul {\n  list-style: none;\n  padding: 0;\n  margin: 0;\n}\n.settings-nav ul li {\n  padding: 1em;\n  background: #f5f5f5;\n  border-left: 2px solid #e9e9e9;\n  -webkit-transition: border-left 150ms ease;\n  transition: border-left 150ms ease;\n}\n.settings-nav ul li.--active {\n  background: #fff;\n  font-weight: bold;\n}\n.settings-nav ul li.--active:hover {\n  cursor: default;\n  border-left: 2px solid #e9e9e9;\n  color: #1179c9;\n}\n.settings-nav ul li.danger-zone {\n  color: #c90018;\n  -webkit-transition: all 150ms ease;\n  transition: all 150ms ease;\n  border-left-color: rgba(201,0,25,0.1);\n}\n.settings-nav ul li.danger-zone:hover {\n  color: #fc001e;\n  border-left: 4px solid rgba(201,0,25,0.4);\n  -webkit-transition: all 150ms ease;\n  transition: all 150ms ease;\n}\n.settings-nav ul li.danger-zone:hover.--active {\n  border-left: 2px solid rgba(201,0,25,0.1);\n  color: #c90018;\n}\n.settings-nav ul li:hover {\n  cursor: pointer;\n  border-left: 4px solid #d0d0d0;\n  -webkit-transition: all 150ms ease;\n  transition: all 150ms ease;\n  color: #38a9f9;\n}\n.settings-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  background: #fff;\n  padding: 1.5em;\n}\n.settings-container .form-group {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 20px;\n}\n.settings-container .form-group div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.settings-container .form-group div:not(:first-child) {\n  margin-left: 10px;\n}\n.photos {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  border-top: 2px solid #e9e9e9;\n  margin: 25px 0;\n  padding: 40px 0 0 0;\n}\n@media only screen and (max-width: 767px) {\n  .photos {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n  }\n}\n.photos .upload-pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  text-align: center;\n}\n.photos .upload-pic:last-child {\n  margin-left: 10px;\n}\n@media only screen and (max-width: 767px) {\n  .photos .upload-pic {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n  .photos .upload-pic:last-child {\n    margin-top: 10px;\n    margin-left: 0px;\n  }\n}\n.photos .upload-pic .dropzone {\n  height: 200px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-radius: 10px;\n  -webkit-transition: all 300ms;\n  transition: all 300ms;\n  color: #1179c9;\n}\n.photos .upload-pic .dropzone:hover {\n  -webkit-transition: all 300ms;\n  transition: all 300ms;\n  color: #38a9f9;\n  border: 2px dashed #38a9f9;\n}\n.photos .upload-pic .dropzone:active,\n.photos .upload-pic .dropzone:focus {\n  border: 2px solid #38a9f9;\n}\n.photos .upload-pic .dropzone .dz-remove {\n  color: #c90018;\n  font-size: 40px;\n  position: absolute;\n}\n.photos .upload-pic .dropzone.success {\n  border: 2px dashed #21c230;\n  -webkit-transition: border 0.3s;\n  transition: border 0.3s;\n}\n.photos .upload-pic .dropzone.--pic {\n  width: 200px;\n  border-radius: 50%;\n}\n.photos .upload-pic .dropzone.--pic .dz-image {\n  border-radius: 50%;\n}\n.photos .upload-pic .dropzone.--pic .dz-remove {\n  display: inherit;\n  position: absolute;\n  bottom: -49px;\n  left: 52px;\n}\n.photos .upload-pic .dropzone.--backdrop {\n  width: 333px;\n}\n.photos .upload-pic .dropzone.--backdrop .dz-preview {\n  width: 210px;\n}\n.photos .upload-pic .dropzone.--backdrop .dz-preview .dz-image {\n  border-radius: 15px;\n  width: 210px;\n}\n.photos .upload-pic .dropzone.--backdrop .dz-preview .dz-remove {\n  left: 98px;\n  bottom: -49px;\n}\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34882,6 +30353,260 @@ Object.defineProperty(exports, "__esModule", {
 var _stringify = require('babel-runtime/core-js/json/stringify');
 
 var _stringify2 = _interopRequireDefault(_stringify);
+
+var _Validator = require('../mixins/Validator.js');
+
+var _Validator2 = _interopRequireDefault(_Validator);
+
+var _GoogleTypeahead = require('./GoogleTypeahead.vue');
+
+var _GoogleTypeahead2 = _interopRequireDefault(_GoogleTypeahead);
+
+var _vueFocus = require('vue-focus');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+
+	name: 'TeamSettings',
+
+	props: ['team', 'settingsSaved', 'focused'],
+
+	mixins: [_Validator2.default, _vueFocus.mixin],
+
+	components: {
+		'google-autocomplete': _GoogleTypeahead2.default
+	},
+
+	data: function data() {
+		Dropzone.autoDiscover = false;
+
+		return {
+			tab: 'info',
+			backup: {},
+			debounce: 1500,
+			enableTypeahead: false
+		};
+	},
+	beforeCompile: function beforeCompile() {
+		this.registerErrorChecking('team.name', 'required', 'Enter a name');
+		this.registerErrorChecking('team.teamname', 'required|alpha_dash', ['Pick a team URL', 'No special characters']);
+	},
+
+
+	events: {
+		/**
+   * Request back from the server about whether this team URL is available
+   */
+
+		TeamSettings_availability: function TeamSettings_availability(response) {
+			if (!response.data.available && this.team.teamname !== this.backup.teamname) {
+				this.errors.team.teamname = 'Already taken';
+			}
+		}
+	},
+
+	watch: {
+		/**
+   * Make non-reactive backup of the original team data
+   */
+
+		team: function team() {
+			this.$set('backup', JSON.parse((0, _stringify2.default)(this.team)));
+
+			this.dropzone();
+
+			this.enableTypeahead = true;
+		},
+
+
+		/**
+   * Watch all of the following parameters for changes
+   * Mark 'saved' as false until otherwise noted
+   */
+		'team.name': function teamName(newVal, oldVal) {
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		},
+
+		'team.teamname': function teamTeamname(newVal, oldVal) {
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		},
+
+		'team.homefield': function teamHomefield(newVal, oldVal) {
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		},
+
+		'team.slogan': function teamSlogan(newVal, oldVal) {
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		},
+
+		'team.pic': function teamPic(newVal, oldVal) {
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		},
+
+		'team.backdrop': function teamBackdrop(newVal, oldVal) {
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		}
+	},
+
+	methods: {
+		/**
+   * Save any changes to the server
+   */
+
+		save: function save() {
+			this.settingsSaved = true;
+
+			this.$root.banner('good', 'Settings saved');
+		},
+		checkAvailability: function checkAvailability() {
+			if (this.errorCheck('team.teamname') === 0) {
+				this.$root.post(this.$root.prefix + '/team/create/' + this.team.teamname, 'TeamSettings_availability');
+			}
+		},
+
+
+		/**
+   * Setup configurations and attach Dropzone to the DOM
+   */
+		dropzone: function dropzone() {
+
+			var options = {
+				paramName: 'pic',
+				url: '', // set later
+				headers: { 'X-CSRF-TOKEN': this.$http.headers.common['X-CSRF-TOKEN'] },
+				maxFiles: 1,
+				maxFilesize: 5,
+				acceptedFiles: 'image/jpg,image/jpeg,image/png,image/svg,image/gif',
+				addRemoveLinks: true,
+				dictDefaultMessage: 'Drag and drop or click here',
+				dictRemoveFile: '×',
+				dictCancelUpload: ''
+			};
+
+			options.url = this.$parent.prefix + '/pic';
+			var pic = new Dropzone('#team-pic', options);
+
+			// picture uploaded successfully to the server
+			// returned with file object and response
+			pic.on('success', function (file, response) {
+				//let newPic = response.data.pic;
+				this.$root.banner('good', 'Picture uploaded');
+			}.bind(this));
+
+			// picture reverted back to original in server
+			// returned with file object and response
+			pic.on('removedfile', function (file, response) {
+				this.$root.banner('good', 'Reverted to original photo');
+			}.bind(this));
+
+			// setup the backdrop dropzone configs
+			options.url = this.$parent.prefix + '/backdrop';
+			options.thumbnailWidth = 210;
+			var backdrop = new Dropzone('#team-backdrop', options);
+
+			// backdrop photo uploaded successfully to the server
+			// returned with file object and response
+			backdrop.on('success', function (file, response) {
+				//let newBackdrop = response.data.pic;
+				this.$root.banner('good', 'Picture uploaded');
+			}.bind(this));
+
+			// backdrop photo reverted back to original in server
+			// returned with file object and response
+			backdrop.on('removedfile', function (file, response) {
+				this.$root.banner('good', 'Reverted to original photo');
+			}.bind(this));
+		}
+	}
+
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div>\n\n\t\t<div class=\"Settings__header\">\n\n\t\t\t<div class=\"save\">\n\t\t\t\t<a v-if=\"! settingsSaved\" class=\"btn btn-primary\" :class=\"{ 'click-me' : ! settingsSaved }\" v-touch:tap=\"save()\">\n    \t\t\t<span v-show=\"! loading_save\">SAVE</span>\n    \t\t\t<spinner v-show=\"loading_save\" color=\"white\"></spinner>\n    \t\t</a>\n    \t\t<a v-else=\"\" class=\"btn btn-cancel\">SAVED</a>\n\t\t\t</div>\n\n\t\t\t<div class=\"header\">\n\t\t\t\t<h2>Settings</h2>\n\t\t\t</div>\n\n\t\t</div>\n\n\n\t\t<div class=\"Settings\">\n\n\t\t\t<div class=\"settings-nav\">\n\t\t\t\t<ul>\n\t\t\t\t\t<li :class=\"{ '--active' : tab === 'info' }\" v-touch:tap=\"tab = 'info'\">Info</li>\n\t\t\t\t\t<li :class=\"{ '--active' : tab === 'stats' }\" v-touch:tap=\"tab = 'stats'\">Stats</li>\n\t\t\t\t\t<li :class=\"{ '--active' : tab === 'privacy' }\" v-touch:tap=\"tab = 'privacy'\">Privacy</li>\n\t\t\t\t\t<li :class=\"{ '--active' : tab === 'notifications' }\" v-touch:tap=\"tab = 'notifications'\">Notifications</li>\n\t\t\t\t\t<li class=\"danger-zone\" :class=\"{ '--active' : tab === 'danger zone' }\" v-touch:tap=\"tab = 'danger zone'\">Danger Zone</li>\n\t\t\t\t</ul>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div class=\"settings-container\">\n\t\t\t\t<div class=\"form-group\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<label>Team Name</label>\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.team.name}\" required=\"\" maxlength=\"25\" v-focus=\"focused.name\" @focus=\"focused.name = true\" @blur=\"focused.name = false\" placeholder=\"WHS Varsity Basketball\" v-model=\"team.name\">\n\t\t\t\t\t\t<span class=\"form-error\">{{ errors.team.name }}</span>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<label>Team URL</label>\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" :class=\"{'form-error' : errors.team.teamname}\" maxlength=\"18\" placeholder=\"whsbasketball16\" required=\"\" @blur=\"checkAvailability()\" v-model=\"team.teamname\">\n\t\t\t\t\t\t<span v-show=\"errors.team.teamname\" class=\"form-error\">{{ errors.team.teamname }}</span>\n\t\t\t\t\t\t<span v-else=\"\" class=\"input-info\">rookiecard.com/team/{{ team.teamname }}</span>\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t<div class=\"form-group\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<label>Slogan</label>\n\t\t\t\t\t\t<span v-if=\"team.slogan\" class=\"remaining\"><strong>{{ team.slogan.length }}</strong> / 50</span>\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" required=\"\" maxlength=\"50\" v-focus=\"focused.slogan\" @focus=\"focused.slogan = true\" @blur=\"focused.slogan = false\" v-model=\"team.slogan\">\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t<div class=\"form-group\">\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<label>Homefield</label>\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" required=\"\" maxlength=\"25\" v-focus=\"focused.homefield\" @focus=\"focused.homefield = true\" @blur=\"focused.homefield = false\" placeholder=\"Cowell Stadium\" v-model=\"team.homefield\">\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\t<google-autocomplete v-if=\"enableTypeahead\" :city.sync=\"team.city\" :long.sync=\"team.long\" :lat.sync=\"team.lat\" label=\"City / Town\" :error=\"errors.city\">\n\t\t\t\t\t</google-autocomplete>\n\t\t\t\t</div>\n\n\t\t\t\t<div class=\"photos\">\n\t\t\t\t\t<div class=\"upload-pic\">\n\t\t\t\t\t\t<label>Team Photo</label>\n\t\t\t\t\t\t<form class=\"dropzone --pic\" id=\"team-pic\"></form>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class=\"upload-pic\">\n\t\t\t\t\t\t<label>Backdrop Photo</label>\n\t\t\t\t\t\t<form class=\"dropzone --backdrop\" id=\"team-backdrop\"></form>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\n\t\t</div>\n\t</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.dispose(function () {
+    __vueify_insert__.cache[".Settings {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  max-width: 775px;\n  margin: 0 auto;\n}\n.Settings__header {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  margin: 0 auto;\n  margin-bottom: 10px;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  max-width: 775px;\n}\n.Settings__header .save {\n  width: 183px;\n}\n.Settings__header .save .btn {\n  margin: 0;\n  width: 100%;\n}\n.Settings__header .save .btn.btn-cancel:hover {\n  background: #9f9f9f;\n  cursor: default;\n}\n.Settings__header .header {\n  margin-left: 21px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n.Settings__header .header h2 {\n  margin: 0;\n}\n.settings-nav {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  font-size: 20px;\n  color: #1179c9;\n}\n.settings-nav ul {\n  list-style: none;\n  padding: 0;\n  margin: 0;\n}\n.settings-nav ul li {\n  padding: 1em;\n  background: #f5f5f5;\n  border-left: 2px solid #e9e9e9;\n  -webkit-transition: border-left 150ms ease;\n  transition: border-left 150ms ease;\n}\n.settings-nav ul li.--active {\n  background: #fff;\n  font-weight: bold;\n}\n.settings-nav ul li.--active:hover {\n  cursor: default;\n  border-left: 2px solid #e9e9e9;\n  color: #1179c9;\n}\n.settings-nav ul li.danger-zone {\n  color: #c90018;\n  -webkit-transition: all 150ms ease;\n  transition: all 150ms ease;\n  border-left-color: rgba(201,0,25,0.1);\n}\n.settings-nav ul li.danger-zone:hover {\n  color: #fc001e;\n  border-left: 4px solid rgba(201,0,25,0.4);\n  -webkit-transition: all 150ms ease;\n  transition: all 150ms ease;\n}\n.settings-nav ul li.danger-zone:hover.--active {\n  border-left: 2px solid rgba(201,0,25,0.1);\n  color: #c90018;\n}\n.settings-nav ul li:hover {\n  cursor: pointer;\n  border-left: 4px solid #d0d0d0;\n  -webkit-transition: all 150ms ease;\n  transition: all 150ms ease;\n  color: #38a9f9;\n}\n.settings-container {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row wrap;\n      -ms-flex-flow: row wrap;\n          flex-flow: row wrap;\n  -webkit-box-flex: 3;\n  -webkit-flex: 3;\n      -ms-flex: 3;\n          flex: 3;\n  background: #fff;\n  padding: 1.5em;\n}\n.settings-container .form-group {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  margin-bottom: 20px;\n}\n.settings-container .form-group div {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n}\n.settings-container .form-group div:not(:first-child) {\n  margin-left: 10px;\n}\n.photos {\n  -webkit-flex-basis: 100%;\n      -ms-flex-preferred-size: 100%;\n          flex-basis: 100%;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row nowrap;\n      -ms-flex-flow: row nowrap;\n          flex-flow: row nowrap;\n  border-top: 2px solid #e9e9e9;\n  margin: 25px 0;\n  padding: 40px 0 0 0;\n}\n@media only screen and (max-width: 767px) {\n  .photos {\n    -webkit-flex-flow: row wrap;\n        -ms-flex-flow: row wrap;\n            flex-flow: row wrap;\n  }\n}\n.photos .upload-pic {\n  -webkit-box-flex: 1;\n  -webkit-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  text-align: center;\n}\n.photos .upload-pic:last-child {\n  margin-left: 10px;\n}\n@media only screen and (max-width: 767px) {\n  .photos .upload-pic {\n    -webkit-flex-basis: 100%;\n        -ms-flex-preferred-size: 100%;\n            flex-basis: 100%;\n  }\n  .photos .upload-pic:last-child {\n    margin-top: 10px;\n    margin-left: 0px;\n  }\n}\n.photos .upload-pic .dropzone {\n  height: 200px;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  border-radius: 10px;\n  -webkit-transition: all 300ms;\n  transition: all 300ms;\n  color: #1179c9;\n}\n.photos .upload-pic .dropzone:hover {\n  -webkit-transition: all 300ms;\n  transition: all 300ms;\n  color: #38a9f9;\n  border: 2px dashed #38a9f9;\n}\n.photos .upload-pic .dropzone:active,\n.photos .upload-pic .dropzone:focus {\n  border: 2px solid #38a9f9;\n}\n.photos .upload-pic .dropzone .dz-remove {\n  color: #c90018;\n  font-size: 40px;\n  position: absolute;\n}\n.photos .upload-pic .dropzone.success {\n  border: 2px dashed #21c230;\n  -webkit-transition: border 0.3s;\n  transition: border 0.3s;\n}\n.photos .upload-pic .dropzone.--pic {\n  width: 200px;\n  border-radius: 50%;\n}\n.photos .upload-pic .dropzone.--pic .dz-image {\n  border-radius: 50%;\n}\n.photos .upload-pic .dropzone.--pic .dz-remove {\n  display: inherit;\n  position: absolute;\n  bottom: -49px;\n  left: 52px;\n}\n.photos .upload-pic .dropzone.--backdrop {\n  width: 333px;\n}\n.photos .upload-pic .dropzone.--backdrop .dz-preview {\n  width: 210px;\n}\n.photos .upload-pic .dropzone.--backdrop .dz-preview .dz-image {\n  border-radius: 15px;\n  width: 210px;\n}\n.photos .upload-pic .dropzone.--backdrop .dz-preview .dz-remove {\n  left: 98px;\n  bottom: -49px;\n}\n"] = false
+    document.head.removeChild(__vueify_style__)
+  })
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-e62c916c", module.exports)
+  } else {
+    hotAPI.update("_v-e62c916c", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+}).apply(this, arguments);
+
+},{"../mixins/Validator.js":222,"./GoogleTypeahead.vue":206,"babel-runtime/core-js/json/stringify":4,"vue":196,"vue-focus":193,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],213:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/User.vue", module);
+(function(){
+var __vueify_insert__ = require("vueify/lib/insert-css")
+var __vueify_style__ = __vueify_insert__.insert(".user-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  height: 100%;\n  width: 100%;\n  margin-top: 70px;\n}\n.user-wrapper .filler {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  text-align: center;\n  border: 3px dashed #c90018;\n  height: 650px;\n  width: 500px;\n  font-size: 40px;\n  color: #1179c9;\n}\n")
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
+
+	name: 'User',
+
+	props: [],
+
+	data: function data() {
+		return {};
+	},
+	created: function created() {},
+
+
+	computed: {}, //end computed props
+
+	methods: {}, //end methods
+
+	ready: function ready() {}
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n\n\t<div class=\"user-wrapper\">\n\t\t<div class=\"filler\">\n\t\t\t<span>\n\t\t\t\t{{ $route.params.name | uppercase }}'S ROOKIECARD HERE\n\t\t\t</span>\n\t\t</div>\n\t</div>\n\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.dispose(function () {
+    __vueify_insert__.cache[".user-wrapper {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  height: 100%;\n  width: 100%;\n  margin-top: 70px;\n}\n.user-wrapper .filler {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  text-align: center;\n  border: 3px dashed #c90018;\n  height: 650px;\n  width: 500px;\n  font-size: 40px;\n  color: #1179c9;\n}\n"] = false
+    document.head.removeChild(__vueify_style__)
+  })
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-0611dc16", module.exports)
+  } else {
+    hotAPI.update("_v-0611dc16", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+}).apply(this, arguments);
+
+},{"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],214:[function(require,module,exports){
+_hmr["websocket:null"].initModule("resources/assets/js/components/ViewEvent.vue", module);
+(function(){
+var __vueify_insert__ = require("vueify/lib/insert-css")
+var __vueify_style__ = __vueify_insert__.insert(".edit-event {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 100%;\n  height: 30px;\n  font-size: 18px;\n  border-bottom: 3px solid #e9e9e9;\n  margin-bottom: 20px;\n  padding-bottom: 5px;\n}\n.edit-event.--center {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-event a {\n  margin-left: 25px;\n}\n.ViewEvent {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 100%;\n  margin: 0 auto;\n}\n.ViewEvent .time,\n.ViewEvent .type {\n  font-size: 30px;\n  margin-bottom: 30px;\n  text-align: center;\n}\n.ViewEvent .time.--practice,\n.ViewEvent .type.--practice {\n  color: #329acf;\n}\n.ViewEvent .time.--home_game,\n.ViewEvent .type.--home_game {\n  color: #c90018;\n}\n.ViewEvent .time.--away_game,\n.ViewEvent .type.--away_game {\n  color: #f2d500;\n}\n.ViewEvent .time.--other,\n.ViewEvent .type.--other {\n  color: #76af00;\n}\n.ViewEvent .details {\n  font-size: 18px;\n  text-align: center;\n  border-top: 3px solid #e9e9e9;\n  padding-top: 15px;\n}\n.ViewEvent .details.--no-stats {\n  margin: 25px 0;\n  padding-top: 0;\n  width: 100%;\n  border-top: none;\n}\n.outcome {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  font-size: 25px;\n  color: #d0d0d0;\n  margin-bottom: 5px;\n  width: 100%;\n  white-space: nowrap;\n  overflow: visible;\n}\n.outcome .away {\n  padding-right: 15px;\n  padding-top: 2px;\n  border-right: 2px solid #e9e9e9;\n}\n.outcome .home {\n  padding-left: 15px;\n  padding-top: 2px;\n  border-left: 1px solid #e9e9e9;\n}\n.outcome .win {\n  color: #f3b700;\n}\n.outcome .separator {\n  font-size: 40px;\n  color: #d0d0d0;\n}\n.modal .stats-wrapper {\n  padding: 15px;\n}\n.type.--practice {\n  color: #329acf;\n}\n.type.--home_game {\n  color: #c90018;\n}\n.type.--away_game {\n  color: #f2d500;\n}\n.type.--other {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n@media only screen and (max-width: 767px) {\n  .stats-modal .modal-dialog {\n    width: 95%;\n  }\n}\n")
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
 var _EditEvent = require('./EditEvent.vue');
 
@@ -34920,36 +30645,44 @@ exports.default = {
 				type: 0,
 				id: 0
 			},
-			editingPastEvent: false,
+			viewing: 'showingEvent',
 			eventStats: [],
 			newTitle: '',
-			score: ''
+			score: '',
+			showDropdown: false
 		};
 	},
 
 
-	watch: {
-		event: function event() {
-			this.editingPastEvent = false;
-		}
-	},
-
 	events: {
+		/**
+   * The modal popup has been dismissed
+   */
+
 		ViewEvent_cancel: function ViewEvent_cancel() {
 			$('#viewEventModal').modal('hide');
-
-			this.event = {
-				start: 0,
-				title: '',
-				type: 0,
-				id: 0
-			};
 		},
+
+
+		/**
+   * An event to be viewed has been clicked on
+   */
 		ViewEvent_view: function ViewEvent_view(id) {
 			this.viewEvent(id);
 		},
+
+
+		/**
+   * This team's score for this event has been calculated
+   */
 		ViewEvent_score: function ViewEvent_score(score) {
 			this.score = score;
+		}
+	},
+
+	watch: {
+		viewing: function viewing() {
+			this.showDropdown = false;
 		}
 	},
 
@@ -34959,7 +30692,7 @@ exports.default = {
    */
 
 		modalTitle: function modalTitle() {
-			if (this.canEditEvent || this.editingPastEvent || this.newEvent) {
+			if (this.viewing === 'editingEvent' || this.viewing === 'addingNewEvent') {
 				if (this.newTitle.length) {
 					return this.newTitle;
 				} else {
@@ -34972,80 +30705,66 @@ exports.default = {
 
 
 		/**
-   * No event clicked, just show Add Event form
+   * Event has happeend already
    */
-		newEvent: function newEvent() {
-			return this.event.id === 0;
+		eventHasHappened: function eventHasHappened() {
+			return moment().isAfter(moment.utc(this.event.start * 1000));
 		},
 
 
 		/**
-   * Event has NOT happened yet, user is admin
+   * Event is a home/away game
+   */
+		eventIsAGame: function eventIsAGame() {
+			return this.event.type === 'home_game' || this.event.type === 'away_game';
+		},
+
+
+		/**
+   * Show the button to edit the event?
    */
 		canEditEvent: function canEditEvent() {
-			return moment().isBefore(moment.utc(this.event.start * 1000)) && this.isAdmin;
+			return this.isAdmin && this.viewing !== 'addingNewEvent' && this.viewing !== 'editingEvent';
 		},
 
 
 		/**
-   * Event has NOT happened yet, user is NOT an admin
-   */
-		futureEvent: function futureEvent() {
-			return moment().isBefore(moment.utc(this.event.start * 1000)) && !this.isAdmin;
-		},
-
-
-		/**
-   * Event has happened, user is admin, event was a game
+   * Show the button to edit existing stats?
    */
 		canEditStats: function canEditStats() {
-			if (this.editingPastEvent) {
-				// user wants to specifically edit the event regardless of date
-				return false;
-			} else {
-				return moment().isAfter(moment.utc(this.event.start * 1000)) && this.isAdmin && (this.event.type === 'home_game' || this.event.type === 'away_game');
-			}
+			return this.isAdmin && this.eventIsAGame && this.eventHasHappened && this.eventStats.length && this.viewing !== 'editingStats';
 		},
 
 
 		/**
-   * Event has happened, user is an admin, event was NOT a game
+   * Show the button to add new stast?
    */
-		pastEventNoStats: function pastEventNoStats() {
-			if (this.editingPastEvent) {
-				return false;
-			} else {
-				return moment().isAfter(moment.utc(this.event.start * 1000)) && this.isAdmin && this.event.type !== 'home_game' && this.event.type !== 'away_game';
-			}
+		canAddStats: function canAddStats() {
+			return this.isAdmin && this.eventIsAGame && this.eventHasHappened && !this.eventStats.length && this.viewing !== 'editingStats';
 		},
 
 
 		/**
-   * Event has happened, user is NOT an admin, event was a game
+   * Show the button to view event details?
    */
-		pastEventStats: function pastEventStats() {
-			return moment().isAfter(moment.utc(this.event.start * 1000)) && !this.isAdmin && (this.event.type === 'home_game' || this.event.type === 'away_game');
+		canShowEventDetails: function canShowEventDetails() {
+			return this.viewing !== 'showingEvent' && this.viewing !== 'addingNewEvent';
 		},
 
 
 		/**
-   * Event has happened, user is NOT an admin, event was NOT a game
+   * Show the button to view event stats?
    */
-		pastEvent: function pastEvent() {
-			return moment().isAfter(moment.utc(this.event.start * 1000)) && !this.isAdmin && !this.pastEventStats;
+		canShowStats: function canShowStats() {
+			return this.eventIsAGame && this.eventHasHappened && this.viewing !== 'showingStats' && (!this.isAdmin || this.eventStats.length);
 		},
 
 
 		/**
-   * Only for choosing how wide to make the modal window
+   * When showing stat tables, make the modal window wider
    */
-		showStats: function showStats() {
-			if (this.editingPastEvent) {
-				// user wants to specifically edit the event regardless of date
-				return false;
-			} else {
-				return this.pastEventStats || this.canEditStats;
-			}
+		makeModalWider: function makeModalWider() {
+			return this.viewing === 'editingStats' || this.viewing === 'showingStats' && this.eventStats.length;
 		},
 
 
@@ -35149,6 +30868,8 @@ exports.default = {
 				return;
 			}
 
+			this.viewing = 'showingEvent';
+
 			// find the event data and stats for clicked event
 			this.event = this.events.filter(function (event) {
 				return event.id === id;
@@ -35157,27 +30878,41 @@ exports.default = {
 				return stat.event_id === id;
 			});
 
+			var url_ext = this.decideWhatToShow();
+
+			this.$root.url('/team/' + this.team.teamname + '/event/' + url_ext, { event: url_ext });
+
+			this.$broadcast('EditEvent_view', this.event);
+
+			this.$root.showModal('viewEventModal');
+		},
+
+
+		/**
+   * Depending on the event data, pick what the user is first shown
+   */
+		decideWhatToShow: function decideWhatToShow() {
 			if (!this.event) {
-				// not viewing an event
 				this.event = {
 					start: 0,
 					title: '',
 					type: 0,
 					id: 0
 				};
+
+				this.viewing = 'addingNewEvent';
+				return 'create'; // show url as /event/create
 			}
 
-			id = JSON.parse((0, _stringify2.default)(this.event.id));
-			if (this.event.id === 0) {
-				id = 'create';
+			if (this.eventStats.length) {
+				this.viewing = 'showingStats';
 			}
 
-			// set the url to /event/${event_id}
-			this.$root.url('/team/' + this.team.teamname + '/event/' + id, { event: id });
+			if (this.isAdmin && !this.eventStats.length && this.eventIsAGame) {
+				this.viewing = 'editingStats';
+			}
 
-			this.$broadcast('EditEvent_view', this.event);
-
-			this.$root.showModal('viewEventModal');
+			return this.event.id;
 		},
 
 
@@ -35234,13 +30969,13 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n  <div id=\"viewEventModal\" class=\"modal\" :class=\"showStats ? 'stats-modal' : ''\">\n    <div class=\"modal-dialog\">\n      <div class=\"modal-content\">\n        <div class=\"modal-header\">\n          <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>\n          <h3 class=\"modal-title\">{{ modalTitle }}&nbsp;</h3>\n        </div>\n        <div class=\"modal-body\">\n\t\t\t\t\t<div class=\"row ViewEvent\">\n\n\t\t\t\t\t\t<!-- the following shows the correct content based on date, event type, admin status, sport -->\n\t\t\t\t\t\n\t\t\t\t\t\t<!-- show stats if they aren't admin and is past event -->\n\t\t\t\t\t\t<template v-if=\"pastEventStats\">\n\n\t\t\t\t\t\t\t<stats v-if=\"eventStats.length\" type=\"playerTeamSeason\" :stat-keys=\"team.settings.statKeys\" :event=\"true\" :sport=\"team.sport\" :raw-stats=\"eventStats\" :players=\"players\" table-bottom-label=\"TEAM\">\n\n\t\t        \t\t\t\t\t<div class=\"outcome\">\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"away\" :class=\"{ 'win' : ! homeWon}\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t{{ awayTeam }} — {{ awayScore }}\n\t\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"home\" :class=\"{ 'win' : homeWon}\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t{{ homeTeam }} — {{ homeScore }}\n\t\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t        \t\t</stats>\n\n\t        \t\t<div v-else=\"\" class=\"ViewEvent\">\n\t\t\t\t\t\t\t\t<div class=\"details --no-stats\">\n\t\t\t\t\t\t\t\t\t<span>No stats posted yet... bug an admin to post them!</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\t\t\n\n\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\n\n\t\t\t\t\t\t<!-- show edit event page if admin and event is in the future -->\n\t\t\t\t\t\t<edit-event v-if=\"canEditEvent || editingPastEvent\" :saved-event=\"event\" :editing-past-event.sync=\"editingPastEvent\" :new-title.sync=\"newTitle\">\n\t\t\t\t\t\t</edit-event>\n\n\n\t\t\t\t\t\t<!-- show add event page if clicked \"Add an Event\" -->\n\t\t\t\t\t\t<edit-event v-if=\"newEvent\" :new-title.sync=\"newTitle\"></edit-event>\n\n\n\t\t\t\t\t\t<!-- show the form for adding stats to an event -->\n\t\t\t\t\t\t<div v-if=\"canEditStats\" class=\"col-xs-12\">\n\t\t\t\t\t\t\t<edit-stats :event-stats=\"eventStats\" :players=\"players\" :editing-past-event.sync=\"editingPastEvent\" :event=\"event\" :team=\"team\">\n\t\t\t\t\t\t\t</edit-stats>\n\t\t\t\t\t\t</div>\t\t\n\n\n\t\t\t\t\t\t<div v-if=\"pastEventNoStats &amp;&amp; ! newEvent\" class=\"ViewEvent\">\n\n\t\t\t\t\t\t\t<div class=\"edit-button --view\">\n\t\t\t\t\t\t\t\t<a class=\"btn btn-primary\" v-touch:tap=\"editingPastEvent = true\">Edit Event Details</a>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"details\">\n\t\t\t\t\t\t\t\t<hr>\n\t\t\t\t\t\t\t\t<span>This event is over and wasn't set up as a game, so there are no stats</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\n\n\n\t\t\t\t\t\t<div v-if=\"(futureEvent || pastEvent) &amp;&amp; event.id\" class=\"col-xs-12 ViewEvent\">\n\n\t\t\t\t\t\t\t<div class=\"type --{{ event.type }}\">\n\t\t\t\t\t\t\t\t<span>{{ type }}</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"time\">\n\t\t\t\t\t\t\t\t<span>{{ time(event) }}</span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"details\">\n\t\t\t\t\t\t\t\t<hr>\n\t\t\t\t\t\t\t\t<span>{{ event.details }}</span>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n      \t</div>\n      </div>\n    </div>\n  </div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n  <div id=\"viewEventModal\" class=\"modal\" :class=\"makeModalWider ? 'stats-modal' : ''\">\n    <div class=\"modal-dialog\">\n      <div class=\"modal-content\">\n        <div class=\"modal-top\">\n        \t<div class=\"left title\">\n        \t\t<h3>{{ modalTitle }}</h3>\n        \t</div>\n          <div class=\"right\">\n          \t<template v-if=\"! addingNewEvent\"> \n          \t\t<!-- series of links to change state of ViewEvent -->\n\t          \t<div class=\"navbar-toggle\" :class=\"showDropdown ? '--showing' : '--not-showing'\" v-touch:tap=\"showDropdown = ! showDropdown\">\n\t\t\t          <span class=\"icon-bar\"></span>\n\t\t\t          <span class=\"icon-bar\"></span>\n\t\t\t        </div>\n\t\t\t        <div class=\"modal-dropdown\" :class=\"showDropdown ? '--showing' : '--not-showing'\">\n\t\t\t        \t<span v-show=\"canShowEventDetails &amp;&amp; ! showingEvent\" class=\"dropdown-link\" v-touch:tap=\"viewing = 'showingEvent'\">View Event</span>\n\t          \t\t<span v-show=\"canEditEvent\" class=\"dropdown-link\" v-touch:tap=\"viewing = 'editingEvent'\">Edit Event</span>\n\t\t          \t<span v-show=\"canShowStats &amp;&amp; ! showingStats\" class=\"dropdown-link\" v-touch:tap=\"viewing = 'showingStats'\">View Stats</span>\n\t\t          \t<span v-show=\"canEditStats\" class=\"dropdown-link\" v-touch:tap=\"viewing = 'editingStats'\">Edit Stats</span>\n\t\t          \t<span v-show=\"canAddStats\" class=\"dropdown-link\" v-touch:tap=\"viewing = 'editingStats'\">Add Stats</span>\n\t\t\t        </div>\n\t          \t<span v-show=\"canShowEventDetails &amp;&amp; ! showingEvent\" class=\"link\" v-touch:tap=\"viewing = 'showingEvent'\">View Event</span>\n          \t\t<span v-show=\"canEditEvent\" class=\"link\" v-touch:tap=\"viewing = 'editingEvent'\">Edit Event</span>\n\t          \t<span v-show=\"canShowStats &amp;&amp; ! showingStats\" class=\"link\" v-touch:tap=\"viewing = 'showingStats'\">View Stats</span>\n\t          \t<span v-show=\"canEditStats\" class=\"link\" v-touch:tap=\"viewing = 'editingStats'\">Edit Stats</span>\n\t          \t<span v-show=\"canAddStats\" class=\"link\" v-touch:tap=\"viewing = 'editingStats'\">Add Stats</span>\n          \t</template>\n          \t<span class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</span>\n          </div>\n        </div>\n        <div class=\"modal-body\">\n\t\t\t\t\t<div class=\"ViewEvent\">\n\n\t\t\t\t\t\t<template v-if=\"viewing === 'showingStats'\">\n\n\t\t\t\t\t\t\t<stats v-if=\"eventStats.length\" type=\"playerTeamSeason\" :stat-keys=\"team.settings.statKeys\" :event=\"true\" :sport=\"team.sport\" :raw-stats=\"eventStats\" :players=\"players\" table-bottom-label=\"TEAM\">\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- this is inserted above the stat table -->\n\t\t        \t\t\t\t\t<div class=\"outcome\">\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"away\" :class=\"{ 'win' : ! homeWon}\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t{{ awayTeam }} — {{ awayScore }}\n\t\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"home\" :class=\"{ 'win' : homeWon}\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t{{ homeTeam }} — {{ homeScore }}\n\t\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t        \t\t</stats>\n\n\t\t\t\t\t\t\t<!-- show 'no stats yet' if there are none saved -->\n\t        \t\t<div v-else=\"\" class=\"ViewEvent\">\n\t\t\t\t\t\t\t\t<div v-if=\"! isAdmin\" class=\"details --no-stats\">\n\t\t\t\t\t\t\t\t\t<span>No stats posted yet... bug an admin to post them!</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div v-else=\"\" class=\"details --no-stats\">\n\t\t\t\t\t\t\t\t\t<span>Click 'Add Stats' to report this event's stats</span>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\t\t\n\n\t\t\t\t\t\t</template>\n\n\t\t\t\t\t\t<!-- event hasn't happened yet -->\n\t\t\t\t\t\t<template v-if=\"viewing === 'showingEvent'\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<div class=\"ViewEvent\">\n\t\t\t\t\t\t\t\t\t\t\t<div class=\"type --{{ event.type }}\">\n\t\t\t\t\t\t\t\t\t\t\t\t<span>{{ type }}</span>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class=\"time\">\n\t\t\t\t\t\t\t\t\t\t\t\t<span>{{ time(event) }}</span>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div v-if=\"event.details\" class=\"details\">\n\t\t\t\t\t\t\t\t\t\t\t\t<span>{{ event.details }}</span>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</template>\t\t\n\t\t\t\t\t\t\n\n\t\t\t\t\t\t<!-- admin is editing an event -->\n\t\t\t\t\t\t<edit-event v-if=\"viewing === 'editingEvent'\" :saved-event=\"event\" :new-title.sync=\"newTitle\"></edit-event>\n\n\n\t\t\t\t\t\t<!-- admin is editing stats for this event -->\n\t\t\t\t\t\t<edit-stats v-if=\"viewing === 'editingStats'\" :event-stats=\"eventStats\" :players=\"players\" :event=\"event\" :team=\"team\"></edit-stats>\n\n\n\t\t\t\t\t\t<!-- admin is creating a new event -->\n\t\t\t\t\t\t<edit-event v-if=\"viewing === 'addingNewEvent'\" :new-title.sync=\"newTitle\"></edit-event>\n\n\t\t\t\t\t</div>\n      \t</div>\n      </div>\n    </div>\n  </div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
   module.hot.dispose(function () {
-    __vueify_insert__.cache[".edit-button.--view {\n  position: relative;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: row;\n      -ms-flex-flow: row;\n          flex-flow: row;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  margin-bottom: 25px;\n}\n.edit-button.--view .btn {\n  padding-left: 14px;\n}\n.edit-button.--view #edit-chevron {\n  position: absolute;\n  top: 17px;\n  right: -4px;\n  font-size: 30px;\n}\n.ViewEvent {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 100%;\n  margin: 0 auto;\n}\n.ViewEvent .time,\n.ViewEvent .type {\n  font-size: 30px;\n  margin-bottom: 30px;\n  text-align: center;\n}\n.ViewEvent .time.--practice,\n.ViewEvent .type.--practice {\n  color: #329acf;\n}\n.ViewEvent .time.--home_game,\n.ViewEvent .type.--home_game {\n  color: #c90018;\n}\n.ViewEvent .time.--away_game,\n.ViewEvent .type.--away_game {\n  color: #f2d500;\n}\n.ViewEvent .time.--other,\n.ViewEvent .type.--other {\n  color: #76af00;\n}\n.ViewEvent .details {\n  font-size: 18px;\n  text-align: center;\n}\n.ViewEvent .details.--no-stats {\n  margin: 25px 0;\n}\n.outcome {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  font-size: 25px;\n  color: #d0d0d0;\n  margin-bottom: 5px;\n  width: 100%;\n}\n.outcome .away {\n  padding-right: 15px;\n  padding-top: 2px;\n  border-right: 2px solid #e9e9e9;\n}\n.outcome .home {\n  padding-left: 15px;\n  padding-top: 2px;\n  border-left: 1px solid #e9e9e9;\n}\n.outcome .win {\n  color: #f3b700;\n}\n.outcome .separator {\n  font-size: 40px;\n  color: #d0d0d0;\n}\n.modal .stats-wrapper {\n  padding: 15px;\n}\n.type.--practice {\n  color: #329acf;\n}\n.type.--home_game {\n  color: #c90018;\n}\n.type.--away_game {\n  color: #f2d500;\n}\n.type.--other {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n"] = false
+    __vueify_insert__.cache[".edit-event {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: end;\n  -webkit-justify-content: flex-end;\n      -ms-flex-pack: end;\n          justify-content: flex-end;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 100%;\n  height: 30px;\n  font-size: 18px;\n  border-bottom: 3px solid #e9e9e9;\n  margin-bottom: 20px;\n  padding-bottom: 5px;\n}\n.edit-event.--center {\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n}\n.edit-event a {\n  margin-left: 25px;\n}\n.ViewEvent {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-flex-flow: column;\n      -ms-flex-flow: column;\n          flex-flow: column;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  width: 100%;\n  margin: 0 auto;\n}\n.ViewEvent .time,\n.ViewEvent .type {\n  font-size: 30px;\n  margin-bottom: 30px;\n  text-align: center;\n}\n.ViewEvent .time.--practice,\n.ViewEvent .type.--practice {\n  color: #329acf;\n}\n.ViewEvent .time.--home_game,\n.ViewEvent .type.--home_game {\n  color: #c90018;\n}\n.ViewEvent .time.--away_game,\n.ViewEvent .type.--away_game {\n  color: #f2d500;\n}\n.ViewEvent .time.--other,\n.ViewEvent .type.--other {\n  color: #76af00;\n}\n.ViewEvent .details {\n  font-size: 18px;\n  text-align: center;\n  border-top: 3px solid #e9e9e9;\n  padding-top: 15px;\n}\n.ViewEvent .details.--no-stats {\n  margin: 25px 0;\n  padding-top: 0;\n  width: 100%;\n  border-top: none;\n}\n.outcome {\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n  font-size: 25px;\n  color: #d0d0d0;\n  margin-bottom: 5px;\n  width: 100%;\n  white-space: nowrap;\n  overflow: visible;\n}\n.outcome .away {\n  padding-right: 15px;\n  padding-top: 2px;\n  border-right: 2px solid #e9e9e9;\n}\n.outcome .home {\n  padding-left: 15px;\n  padding-top: 2px;\n  border-left: 1px solid #e9e9e9;\n}\n.outcome .win {\n  color: #f3b700;\n}\n.outcome .separator {\n  font-size: 40px;\n  color: #d0d0d0;\n}\n.modal .stats-wrapper {\n  padding: 15px;\n}\n.type.--practice {\n  color: #329acf;\n}\n.type.--home_game {\n  color: #c90018;\n}\n.type.--away_game {\n  color: #f2d500;\n}\n.type.--other {\n  color: #76af00;\n}\n.modal {\n  padding: 0;\n}\n.stats-modal .modal-dialog {\n  width: 90%;\n}\n@media only screen and (max-width: 767px) {\n  .stats-modal .modal-dialog {\n    width: 95%;\n  }\n}\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -35251,7 +30986,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./EditEvent.vue":230,"./EditStats.vue":231,"./Stats.vue":237,"babel-runtime/core-js/json/stringify":5,"vue":223,"vue-hot-reload-api":196,"vueify/lib/insert-css":224}],240:[function(require,module,exports){
+},{"./EditEvent.vue":203,"./EditStats.vue":204,"./Stats.vue":210,"vue":196,"vue-hot-reload-api":194,"vueify/lib/insert-css":197}],215:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/AbstractEditStat.js", module);
 (function(){
 'use strict';
@@ -35309,7 +31044,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],241:[function(require,module,exports){
+},{}],216:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/AbstractStat.js", module);
 (function(){
 'use strict';
@@ -35329,6 +31064,9 @@ exports.default = {
 
 	data: function data() {
 		return {
+			wins: 0,
+			losses: 0,
+			ties: 0,
 			totalStats: [],
 			avgStats: [],
 			totalsOnBottom: {},
@@ -35386,6 +31124,10 @@ exports.default = {
 
 			this.pickKeys();
 
+			this.wins = 0;
+			this.losses = 0;
+			this.ties = 0;
+
 			this.setDefaultSortKey();
 
 			this.keys.forEach(function (key) {
@@ -35438,6 +31180,7 @@ exports.default = {
 				}
 			}
 
+			this.formatTeamRecordString();
 			this.$dispatch('Stats_compiled', stats);
 		},
 
@@ -35477,6 +31220,8 @@ exports.default = {
 				var stats = this.addTheDateAndEvent(this.rawTeamStats[x]);
 
 				stats = this.editEachTeamRecentStats(stats);
+
+				this.addToTeamRecord(stats);
 
 				recentStats.push(stats);
 			}
@@ -35699,6 +31444,20 @@ exports.default = {
 
 
 		/**
+   * While calculating a team's recent games, calculate their total record as well
+   */
+		addToTeamRecord: function addToTeamRecord(stats) {
+			if (stats.win === 1) {
+				this.wins++;
+			} else if (stats.win === 0) {
+				this.losses++;
+			} else if (stats.win === 2) {
+				this.ties++;
+			}
+		},
+
+
+		/**
    * Return whether or not the team is using this key or not
    *
    * @param {string} key
@@ -35711,7 +31470,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{"../../mixins/StatHelpers.js":245}],242:[function(require,module,exports){
+},{"../../mixins/StatHelpers.js":220}],217:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/Basketball.vue", module);
 (function(){
 'use strict';
@@ -35734,7 +31493,7 @@ exports.default = {
 
 	name: 'Basketball',
 
-	props: ['type', 'event', 'players', 'rawStats', 'keys', 'sortKey', 'total', 'player', 'compile', 'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup', 'statsOnBottom'],
+	props: ['type', 'event', 'players', 'rawStats', 'keys', 'record', 'sortKey', 'total', 'player', 'compile', 'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup', 'statsOnBottom'],
 
 	mixins: [_AbstractStat2.default],
 
@@ -36025,7 +31784,7 @@ exports.default = {
 			totals.efg_ = this.efg_(totals);
 			totals.ts_ = this.ts_(totals);
 			totals.astto = this.astto(totals);
-			totals.eff = this.eff(totals, 1 / this.players.length); // efficiency is weird...
+			totals.eff = null;
 
 			return totals;
 		},
@@ -36061,7 +31820,7 @@ exports.default = {
 			avgs.efg_ = this.efg_(avgs);
 			avgs.ts_ = this.ts_(avgs);
 			avgs.astto = this.astto(avgs);
-			avgs.eff = this.eff(avgs, this.players.length);
+			avgs.eff = null;
 
 			return avgs;
 		},
@@ -36149,6 +31908,18 @@ exports.default = {
 			} else {
 				// tie
 				return 2;
+			}
+		},
+
+
+		/**
+   * Format a team's wins, losses, ties into a string for displaying
+   */
+		formatTeamRecordString: function formatTeamRecordString() {
+			if (this.ties > 0) {
+				this.$set('record', this.wins + '-' + this.losses + '-' + this.ties);
+			} else {
+				this.$set('record', this.wins + '-' + this.losses);
 			}
 		},
 
@@ -36471,7 +32242,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./AbstractStat.js":241,"babel-runtime/core-js/json/stringify":5,"vue":223,"vue-hot-reload-api":196}],243:[function(require,module,exports){
+},{"./AbstractStat.js":216,"babel-runtime/core-js/json/stringify":4,"vue":196,"vue-hot-reload-api":194}],218:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/components/stats/EditBasketball.vue", module);
 (function(){
 'use strict';
@@ -36742,10 +32513,10 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 }).apply(this, arguments);
 
-},{"./AbstractEditStat.js":240,"vue":223,"vue-hot-reload-api":196}],244:[function(require,module,exports){
+},{"./AbstractEditStat.js":215,"vue":196,"vue-hot-reload-api":194}],219:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Requests.js", module);
 (function(){
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
@@ -36767,7 +32538,11 @@ exports.default = {
 				}
 
 				if (successEvent) {
-					self.$broadcast(successEvent, response);
+					if (successEvent.includes('App_')) {
+						self.$emit(successEvent, response);
+					} else {
+						self.$broadcast(successEvent, response);
+					}
 				}
 			}).catch(function (response) {
 				if (failEvent) {
@@ -36793,7 +32568,11 @@ exports.default = {
 				}
 
 				if (successEvent) {
-					self.$broadcast(successEvent, response);
+					if (successEvent.includes('App_')) {
+						self.$emit(successEvent, response);
+					} else {
+						self.$broadcast(successEvent, response);
+					}
 				}
 			}).catch(function (response) {
 				if (failEvent) {
@@ -36819,7 +32598,11 @@ exports.default = {
 				}
 
 				if (successEvent) {
-					self.$broadcast(successEvent, response);
+					if (successEvent.includes('App_')) {
+						self.$emit(successEvent, response);
+					} else {
+						self.$broadcast(successEvent, response);
+					}
 				}
 			}).catch(function (response) {
 				if (failEvent) {
@@ -36845,7 +32628,11 @@ exports.default = {
 				}
 
 				if (successEvent) {
-					self.$broadcast(successEvent, response);
+					if (successEvent.includes('App_')) {
+						self.$emit(successEvent, response);
+					} else {
+						self.$broadcast(successEvent, response);
+					}
 				}
 			}).catch(function (response) {
 				if (failEvent) {
@@ -36860,7 +32647,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],245:[function(require,module,exports){
+},{}],220:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatHelpers.js", module);
 (function(){
 'use strict';
@@ -36960,7 +32747,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],246:[function(require,module,exports){
+},{}],221:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/StatsSelection.js", module);
 (function(){
 'use strict';
@@ -37062,7 +32849,7 @@ exports.default = {
 
 }).apply(this, arguments);
 
-},{}],247:[function(require,module,exports){
+},{}],222:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/mixins/Validator.js", module);
 (function(){
 'use strict';
@@ -37080,63 +32867,68 @@ exports.default = {
 	data: function data() {
 		return {
 			errors: {},
-			vars_: {},
-			errMsg_: {},
-			watching_: {},
-			validRules_: {
-				required: function required(args) {
-					return this.required_(args);
-				}, // the field needs to have something in it
-				max: function max(args) {
-					return this.max_(args);
-				}, // the field must be less than a given argument in length or size
-				min: function min(args) {
-					return this.min_(args);
-				}, // the field must be greater than a given argument in length or size
-				size: function size(args) {
-					return this.size_(args);
-				}, // the field must be of a given size in length or value
-				equals: function equals(args) {
-					return this.equals_(args);
-				}, // the field must equal to a given value
-				in: function _in(args) {
-					return this.in_(args);
-				}, // the field must equal one of the given arguments
-				boolean: function boolean(args) {
-					return this.boolean_(args);
-				}, // the field must be a boolean
-				string: function string(args) {
-					return this.string_(args);
-				}, // the field must be a string
-				number: function number(args) {
-					return this.number_(args);
-				}, // the field must be a number
-				array: function array(args) {
-					return this.array_(args);
-				}, // the field must be an array
-				regex: function regex(args) {
-					return this.regex_(args);
-				}, // the field must be a string that matches a given regular expression. BE CAREFUL, DON'T INCLUDE PIPES!
-				alpha_num: function alpha_num(args) {
-					return this.alphaNum(args);
-				}, // the field must be a string with only alphanumeric characters
-				email: function email(args) {
-					return this.email_(args);
-				}, // the field must be a valid email
-				jersey: function jersey(args) {
-					return this.jersey_(args);
-				} },
-			// the field must be a valid jersey number
-			value_: null, // the value of the variable in question
-			path_: null, // the full path of the variable (e.g. user.name.firstname)
-			root_: null, // the name of the root of the variable (e.g. user)
-			key_: null, // string of keys off of the root variable that make up the full path
-			rules_: null, // the rules applied to this variable
-			messages_: null, // the error messages to set
-			count_: null, // the index into the array counter
-			isArray_: null, // whether or not the given variable is an array
-			arrayIndex_: null, // which index of the given array to error check
-			temp_: {} };
+			validator_: {
+				vars: {},
+				errMsg: {},
+				watching: {},
+				validRules: {
+					required: function required(args) {
+						return this.required_(args);
+					}, // the field needs to have something in it
+					max: function max(args) {
+						return this.max_(args);
+					}, // the field must be less than a given argument in length or size
+					min: function min(args) {
+						return this.min_(args);
+					}, // the field must be greater than a given argument in length or size
+					size: function size(args) {
+						return this.size_(args);
+					}, // the field must be of a given size in length or value
+					equals: function equals(args) {
+						return this.equals_(args);
+					}, // the field must equal to a given value
+					in: function _in(args) {
+						return this.in_(args);
+					}, // the field must equal one of the given arguments
+					boolean: function boolean(args) {
+						return this.boolean_(args);
+					}, // the field must be a boolean
+					string: function string(args) {
+						return this.string_(args);
+					}, // the field must be a string
+					number: function number(args) {
+						return this.number_(args);
+					}, // the field must be a number
+					array: function array(args) {
+						return this.array_(args);
+					}, // the field must be an array
+					regex: function regex(args) {
+						return this.regex_(args);
+					}, // the field must be a string that matches a given regular expression. BE CAREFUL, DON'T INCLUDE PIPES!
+					alpha_num: function alpha_num(args) {
+						return this.alphaNum_(args);
+					}, // the field must be a string with only alphanumeric characters
+					alpha_dash: function alpha_dash(args) {
+						return this.alphaDash_(args);
+					}, // the field must be a string with only alphanumeric characters and dashes + underscores
+					email: function email(args) {
+						return this.email_(args);
+					}, // the field must be a valid email
+					jersey: function jersey(args) {
+						return this.jersey_(args);
+					} },
+				// the field must be a valid jersey number
+				value: null, // the value of the variable in question
+				path: null, // the full path of the variable (e.g. user.name.firstname)
+				root: null, // the name of the root of the variable (e.g. user)
+				key: null, // string of keys off of the root variable that make up the full path
+				rules: null, // the rules applied to this variable
+				messages: null, // the error messages to set
+				count: null, // the index into the array counter
+				isArray: null, // whether or not the given variable is an array
+				arrayIndex: null, // which index of the given array to error check
+				temp: {} }
+		};
 	},
 	// temporary useless variable to utilize $set functionality
 
@@ -37156,13 +32948,13 @@ exports.default = {
 			var messages = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 			var watch = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
 
-			this.path_ = variable;
-			this.root_ = variable;
-			this.rules_ = rules;
-			this.messages_ = messages;
-			this.count_ = 0;
-			this.isArray_ = false;
-			this.key_ = '';
+			this.validator_.path = variable;
+			this.validator_.root = variable;
+			this.validator_.rules = rules;
+			this.validator_.messages = messages;
+			this.validator_.count = 0;
+			this.validator_.isArray = false;
+			this.validator_.key = '';
 
 			// variable could have various indices beyond just the root
 			// split into an array for ease
@@ -37170,32 +32962,32 @@ exports.default = {
 
 			if (variable.length > 1) {
 
-				this.root_ = variable[0];
+				this.validator_.root = variable[0];
 
 				if (variable[1] === '*') {
 					// dealing with an array
-					this.isArray_ = true;
-					this.path_ = this.root_;
-					this.key_ = '';
+					this.validator_.isArray = true;
+					this.validator_.path = this.validator_.root;
+					this.validator_.key = '';
 
 					if (variable.length > 2) {
 						// variable looks like 'players.*.name.firstname', save those extra keys
-						this.key_ = variable.slice(2).join('.');
-						this.path_ = this.root_ + '.' + this.key_;
+						this.validator_.key = variable.slice(2).join('.');
+						this.validator_.path = this.validator_.root + '.' + this.validator_.key;
 					}
 				} else {
 					// variable looks like 'player.name'
-					this.key_ = variable.slice(1).join('.');
-					this.path_ = this.root_ + '.' + this.key_;
+					this.validator_.key = variable.slice(1).join('.');
+					this.validator_.path = this.validator_.root + '.' + this.validator_.key;
 				}
 			}
 
 			this.register_();
 
-			if (watch && !this.isArray_) {
+			if (watch && !this.validator_.isArray) {
 				// whenever this variable changes, re-run the error check
-				var path = this.path_;
-				this.watching_[path] = this.$watch(path, function () {
+				var path = this.validator_.path;
+				this.validator_.watching[path] = this.$watch(path, function () {
 					this.errorCheck(path);
 				});
 			}
@@ -37208,25 +33000,25 @@ exports.default = {
    * @return {void}
    */
 		register_: function register_() {
-			if (typeof this.vars_[this.root_] === 'undefined') {
+			if (typeof this.validator_.vars[this.validator_.root] === 'undefined') {
 				// new entry
-				this.$set('vars_.' + this.root_, {
+				this.$set('validator_.vars.' + this.validator_.root, {
 					rules: [this.addRules()],
-					isArray: this.isArray_,
-					keys: [this.key_]
+					isArray: this.validator_.isArray,
+					keys: [this.validator_.key]
 				});
 			} else {
 				// add these rules
 				if (this.checkForConflicts()) {
 					return;
 				}
-				this.vars_[this.root_].rules.push(this.addRules());
-				this.vars_[this.root_].keys.push(this.key_);
+				this.validator_.vars[this.validator_.root].rules.push(this.addRules());
+				this.validator_.vars[this.validator_.root].keys.push(this.validator_.key);
 			}
 
-			if (!this.isArray_) {
+			if (!this.validator_.isArray) {
 				// initialize errors to an empty string
-				this.$set('errors.' + this.path_, '');
+				this.$set('errors.' + this.validator_.path, '');
 			} else {
 				// initialize errors to array of empty strings
 				this.initializeErrorArray();
@@ -37240,25 +33032,25 @@ exports.default = {
    * @return {void} 
    */
 		initializeErrorArray: function initializeErrorArray() {
-			this.value_ = this.$get(this.root_);
+			this.validator_.value = this.$get(this.validator_.root);
 
-			if (typeof this.errors[this.root_] === 'undefined') {
-				this.errors[this.root_] = [];
+			if (typeof this.errors[this.validator_.root] === 'undefined') {
+				this.errors[this.validator_.root] = [];
 			}
 
-			this.temp_ = {};
-			this.$set('temp_.' + this.key_, ''); // build a placeholder to insert
+			this.validator_.temp = {};
+			this.$set('validator_.temp.' + this.validator_.key, ''); // build a placeholder to insert
 
 			// create an error message for each index
 			// like: errors.players[x].name.firstname
-			for (var x = 0; x < this.value_.length; x++) {
-				if (typeof this.errors[this.root_][x] === 'undefined') {
+			for (var x = 0; x < this.validator_.value.length; x++) {
+				if (typeof this.errors[this.validator_.root][x] === 'undefined') {
 					// new entry
-					this.errors[this.root_].$set(x, this.temp_);
+					this.errors[this.validator_.root].$set(x, this.validator_.temp);
 				} else {
 					// copy over existing content and the new
-					for (var key in this.temp_) {
-						this.errors[this.root_][x][key] = this.temp_[key];
+					for (var key in this.validator_.temp) {
+						this.errors[this.validator_.root][x][key] = this.validator_.temp[key];
 					}
 				}
 			}
@@ -37272,19 +33064,19 @@ exports.default = {
    */
 		addRules: function addRules() {
 			var rules = {};
-			this.rules_ = this.rules_.split('|');
+			this.validator_.rules = this.validator_.rules.split('|');
 
-			for (var rule in this.rules_) {
+			for (var rule in this.validator_.rules) {
 				// split rule and arguments apart (like: ['in', 'dog,cat,mouse'])
-				var splitRule = this.rules_[rule].split(':');
+				var splitRule = this.validator_.rules[rule].split(':');
 				rule = splitRule[0]; // save the rule (like: 'in');
 
 				this.validateRule(rule);
 
 				// save the error message for this rule
 				var msg = this.getErrorMessage();
-				this.$set('errMsg_.' + this.path_ + '.' + rule, msg);
-				this.count_++;
+				this.$set('validator_.errMsg.' + this.validator_.path + '.' + rule, msg);
+				this.validator_.count++;
 
 				if (splitRule.length > 1) {
 					rules[rule] = this.formatArguments(splitRule);
@@ -37304,20 +33096,20 @@ exports.default = {
    * @return {string}
    */
 		getErrorMessage: function getErrorMessage() {
-			if (!this.messages_.length) {
+			if (!this.validator_.messages.length) {
 				return "Invalid input";
 			}
 
-			if (typeof this.messages_ === 'string') {
-				return this.messages_;
+			if (typeof this.validator_.messages === 'string') {
+				return this.validator_.messages;
 			}
 
-			if (this.count_ >= this.messages_.length) {
+			if (this.validator_.count >= this.validator_.messages.length) {
 				// use the last given one, it probably applies for both
-				return this.messages_[this.messages_.length - 1];
+				return this.validator_.messages[this.validator_.messages.length - 1];
 			}
 
-			return this.messages_[this.count_];
+			return this.validator_.messages[this.validator_.count];
 		},
 
 
@@ -37330,7 +33122,7 @@ exports.default = {
 		formatArguments: function formatArguments(rule) {
 			if (rule[0] === 'regex') {
 				// regex could have commas
-				var args = rule[1];
+				return rule[1];
 			} else {
 				var args = rule[1].split(',');
 			}
@@ -37352,9 +33144,9 @@ exports.default = {
    * @return {void}
    */
 		validateRule: function validateRule(rule) {
-			if (!(rule in this.validRules_)) {
+			if (!(rule in this.validator_.validRules)) {
 				if (rule === '') {
-					throw "There is a trailing '|' or duplicate '||' in the rules for " + this.path_;
+					throw "There is a trailing '|' or duplicate '||' in the rules for " + this.validator_.path;
 				} else {
 					throw "'" + rule + "' is not a valid rule";
 				}
@@ -37369,11 +33161,11 @@ exports.default = {
    * @return {boolean}
    */
 		checkForConflicts: function checkForConflicts() {
-			if (this.isArray_ && !this.vars_[this.root_].isArray) {
-				throw "'" + this.path_ + "' was not previously registered as an array";
+			if (this.validator_.isArray && !this.validator_.vars[this.validator_.root].isArray) {
+				throw "'" + this.validator_.path + "' was not previously registered as an array";
 				return true;
-			} else if (!this.isArray_ && this.vars_[this.root_].isArray) {
-				throw "'" + this.path_ + "' was already saved for error checking as an array";
+			} else if (!this.validator_.isArray && this.validator_.vars[this.validator_.root].isArray) {
+				throw "'" + this.validator_.path + "' was already saved for error checking as an array";
 				return true;
 			}
 
@@ -37391,9 +33183,9 @@ exports.default = {
 		manualErrorChecking: function manualErrorChecking(variable) {
 			var msg = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 
-			this.root_ = variable.split('.')[0];
-			if (typeof this.vars_[this.root_] !== 'undefined') {
-				throw "Automatic error checking on '" + this.root_ + "' has been registered already";
+			this.validator_.root = variable.split('.')[0];
+			if (typeof this.validator_.vars[this.validator_.root] !== 'undefined') {
+				throw "Automatic error checking on '" + this.validator_.root + "' has been registered already";
 				return;
 			}
 
@@ -37414,7 +33206,7 @@ exports.default = {
 
 			if (variable === null) {
 				// check all
-				for (variable in this.vars_) {
+				for (variable in this.validator_.vars) {
 					errors += this.errorCheckSpecific(variable);
 				}
 			} else {
@@ -37434,23 +33226,23 @@ exports.default = {
 		errorCheckSpecific: function errorCheckSpecific(variable) {
 			// split into an array
 			variable = variable.split('.');
-			this.root_ = variable[0];
+			this.validator_.root = variable[0];
 
 			if (!this.checkRootWasRegistered()) {
 				return 1;
 			}
 
-			if (this.vars_[this.root_].isArray) {
+			if (this.validator_.vars[this.validator_.root].isArray) {
 				return this.errorCheckArray_(variable);
 			} else {
-				this.arrayIndex_ = null;
+				this.validator_.arrayIndex = null;
 			}
 
 			if (variable.length > 1) {
-				this.key_ = variable.splice(1).join('.');
-				return this.checkSpecificKey_(this.key_);
+				this.validator_.key = variable.splice(1).join('.');
+				return this.checkSpecificKey_(this.validator_.key);
 			} else {
-				this.key_ = '';
+				this.validator_.key = '';
 				return this.checkAllKeys_();
 			}
 		},
@@ -37463,9 +33255,9 @@ exports.default = {
    * @return {int} The number of errors detected
    */
 		errorCheckArray_: function errorCheckArray_(variable) {
-			this.value_ = this.$get(this.root_);
+			this.validator_.value = this.$get(this.validator_.root);
 
-			if (!this.value_.length) {
+			if (!this.validator_.value.length) {
 				// there are no values, no errors
 				return 0;
 			}
@@ -37478,7 +33270,7 @@ exports.default = {
 
 				// is it something like players.1.email?
 				if (parseInt(variable[1])) {
-					this.arrayIndex_ = parseInt(variable[1]);
+					this.validator_.arrayIndex = parseInt(variable[1]);
 					var key = variable.slice(2).join('.');
 					if (!key.length) {
 						// check all keys at this index
@@ -37506,22 +33298,22 @@ exports.default = {
    */
 		checkSpecificKey_: function checkSpecificKey_(key) {
 			// convert key string to an index into keys array for this variable
-			this.key_ = key;
-			key = this.vars_[this.root_].keys.indexOf(key);
+			this.validator_.key = key;
+			key = this.validator_.vars[this.validator_.root].keys.indexOf(key);
 			if (key === -1) {
-				throw "'" + this.key_ + "' in '" + this.root_ + "' was never registered";
+				throw "'" + this.validator_.key + "' in '" + this.validator_.root + "' was never registered";
 				return 1;
 			}
 
 			// build path to this variable
-			if (this.vars_[this.root_].keys[key].length) {
-				this.path_ = this.root_ + '.' + this.vars_[this.root_].keys[key];
+			if (this.validator_.vars[this.validator_.root].keys[key].length) {
+				this.validator_.path = this.validator_.root + '.' + this.validator_.vars[this.validator_.root].keys[key];
 			} else {
-				this.path_ = this.root_;
+				this.validator_.path = this.validator_.root;
 			}
 
 			// return the result of error checking
-			return this.runErrorCheckOnRules_(this.vars_[this.root_].rules[key]);
+			return this.runErrorCheckOnRules_(this.validator_.vars[this.validator_.root].rules[key]);
 		},
 
 
@@ -37535,10 +33327,10 @@ exports.default = {
 			var key = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
 			var errors = 0;
-			var currentVal = this.value_;
+			var currentVal = this.validator_.value;
 
 			// loop through every entry in the array variable
-			for (this.arrayIndex_ = 0; this.arrayIndex_ < currentVal.length; this.arrayIndex_++) {
+			for (this.validator_.arrayIndex = 0; this.validator_.arrayIndex < currentVal.length; this.validator_.arrayIndex++) {
 				if (!key) {
 					// no given key, check them all
 					errors += this.checkAllKeys_();
@@ -37559,9 +33351,9 @@ exports.default = {
    */
 		checkAllKeys_: function checkAllKeys_() {
 			var errors = 0;
-			for (var key in this.vars_[this.root_].keys) {
+			for (var key in this.validator_.vars[this.validator_.root].keys) {
 				// run a set of rules and save outcome
-				errors += this.checkSpecificKey_(this.vars_[this.root_].keys[key]);
+				errors += this.checkSpecificKey_(this.validator_.vars[this.validator_.root].keys[key]);
 			}
 
 			return errors;
@@ -37577,15 +33369,15 @@ exports.default = {
 			var errors = 0;
 
 			// save the value
-			if (this.arrayIndex_ === null) {
-				this.value_ = this.$get(this.path_);
+			if (this.validator_.arrayIndex === null) {
+				this.validator_.value = this.$get(this.validator_.path);
 			} else {
-				this.value_ = this.fetchValueOfArray();
+				this.validator_.value = this.fetchValueOfArray();
 			}
 
 			for (var rule in rules) {
 				var args = rules[rule];
-				if (!this.validRules_[rule].call(this, args)) {
+				if (!this.validator_.validRules[rule].call(this, args)) {
 					errors++;
 					this.setError_(rule);
 					break; // no sense in continuing if it has failed a check already
@@ -37602,18 +33394,18 @@ exports.default = {
    * Fetch the value and path of the variable
    */
 		fetchValueOfArray: function fetchValueOfArray(key) {
-			if (this.key_.length) {
-				var splitKeys = this.key_.split('.'); // split 'name.firstname' into ['name', 'firstname'];
-				this.path_ = this.root_ + '.' + this.key_;
-				var value = this.$get(this.root_)[this.arrayIndex_]; // fetch the object at this array index
+			if (this.validator_.key.length) {
+				var splitKeys = this.validator_.key.split('.'); // split 'name.firstname' into ['name', 'firstname'];
+				this.validator_.path = this.validator_.root + '.' + this.validator_.key;
+				var value = this.$get(this.validator_.root)[this.validator_.arrayIndex]; // fetch the object at this array index
 
 				for (var x = 0; x < splitKeys.length; x++) {
 					// loop through indexing into the proper object
 					value = value[splitKeys[x]];
 				}
 			} else {
-				var value = this.$get(this.root_)[this.arrayIndex_];
-				this.path_ = this.root_;
+				var value = this.$get(this.validator_.root)[this.validator_.arrayIndex];
+				this.validator_.path = this.validator_.root;
 			}
 
 			return value;
@@ -37624,8 +33416,8 @@ exports.default = {
    * Check that the root variable was registered for error checking
    */
 		checkRootWasRegistered: function checkRootWasRegistered() {
-			if (!(this.root_ in this.vars_)) {
-				throw "'" + this.root_ + "' was never registered for error checking";
+			if (!(this.validator_.root in this.validator_.vars)) {
+				throw "'" + this.validator_.root + "' was never registered for error checking";
 				return false;
 			}
 
@@ -37637,13 +33429,13 @@ exports.default = {
    * Array might have grown since last checked, make sure this.errors is up-to-date in size
    */
 		resetErrorsArraySize_: function resetErrorsArraySize_() {
-			if (this.errors[this.root_].length !== this.value_.length) {
+			if (this.errors[this.validator_.root].length !== this.validator_.value.length) {
 				var temp = [];
-				var copy = this.errors[this.root_][0];
-				for (var index = 0; index < this.value_.length; index++) {
+				var copy = this.errors[this.validator_.root][0];
+				for (var index = 0; index < this.validator_.value.length; index++) {
 					temp.push(copy);
 				}
-				this.errors[this.root_] = temp;
+				this.errors[this.validator_.root] = temp;
 			}
 		},
 
@@ -37654,15 +33446,15 @@ exports.default = {
    * @param {string} rule 
    */
 		setError_: function setError_(rule) {
-			if (this.arrayIndex_ === null) {
-				var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
-				this.$set('errors.' + this.path_, error); // store
+			if (this.validator_.arrayIndex === null) {
+				var error = this.$get('validator_.errMsg.' + this.validator_.path + '.' + rule); // fetch error message
+				this.$set('errors.' + this.validator_.path, error); // store
 			} else {
-					var error = this.$get('errMsg_.' + this.path_ + '.' + rule); // fetch error message
-					this.$set('temp_', JSON.parse(JSON.stringify(this.errors[this.root_][this.arrayIndex_]))); // create copy
-					this.$set('temp_.' + this.key_, error); // move error message to correct key
+					var error = this.$get('validator_.errMsg.' + this.validator_.path + '.' + rule); // fetch error message
+					this.$set('validator_.temp', JSON.parse(JSON.stringify(this.errors[this.validator_.root][this.validator_.arrayIndex]))); // create copy
+					this.$set('validator_.temp.' + this.validator_.key, error); // move error message to correct key
 
-					this.errors[this.root_].$set(this.arrayIndex_, this.temp_); // merge placeholder with this.errors
+					this.errors[this.validator_.root].$set(this.validator_.arrayIndex, this.validator_.temp); // merge placeholder with this.errors
 					this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
 				}
 		},
@@ -37672,14 +33464,14 @@ exports.default = {
    * Clear the errors for the variable
    */
 		clearError_: function clearError_() {
-			if (this.arrayIndex_ === null) {
-				this.$set('errors.' + this.path_, '');
+			if (this.validator_.arrayIndex === null) {
+				this.$set('errors.' + this.validator_.path, '');
 			} else {
-				this.temp_ = {};
-				this.$set('temp_.' + this.key_, ''); // create placeholder
-				for (var key in this.temp_) {
+				this.validator_.temp = {};
+				this.$set('validator_.temp.' + this.validator_.key, ''); // create placeholder
+				for (var key in this.validator_.temp) {
 					// store the contents of the placeholder, replacing only the necessary data
-					this.errors[this.root_][this.arrayIndex_][key] = this.temp_[key];
+					this.errors[this.validator_.root][this.validator_.arrayIndex][key] = this.validator_.temp[key];
 				}
 
 				this.errors = JSON.parse(JSON.stringify(this.errors)); // use this technique for reactivity
@@ -37691,16 +33483,16 @@ exports.default = {
    * Get rid of any previously existing error checking logic
    */
 		resetErrorChecking: function resetErrorChecking() {
-			this.vars_ = {};
+			this.validator_.vars = {};
 			this.errors = {};
-			this.errMsg_ = {};
+			this.validator_.errMsg = {};
 
-			for (var key in this.watching_) {
+			for (var key in this.validator_.watching) {
 				// stop watching all registered variables
-				this.watching_[key].call();
+				this.validator_.watching[key].call();
 			}
 
-			this.watching_ = {};
+			this.validator_.watching = {};
 		},
 
 
@@ -37724,7 +33516,7 @@ exports.default = {
    * @param {string} method
    */
 		uncertainInput: function uncertainInput(method) {
-			throw "Having a hard time resolving '" + this.path_ + "' for rule '" + method + "'";
+			throw "Having a hard time resolving '" + this.validator_.path + "' for rule '" + method + "'";
 
 			return false;
 		},
@@ -37734,20 +33526,20 @@ exports.default = {
    * The variable must have something inside it
    */
 		required_: function required_() {
-			if (typeof this.value_ === 'undefined') {
+			if (typeof this.validator_.value === 'undefined') {
 				return false;
 			}
 
-			if (typeof this.value_ === 'number') {
+			if (typeof this.validator_.value === 'number') {
 				return true;
 			}
 
-			if (typeof this.value_ === 'boolean') {
+			if (typeof this.validator_.value === 'boolean') {
 				return true;
 			}
 
-			if (typeof this.value_ === 'string') {
-				return this.value_.length > 0;
+			if (typeof this.validator_.value === 'string') {
+				return this.validator_.value.length > 0;
 			}
 
 			return this.uncertainInput('required');
@@ -37758,16 +33550,16 @@ exports.default = {
    * The variable must be greater than a given value in size or length
    */
 		max_: function max_(args) {
-			if (typeof this.value_ === 'number') {
-				return this.value_ <= args[0];
+			if (typeof this.validator_.value === 'number') {
+				return this.validator_.value <= args[0];
 			}
 
-			if (typeof this.value_ === 'string') {
-				return this.value_.length <= args[0];
+			if (typeof this.validator_.value === 'string') {
+				return this.validator_.value.length <= args[0];
 			}
 
-			if (_typeof(this.value_) === 'object') {
-				return this.value_.length <= args[0];
+			if (_typeof(this.validator_.value) === 'object') {
+				return this.validator_.value.length <= args[0];
 			}
 
 			return this.uncertainInput('max');
@@ -37778,16 +33570,16 @@ exports.default = {
    * The variable must be less than a given value in size or length
    */
 		min_: function min_(args) {
-			if (typeof this.value_ === 'number') {
-				return this.value_ >= args[0];
+			if (typeof this.validator_.value === 'number') {
+				return this.validator_.value >= args[0];
 			}
 
-			if (typeof this.value_ === 'string') {
-				return this.value_.length >= args[0];
+			if (typeof this.validator_.value === 'string') {
+				return this.validator_.value.length >= args[0];
 			}
 
-			if (_typeof(this.value_) === 'object') {
-				return this.value_.length >= args[0];
+			if (_typeof(this.validator_.value) === 'object') {
+				return this.validator_.value.length >= args[0];
 			}
 
 			return this.uncertainInput('max');
@@ -37798,7 +33590,7 @@ exports.default = {
    * The field must equal one of the given arguments
    */
 		in_: function in_(args) {
-			if (args.indexOf(this.value_) === -1) {
+			if (args.indexOf(this.validator_.value) === -1) {
 				return false;
 			}
 
@@ -37810,16 +33602,16 @@ exports.default = {
    * The variable must be of a given size
    */
 		size_: function size_(args) {
-			if (typeof this.value_ === 'number') {
-				return this.value_ === args[0];
+			if (typeof this.validator_.value === 'number') {
+				return this.validator_.value === args[0];
 			}
 
-			if (typeof this.value_ === 'string') {
-				return this.value_.length === args[0];
+			if (typeof this.validator_.value === 'string') {
+				return this.validator_.value.length === args[0];
 			}
 
-			if (_typeof(this.value_) === 'object') {
-				return this.value_.length === args[0];
+			if (_typeof(this.validator_.value) === 'object') {
+				return this.validator_.value.length === args[0];
 			}
 
 			return this.uncertainInput('size');
@@ -37830,7 +33622,7 @@ exports.default = {
    * The variable must equal a given argument
    */
 		equals_: function equals_(args) {
-			return this.value_ == args[0];
+			return this.validator_.value == args[0];
 		},
 
 
@@ -37838,8 +33630,14 @@ exports.default = {
    * The variable must match a given regular expression
    */
 		regex_: function regex_(expression) {
-			if (typeof this.value_ !== 'string') {
+			if (typeof this.validator_.value !== 'string') {
+				// values that aren't strings shouldn't be compared to regexp
 				return false;
+			}
+
+			if (!this.validator_.value.length) {
+				// let 'required' rule take care of any empty variables
+				return true;
 			}
 
 			if (!(expression instanceof RegExp)) {
@@ -37859,7 +33657,7 @@ exports.default = {
 				expression = new RegExp(expression);
 			}
 
-			if (this.value_.match(expression)) {
+			if (this.validator_.value.match(expression)) {
 				return true;
 			} else {
 				return false;
@@ -37871,7 +33669,7 @@ exports.default = {
    * The variable must be a boolean
    */
 		boolean_: function boolean_() {
-			return typeof this.value_ === 'boolean';
+			return typeof this.validator_.value === 'boolean';
 		},
 
 
@@ -37879,7 +33677,7 @@ exports.default = {
    * The variable must be a string
    */
 		string_: function string_() {
-			return typeof this.value_ === 'string';
+			return typeof this.validator_.value === 'string';
 		},
 
 
@@ -37887,7 +33685,7 @@ exports.default = {
    * The variable must be a number
    */
 		number_: function number_() {
-			return typeof this.value_ === 'number';
+			return typeof this.validator_.value === 'number';
 		},
 
 
@@ -37895,7 +33693,7 @@ exports.default = {
    * The variable must be an array/object
    */
 		array_: function array_() {
-			return _typeof(this.value_) === 'object';
+			return _typeof(this.validator_.value) === 'object';
 		},
 
 
@@ -37903,7 +33701,7 @@ exports.default = {
    * The variable must be a valid email address
    */
 		email_: function email_() {
-			if (typeof this.value_ === 'string' && !this.value_.length) {
+			if (typeof this.validator_.value === 'string' && !this.validator_.value.length) {
 				return true;
 			} else {
 				return this.regex_(/^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z]{2,10})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i);
@@ -37914,8 +33712,8 @@ exports.default = {
 		/**
    * The variable must be a string with only alphanumeric characters
    */
-		alphaNum: function alphaNum() {
-			if (typeof this.value_ === 'string' && !this.value_.length) {
+		alphaNum_: function alphaNum_() {
+			if (typeof this.validator_.value === 'string' && !this.validator_.value.length) {
 				return true;
 			} else {
 				return this.regex_(/^[a-zA-Z0-9]+$/);
@@ -37924,28 +33722,28 @@ exports.default = {
 
 
 		/**
-   * The variable must be a valid jersey number
+   * The variable must be a string with only alphanumeric characters + dashes and underscores
    */
-		jersey_: function jersey_() {
-			if (typeof this.value_ === 'string') {
-				if (!this.value_.length) {
-					// skip if it is empty, let 'required' rule take care of that
-					return true;
-				}
+		alphaDash_: function alphaDash_() {
+			if (typeof this.validator_.value === 'string' && !this.validator_.value.length) {
+				return true;
+			} else {
+				return this.regex_(/^[a-zA-Z0-9_-]+$/);
 			}
-
-			this.value_ = this.value_.toString();
-			return this.regex_(/^[0-9]{1,2}$/);
 		}
 	}
 };
 
 }).apply(this, arguments);
 
-},{}],248:[function(require,module,exports){
+},{}],223:[function(require,module,exports){
 _hmr["websocket:null"].initModule("resources/assets/js/routes.js", module);
 (function(){
 'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
 var _App = require('./components/App.vue');
 
@@ -37955,49 +33753,23 @@ var _Team = require('./components/Team.vue');
 
 var _Team2 = _interopRequireDefault(_Team);
 
+var _User = require('./components/User.vue');
+
+var _User2 = _interopRequireDefault(_User);
+
 var _CreateTeam = require('./components/CreateTeam.vue');
 
 var _CreateTeam2 = _interopRequireDefault(_CreateTeam);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// packages pulled from npm
 var Vue = require('vue');
 var VueRouter = require('vue-router');
-var VueResource = require('vue-resource');
-var VueAutosize = require('vue-autosize');
-var VueTouch = require('vue-touch');
-var SmoothScroll = require('smoothscroll-polyfill');
 
 Vue.use(VueRouter);
-Vue.use(VueResource);
-Vue.use(VueAutosize);
-Vue.use(VueTouch);
 
-// attach scrolling library
-SmoothScroll.polyfill();
-
-Vue.config.debug = true;
-
-// pull meta data from server out of tags in <head> of main.blade
-Vue.http.headers.common['X-CSRF-TOKEN'] = $('#_token').attr('value');
-
-// create any global components here
-Vue.component('spinner', {
-	template: '<span class="loading-spinner">\n\t\t\t<span class="first" :style="color"></span>\n\t\t\t<span class="second" :style="color"></span>\n\t\t\t<span class="third" :style="color"></span>\n\t\t\t<span class="fourth" :style="color"></span>\n\t\t</span>',
-
-	props: ['color'],
-
-	ready: function ready() {
-		if (!this.color) {
-			this.color = 'white';
-		}
-
-		this.color = 'background-color: ' + this.color + ';';
-	}
-});
-
-// import components
-
+console.log(Vue);
 
 // enable router, turn on history mode
 var router = new VueRouter({
@@ -38006,7 +33778,7 @@ var router = new VueRouter({
 });
 
 // before each new route, scroll the page to the top
-// (but delay it so that the scroll is during the loading white screen)
+// delay it such that the scroll is during the blank loading screen
 router.beforeEach(function (transition) {
 	setTimeout(function () {
 		window.scroll(0, 0);
@@ -38014,6 +33786,10 @@ router.beforeEach(function (transition) {
 	transition.next();
 });
 
+// components used during these routes
+
+
+// define the routes
 router.map({
 
 	'/': {
@@ -38035,13 +33811,12 @@ router.map({
 				component: _Team2.default
 			}
 		}
+
 	},
 
 	'/:name': {
 		name: 'user',
-		component: {
-			template: "<h1 style='margin-top: 80px'>Welcome to your very own rookiecard, {{ $route.params.name }}!</h1>"
-		}
+		component: _User2.default
 	},
 
 	'*': {
@@ -38049,18 +33824,17 @@ router.map({
 			template: "<div class='text-center'><h1>Uh oh!</br>Page not found!</h1></div>"
 		}
 	}
-
 });
 
-router.start(_App2.default, '#app');
+exports.default = Vue;
 
 }).apply(this, arguments);
 
-},{"./components/App.vue":227,"./components/CreateTeam.vue":229,"./components/Team.vue":238,"smoothscroll-polyfill":178,"vue":223,"vue-autosize":195,"vue-resource":210,"vue-router":221,"vue-touch":222}],1:[function(require,module,exports){
+},{"./components/App.vue":200,"./components/CreateTeam.vue":202,"./components/Team.vue":211,"./components/User.vue":213,"vue":196,"vue-router":195}],1:[function(require,module,exports){
 (function(global, _main, moduleDefs, cachedModules, _entries) {
   'use strict';
 
-  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":80,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":81,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":181,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":244,"hash":"HSTRFhYEbsYDiKfsD4Nq","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":246,"hash":"FZSki5eTAZiXZzCQXwa9","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":247,"hash":"FRsie2ISQMeHvpHE8CGl","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditUser.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":184,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/smoothscroll-polyfill/dist/smoothscroll.js":{"index":178,"hash":"uvFvcNqOcIqkIWVio6jl","parents":["resources/assets/js/components/App.vue","resources/assets/js/routes.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":221,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":189,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"resources/assets/js/mixins/StatHelpers.js":{"index":245,"hash":"VPhjwAwj0j7NpZQ5A8nK","parents":["resources/assets/js/components/stats/AbstractStat.js","resources/assets/js/components/EditStats.vue","resources/assets/js/components/Stats.vue"]},"node_modules/parseuri/index.js":{"index":176,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":183,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/node_modules/debug/browser.js":{"index":185,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/indexof/index.js":{"index":103,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/component-bind/index.js":{"index":82,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":75,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":193,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":192,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/util.js":{"index":220,"hash":"Ktno8EfJlGOqQszfT9t9","parents":["node_modules/vue-resource/src/resource.js","node_modules/vue-resource/src/lib/promise.js","node_modules/vue-resource/src/promise.js","node_modules/vue-resource/src/url/legacy.js","node_modules/vue-resource/src/url/query.js","node_modules/vue-resource/src/url/root.js","node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/before.js","node_modules/vue-resource/src/http/mime.js","node_modules/vue-resource/src/http/header.js","node_modules/vue-resource/src/url/index.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/cors.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/isarray/index.js":{"index":104,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/has-binary/index.js","node_modules/socket.io-parser/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":83,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":106,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":160,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/collection/filter.js","node_modules/lodash/collection/some.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":112,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":114,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arraySome.js":{"index":115,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/collection/some.js","node_modules/lodash/internal/equalArrays.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":113,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":196,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/components/App.vue"]},"node_modules/socket.io-parser/binary.js":{"index":187,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/vue-resource/src/resource.js":{"index":214,"hash":"GM16FVmOV8IX/AOuqWDy","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/autosize/dist/autosize.js":{"index":4,"hash":"eNI62e8eqz9VWxOOEPlQ","parents":["node_modules/vue-autosize/index.js"]},"node_modules/vue-autosize/index.js":{"index":195,"hash":"fbPHlhoWxcCF61QciRgC","parents":["resources/assets/js/routes.js"]},"node_modules/hammerjs/hammer.js":{"index":100,"hash":"GMd3rFxMDNnM5JQEpiKL","parents":["node_modules/vue-touch/vue-touch.js"]},"node_modules/vue-touch/vue-touch.js":{"index":222,"hash":"uwuR+mmbqpdzD9PBqC8T","parents":["resources/assets/js/routes.js"]},"node_modules/has-binary/index.js":{"index":101,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":182,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-parser/index.js":{"index":188,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/process/browser.js":{"index":177,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":223,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/components/App.vue","resources/assets/js/routes.js"]},"node_modules/ms/index.js":{"index":173,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/socket.io-client/node_modules/debug/debug.js","node_modules/socket.io-parser/node_modules/debug/debug.js","node_modules/engine.io-client/node_modules/debug/debug.js"]},"node_modules/socket.io-client/node_modules/debug/debug.js":{"index":186,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-client/node_modules/debug/browser.js"]},"node_modules/lodash/internal/baseSome.js":{"index":134,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":120,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":121,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":107,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":118,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js","node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/assignWith.js":{"index":116,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":167,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":141,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":136,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":142,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":123,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":169,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/vue-resource/src/http/timeout.js":{"index":209,"hash":"a9rYt+L1N7MXsGDkvThE","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/method.js":{"index":207,"hash":"WBS3kO4wJI2dcVBDDOG8","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/utility/identity.js":{"index":171,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":153,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":154,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":150,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":163,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":151,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/collection/some.js","node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":149,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/some.js":{"index":110,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":119,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":117,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":111,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":137,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/assign.js":{"index":165,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/stats/AbstractStat.js":{"index":241,"hash":"YF9VOhZqrhanZTzGLRqF","parents":["resources/assets/js/components/stats/Basketball.vue"]},"resources/assets/js/components/stats/AbstractEditStat.js":{"index":240,"hash":"ziqH+CLGIZQ495qmmJOc","parents":["resources/assets/js/components/stats/EditBasketball.vue"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":233,"hash":"Qp3iFfi7Tkfv7s8Wz3cT","parents":["resources/assets/js/components/CreateTeam.vue"]},"node_modules/vue-resource/src/lib/promise.js":{"index":211,"hash":"YH79rn0y5HJWdycZ6s8k","parents":["node_modules/vue-resource/src/promise.js"]},"node_modules/vue-resource/src/promise.js":{"index":213,"hash":"ZPuKvXOF9ZGSufp/sdn4","parents":["node_modules/vue-resource/src/http/interceptor.js","node_modules/vue-resource/src/http/client/jsonp.js","node_modules/vue-resource/src/http/client/xdr.js","node_modules/vue-resource/src/http/client/xhr.js","node_modules/vue-resource/src/http/client/index.js","node_modules/vue-resource/src/http/index.js","node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/url/legacy.js":{"index":216,"hash":"zHoWdNA536IQ3OyKiGI9","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/query.js":{"index":217,"hash":"AzdEcrX0g/vASVVUlp89","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/root.js":{"index":218,"hash":"2BFXqa1UPXNtMEkcJB2z","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/http/interceptor.js":{"index":205,"hash":"pYFpH4vmvfKHwFTFdFkF","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/before.js":{"index":197,"hash":"IBteimDVHrieSaHpVD68","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/mime.js":{"index":208,"hash":"iR4dLuLWTvgZBqa86hwt","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/header.js":{"index":203,"hash":"htEmxhtvWlm3I7kV1N6s","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/createForEach.js":{"index":140,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":146,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/internal/createBaseEach.js"]},"node_modules/lodash/internal/baseMap.js":{"index":128,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/vue-resource/src/lib/url-template.js":{"index":212,"hash":"KZagPKERmevU89wFVgEg","parents":["node_modules/vue-resource/src/url/template.js"]},"node_modules/vue-resource/src/url/template.js":{"index":219,"hash":"YFhLjNyl4g8YWIYTNXQr","parents":["node_modules/vue-resource/src/url/index.js"]},"node_modules/vue-resource/src/url/index.js":{"index":215,"hash":"9wm+rYUUtSU/XWOJ7BAW","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":133,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":105,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":131,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/internal/getLength.js","node_modules/lodash/utility/property.js"]},"node_modules/socket.io-parser/node_modules/debug/debug.js":{"index":191,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-parser/node_modules/debug/browser.js"]},"node_modules/socket.io-parser/node_modules/debug/browser.js":{"index":190,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-parser/index.js"]},"resources/assets/js/components/CreateTeam.vue":{"index":229,"hash":"FsoTp56SaX57f+c15V1i","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":224,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue","resources/assets/js/components/App.vue"]},"node_modules/lodash/internal/toObject.js":{"index":157,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/createBaseEach.js":{"index":138,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/collection/forEach.js":{"index":108,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":127,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":125,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":124,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":152,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":155,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":132,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":158,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":172,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":139,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":122,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"node_modules/vue-resource/src/http/client/jsonp.js":{"index":199,"hash":"Cpa5ziotts1WVZ6ogx+c","parents":["node_modules/vue-resource/src/http/jsonp.js"]},"node_modules/vue-resource/src/http/jsonp.js":{"index":206,"hash":"8uzQCjY7TZE39jIfKTyJ","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/client/xdr.js":{"index":200,"hash":"ERX9UxYCux0XdAvs/Kje","parents":["node_modules/vue-resource/src/http/cors.js"]},"node_modules/vue-resource/src/http/cors.js":{"index":202,"hash":"lEOotEbCMel6uRP2f8TA","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/lodash/internal/baseToString.js":{"index":135,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/vue-resource/src/http/client/xhr.js":{"index":201,"hash":"Jsv/5CK3VicPDkE4u7H9","parents":["node_modules/vue-resource/src/http/client/index.js"]},"node_modules/vue-resource/src/http/client/index.js":{"index":198,"hash":"AIdrm/AXGM/DhSmpopU0","parents":["node_modules/vue-resource/src/http/index.js"]},"node_modules/vue-resource/src/http/index.js":{"index":204,"hash":"8UP5i9l22qDexqWNkOZG","parents":["node_modules/vue-resource/src/index.js"]},"node_modules/vue-resource/src/index.js":{"index":210,"hash":"TTiRl9BYixV5auigpS7U","parents":["resources/assets/js/routes.js"]},"node_modules/parsejson/index.js":{"index":174,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":175,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":98,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":170,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":147,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":129,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":161,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":162,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":148,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":159,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":168,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":156,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":166,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/Nav.vue":{"index":234,"hash":"PXeT9a73rYqTdEHuHHm1","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/Calendar.vue":{"index":228,"hash":"2GglUGUjq+EBcKl11Thp","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Alert.vue":{"index":226,"hash":"qrGTCd6najcV8eNkYkyk","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/EditUser.vue":{"index":232,"hash":"YJWfqmN6Oc2yGFAVmXyg","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":235,"hash":"KHBwgGWm5qYW1mwP2+6l","parents":["resources/assets/js/components/Team.vue"]},"node_modules/lodash/internal/equalByTag.js":{"index":144,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/browser-resolve/empty.js":{"index":78,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":88,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":97,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"resources/assets/js/components/stats/EditBasketball.vue":{"index":243,"hash":"qTtY6v2noigAKDpowbke","parents":["resources/assets/js/components/EditStats.vue"]},"node_modules/lodash/internal/equalArrays.js":{"index":143,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":145,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":164,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":126,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":130,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/map.js":{"index":109,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":79,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":194,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":77,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":76,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"resources/assets/js/components/Roster.vue":{"index":236,"hash":"KfimbeeBgGc+PoKu//7V","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":5,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/Roster.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/ViewEvent.vue"]},"node_modules/has-cors/index.js":{"index":102,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":94,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/node_modules/debug/debug.js":{"index":96,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/engine.io-client/node_modules/debug/browser.js"]},"node_modules/engine.io-client/node_modules/debug/browser.js":{"index":95,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/yeast/index.js":{"index":225,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":93,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/component-inherit/index.js":{"index":84,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":90,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":92,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"resources/assets/js/components/EditEvent.vue":{"index":230,"hash":"+A9ZadLoEbBUlQnhFQiK","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/EditStats.vue":{"index":231,"hash":"szH1+ulH+qHBcx0trh38","parents":["resources/assets/js/components/ViewEvent.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":99,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":91,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":89,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":87,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":86,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":85,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":180,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":179,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"resources/assets/js/components/stats/Basketball.vue":{"index":242,"hash":"UVff6z/9EE79np/GpAgr","parents":["resources/assets/js/components/Stats.vue"]},"resources/assets/js/components/Stats.vue":{"index":237,"hash":"Af+R9oamOPPrmGPHckas","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.object.to-string.js":{"index":69,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":17,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.async-iterator.js":{"index":72,"hash":"hEaRC86MNHTUfW+mIMVb","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js":{"index":65,"hash":"c2K3VJaWJSGfBdYNnlRP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.async-iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.observable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.observable.js":{"index":73,"hash":"F95EP7GVboRB0mEZiDfE","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":26,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_shared.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_html.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_has.js":{"index":27,"hash":"y4idiH2Sj/rmZqd39CHH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":25,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_uid.js":{"index":64,"hash":"auy0a5KBxuU7QAdJ7we/","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":52,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-pie.js":{"index":51,"hash":"Y2tuKYgYFbgvgES1KG7h","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gops.js":{"index":47,"hash":"tPG/PM0WXsVXCm3PBM4/","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_library.js":{"index":39,"hash":"Bhgn5RpO7pDcQnSVaI5C","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":20,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_redefine.js":{"index":53,"hash":"obsbKqpdim27p2yEYYRE","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":28,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_redefine.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_shared.js":{"index":56,"hash":"Bq8h3ywiFHwy0Z5HZOzL","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js":{"index":54,"hash":"YvcLr23rOztWtOLZdq74","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":42,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js":{"index":67,"hash":"vYq2HUJoYMKKyOSuslgR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-ext.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-ext.js":{"index":66,"hash":"/k6KrZ3MVZrmLo1+Lmoc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js":{"index":38,"hash":"Rq/rkfZ//6Sdq1mcHM9e","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js":{"index":50,"hash":"PAeFpNQOjZElDHHMjipw","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js":{"index":60,"hash":"R8Og+zuIlU3ox9ILqw5P","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js":{"index":23,"hash":"3BjMpYkiYPCQh4FanQLn","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":14,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":33,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":63,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js":{"index":45,"hash":"EExvci/GE8TPXmnN0n7T","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js":{"index":46,"hash":"aZ7kCUV/2I0AlX0fn/+B","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":30,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-bug-keys.js":{"index":22,"hash":"yNy1r9iZOHwipNXreqg6","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js":{"index":49,"hash":"P0pvQIB6Hgz1GkQF+UDU","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js":{"index":40,"hash":"m2SE+b453x59qd4JnCS0","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_cof.js":{"index":16,"hash":"FY6tg0ymdCS/rEwpAa7R","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-array.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iobject.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-array.js":{"index":32,"hash":"MkJGpwp/OfRCJh4NCffl","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_defined.js":{"index":19,"hash":"RZr8uFl+WrrjvGzPSz3c","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-object.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iterators.js":{"index":37,"hash":"HPPh7u0tcX1NuooQHCi3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":9,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/ViewEvent.vue":{"index":239,"hash":"6iN/kDyi6I6W4cybAOZ9","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":238,"hash":"iwkEaM5CUwFFLpr9E/+j","parents":["resources/assets/js/routes.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iobject.js":{"index":31,"hash":"4Q1/Q9EKBt0k5lS3mZjy","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js":{"index":43,"hash":"dN32Y0xk8TX332LDHABx","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js":{"index":55,"hash":"g0V0VfiYW1dWlAsxNfoV","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":21,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js":{"index":44,"hash":"yqryLZw+2ZlTJGanx26L","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_html.js":{"index":29,"hash":"J5YJ2iM2hDG8yPvNuD5N","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js":{"index":41,"hash":"GqTG6mmz1tjhC292kt7X","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":12,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":18,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":24,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-step.js":{"index":36,"hash":"LPWFVFxr7uzP25M4Teof","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_add-to-unscopables.js":{"index":13,"hash":"aTtaK5OMoCOj8v16GPqC","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js":{"index":68,"hash":"q430FoIpt87xUtRizO8c","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js":{"index":35,"hash":"K7o8DuSBFvX54WRE9P1j","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js":{"index":74,"hash":"p49DV4vrS8Jeh6k+u5D6","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-integer.js":{"index":59,"hash":"k18sZu8vTX3eiB+U6ofu","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-index.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-length.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js":{"index":57,"hash":"uDYG+vYVpnGhpw1VUABK","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js":{"index":34,"hash":"65Gr0023eUChGrL9Rdms","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-index.js":{"index":58,"hash":"ghp0sQYuOAwxpgDX+x0I","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-length.js":{"index":61,"hash":"Nbf83jIHLYcu4mcZL1Yv","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js":{"index":15,"hash":"9hna/hsSkj4F/+LbC5IO","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js":{"index":71,"hash":"hQqUMqvFXpTvk7AnL3RE","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js":{"index":10,"hash":"+wvtdkh5Ar8fUacvpY/5","parents":["node_modules/babel-runtime/core-js/symbol.js"]},"node_modules/babel-runtime/core-js/symbol.js":{"index":6,"hash":"aiWeZ2ndRLi+VSl8A+j6","parents":["node_modules/babel-runtime/helpers/typeof.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-object.js":{"index":62,"hash":"xMI+6x19/IouzKU7gNK+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js":{"index":48,"hash":"IrRBeWiZHRMN4MSMnpK1","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js":{"index":70,"hash":"XRq6lLF9PubOQ3hT87sB","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js":{"index":11,"hash":"W7cLyXdj4xWpvb2/KOPV","parents":["node_modules/babel-runtime/core-js/symbol/iterator.js"]},"node_modules/babel-runtime/core-js/symbol/iterator.js":{"index":7,"hash":"G15k3gWAGudznWrxZZ5n","parents":["node_modules/babel-runtime/helpers/typeof.js"]},"node_modules/babel-runtime/helpers/typeof.js":{"index":8,"hash":"LoW1/2HaMmpLZqdR6syk","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":227,"hash":"6bsjQCb+LHQYtBSDTCtp","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":248,"hash":"2D/D8XGTpUUwf6QKSzvn","parents":[]}};
+  var moduleMeta = {"node_modules/browserify-hmr/lib/has.js":{"index":79,"hash":"Hky4QYVrU1+kFHIEuxPy","parents":["node_modules/browserify-hmr/lib/str-set.js","node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/lib/str-set.js":{"index":80,"hash":"lcrDmQK4uaqOqN+FV4/9","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/socket.io-client/lib/on.js":{"index":179,"hash":"y5MOoFpTKKBHwE8q8jae","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"resources/assets/js/mixins/Requests.js":{"index":219,"hash":"YUjnW990eSxH9dM4akIp","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/mixins/StatsSelection.js":{"index":221,"hash":"FZSki5eTAZiXZzCQXwa9","parents":["resources/assets/js/components/CreateTeam.vue"]},"resources/assets/js/mixins/Validator.js":{"index":222,"hash":"4mpbwvqupuRJtwZH/0VK","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/TeamSettings.vue"]},"node_modules/socket.io-client/node_modules/component-emitter/index.js":{"index":182,"hash":"asxNeKKEYmnxnAxICTS6","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-parser/is-buffer.js":{"index":187,"hash":"UJBXKAfBg/BkigSZbc3Z","parents":["node_modules/socket.io-parser/binary.js","node_modules/socket.io-parser/index.js"]},"node_modules/vue-router/dist/vue-router.js":{"index":195,"hash":"rqGwUo92D6Cv9jhBr04K","parents":["resources/assets/js/routes.js"]},"node_modules/parseuri/index.js":{"index":174,"hash":"c/c7XftSI6ClFc9h2jOh","parents":["node_modules/socket.io-client/lib/url.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/url.js":{"index":181,"hash":"/o7EwzytoCiGybsA7pHf","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/node_modules/debug/browser.js":{"index":183,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-client/lib/url.js","node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/component-bind/index.js":{"index":81,"hash":"4yIcVw+afwUsnTQyI0a3","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/indexof/index.js":{"index":101,"hash":"8zMGV0j0ID5bUIeT7r+M","parents":["node_modules/engine.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js"]},"node_modules/backo2/index.js":{"index":74,"hash":"L5ry3mfVEw1wgmx9Sa+q","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/to-array/index.js":{"index":191,"hash":"2EoggafxX+GLXkXiaGjm","parents":["node_modules/socket.io-client/lib/socket.js"]},"resources/assets/js/mixins/StatHelpers.js":{"index":220,"hash":"VPhjwAwj0j7NpZQ5A8nK","parents":["resources/assets/js/components/stats/AbstractStat.js","resources/assets/js/components/EditStats.vue","resources/assets/js/components/Stats.vue"]},"node_modules/socket.io-parser/node_modules/json3/lib/json3.js":{"index":190,"hash":"LXnegdmM3ELMiM4tQmqu","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/isarray/index.js":{"index":102,"hash":"dKtews1S4sHvaZhZ+ceq","parents":["node_modules/socket.io-parser/binary.js","node_modules/has-binary/index.js","node_modules/socket.io-parser/index.js","node_modules/engine.io-parser/node_modules/has-binary/index.js"]},"node_modules/component-emitter/index.js":{"index":82,"hash":"0uL1LSa/mOj+Llu+HTZ7","parents":["node_modules/socket.io-parser/index.js","node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/lodash/array/zipObject.js":{"index":104,"hash":"fKfSwIzPo5SUx9d0DkgN","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/lang/isArray.js":{"index":158,"hash":"rpMiE1Z199/XZCjno4KN","parents":["node_modules/lodash/array/zipObject.js","node_modules/lodash/internal/createForEach.js","node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/toPath.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/internal/baseIsEqualDeep.js","node_modules/lodash/internal/baseMatchesProperty.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arraySome.js":{"index":113,"hash":"GxeJPxJj2jUg5TzV5gLv","parents":["node_modules/lodash/internal/equalArrays.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/arrayEach.js":{"index":110,"hash":"eLxUBVsb8vpFbu0VN4KL","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/arrayMap.js":{"index":112,"hash":"xdr8c0JsUFapIHTuM5VE","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/arrayFilter.js":{"index":111,"hash":"BGunz0w1QzJXyqQSOdZb","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/vue-hot-reload-api/index.js":{"index":194,"hash":"qy0lsdzSyxFnpsW4+H2M","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/User.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/stats/EditBasketball.vue","resources/assets/js/components/TeamSettings.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue","resources/assets/js/components/App.vue"]},"node_modules/socket.io-parser/binary.js":{"index":185,"hash":"bAee8RukaXwuD/OeGN6F","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/smoothscroll-polyfill/dist/smoothscroll.js":{"index":176,"hash":"uvFvcNqOcIqkIWVio6jl","parents":["resources/assets/js/components/App.vue"]},"node_modules/has-binary/index.js":{"index":99,"hash":"GofcXFXhXC0uVJvLAw+2","parents":["node_modules/socket.io-client/lib/socket.js"]},"node_modules/socket.io-client/lib/socket.js":{"index":180,"hash":"dZhwrF36uFIGbDZMhss6","parents":["node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-parser/index.js":{"index":186,"hash":"7PrgORY9faIa3QvXeHjU","parents":["node_modules/socket.io-client/lib/socket.js","node_modules/socket.io-client/lib/manager.js","node_modules/socket.io-client/lib/index.js"]},"node_modules/ms/index.js":{"index":171,"hash":"HanVKm5AkV6MOdHRAMCT","parents":["node_modules/socket.io-client/node_modules/debug/debug.js","node_modules/socket.io-parser/node_modules/debug/debug.js","node_modules/engine.io-client/node_modules/debug/debug.js"]},"node_modules/socket.io-client/node_modules/debug/debug.js":{"index":184,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-client/node_modules/debug/browser.js"]},"node_modules/process/browser.js":{"index":175,"hash":"d/Dio43QDX3Xt7NYvbr6","parents":["node_modules/vue/dist/vue.common.js","node_modules/vue-focus/dist/vue-focus.common.js"]},"node_modules/vue/dist/vue.common.js":{"index":196,"hash":"Hxf0zZH6uScxwU3+810r","parents":["resources/assets/js/components/GoogleTypeahead.vue","resources/assets/js/components/User.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/stats/EditBasketball.vue","node_modules/vue-focus/dist/vue-focus.common.js","resources/assets/js/components/TeamSettings.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue","resources/assets/js/components/App.vue","resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseSome.js":{"index":132,"hash":"lCW5AtHn9X2vSuPgS8pk","parents":["node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseEach.js":{"index":118,"hash":"Ji7NLCJhdzSBlpDI+qC3","parents":["node_modules/lodash/internal/baseSome.js","node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/baseFilter.js","node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/createForEach.js":{"index":138,"hash":"iJtWBCzx+bzzSLwlaaRv","parents":["node_modules/lodash/collection/forEach.js"]},"node_modules/lodash/internal/bindCallback.js":{"index":134,"hash":"S6iy1I+53IEzDLSGuW0j","parents":["node_modules/lodash/internal/createForEach.js","node_modules/lodash/internal/createForOwn.js","node_modules/lodash/internal/createAssigner.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/baseMap.js":{"index":126,"hash":"ofv2jCE5QlahpynG4rkN","parents":["node_modules/lodash/collection/map.js"]},"node_modules/lodash/internal/isArrayLike.js":{"index":147,"hash":"76Awthz8ChTgjGk0JZ6Y","parents":["node_modules/lodash/internal/baseMap.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/collection/map.js":{"index":107,"hash":"63n5x8GTiWPuxiZzm9TM","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseCallback.js":{"index":116,"hash":"FDEmxoh1cXY/hddgPNGW","parents":["node_modules/lodash/collection/map.js","node_modules/lodash/collection/filter.js","node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/internal/baseFilter.js":{"index":119,"hash":"yyvQag4hw8sItBFf3/9T","parents":["node_modules/lodash/collection/filter.js"]},"node_modules/lodash/collection/filter.js":{"index":105,"hash":"XtU5zjCqSDlYcwOLUC13","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/createForOwn.js":{"index":139,"hash":"KJqijjvJO7d1nU17Sz3c","parents":["node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/internal/createObjectMapper.js":{"index":140,"hash":"cp8s+Z6khiKdK5QCQ+Ms","parents":["node_modules/lodash/object/mapValues.js"]},"node_modules/lodash/internal/baseForOwn.js":{"index":121,"hash":"sOLmHH2OosmeW92YaLK/","parents":["node_modules/lodash/internal/createObjectMapper.js","node_modules/lodash/internal/baseEach.js","node_modules/lodash/object/forOwn.js"]},"node_modules/lodash/object/mapValues.js":{"index":167,"hash":"2HfAmVuaVGfc8pd5zIaC","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/assignWith.js":{"index":114,"hash":"aKBKyfIKqZsNOHAbJTAI","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/object/keys.js":{"index":165,"hash":"BbXGNIcfatSp32uWOBAV","parents":["node_modules/lodash/internal/assignWith.js","node_modules/lodash/internal/baseAssign.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseForOwn.js","node_modules/lodash/internal/equalObjects.js"]},"node_modules/lodash/utility/identity.js":{"index":169,"hash":"A/cz5O4nnho2x2e5KIWS","parents":["node_modules/lodash/internal/bindCallback.js","node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/isLength.js":{"index":151,"hash":"DFIKI121VzeE+pBbx1Oa","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js","node_modules/lodash/lang/isTypedArray.js"]},"node_modules/lodash/internal/isObjectLike.js":{"index":152,"hash":"qEGnAWJNoAetOIJ7YKiV","parents":["node_modules/lodash/lang/isNative.js","node_modules/lodash/lang/isArray.js","node_modules/lodash/lang/isArguments.js","node_modules/lodash/lang/isTypedArray.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/isIndex.js":{"index":148,"hash":"I8y5AsjL/lwDlORDOqqM","parents":["node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/lang/isObject.js":{"index":161,"hash":"Go+dTLFqO1KJN+uQLb8s","parents":["node_modules/lodash/internal/toObject.js","node_modules/lodash/internal/isStrictComparable.js","node_modules/lodash/internal/isIterateeCall.js","node_modules/lodash/lang/isFunction.js","node_modules/lodash/object/keysIn.js","node_modules/lodash/object/keys.js","node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseCopy.js":{"index":117,"hash":"WvGi8IywM6u7ZNXvztwg","parents":["node_modules/lodash/internal/baseAssign.js"]},"node_modules/lodash/internal/baseAssign.js":{"index":115,"hash":"6VX87YoeNgDvMUyiAc/7","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/function/restParam.js":{"index":109,"hash":"/RRH9MCtjArr1p3Qeh63","parents":["node_modules/lodash/internal/createAssigner.js"]},"node_modules/lodash/internal/createAssigner.js":{"index":135,"hash":"X8R81jvRCofY1BnG+A/L","parents":["node_modules/lodash/object/assign.js"]},"node_modules/lodash/internal/isIterateeCall.js":{"index":149,"hash":"dXMnNRevAizOBisKCEes","parents":["node_modules/lodash/internal/createAssigner.js","node_modules/lodash/collection/some.js"]},"node_modules/lodash/object/assign.js":{"index":163,"hash":"9WOhJBREl8AO9Hs6Cr+Q","parents":["node_modules/browserify-hmr/inc/index.js"]},"resources/assets/js/components/stats/AbstractStat.js":{"index":216,"hash":"+qD6MG0La9/cmDWoWTS+","parents":["resources/assets/js/components/stats/Basketball.vue"]},"resources/assets/js/components/stats/AbstractEditStat.js":{"index":215,"hash":"ziqH+CLGIZQ495qmmJOc","parents":["resources/assets/js/components/stats/EditBasketball.vue"]},"resources/assets/js/components/GoogleTypeahead.vue":{"index":206,"hash":"nMvPqGl58wr0qwGc5rOF","parents":["resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/TeamSettings.vue"]},"node_modules/lodash/internal/createBaseEach.js":{"index":136,"hash":"+5X3Ztm78NNPr9vQZ7fB","parents":["node_modules/lodash/internal/baseEach.js"]},"node_modules/lodash/internal/getLength.js":{"index":144,"hash":"UiZ6F0+nXZ0fiKckTqnM","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/isArrayLike.js"]},"node_modules/lodash/internal/toObject.js":{"index":155,"hash":"8f3eulB97DddBRdcU+7v","parents":["node_modules/lodash/internal/createBaseEach.js","node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseGet.js","node_modules/lodash/internal/isKey.js","node_modules/lodash/internal/createBaseFor.js","node_modules/lodash/object/pairs.js","node_modules/lodash/internal/baseMatches.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/collection/forEach.js":{"index":106,"hash":"0Lo1RNt18PMo/HAKbHEu","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/baseSlice.js":{"index":131,"hash":"OLgw9XVic1W0AKjehzHB","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/array/last.js":{"index":103,"hash":"3oXXa2idWbKySVLcq3os","parents":["node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseProperty.js":{"index":129,"hash":"Yuk2tpof21q0Xl2sQg89","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/getLength.js"]},"node_modules/socket.io-parser/node_modules/debug/debug.js":{"index":189,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/socket.io-parser/node_modules/debug/browser.js"]},"node_modules/socket.io-parser/node_modules/debug/browser.js":{"index":188,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/socket.io-parser/index.js"]},"node_modules/lodash/internal/baseIsMatch.js":{"index":125,"hash":"EpuJzlg204aR35T4QKcS","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseIsEqual.js":{"index":123,"hash":"dBgoFXnhj9KH6oX3dQwa","parents":["node_modules/lodash/internal/baseIsMatch.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/baseGet.js":{"index":122,"hash":"H9EiMd3ullQpRkvooLgz","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isKey.js":{"index":150,"hash":"lDpw5crcRmTRExTLVTKc","parents":["node_modules/lodash/utility/property.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/isStrictComparable.js":{"index":153,"hash":"ofNP4/nFrz5Rkb3kGOhn","parents":["node_modules/lodash/internal/getMatchData.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/internal/basePropertyDeep.js":{"index":130,"hash":"mqX1OyYdndJ183lyl/sn","parents":["node_modules/lodash/utility/property.js"]},"node_modules/lodash/internal/toPath.js":{"index":156,"hash":"faVQvsb+LSLI4uaMgtrQ","parents":["node_modules/lodash/internal/basePropertyDeep.js","node_modules/lodash/internal/baseMatchesProperty.js"]},"node_modules/lodash/utility/property.js":{"index":170,"hash":"7IoOI/uGZCxbcY23uQDK","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/internal/createBaseFor.js":{"index":137,"hash":"9RWlFaBOuelvwgkhYgPG","parents":["node_modules/lodash/internal/baseFor.js"]},"node_modules/lodash/internal/baseFor.js":{"index":120,"hash":"NGxcZ0n01+w2G1PzyBlY","parents":["node_modules/lodash/internal/baseForOwn.js"]},"resources/assets/js/components/User.vue":{"index":213,"hash":"O3nS+wnGED2hdVhVmnLl","parents":["resources/assets/js/routes.js"]},"node_modules/vueify/lib/insert-css.js":{"index":197,"hash":"fvTUijA6yyBpp68H+JX2","parents":["resources/assets/js/components/User.vue","resources/assets/js/components/CreateTeam.vue","resources/assets/js/components/Alert.vue","resources/assets/js/components/Nav.vue","resources/assets/js/components/Calendar.vue","resources/assets/js/components/NewsFeed.vue","resources/assets/js/components/EditUser.vue","resources/assets/js/components/TeamSettings.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Stats.vue","resources/assets/js/components/Roster.vue","resources/assets/js/components/Team.vue","resources/assets/js/components/App.vue"]},"resources/assets/js/components/CreateTeam.vue":{"index":202,"hash":"7xIPBs9NnDyjBXaPIeKl","parents":["resources/assets/js/routes.js"]},"node_modules/lodash/internal/baseToString.js":{"index":133,"hash":"ABFQFf14pRECi3sw8oKV","parents":["node_modules/lodash/internal/toPath.js"]},"node_modules/parsejson/index.js":{"index":172,"hash":"3RLuznQNKZiQ/toCXNir","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/parseqs/index.js":{"index":173,"hash":"FI4tRELwI5Itz+ckwR+m","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/keys.js":{"index":97,"hash":"oFyKNTA0twlyQVhVzp9n","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/lodash/object/pairs.js":{"index":168,"hash":"x6Ilwx8encvg/BW5API2","parents":["node_modules/lodash/internal/getMatchData.js"]},"node_modules/lodash/internal/getMatchData.js":{"index":145,"hash":"n0PHWhNs6YZ+DzgYMHPx","parents":["node_modules/lodash/internal/baseMatches.js"]},"node_modules/lodash/internal/baseMatches.js":{"index":127,"hash":"Cwj5GSiQv9/E8nSFBoX2","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/lang/isFunction.js":{"index":159,"hash":"xkfzrZNZPGGOIf0kE8Y9","parents":["node_modules/lodash/lang/isNative.js"]},"node_modules/lodash/lang/isNative.js":{"index":160,"hash":"2rstaALy1DW0JSDdijps","parents":["node_modules/lodash/internal/getNative.js"]},"node_modules/lodash/internal/getNative.js":{"index":146,"hash":"7GRZ7115BSuoc/1bdaBK","parents":["node_modules/lodash/lang/isArray.js","node_modules/lodash/object/keys.js"]},"node_modules/lodash/lang/isArguments.js":{"index":157,"hash":"xQ4mqbsKQMCmtsPbfQc6","parents":["node_modules/lodash/object/keysIn.js","node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/object/keysIn.js":{"index":166,"hash":"8POZiGR1fRHso579G46Z","parents":["node_modules/lodash/internal/shimKeys.js"]},"node_modules/lodash/internal/shimKeys.js":{"index":154,"hash":"oO4aKopmxRfPxyKgRX9F","parents":["node_modules/lodash/object/keys.js"]},"node_modules/lodash/object/forOwn.js":{"index":164,"hash":"LZ77PzuJW/wlgVPdvlGc","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/lodash/internal/equalByTag.js":{"index":142,"hash":"+y++gesJpPvyM+2E8aNB","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"resources/assets/js/components/Alert.vue":{"index":199,"hash":"qrGTCd6najcV8eNkYkyk","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/Nav.vue":{"index":207,"hash":"R2jZFdO7XQ2L0j2DL9n8","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/Calendar.vue":{"index":201,"hash":"2GglUGUjq+EBcKl11Thp","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/NewsFeed.vue":{"index":208,"hash":"KHBwgGWm5qYW1mwP2+6l","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/EditUser.vue":{"index":205,"hash":"JezKUz3BlptyxIkHHROu","parents":["resources/assets/js/components/Team.vue"]},"node_modules/browser-resolve/empty.js":{"index":77,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/engine.io-client/lib/transports/websocket.js"]},"node_modules/engine.io-client/lib/transport.js":{"index":87,"hash":"qAS1jC8gVTG4yb/AanoB","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-parser/lib/browser.js":{"index":96,"hash":"6A2jdV+cDrzwkG+1P9xX","parents":["node_modules/engine.io-client/lib/transport.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/socket.js","node_modules/engine.io-client/lib/index.js"]},"resources/assets/js/components/stats/EditBasketball.vue":{"index":218,"hash":"qTtY6v2noigAKDpowbke","parents":["resources/assets/js/components/EditStats.vue"]},"node_modules/vue-focus/dist/vue-focus.common.js":{"index":193,"hash":"J3RRVi4JrlEITfJZaKWU","parents":["resources/assets/js/components/TeamSettings.vue"]},"node_modules/lodash/internal/equalArrays.js":{"index":141,"hash":"OBJL6vuaOotu5flUeCnv","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/equalObjects.js":{"index":143,"hash":"44Iy49kDcaAZsykEdaH3","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/lang/isTypedArray.js":{"index":162,"hash":"aVeZyIFGadrEh7EsaDRu","parents":["node_modules/lodash/internal/baseIsEqualDeep.js"]},"node_modules/lodash/internal/baseIsEqualDeep.js":{"index":124,"hash":"ltZZaMHmzp6d9jBltV3Y","parents":["node_modules/lodash/internal/baseIsEqual.js"]},"node_modules/lodash/internal/baseMatchesProperty.js":{"index":128,"hash":"OudnSoeq2A4ql5lg51kc","parents":["node_modules/lodash/internal/baseCallback.js"]},"node_modules/lodash/collection/some.js":{"index":108,"hash":"9JyJFfdCx56pmR6fwM9q","parents":["node_modules/browserify-hmr/inc/index.js"]},"node_modules/browserify-hmr/inc/index.js":{"index":78,"hash":"zTlNWZ14iIh89mO0UkaY","parents":[]},"node_modules/utf8/utf8.js":{"index":192,"hash":"Mqm8G2xyYXmBOFrE+/6A","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/arraybuffer.slice/index.js":{"index":3,"hash":"RSb5Zx9CgX3adjzbvf/k","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/after/index.js":{"index":2,"hash":"NzPfXWECmM8rW/6fdkcj","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/blob/index.js":{"index":76,"hash":"q7L6uHK9eN9yEvDVNxJw","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/base64-arraybuffer/lib/base64-arraybuffer.js":{"index":75,"hash":"dW6cnktjBIyZ6bv9vRp2","parents":["node_modules/engine.io-parser/lib/browser.js"]},"resources/assets/js/components/TeamSettings.vue":{"index":212,"hash":"flicq7XKNZl0b49vJHgB","parents":["resources/assets/js/components/Team.vue"]},"node_modules/babel-runtime/core-js/json/stringify.js":{"index":4,"hash":"wB8ZWCZnz6eAdHwvJsyS","parents":["resources/assets/js/components/TeamSettings.vue","resources/assets/js/components/EditEvent.vue","resources/assets/js/components/EditStats.vue","resources/assets/js/components/stats/Basketball.vue","resources/assets/js/components/Roster.vue"]},"node_modules/has-cors/index.js":{"index":100,"hash":"HwTb4UF/S089ZYA8hrRl","parents":["node_modules/engine.io-client/lib/xmlhttprequest.js"]},"node_modules/engine.io-client/lib/xmlhttprequest.js":{"index":93,"hash":"us0FsN5s7hiT3hqVV5lx","parents":["node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/node_modules/debug/debug.js":{"index":95,"hash":"yqdR7nJc7wxIHzFDNzG+","parents":["node_modules/engine.io-client/node_modules/debug/browser.js"]},"node_modules/engine.io-client/node_modules/debug/browser.js":{"index":94,"hash":"S76q28f1VPJIcCtJn1eq","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js","node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/transports/polling-jsonp.js":{"index":89,"hash":"Gb1vE1gV8jcH9l3Z6/bT","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/polling.js":{"index":91,"hash":"vdgStJPJzZrXTQesqN8z","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/component-inherit/index.js":{"index":83,"hash":"T0Fqch4d4akvlr8bh7lc","parents":["node_modules/engine.io-client/lib/transports/polling-jsonp.js","node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js","node_modules/engine.io-client/lib/transports/polling-xhr.js"]},"node_modules/yeast/index.js":{"index":198,"hash":"ZM3+5w4l/D2f6x7svySF","parents":["node_modules/engine.io-client/lib/transports/websocket.js","node_modules/engine.io-client/lib/transports/polling.js"]},"node_modules/engine.io-client/lib/transports/websocket.js":{"index":92,"hash":"HfpLTMBIovfNVzW2AUtb","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"resources/assets/js/components/EditEvent.vue":{"index":203,"hash":"//IP3gPQx9bKZ87e8p/f","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/EditStats.vue":{"index":204,"hash":"uiYRdZOZ77lJM6sYQsBP","parents":["resources/assets/js/components/ViewEvent.vue"]},"resources/assets/js/components/ViewEvent.vue":{"index":214,"hash":"Wnem/lqiY7skxx+2bR3G","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Stats.vue":{"index":210,"hash":"PbBN4EYL1xwQh/7gdpxG","parents":["resources/assets/js/components/ViewEvent.vue","resources/assets/js/components/Team.vue"]},"node_modules/engine.io-parser/node_modules/has-binary/index.js":{"index":98,"hash":"ZLLgu+QfLGB5FJs6P2Ow","parents":["node_modules/engine.io-parser/lib/browser.js"]},"node_modules/engine.io-client/lib/transports/polling-xhr.js":{"index":90,"hash":"jZ3ocO8rHG1K39sNZtMM","parents":["node_modules/engine.io-client/lib/transports/index.js"]},"node_modules/engine.io-client/lib/transports/index.js":{"index":88,"hash":"GTfOTTHr8n5FqdkZq1ur","parents":["node_modules/engine.io-client/lib/socket.js"]},"node_modules/engine.io-client/lib/socket.js":{"index":86,"hash":"z0/WXnl8azrUbogzuS5u","parents":["node_modules/engine.io-client/lib/index.js"]},"node_modules/engine.io-client/lib/index.js":{"index":85,"hash":"G6QYuSNu0EcS+G5tR9NE","parents":["node_modules/engine.io-client/index.js"]},"node_modules/engine.io-client/index.js":{"index":84,"hash":"HQau4MkD4lAynB9tt0Wl","parents":["node_modules/socket.io-client/lib/manager.js"]},"node_modules/socket.io-client/lib/manager.js":{"index":178,"hash":"ycazfyz0LQGPtd/P1Ih9","parents":["node_modules/socket.io-client/lib/index.js"]},"node_modules/socket.io-client/lib/index.js":{"index":177,"hash":"6O21Z/SJToLoAyfVkS1+","parents":[]},"resources/assets/js/components/stats/Basketball.vue":{"index":217,"hash":"J99Y84SwBVKD6J8Wp5VO","parents":["resources/assets/js/components/Stats.vue"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.object.to-string.js":{"index":68,"hash":"47DEQpj8HBSa+/TImW+5","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_core.js":{"index":16,"hash":"Ibh7O9NcuXp5JVxjT18g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.async-iterator.js":{"index":71,"hash":"hEaRC86MNHTUfW+mIMVb","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js":{"index":64,"hash":"c2K3VJaWJSGfBdYNnlRP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.async-iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.observable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_global.js":{"index":25,"hash":"t7QKkyeVEU+gGSy/l5Cc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_shared.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_html.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_has.js":{"index":26,"hash":"y4idiH2Sj/rmZqd39CHH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_fails.js":{"index":24,"hash":"6G4+YXaRghTGQQnkm/qp","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_uid.js":{"index":63,"hash":"auy0a5KBxuU7QAdJ7we/","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_property-desc.js":{"index":51,"hash":"iSs9jpAw1JT2ZWWLScSH","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gops.js":{"index":46,"hash":"tPG/PM0WXsVXCm3PBM4/","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-pie.js":{"index":50,"hash":"Y2tuKYgYFbgvgES1KG7h","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_library.js":{"index":38,"hash":"Bhgn5RpO7pDcQnSVaI5C","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-ext.js":{"index":65,"hash":"/k6KrZ3MVZrmLo1+Lmoc","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js":{"index":41,"hash":"USI9OT8U6SpHfWvn9r5g","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es7.symbol.observable.js":{"index":72,"hash":"F95EP7GVboRB0mEZiDfE","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_descriptors.js":{"index":19,"hash":"McUDhb4rP+oATCLvDuyP","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_redefine.js":{"index":52,"hash":"obsbKqpdim27p2yEYYRE","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_hide.js":{"index":27,"hash":"5JdwMpfbd5b8F4itNMek","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_redefine.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_shared.js":{"index":55,"hash":"Bq8h3ywiFHwy0Z5HZOzL","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js":{"index":53,"hash":"YvcLr23rOztWtOLZdq74","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_wks.js":{"index":66,"hash":"vYq2HUJoYMKKyOSuslgR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_set-to-string-tag.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_wks-ext.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js":{"index":37,"hash":"Rq/rkfZ//6Sdq1mcHM9e","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js":{"index":49,"hash":"PAeFpNQOjZElDHHMjipw","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js":{"index":59,"hash":"R8Og+zuIlU3ox9ILqw5P","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_keyof.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-keys.js":{"index":22,"hash":"3BjMpYkiYPCQh4FanQLn","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js":{"index":13,"hash":"FD1Pe34jvTZR5fMuRia3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-object.js":{"index":32,"hash":"FkaOOMIm0uw4T/qUEXed","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_an-object.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-primitive.js":{"index":62,"hash":"a1Cfbzo6Ix2Qb6hwaVeR","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js":{"index":44,"hash":"EExvci/GE8TPXmnN0n7T","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js":{"index":45,"hash":"aZ7kCUV/2I0AlX0fn/+B","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn-ext.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js":{"index":29,"hash":"txBbsHMC53UVDcVkHwf9","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dp.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js":{"index":48,"hash":"P0pvQIB6Hgz1GkQF+UDU","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_enum-bug-keys.js":{"index":21,"hash":"yNy1r9iZOHwipNXreqg6","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopn.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_meta.js":{"index":39,"hash":"m2SE+b453x59qd4JnCS0","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_cof.js":{"index":15,"hash":"FY6tg0ymdCS/rEwpAa7R","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_is-array.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iobject.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_is-array.js":{"index":31,"hash":"MkJGpwp/OfRCJh4NCffl","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_defined.js":{"index":18,"hash":"RZr8uFl+WrrjvGzPSz3c","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-object.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iterators.js":{"index":36,"hash":"HPPh7u0tcX1NuooQHCi3","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/json/stringify.js":{"index":8,"hash":"/7Mqb6NcOOiWzqv0YDvh","parents":["node_modules/babel-runtime/core-js/json/stringify.js"]},"resources/assets/js/components/Roster.vue":{"index":209,"hash":"s15m9P5uluk11FIR58xx","parents":["resources/assets/js/components/Team.vue"]},"resources/assets/js/components/Team.vue":{"index":211,"hash":"fZ/ScCpyloOvzoFG+9k8","parents":["resources/assets/js/routes.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iobject.js":{"index":30,"hash":"4Q1/Q9EKBt0k5lS3mZjy","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_to-iobject.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-dps.js":{"index":42,"hash":"dN32Y0xk8TX332LDHABx","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_shared-key.js":{"index":54,"hash":"g0V0VfiYW1dWlAsxNfoV","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_dom-create.js":{"index":20,"hash":"24Me2VaLtFW+4kZ/bwu+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_ie8-dom-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_html.js":{"index":28,"hash":"J5YJ2iM2hDG8yPvNuD5N","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-create.js":{"index":40,"hash":"GqTG6mmz1tjhC292kt7X","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gopd.js":{"index":43,"hash":"yqryLZw+2ZlTJGanx26L","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_a-function.js":{"index":11,"hash":"vI7NBVNoKizw/T7ablYt","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_ctx.js":{"index":17,"hash":"7XSoqXnnvuQNnLab8whJ","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_export.js":{"index":23,"hash":"fGTKYkdyS7XTV6bj77hA","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-integer.js":{"index":58,"hash":"k18sZu8vTX3eiB+U6ofu","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-index.js","node_modules/babel-runtime/node_modules/core-js/library/modules/_to-length.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_string-at.js":{"index":56,"hash":"uDYG+vYVpnGhpw1VUABK","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_add-to-unscopables.js":{"index":12,"hash":"aTtaK5OMoCOj8v16GPqC","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-step.js":{"index":35,"hash":"LPWFVFxr7uzP25M4Teof","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js":{"index":67,"hash":"q430FoIpt87xUtRizO8c","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js":{"index":34,"hash":"K7o8DuSBFvX54WRE9P1j","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/es6.array.iterator.js","node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/web.dom.iterable.js":{"index":73,"hash":"p49DV4vrS8Jeh6k+u5D6","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-create.js":{"index":33,"hash":"65Gr0023eUChGrL9Rdms","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-index.js":{"index":57,"hash":"ghp0sQYuOAwxpgDX+x0I","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-length.js":{"index":60,"hash":"Nbf83jIHLYcu4mcZL1Yv","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_array-includes.js":{"index":14,"hash":"9hna/hsSkj4F/+LbC5IO","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-keys-internal.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.symbol.js":{"index":70,"hash":"hQqUMqvFXpTvk7AnL3RE","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/index.js":{"index":9,"hash":"+wvtdkh5Ar8fUacvpY/5","parents":["node_modules/babel-runtime/core-js/symbol.js"]},"node_modules/babel-runtime/core-js/symbol.js":{"index":5,"hash":"aiWeZ2ndRLi+VSl8A+j6","parents":["node_modules/babel-runtime/helpers/typeof.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_to-object.js":{"index":61,"hash":"xMI+6x19/IouzKU7gNK+","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/_object-gpo.js":{"index":47,"hash":"IrRBeWiZHRMN4MSMnpK1","parents":["node_modules/babel-runtime/node_modules/core-js/library/modules/_iter-define.js"]},"node_modules/babel-runtime/node_modules/core-js/library/modules/es6.string.iterator.js":{"index":69,"hash":"XRq6lLF9PubOQ3hT87sB","parents":["node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js"]},"node_modules/babel-runtime/node_modules/core-js/library/fn/symbol/iterator.js":{"index":10,"hash":"W7cLyXdj4xWpvb2/KOPV","parents":["node_modules/babel-runtime/core-js/symbol/iterator.js"]},"node_modules/babel-runtime/core-js/symbol/iterator.js":{"index":6,"hash":"G15k3gWAGudznWrxZZ5n","parents":["node_modules/babel-runtime/helpers/typeof.js"]},"node_modules/babel-runtime/helpers/typeof.js":{"index":7,"hash":"LoW1/2HaMmpLZqdR6syk","parents":["resources/assets/js/components/App.vue"]},"resources/assets/js/components/App.vue":{"index":200,"hash":"CxYU9t1X47Y5eUc8IacR","parents":["resources/assets/js/routes.js"]},"resources/assets/js/routes.js":{"index":223,"hash":"8GzUon23TMU1r9TRg/ip","parents":[]}};
   var originalEntries = ["/Applications/MAMP/htdocs/resources/assets/js/routes.js"];
   var updateUrl = null;
   var updateMode = "websocket";
@@ -38104,6 +33878,6 @@ router.start(_App2.default, '#app');
   arguments[3], arguments[4], arguments[5], arguments[6]
 );
 
-},{"./node_modules/browserify-hmr/inc/index.js":79,"./node_modules/socket.io-client/lib/index.js":179,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":248}]},{},[1]);
+},{"./node_modules/browserify-hmr/inc/index.js":78,"./node_modules/socket.io-client/lib/index.js":177,"/Applications/MAMP/htdocs/resources/assets/js/routes.js":223}]},{},[1]);
 
 //# sourceMappingURL=routes.js.map

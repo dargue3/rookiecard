@@ -1,23 +1,44 @@
 
 <template>
-  <div id="viewEventModal" class="modal" :class="showStats ? 'stats-modal' : ''" >
+  <div id="viewEventModal" class="modal" :class="makeModalWider ? 'stats-modal' : ''" >
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h3 class="modal-title">{{ modalTitle }}&nbsp;</h3>
+        <div class="modal-top">
+        	<div class="left title">
+        		<h3>{{ modalTitle }}</h3>
+        	</div>
+          <div class="right">
+          	<template v-if="! addingNewEvent"> 
+          		<!-- series of links to change state of ViewEvent -->
+	          	<div class="navbar-toggle" :class="showDropdown ? '--showing' : '--not-showing'" v-touch:tap="showDropdown = ! showDropdown">
+			          <span class="icon-bar"></span>
+			          <span class="icon-bar"></span>
+			        </div>
+			        <div class="modal-dropdown" :class="showDropdown ? '--showing' : '--not-showing'">
+			        	<span v-show="canShowEventDetails && ! showingEvent" class="dropdown-link" v-touch:tap="viewing = 'showingEvent'">View Event</span>
+	          		<span v-show="canEditEvent" class="dropdown-link" v-touch:tap="viewing = 'editingEvent'">Edit Event</span>
+		          	<span v-show="canShowStats && ! showingStats" class="dropdown-link" v-touch:tap="viewing = 'showingStats'">View Stats</span>
+		          	<span v-show="canEditStats" class="dropdown-link" v-touch:tap="viewing = 'editingStats'">Edit Stats</span>
+		          	<span v-show="canAddStats" class="dropdown-link" v-touch:tap="viewing = 'editingStats'">Add Stats</span>
+			        </div>
+	          	<span v-show="canShowEventDetails && ! showingEvent" class="link" v-touch:tap="viewing = 'showingEvent'">View Event</span>
+          		<span v-show="canEditEvent" class="link" v-touch:tap="viewing = 'editingEvent'">Edit Event</span>
+	          	<span v-show="canShowStats && ! showingStats" class="link" v-touch:tap="viewing = 'showingStats'">View Stats</span>
+	          	<span v-show="canEditStats" class="link" v-touch:tap="viewing = 'editingStats'">Edit Stats</span>
+	          	<span v-show="canAddStats" class="link" v-touch:tap="viewing = 'editingStats'">Add Stats</span>
+          	</template>
+          	<span class="close" data-dismiss="modal" aria-hidden="true">&times;</span>
+          </div>
         </div>
         <div class="modal-body">
-					<div class="row ViewEvent">
+					<div class="ViewEvent">
 
-						<!-- the following shows the correct content based on date, event type, admin status, sport -->
-					
-						<!-- show stats if they aren't admin and is past event -->
-						<template v-if="pastEventStats">
+						<template v-if="viewing === 'showingStats'">
 
 							<stats v-if="eventStats.length" type="playerTeamSeason" :stat-keys="team.settings.statKeys" :event="true"
 		        					:sport="team.sport" :raw-stats="eventStats" :players="players" table-bottom-label="TEAM">
-
+											
+											<!-- this is inserted above the stat table -->
 		        					<div class="outcome">
 												<span class="away" :class="{ 'win' : ! homeWon}">
 													{{ awayTeam }} &mdash; {{ awayScore }}
@@ -28,60 +49,48 @@
 											</div>
 	        		</stats>
 
+							<!-- show 'no stats yet' if there are none saved -->
 	        		<div v-else class="ViewEvent">
-								<div class="details --no-stats">
+								<div v-if="! isAdmin" class="details --no-stats">
 									<span>No stats posted yet... bug an admin to post them!</span>
+								</div>
+								<div v-else class="details --no-stats">
+									<span>Click 'Add Stats' to report this event's stats</span>
 								</div>
 							</div>		
 
 						</template>
+
+						<!-- event hasn't happened yet -->
+						<template v-if="viewing === 'showingEvent'">
+								
+										<div class="ViewEvent">
+											<div class="type --{{ event.type }}">
+												<span>{{ type }}</span>
+											</div>
+											<div class="time">
+												<span>{{ time(event) }}</span>
+											</div>
+											<div v-if="event.details" class="details">
+												<span>{{ event.details }}</span>
+											</div>
+										</div>
+
+						</template>		
 						
 
-						<!-- show edit event page if admin and event is in the future -->
-						<edit-event v-if="canEditEvent || editingPastEvent" :saved-event="event" 
-												:editing-past-event.sync="editingPastEvent" :new-title.sync="newTitle">
-						</edit-event>
+						<!-- admin is editing an event -->
+						<edit-event v-if="viewing === 'editingEvent'" :saved-event="event" 
+												:new-title.sync="newTitle"></edit-event>
 
 
-						<!-- show add event page if clicked "Add an Event" -->
-						<edit-event v-if="newEvent" :new-title.sync="newTitle"></edit-event>
+						<!-- admin is editing stats for this event -->
+						<edit-stats v-if="viewing === 'editingStats'" :event-stats="eventStats" :players="players"
+												:event="event" :team="team"></edit-stats>
 
 
-						<!-- show the form for adding stats to an event -->
-						<div v-if="canEditStats" class="col-xs-12">
-							<edit-stats :event-stats="eventStats" :players="players" :editing-past-event.sync="editingPastEvent" 
-													:event="event" :team="team">
-							</edit-stats>
-						</div>		
-
-
-						<div v-if="pastEventNoStats && ! newEvent" class="ViewEvent">
-
-							<div class="edit-button --view">
-								<a class="btn btn-primary" v-touch:tap="editingPastEvent = true">Edit Event Details</a>
-							</div>
-							<div v-if="event.details" class="details">
-								<hr>
-								<span>This event is over and wasn't set up as a game, so there are no stats</span>
-							</div>
-
-						</div>										
-
-
-						<div v-if="(futureEvent || pastEvent) && event.id" class="col-xs-12 ViewEvent">
-
-							<div class="type --{{ event.type }}">
-								<span>{{ type }}</span>
-							</div>
-							<div class="time">
-								<span>{{ time(event) }}</span>
-							</div>
-							<div v-if="event.details" class="details">
-								<hr>
-								<span>{{ event.details }}</span>
-							</div>
-
-						</div>
+						<!-- admin is creating a new event -->
+						<edit-event v-if="viewing === 'addingNewEvent'" :new-title.sync="newTitle"></edit-event>
 
 					</div>
       	</div>
@@ -122,43 +131,48 @@ export default  {
 				type: 0,
 				id: 0,
 			},
-			editingPastEvent: false,
+			viewing: 'showingEvent',
 			eventStats: [],
 			newTitle: '',
 			score: '',
+			showDropdown: false,
 		}
-	},
-
-	watch:
-	{
-		event()
-		{
-			this.editingPastEvent = false;
-		},
 	},
 
 	events:
 	{
+		/**
+		 * The modal popup has been dismissed
+		 */
 		ViewEvent_cancel()
 		{
 			$('#viewEventModal').modal('hide');
-
-			this.event = {
-				start: 0,
-				title: '',
-				type: 0,
-				id: 0,
-			}
 		},
 
+
+		/**
+		 * An event to be viewed has been clicked on
+		 */
 		ViewEvent_view(id)
 		{
 			this.viewEvent(id);
 		},
 
+
+		/**
+		 * This team's score for this event has been calculated
+		 */
 		ViewEvent_score(score)
 		{
 			this.score = score;
+		},
+	},
+
+	watch:
+	{
+		viewing()
+		{
+			this.showDropdown = false;
 		},
 	},
 
@@ -169,7 +183,7 @@ export default  {
 		 */
 		modalTitle()
 		{
-			if (this.canEditEvent || this.editingPastEvent || this.newEvent) {
+			if (this.viewing === 'editingEvent' || this.viewing === 'addingNewEvent') {
 				if (this.newTitle.length) {
 					return this.newTitle
 				}
@@ -182,92 +196,79 @@ export default  {
 			}
 		},
 
+
 		/**
-		 * No event clicked, just show Add Event form
+		 * Event has happeend already
 		 */
-		newEvent()
+		eventHasHappened()
 		{
-			return this.event.id === 0;
+			return moment().isAfter(moment.utc(this.event.start * 1000));
 		},
 
 
 		/**
-		 * Event has NOT happened yet, user is admin
+		 * Event is a home/away game
+		 */
+		eventIsAGame()
+		{
+			return this.event.type === 'home_game' || this.event.type === 'away_game';
+		},
+
+
+		/**
+		 * Show the button to edit the event?
 		 */
 		canEditEvent()
 		{
-			return moment().isBefore(moment.utc(this.event.start * 1000)) && this.isAdmin;
+			return this.isAdmin && this.viewing !== 'addingNewEvent' && this.viewing !== 'editingEvent';
 		},
 
-		/**
-		 * Event has NOT happened yet, user is NOT an admin
-		 */
-		futureEvent()
-		{
-			return moment().isBefore(moment.utc(this.event.start * 1000)) && !this.isAdmin;
-		},
 
 		/**
-		 * Event has happened, user is admin, event was a game
+		 * Show the button to edit existing stats?
 		 */
 		canEditStats()
 		{
-			if (this.editingPastEvent) {
-				// user wants to specifically edit the event regardless of date
-				return false;
-			}
-			else {
-				return moment().isAfter(moment.utc(this.event.start * 1000)) && this.isAdmin &&
-										(this.event.type === 'home_game' || this.event.type === 'away_game');
-			}
+			return this.isAdmin && this.eventIsAGame && this.eventHasHappened && 
+							this.eventStats.length && this.viewing !== 'editingStats';
 		},
 
 
 		/**
-		 * Event has happened, user is an admin, event was NOT a game
+		 * Show the button to add new stast?
 		 */
-		pastEventNoStats()
+		canAddStats()
 		{
-			if (this.editingPastEvent) {
-				return false;
-			}
-			else {
-				return moment().isAfter(moment.utc(this.event.start * 1000)) && this.isAdmin  &&
-										(this.event.type !== 'home_game' && this.event.type !== 'away_game');
-			}
+			return this.isAdmin && this.eventIsAGame && this.eventHasHappened && 
+							! this.eventStats.length && this.viewing !== 'editingStats';
 		},
 
 
 		/**
-		 * Event has happened, user is NOT an admin, event was a game
+		 * Show the button to view event details?
 		 */
-		pastEventStats()
+		canShowEventDetails()
 		{
-			return moment().isAfter(moment.utc(this.event.start * 1000)) && !this.isAdmin  &&
-										(this.event.type === 'home_game' || this.event.type === 'away_game');
+			return this.viewing !== 'showingEvent' && this.viewing !== 'addingNewEvent'; 
 		},
 
 
 		/**
-		 * Event has happened, user is NOT an admin, event was NOT a game
+		 * Show the button to view event stats?
 		 */
-		pastEvent()
+		canShowStats()
 		{
-			return moment().isAfter(moment.utc(this.event.start * 1000)) && !this.isAdmin && !this.pastEventStats;
+			return this.eventIsAGame && this.eventHasHappened && this.viewing !== 'showingStats' &&
+							(! this.isAdmin || this.eventStats.length);
 		},
 
+
 		/**
-		 * Only for choosing how wide to make the modal window
+		 * When showing stat tables, make the modal window wider
 		 */
-		showStats()
+		makeModalWider()
 		{
-			if (this.editingPastEvent) {
-				// user wants to specifically edit the event regardless of date
-				return false;
-			}
-			else {
-				return this.pastEventStats || this.canEditStats;
-			}
+			return this.viewing === 'editingStats' || (this.viewing === 'showingStats' && this.eventStats.length);
 		},
 
 
@@ -389,31 +390,48 @@ export default  {
       	return
 			}
 
+			this.viewing = 'showingEvent';
+
 			// find the event data and stats for clicked event
 			this.event = this.events.filter(event => event.id === id)[0];
 			this.eventStats = this.stats.filter(stat => stat.event_id === id);
 
-			if (! this.event) {
-				// not viewing an event
-				this.event = {
+			let url_ext = this.decideWhatToShow();
+
+			this.$root.url(`/team/${this.team.teamname}/event/${url_ext}`, {event: url_ext});
+			
+			this.$broadcast('EditEvent_view', this.event);
+
+      this.$root.showModal('viewEventModal');
+    },
+
+
+    /**
+     * Depending on the event data, pick what the user is first shown
+     */
+    decideWhatToShow()
+    {
+    	if (! this.event) {
+    		this.event = {
 					start: 0,
 					title: '',
 					type: 0,
 					id: 0,
 				}
+
+				this.viewing = 'addingNewEvent'
+				return 'create'; // show url as /event/create
+    	}
+
+    	if (this.eventStats.length) {
+				this.viewing = 'showingStats'
 			}
 
-			id = JSON.parse(JSON.stringify(this.event.id));
-			if (this.event.id === 0) {
-				id = 'create'
+			if (this.isAdmin && ! this.eventStats.length && this.eventIsAGame) {
+				this.viewing = 'editingStats';
 			}
 
-			// set the url to /event/${event_id}
-			this.$root.url(`/team/${this.team.teamname}/event/${id}`, {event: id});
-			
-			this.$broadcast('EditEvent_view', this.event);
-
-      this.$root.showModal('viewEventModal');
+    	return this.event.id;
     },
 
 
@@ -484,19 +502,21 @@ export default  {
 // import color variables
 @import '/resources/assets/stylus/variables.styl'
 
-.edit-button.--view
-	position relative
+.edit-event
 	display flex
-	flex-flow row
-	justify-content center
-	margin-bottom 25px
-	.btn
-		padding-left 14px
-	#edit-chevron
-		position absolute
-		top 17px
-		right -4px
-		font-size 30px
+	justify-content flex-end
+	align-items center
+	width 100%
+	height 30px
+	font-size 18px
+	border-bottom 3px solid rc_super_lite_gray
+	margin-bottom 20px
+	padding-bottom 5px
+	&.--center
+		justify-content center
+	a
+		margin-left 25px
+	
 
 .ViewEvent
 	display flex
@@ -520,8 +540,13 @@ export default  {
 	.details
 		font-size 18px
 		text-align center
+		border-top 3px solid rc_super_lite_gray
+		padding-top 15px
 		&.--no-stats
 			margin 25px 0
+			padding-top 0
+			width 100%
+			border-top none
 	
 .outcome
 	display flex
@@ -530,6 +555,8 @@ export default  {
 	color rc_lite_gray
 	margin-bottom 5px
 	width 100%
+	white-space nowrap
+	overflow visible
 	.away
 		padding-right 15px
 		padding-top 2px
@@ -562,6 +589,8 @@ export default  {
 .stats-modal
 	.modal-dialog
 		width 90%
+		+mobile()
+			width 95%
 
 
 </style>

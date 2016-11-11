@@ -3,20 +3,13 @@
 <head>
 	<title>rookiecard</title>
 
-    <!-- CREDITS:
-        'become fan' icon based on design by James Keuning, taken from thenounproject.com  
-
-     -->
-
-
 	<meta charset="UTF-8">
-
     <meta id="_token" value="{{ csrf_token() }}">
 
-	{{-- jquery is required for bootstrap, keep above --}}
+	<!-- jquery is required for bootstrap, keep above -->
 	<script type="text/javascript" src="/js/jquery.min.js"></script>
 
-	{{-- fonts --}}
+	<!-- fonts -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Fira+Sans:400,500,700,300,400italic' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Monda:400,700' rel='stylesheet' type='text/css'>
@@ -26,7 +19,6 @@
     <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="/css/dropzone.css">
-    <link rel="stylesheet" href="/css/sweetalert.css">
     <link rel="stylesheet" href="/css/bootstrap-switch.css">
     <link rel="stylesheet" href="/bower_components/bootstrap-calendar/css/calendar.css">
     <link rel="stylesheet" href="/css/animate.css-master/animate.css"></link>
@@ -38,7 +30,6 @@
     <!-- js -->
     <script src="/js/bootstrap.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="/js/sweetalert.min.js"></script>
     <script src="/js/jstz-1.0.4.min.js"></script>
     <script src="/js/bootstrap-switch.js"></script>
     <script src="/js/bootstrap-select.min.js"></script> 
@@ -60,16 +51,16 @@
 
 
 <!-- vuejs is mounted here -->
-<div id="app" data-user-id="{{ Auth::user()->id }}">
+<div id="app" auth-id="{{ $auth->id }}">
     <app></app>
 </div>
 
 
-<script src='/js/routes.js'></script>
+<script src='/js/app.js'></script>
 
 
     {{-- store timezone in session variables --}}
-    @if (!Session::has('timezone') || !Session::has('locale'))
+    @if (! $timezone || ! $locale)
         <script>
             $(function () {
                 var tz = jstz.determine();

@@ -153,6 +153,24 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 
 
     /**
+     * Return the team's timezone
+     * 
+     * @param  int $team_id 
+     * @return string          
+     */
+    public function timezone($team_id)
+    {
+        $meta = json_decode(Team::findOrFail($team_id)->meta);
+        
+        if (isset($meta->tz)) {
+            return $meta->tz;
+        }
+        
+        return 'UTC';
+    }
+
+
+    /**
      * Fetch all of the data necessary to build a team view
      * 
      * @return array

@@ -24,23 +24,27 @@ export default  {
 		}
 	},
 
-	watch:
+	watch()
 	{
-		//if they have edited something previously selected, reset the data
-		location(val)
+		city()
 		{
-			if(this.selected) {
-				this.selected = false;
-				this.city = '';
-				this.lat = '';
-				this.long = '';
+			if (! this.selected) {
+				this.location = this.city + ', United States'
 			}
+		}
+	},
+
+	created()
+	{
+		// if city is already filled in when starting, default the v-model to that value
+		if (this.city) {
+			this.location = this.city + ', United States'
 		}
 	},
 
 	methods:
 	{
-		//format the results into the necessary items
+		// format the results into the necessary items
 		placeSelected(place)
 		{
 			var address = place.formatted_address.split(',');
@@ -55,7 +59,7 @@ export default  {
 	{
 		var self = this;
 		$(function() {
-			//when the page is loaded, init google maps api
+			// when the page is loaded, init google maps api
 			var input = document.getElementById('placeSearch');
 			var options = {
 			  types: ['(cities)'],
@@ -63,10 +67,9 @@ export default  {
 			 };
 			var autocomplete = new google.maps.places.Autocomplete(input, options);
 
-			//set up listener, tell this.placeSelected when there was a selection
+			// set up listener, tell this.placeSelected when there was a selection
 			autocomplete.addListener('place_changed', function() {
-				var place = autocomplete.getPlace()
-				self.placeSelected(place);
+				self.placeSelected(autocomplete.getPlace());
 			});
 		})
 	},

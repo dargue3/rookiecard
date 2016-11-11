@@ -41,7 +41,7 @@ class EventControllerTest extends TestCase
     	$this->repo = $this->mock(EventRepository::class);
 
     	// sessions normally contain the user's timezone
-    	$this->withSession(['timezone' => 'America/New_York']);
+    	session(['timezone' => 'America/New_York']);
 	}
 	
 
@@ -71,7 +71,7 @@ class EventControllerTest extends TestCase
         $this->repo->shouldReceive('store')->once();
     	$this->repo->shouldReceive('getTeamEvents')->once();
 
-    	$this->call('POST', $this->url, $requestData);
+        $this->call('POST', $this->url, $requestData);
 
     	$this->assertResponseOk();
     }

@@ -28,13 +28,31 @@ class UserController extends Controller
      * 
      * @return array
      */
-    public function auth()
+    public function auth(Request $request, $id)
     {
         return [
             'ok'    => true,
-            'user'  => $this->user->data(),
-            'teams' => $this->user->teams()
+            'user'  => $this->user->data($id),
+            'teams' => $this->user->teams($id)
         ];
+    }
+
+
+    /**
+     * Save the user's locale and timezone variables
+     * @param  Request $request 
+     * @return Illuminate\Http\Response
+     */
+    public function locale(Request $request)
+    {
+        if ($request->has('timezone')) {
+            session(['timezone' => $request->get('timezone')]);
+        }
+        if ($request->has('locale')) {
+            session(['locale' => $request->get('locale')]);
+        }
+
+        dd(session(['timezone']));
     }
 
 

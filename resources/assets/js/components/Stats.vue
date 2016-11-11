@@ -1,9 +1,9 @@
 
 <template>
 	<div class="stats-with-slot-container">
-		<slot></slot>
 		<div class="stats-container">
 			<div class="table-responsive">
+				<slot class="test-case"></slot>
 				<table v-if="stats.length" class="table table-striped stats-table">
 					<thead>
 			    	<tr>
@@ -43,7 +43,7 @@
 
 
 			<!-- just for calculations, doesn't display anything -->
-			<basketball v-if="sport === 'basketball'" :type="type" :event="event" :player="player"
+			<basketball v-if="sport === 'basketball'" :type="type" :event="event" :player="player" :record.sync="teamRecord"
 	  							:players="players" :raw-stats="filteredRawStats" :compile="compile" :keys.sync="statKeys" :total="total"
 	  							:key-names.sync="keyNames" :tooltips.sync="tooltips" :val-lookup.sync="valLookup" :sort-key.sync="sortKey" 
 	  							:val-class-lookup.sync="valClassLookup" :key-class-lookup.sync="keyClassLookup" 
@@ -69,8 +69,8 @@ export default {
 
 	mixins: [ StatHelpers ],
 
-	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'search', 'sortKey',
-					'players', 'player', 'event', 'paginate', 'tableBottomLabel'],
+	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'teamRecord', 'search', 
+					'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel'],
 
 	components:
 	{
@@ -357,6 +357,7 @@ export default {
 .stats-with-slot-container
 	display flex
 	flex-flow column
+	width 100%
 
 .stats-container
 	display flex

@@ -38,7 +38,8 @@ export default  {
 
 	mixins: [Requests],
 
-	components: {
+	components:
+	{
 		'rc-alert' 	: Alert,
 		'rc-nav'		: Nav,
 	},
@@ -46,7 +47,7 @@ export default  {
 	data() {
 
 		return {
-			prefix: '/api/v1/',
+			prefix: '/api/v1',
 			user: {},
 			teams: [],
 			alert: false,
@@ -57,25 +58,14 @@ export default  {
 	created()
 	{
 		// get logged-in user data
-		var url = this.prefix + 'user/auth';
+		let auth_id = document.getElementById('app').getAttribute('auth-id');
+		let url = `${this.prefix}/user/${auth_id}`;
 
-		var self = this;
-		this.$http.get(url)
-			.then(function(response) {
-				if (! response.data.ok) {
-					throw response.data.error;
-				}
-
-				self.$emit('App_data', response);
-				
-			})
-			.catch(function(error) {
-				self.errorMsg(error);
-			});
+		this.get(url, 'App_data');
 	},
 
-	events: {
-
+	events:
+	{
 		App_data(response)
 		{
 			this.user = response.data.user;
@@ -99,7 +89,7 @@ export default  {
 
 			if(updated) {
 				// notifications were cleared for this team, send ajax request to save to server
-				var url = this.prefix + 'user/auth/team/' + id;
+				var url = this.prefix + '/user/auth/team/' + id;
 				this.$http.post(url);
 			}
 		},
@@ -277,6 +267,27 @@ export default  {
 		},
 
 
+		// Returns a function, that, as long as it continues to be invoked, will not
+		// be triggered. The function will be called after it stops being called for
+		// N milliseconds. If `immediate` is passed, trigger the function on the
+		// leading edge, instead of the trailing.
+		debounce(func, wait, immediate = false)
+		{
+			var timeout;
+			return function() {
+				var context = this, args = arguments;
+				var later = function() {
+					timeout = null;
+					if (!immediate) func.apply(context, args);
+				};
+				var callNow = immediate && !timeout;
+				clearTimeout(timeout);
+				timeout = setTimeout(later, wait);
+				if (callNow) func.apply(context, args);
+			};
+		},
+
+
 		/**
 		 * Show a bootstrap modal with a given id
 		 *
@@ -337,7 +348,7 @@ export default  {
 
 
 .router
-	margin-top 50px
+	margin-top 53px
 	min-height 100%
 	position relative
 

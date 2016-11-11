@@ -2,8 +2,7 @@
 namespace App\Providers;
 
 use App\Team;
-use App\Event;
-use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
@@ -23,11 +22,11 @@ class RouteServiceProvider extends ServiceProvider
      * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    public function boot(Router $router)
+    public function boot()
     {
-        $router->model('teamname', Team::class);
-
-        parent::boot($router);
+        parent::boot();
+        
+        Route::model('teamname', Team::class);
     }
 
     /**
@@ -36,27 +35,54 @@ class RouteServiceProvider extends ServiceProvider
      * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    public function map(Router $router)
+    public function map()
     {
-        $this->mapWebRoutes($router);
+        $this->mapApiRoutes();
+
+        $this->mapWebRoutes();
 
         //
     }
 
-    /**
+     /**
      * Define the "web" routes for the application.
      *
      * These routes all receive session state, CSRF protection, etc.
      *
-     * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    protected function mapWebRoutes(Router $router)
+    protected function mapWebRoutes()
     {
-        $router->group([
-            'namespace' => $this->namespace, 'middleware' => 'web',
+        Route::group([
+            'middleware' => 'web',
+            'namespace' => $this->namespace,
         ], function ($router) {
-            require app_path('Http/routes.php');
+            require base_path('routes/web.php');
+        });
+    }
+
+
+    /**
+     * Define the "api" routes for the application.
+     *
+     * These routes are typically stateless.
+     *
+     * @return void
+     */
+    protected function mapApiRoutes()
+    {
+        // use 'api-testing' middleware during testing only
+        $middleware = 'api';
+        if (env('APP_ENV') == 'testing') {
+            $middleware .= '-testing';
+        }
+
+        Route::group([
+            'middleware' => $middleware,
+            'namespace' => $this->namespace,
+            'prefix' => 'api/v1',
+        ], function ($router) {
+            require base_path('routes/api.php');
         });
     }
 }

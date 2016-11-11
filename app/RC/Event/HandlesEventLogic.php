@@ -1,10 +1,12 @@
 <?php
 namespace App\RC\Event;
 
+use App;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Exceptions\TellUserException;
+use App\RC\Team\TeamRepository;
 use Illuminate\Support\Facades\Auth;
+use App\Exceptions\TellUserException;
 use App\RC\NewsFeed\NewsFeedRepository;
 
 class HandlesEventLogic
@@ -90,7 +92,7 @@ class HandlesEventLogic
         // save all of the event data as attributes for easier access later
         $this->title        = $data['title'];
         $this->type         = $data['type'];
-        $this->tz           = $data['tz'];
+        $this->tz           = App::make(TeamRepository::class)->timezone($team_id);
         $this->start        = Carbon::createFromTimestamp($data['start'], $this->tz);
         $this->end          = Carbon::createFromTimestamp($data['end'], $this->tz);
         $this->details      = $data['details'];

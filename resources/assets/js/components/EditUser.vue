@@ -340,13 +340,13 @@ export default  {
 		{
 			this.resetErrorChecking(); // reset any previous error checks
 
-			this.registerErrorChecking('user.meta.num', 'jersey', 'Choose between 00-99');
+			this.registerErrorChecking('user.meta.num', 'regex:^[0-9]{1,2}$', 'Choose between 00-99');
 
 			//  extra details to check if editing a ghost
 			if (this.user.isGhost) {
 				this.registerErrorChecking('user.meta.firstname', 'required', 'Enter a first name');
 				this.registerErrorChecking('user.meta.lastname', 'required', 'Enter a last name');
-				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email');
+				this.registerErrorChecking('user.meta.email', 'email', 'Invalid email', false);
 			}
 		},
 
@@ -450,6 +450,11 @@ export default  {
 				role: this.user.role,
 				admin: this.user.isAdmin,
 			} 
+
+			if (this.user.isFan) {
+				// add a role of 'fan' just to make server-side validation smoother
+				data.role = 'fan';
+			}
 
 			if (this.user.acceptedByAdmin) {
 				// they were accepted by the team admin to join the team

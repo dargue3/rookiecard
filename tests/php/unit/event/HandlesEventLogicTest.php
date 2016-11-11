@@ -56,7 +56,6 @@ class HandlesEventLogicTest extends TestCase
             'title'     => 'This is a test event!',
             'type'      => 'practice',
             'details'   => 'Boy, I sure do hope this test will pass!',
-            'tz'        => 'America/New_York',
             'start'     => $start->timestamp,
             'end'       => $end->timestamp,
         ];
@@ -78,7 +77,15 @@ class HandlesEventLogicTest extends TestCase
 	 */
 	public function getTeam()
 	{
-		return factory(Team::class)->create();
+		$team = factory(Team::class)->create();
+
+        $meta = json_decode($team->meta);
+        $meta->tz = 'America/New_York';
+
+        $team->meta = json_encode($meta);
+        $team->save();
+
+        return $team;
 	}
 
 

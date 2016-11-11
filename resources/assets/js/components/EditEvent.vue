@@ -4,14 +4,7 @@
 	<div class="col-xs-12">
     <form @submit.prevent="save()">
 
-			<div v-show="editingPastEvent" class="edit-button --edit-event">
-				<a class="btn btn-primary --chevron --med --right" v-touch:tap="editingPastEvent = false">
-					Edit Stats
-					<i class="material-icons btn-chevron --right">chevron_right</i>
-				</a>
-			</div>
-
-	    <div class="row">
+			<div class="row">
         <div class="form-group">
           <div class="col-xs-12 col-sm-6">
             <label>Title</label>

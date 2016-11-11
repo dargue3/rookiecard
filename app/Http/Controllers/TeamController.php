@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Image;
 use App\Team;
 use Validator;
 use Carbon\Carbon;
@@ -28,9 +29,6 @@ class TeamController extends Controller
     
     public function __construct(TeamRepository $team, TeamMemberRepository $member)
     {
-        $this->middleware('auth');
-        $this->middleware('admin', ['only' => 'uploadPic']);
-
         $this->team = $team;
         $this->member = $member;
     }
@@ -42,7 +40,7 @@ class TeamController extends Controller
      * @param  Team   $team
      * @return Illuminate\Http\Response
      */
-    public function getTeamData(Team $team)
+    public function getTeamData(Team $team, Request $request)
     {
         return ['ok' => true, 'data' => $this->team->getAllData($team->id)];
     }
@@ -100,10 +98,10 @@ class TeamController extends Controller
     public function checkAvailability($teamname)
     {
         if ($this->team->name($teamname)) {
-            return ['ok' => true, 'available' => false];
+            return ['ok' => true, 'available' => false, 'teamname' => $teamname];
         }
 
-        return ['ok' => true, 'available' => true];
+        return ['ok' => true, 'available' => true, 'teamname' => $teamname];
     }
 
 
@@ -141,7 +139,9 @@ class TeamController extends Controller
      */
     public function uploadPic(Request $request, Team $team)
     {
-       //
+       $this->validate($request, ['pic' => 'required|image|mimes:jpeg,jpg,gif,png,svg|max:5120']);
+
+       $img = Image::make($request->pic)->resize(250, 250)->save($path);
     }
 
 

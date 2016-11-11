@@ -10,7 +10,7 @@ export default  {
 
 	name: 'Basketball',
 
-	props: ['type', 'event', 'players', 'rawStats', 'keys', 'sortKey', 'total', 'player', 'compile',
+	props: ['type', 'event', 'players', 'rawStats', 'keys', 'record', 'sortKey', 'total', 'player', 'compile',
 				'keyNames', 'tooltips', 'valLookup', 'keyClassLookup', 'valClassLookup', 'statsOnBottom'],
 
 	mixins: [ AbstractStat ],
@@ -318,7 +318,7 @@ export default  {
 			totals.efg_ = this.efg_(totals);
 			totals.ts_ = this.ts_(totals);
 			totals.astto = this.astto(totals);
-			totals.eff = this.eff(totals, 1 / this.players.length); // efficiency is weird...
+			totals.eff = null;
 
 			return totals;
 		},
@@ -356,7 +356,7 @@ export default  {
 			avgs.efg_ = this.efg_(avgs);
 			avgs.ts_ = this.ts_(avgs);
 			avgs.astto = this.astto(avgs);
-			avgs.eff = this.eff(avgs, this.players.length)
+			avgs.eff = null;
 
 			return avgs;
 		},
@@ -446,6 +446,20 @@ export default  {
 			else {
 				// tie 
 				return 2;
+			}
+		},
+
+
+		/**
+		 * Format a team's wins, losses, ties into a string for displaying
+		 */
+		formatTeamRecordString()
+		{
+			if (this.ties > 0) {
+				this.$set('record', `${this.wins}-${this.losses}-${this.ties}`);
+			}
+			else {
+				this.$set('record', `${this.wins}-${this.losses}`);
 			}
 		},
 

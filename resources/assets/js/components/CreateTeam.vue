@@ -38,8 +38,7 @@
 						<div>
 							<label>Team URL</label>
 							<input type="text" class="form-control" :class="{'form-error' : errors.teamname}"
-											maxlength="18" placeholder="whsbasketball16" required 
-											debounce="600" v-model="teamname">
+											maxlength="18" placeholder="whsbasketball16" required v-model="teamname">
 							<span v-show="errors.teamname" class="form-error">{{ errors.teamname }}</span>
 							<span v-else class="input-info">rookiecard.com/team/{{ teamname }}</span>	
 						</div>
@@ -106,16 +105,7 @@
 							<span class="form-error">{{ errors.slogan }}</span>
 						</div>
 					</div>
-
 					
-
-					<!-- <div class="CreateTeam__inputs">
-						<div>
-							<form action="/team/create/unhfootball/pic" class="dropzone" id="create-team-dropzone"></form>
-						</div>
-					</div> -->
-					
-
 
 					<div class="CreateTeam__buttons">
 						<div><!-- empty as placeholder for non-existent back button --></div>
@@ -321,22 +311,13 @@
 
 			<!-- include the footer at bottom -->
 		<div class="Footer --light">
-	    <p>® 2016 Rookiecard LLC</p>
+	    <p>® 2017 Rookiecard LLC</p>
 		</div>
 
 	</div>	
 </template>
 
 <script>
-
-/*Dropzone.options.createTeamDropzone = {
-	paramName: 'pic',
-	dictDefaultMessage: 'Drag and drop a file or click here',
-	headers: {'X-CSRF-TOKEN': $('#_token').attr('value') },
-	maxFiles: 1,
-	maxFilesize: 10,
-};*/
-
 
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
 import StatsSelection 	from '../mixins/StatsSelection.js'
@@ -365,7 +346,7 @@ export default  {
 	data()
 	{
 		return {
-			prefix: this.$root.prefix + 'team/create',
+			prefix: this.$root.prefix + '/team/create',
 			page: 'info',
 			name: '',
 			teamname: '',
@@ -380,6 +361,8 @@ export default  {
 			players: [{firstname: '', lastname: '', email: ''}],
 			coaches: [{firstname: '', lastname: '', email: ''}],
 			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
+			checkingAvailability: false,
+			nameAvailable: true,
 		}
 	}, 
 
@@ -462,7 +445,7 @@ export default  {
 		 */
 		attachErrorChecking()
 		{
-			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Use only letters and numbers'];
+			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Numbers and letters only'];
 			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', msg);
 			this.registerErrorChecking('name', 'required', 'Enter a name');
 			this.registerErrorChecking('city', 'required', 'Search for your city');
@@ -502,18 +485,21 @@ export default  {
 
 		
 		/**
-		 * Request returned whether or not this teamname is available
-		 *
-		 * @param {object} response
+		 * Request back from the server about whether this team URL is available
 		 */
-		CreateTeam_available(response)
+		CreateTeam_availability(response)
 		{
-			if (response.data.available) {
-				this.errors.teamname = '';
+			if (! response.data.available) {
+				this.errors.teamname = 'Already taken'
+				this.nameAvailable = false;
 			}
 			else {
-				this.errors.teamname = 'Already taken, try another';
+				this.nameAvailable = true;
 			}
+
+			this.$root.debounce(function() {
+				this.checkingAvailability = false;
+			}, 750).call(this);
 		},
 
 		/**
@@ -596,11 +582,12 @@ export default  {
 		 */
 		teamname()
 		{
-			if (! this.errors.teamname && this.teamname.length) {
-				// ask the server if this teamname is available
-				var url = this.prefix + '/' + this.teamname;
-				this.$root.post(url, 'CreateTeam_available');
+			this.$root.debounce(function() {
+			if (! this.checkingAvailability && this.errorCheck('teamname') === 0) {
+				this.checkingAvailability = true;
+				this.$root.post(`${this.$root.prefix}/team/create/${this.teamname}`, 'CreateTeam_availability');
 			}
+		}, 750).call(this);
 		}
 	},
 
@@ -682,10 +669,6 @@ export default  {
 	margin-top 25px
 	@media screen and (max-width 767px)
 		margin-top 50px
-	.remaining
-		font-size 13px
-		color rc_med_gray
-		float right	
 	div
 		flex 1
 		margin 5px 20px

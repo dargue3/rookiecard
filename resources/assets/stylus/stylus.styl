@@ -63,11 +63,10 @@ a
 		text-decoration none
 		color link_blue
 	&:hover
+	.material-icons:hover
 		text-decoration none
 		cursor pointer
 		color link_blue_hover
-	.material-icons:hover
-		cursor pointer
 
 	
 
@@ -245,21 +244,109 @@ span.input-info
 	border none
 	border-radius 0
 	top 35px
-	@media screen and (max-width 767px)
+	+mobile()
 		max-width 90%
 		margin auto
 .modal-dialog
 	margin 50px auto
 	
-.modal-header
-	color white
+.modal-top
+	display flex
+	position relative
+	flex-flow row nowrap
+	justify-content space-between
+	align-items center
+	height 53px
 	margin-bottom 0.5em
+	padding 15px
+	color white
 	background rc_modal_black
+	>div
+		display flex
+		flex-flow row nowrap
+		align-items center
+	.left
+		justify-content flex-start
+		>*
+			margin-right 15px
+			min-width 0
+	.right
+		justify-content flex-end
+		>*
+			margin-left 15px
+	.link
+		color white
+		font-size 17px
+		&:hover
+			text-decoration underline
+			cursor pointer
+		+mobile()
+			display none
 	.close
 		color white
-		font-size 32px
-		margin-top 1px
+		font-size 38px
 		text-shadow none
+		opacity 1
+		margin-left 25px
+		font-weight 400
+	.title
+		font-size 26px
+		text-overflow ellipsis
+		white-space nowrap
+		font-weight 400
+		overflow hidden
+		h3
+			text-overflow ellipsis
+			white-space nowrap
+			font-weight 400
+			overflow hidden
+			margin 0
+	.navbar-toggle
+		margin-right 0
+		margin-top 5px
+		.icon-bar
+			background white
+			transition all 0.3s
+		&.showing
+			border 1px solid white
+			transition all 0.3s
+		&.not-showing:hover
+			cursor pointer
+			.icon-bar
+				box-shadow 0 0px 11px 1px white
+				transition all 0.3s
+			
+.modal-dropdown
+	position absolute
+	display flex
+	justify-content center
+	align-items center
+	flex-flow row nowrap
+	top 53px
+	left -15px
+	width 100%
+	z-index 9999
+	transition all 250ms ease-out
+	max-height 90px
+	padding 25px 15px
+	font-size 22px
+	background rc_modal_black
+	opacity 1
+	+mobile()
+		font-size 19px
+	&.--not-showing
+		max-height 0
+		padding 0
+		opacity 0
+		transition all 250ms ease-out
+	span
+		flex 1
+		text-align center
+	.dropdown-link
+		+mobile()
+			text-decoration underline
+		&:hover
+			cursor pointer
 	
 .modal-body
 	padding 15px
@@ -399,45 +486,49 @@ textarea
 		left 4px			
 			
 
-	&.outline.btn-success
+.outline.btn-success
+	background none
+	padding 12px 22px
+	border 2px solid rc_bright_green
+	color rc_bright_green
+	box-shadow none
+	&:hover, &:active, &:active:focus, &:focus
 		background none
-		padding 12px 22px
-		border 2px solid rc_bright_green
-		color rc_bright_green
-		&:hover, &:active, &:active:focus, &:focus
-			background none
-			border 2px solid rc_bright_green_hover
-			color rc_bright_green_hover
+		border 2px solid rc_bright_green_hover
+		color rc_bright_green_hover
 
-	&.outline.btn-primary
+.outline.btn-primary
+	background none
+	padding 12px 22px
+	border 2px solid link_blue
+	color link_blue
+	box-shadow none
+	&:hover, &:active, &:active:focus, &:focus
 		background none
-		padding 12px 22px
-		border 2px solid link_blue
-		color link_blue
-		&:hover, &:active, &:active:focus, &:focus
-			background none
-			border 2px solid link_blue_hover
-			color link_blue_hover
+		border 2px solid link_blue_hover
+		color link_blue_hover
 
-	&.outline.btn-delete
+.outline.btn-delete
+	background none
+	padding 12px 22px
+	border 2px solid rc_red
+	color rc_red
+	box-shadow none
+	&:hover, &:active, &:active:focus, &:focus
 		background none
-		padding 12px 22px
-		border 2px solid rc_red
-		color rc_red
-		&:hover, &:active, &:active:focus, &:focus
-			background none
-			border 2px solid rc_red_hover
-			color rc_red_hover		
+		border 2px solid rc_red_hover
+		color rc_red_hover		
 
-	&.outline.btn-cancel
+.outline.btn-cancel
+	background none
+	padding 12px 22px
+	border 2px solid rc_med_gray
+	color rc_med_gray
+	box-shadow none
+	&:hover, &:active, &:active:focus, &:focus
 		background none
-		padding 12px 22px
-		border 2px solid rc_med_gray
-		color rc_med_gray
-		&:hover, &:active, &:active:focus, &:focus
-			background none
-			border 2px solid rc_dark_gray
-			color rc_dark_gray			
+		border 2px solid rc_dark_gray
+		color rc_dark_gray			
 
 .btn-cancel
 	background rc_med_gray
@@ -456,6 +547,8 @@ textarea
 	&:hover, &:active, &:active:focus, &:focus 
 		color white
 		background rc_red_hover
+	&.click-me
+		animation click-me-delete 600ms linear 0s infinite alternate
 
 .btn-primary
 	background link_blue
@@ -465,6 +558,8 @@ textarea
 	&:hover, &:active, &:active:focus, &:focus
 		color white
 		background link_blue_hover
+	&.click-me
+		animation click-me-primary 600ms linear 0s infinite alternate
 
 .btn-success
 	background rc_bright_green
@@ -474,6 +569,8 @@ textarea
 	&:hover, &:active, &:active:focus, &:focus
 		color white
 		background rc_bright_green_hover
+	&.click-me
+		animation click-me-success 600ms linear 0s infinite alternate
 					
 
 .btn-default //for selectpickers
@@ -576,6 +673,8 @@ textarea
 	box-shadow none
 	&.form-error
 		border 1px solid red
+	&.form-correct
+		border 1px solid rc_bright_green
 	&.--white
 		background white
 	
@@ -621,6 +720,11 @@ button.btn.btn-select
 	background whitesmoke
 	font-size 18px
 	margin 0
+	
+.remaining
+	font-size 13px
+	color rc_med_gray
+	float right	
 
 .bootstrap-datetimepicker-widget
 	table
@@ -956,4 +1060,54 @@ input[type="text"]:focus,
 		transform scale(0.3)
 	100%
 		transform scale(1)
+		
+
+
+.text-typing
+	&.--white
+		animation text-typing-white 400ms ease 0s infinite alternate
+	&.--black
+		animation text-typing-black 400ms ease 0s infinite alternate
+	&.--gray
+		animation text-typing-gray 400ms ease 0s infinite alternate
+		
+@keyframes text-typing-white
+	0%
+		border-right 2px solid rgba(255, 255, 255, 0)
+	100%
+		border-right 2px solid white
+		
+@keyframes text-typing-black
+	0%
+		border-right 2px solid rgba(0, 0, 0, 0)
+	100%
+		border-right 2px solid black
+		
+@keyframes text-typing-gray
+	0%
+		border-right 2px solid rgba(0, 0, 0, 0)
+	100%
+		border-right 2px solid rc_med_gray
+		
+
+
+		
+
+@keyframes click-me-primary
+	0%
+		background link_blue
+	100%
+		background lighten(link_blue_hover, 10%)
+		
+@keyframes click-me-delete
+	0%
+		background rc_red
+	100%
+		background lighten(rc_red_hover, 10%)
+		
+@keyframes click-me-success
+	0%
+		background rc_bright_green
+	100%
+		background lighten(rc_bright_green_hover, 10%)
 		

@@ -7,6 +7,9 @@ export default
 	data()
 	{
 		return {
+			wins: 0,
+			losses: 0,
+			ties: 0,
 			totalStats: [],
 			avgStats: [],
 			totalsOnBottom: {},
@@ -66,6 +69,10 @@ export default
 		{
 			this.pickKeys();
 
+			this.wins = 0;
+			this.losses = 0;
+			this.ties = 0;
+
 			this.setDefaultSortKey();
 
 			this.keys.forEach(key => {
@@ -115,6 +122,7 @@ export default
 				}
 			}
 
+			this.formatTeamRecordString();
 			this.$dispatch('Stats_compiled', stats);
 		},
 
@@ -154,6 +162,8 @@ export default
 				let stats = this.addTheDateAndEvent(this.rawTeamStats[x]);
 
 				stats = this.editEachTeamRecentStats(stats);
+
+				this.addToTeamRecord(stats);
 
 				recentStats.push(stats);
 			}
@@ -380,6 +390,23 @@ export default
 			stats.win = this.whoWon(data);
 
 			return stats;
+		},
+
+
+		/**
+		 * While calculating a team's recent games, calculate their total record as well
+		 */
+		addToTeamRecord(stats)
+		{
+			if (stats.win === 1) {
+				this.wins++;
+			}
+			else if (stats.win === 0) {
+				this.losses++;
+			}
+			else if (stats.win === 2) {
+				this.ties++;
+			}
 		},
 
 

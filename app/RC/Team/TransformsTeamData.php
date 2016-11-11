@@ -24,7 +24,7 @@ class TransformsTeamData
         $userRepo = App::make(UserRepository::class);
         $memberRepo = App::make(TeamMemberRepository::class);
 
-        $admin = $userRepo->isTeamAdmin($team_id);
+        $admin = $userRepo->isTeamAdmin($team_id, Auth::id());
         $formatted = [];
 
         foreach ($members as $member) {
@@ -41,6 +41,7 @@ class TransformsTeamData
                 $user['pic'] = '/images/ghost.png';
 
                 if (! $admin) unset($meta->email); // hide sensitive data if not an admin
+                
                 $member->meta = json_encode($meta);
             }
 	        

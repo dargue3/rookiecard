@@ -37,7 +37,7 @@ class HelpersTest extends TestCase
 
         $repo = App::make(UserRepository::class);
 
-        $this->assertTrue($repo->isTeamAdmin($team->id));
+        $this->assertTrue($repo->isTeamAdmin($this->user->id, $team->id));
     }
 
 

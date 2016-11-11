@@ -14,7 +14,7 @@
 			<div v-else class="Team for-blurring">
 			
 
-	    	<div class="Team__details" :style="team.backdrop">
+	    	<div class="Team__details" :style="backdropPhoto">
 					
 					<div class="Team__pic">
 						<img width="250" height="250" :src="team.pic">
@@ -30,16 +30,18 @@
 							
 							<div class="Team__info">
 								<div class="Team__text">
-									<h1 class="Team__name">{{ team.name }}</h1>
-									<span class="team-record">{{ team.sport | capitalize }}, 24-9</span>
+									<h1 class="Team__name">
+										<span :class="{'text-typing --white' : focused.name }">{{ team.name }}</span>
+									</h1>
+									<span class="team-record">{{ team.sport | capitalize }}, {{ team.record }}</span>
 									<div class="Team__slogan">
-										<i>{{ team.slogan }}</i>
+										<span :class="{'text-typing --white' : focused.slogan }">{{ team.slogan }}</span>
 									</div>
-									<div class="Team__location">
+									<div v-show="team.city || team.homefield" class="Team__location">
 										<span>
 											<i class="material-icons no-highlight">place</i>
-											<span v-if="team.homefield">{{ team.homefield  + ', '}}</span>
-											<span>{{ team.city }}</span>
+											<span v-if="team.homefield" :class="{'text-typing --white' : focused.homefield }">{{ team.homefield }}</span>,
+											<span :class="{'text-typing --white' : focused.city }">{{ team.city }}</span>
 										</span>
 									</div>	
 								</div>
@@ -78,7 +80,7 @@
 											<span v-else class="btn-text --icon --not-a-button">
 												<i class="material-icons">favorite</i><span>FANS</span>
 											</span>
-											<span class="btn-count" v-touch:tap="$root.showModal('fansModal')">
+											<span class="btn-count">
 												<span>{{ fans.length }}</span>
 											</span>
 										</div>
@@ -96,10 +98,11 @@
 								</div>
 								<div class="tab" :class="{'--active' : tab === 'roster'}" v-touch:tap="tab = 'roster'">
 									<a>ROSTER</a>
-									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">1</span>
+									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">usersThatWantToJoin.length</span>
 								</div>
 								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}" v-touch:tap="tab = 'settings'">
-									<a>SETTINGS</a>	
+									<a>SETTINGS</a>
+									<span v-show="! settingsSaved && isAdmin" transition="fade-slow" class="notifications">&#33;</span>
 								</div>
 							</div>	
 						</div>
@@ -116,7 +119,7 @@
 			      <div class="col-xs-12 Team__calendar"
 			      			v-show="tab === 'calendar'">
 
-		        	<rc-calendar :is-admin="isAdmin" :events="events"></rc-calendar>
+		        	<calendar :is-admin="isAdmin" :events="events"></calendar>
 
 			      </div>
 			    </div>
@@ -137,11 +140,11 @@
 							</div>
 			      	
 							<div v-show="statsTab === 'recent'">
-								<rc-stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
-													:raw-stats="stats" :players="players" :paginate="10">
-		        		</rc-stats>
+								<stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
+													:raw-stats="stats" :players="players" :paginate="10" :team-record.sync="team.record">
+		        		</stats>
 		        		<div v-else class="text-center">
-									<h4>No stats yet&hllip;</h4>
+									<h4>No stats yet&hellip;</h4>
 								</div>
 							</div>
 
@@ -162,14 +165,14 @@
 								
 								
 								<template v-if="stats.length">
-									<rc-stats type="playerTeamSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
+									<stats type="playerTeamSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
 				        						:sport="team.sport" :raw-stats="stats" :players="players" :search="statSearch"
 				        						table-bottom-label="TEAM">
-			        		</rc-stats>
+			        		</stats>
 								</template>
 			        	
 		        		<div v-else class="text-center">
-									<h4>No stats yet&hllip;</h4>
+									<h4>No stats yet&hellip;</h4>
 								</div>
 		        	</div>
 							
@@ -179,25 +182,20 @@
 
 
 			    <div class="row">
-			      <div class="col-xs-12 Team__roster"
-			      			v-show="tab === 'roster'">
+			      <div v-show="tab === 'roster'" class="col-xs-12">
 
-			        <rc-roster :users="users" :edit-user.sync="editUser" 
-			        						:is-admin="isAdmin">
-			        </rc-roster>		
+			        <roster :users="users" :edit-user.sync="editUser" :is-admin="isAdmin"></roster>		
 
 			      </div>
 			    </div>
 
 
 			     <div class="row">
-			      <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 Team__edit"
-			      			v-show="tab === 'settings'">
+			      <div v-show="tab === 'settings'"class="col-xs-12">
+		        	
+		        	<settings :team="team" :is-admin="isAdmin" :settings-saved.sync="settingsSaved"
+		        						:focused.sync="focused"></settings>
 
-		        	<h3>Settings</h3>
-		        	</hr>
-
-			        	
 			      </div>
 			    </div>
 		    </div>
@@ -220,7 +218,7 @@
 						<div class="row">
 							<div class="col-xs-12">
 
-								<!-- <rc-news-feed type="team" :feed="feed" :users="users"></rc-news-feed> -->
+								<!-- <news-feed type="team" :feed="feed" :users="users"></news-feed> -->
 
 							</div>
 						</div>
@@ -239,9 +237,9 @@
 
 
 	    <!-- inside here is complex logic handling what happens when an event is clicked on from calendar or news feed -->
-			<rc-view-event :is-admin="isAdmin" :events="events" :stats="stats" :team="team" 
+			<view-event :is-admin="isAdmin" :events="events" :stats="stats" :team="team" 
 											:players="players">
-			</rc-view-event>
+			</view-event>
 
 
 	    <!-- modal for editing a player in the roster -->
@@ -257,8 +255,8 @@
 	          <div class="modal-body">
 	          	<div class="row">
 	            
-								<rc-edit-user v-if="editUser.member_id || editUser.new" :user="editUser" 
-															:positions="positions" :users="users"></rc-edit-user>
+								<edit-user v-if="editUser.member_id || editUser.new" :user="editUser" 
+															:positions="positions" :users="users"></edit-user>
 
 							</div>
 	          </div>
@@ -317,6 +315,7 @@ import ViewEvent 	from './ViewEvent.vue';
 import Roster 		from './Roster.vue';
 import NewsFeed 	from './NewsFeed.vue';
 import EditUser 	from './EditUser.vue';
+import Settings 	from './TeamSettings.vue';
 
 export default  {
 	
@@ -326,12 +325,13 @@ export default  {
 
 	components:
 	{
-		'rc-calendar'		: Calendar,
-		'rc-stats'			: Stats,
-		'rc-view-event'	: ViewEvent,
-		'rc-roster'			: Roster,	
-		'rc-news-feed'	: NewsFeed,	
-		'rc-edit-user'	: EditUser,	
+		'calendar'		: Calendar,
+		'stats'				: Stats,
+		'view-event'	: ViewEvent,
+		'roster'			: Roster,	
+		'news-feed'		: NewsFeed,	
+		'edit-user'		: EditUser,	
+		'settings'		: Settings,	
 	},
 
 	route:
@@ -341,7 +341,7 @@ export default  {
 
 	data()
 	{
-		var prefix = this.$parent.prefix + 'team/';
+		var prefix = this.$parent.prefix + '/team/';
 		var teamname = this.$route.params.name;
 
 		// set new title
@@ -380,6 +380,13 @@ export default  {
 				meta: {},
 			},
 			newEventTitle: '',
+			settingsSaved: true,
+			focused: {
+				name: false,
+				slogan: false,
+				homefield: false,
+				city: false,
+			},
 		}
 	},
 
@@ -390,12 +397,25 @@ export default  {
 		this.$root.unblur();
 	},
 
-	computed: {
+	computed:
+	{
+		/**
+		 * Format the backdrop image into a style tag
+		 */
+		backdropPhoto()
+		{
+			return `background-image: url('${this.team.backdrop}');`
+		},
 
+
+		/**
+		 * Is the logged-in user a member of this team?
+		 */
 		isMember()
 		{
 			return this.isPlayer || this.isCoach;
 		},
+
 
 		/**
 		 * The following three properties pick which of the fan icons to display
@@ -506,12 +526,13 @@ export default  {
 		 */
 		App_modal_minimized()
 		{
-			if (window.history.state) {
-				// was showing an event but now it got minimized
-				// change the URL to just being /team/teamname
+			if (window.history.state && this.requestFinished) {
+				// there was a URL state change within this modal window
+				// change the URL to just being '/team/teamname' again
 				this.$root.url(`/team/${this.$route.params.name}`)
 			}
 		},
+
 
 		/**
 		 * Successful toggleFan request to server
@@ -623,14 +644,12 @@ export default  {
 			this.formatUsers(data.members);
 			
 			// store meta data about team
-			var meta = JSON.parse(data.team.meta);
-			this.team.slogan = meta.slogan;
-			this.team.homefield = meta.homefield;
-			this.team.city = meta.city;
+			var meta = JSON.parse(this.team.meta);
 			this.$set('team.settings.statKeys', meta.stats);
-
-			// format the backdrop image as a style tag 
-			this.team.backdrop = "background-image: url('" + this.team.backdrop + "');";
+			this.$set('team.slogan', meta.slogan);
+			this.$set('team.city', meta.city);
+			this.$set('team.homefield', meta.homefield);
+			this.$set('team.record', '0-0');
 
 			// note whether or not this user is the creator
 			if (this.team.creator_id === this.auth.id) {
@@ -840,8 +859,12 @@ export default  {
 .Team__name		
 	flex-basis 1
 	font-size 42px
+	+tablet()
+		font-size 35px
 .team-record
 	font-size 25px
+	+tablet()
+		font-size 23px
 	
 .Team__location
 	padding-left 22px
@@ -859,6 +882,7 @@ export default  {
 	flex 1
 	margin-top 9px
 	font-size 16px
+	font-style italic
 
 .Team__right_half
 	flex 1
@@ -920,6 +944,7 @@ export default  {
 			background rc_red
 			color white
 			border-radius 50%
+				
 		&:hover
 			cursor pointer
 		&.--active
@@ -970,7 +995,7 @@ export default  {
 .team-not-found
 	margin-top 80px
 
-rc-stats
+stats
 	padding 2em	
 
 

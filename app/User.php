@@ -1,11 +1,12 @@
 <?php
-
 namespace App;
 
 use App\Team;
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Auth\Authenticatable;
 use App\RC\Team\TeamMemberRepository;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -18,6 +19,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 {
     use SoftDeletes;
     use Authenticatable, Authorizable, CanResetPassword;
+    use HasApiTokens, Notifiable;
 
     protected $table = 'rc_users';
     protected $dates = ['deleted_at'];

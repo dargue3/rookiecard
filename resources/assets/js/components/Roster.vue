@@ -42,17 +42,15 @@
 						</div>
 					</div>
 					<div class="User__pic" :class="{'--ghost-pic' : player.isGhost}">
-						<img v-if="! player.isGhost" :src="player.pic" :alt="player.name" height="200" width="200">
+						<img v-if="! player.isGhost" :src="player.pic" :alt="player.name" height="215" width="215">
 						<div v-else>
 							<span>{{ player.firstname[0] }}</span>
 						</div>
 					</div>
 					<div class="User__details">
 						<div class="details-text">
-							<div class="User__name">
 								<span v-if="player.isGhost">{{ player.name }}</span>
 								<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
-							</div>
 							<div v-show="player.meta.positions" class="User__positions">
 								<span v-for="position in player.meta.positions">
 									{{ position | uppercase }}
@@ -106,7 +104,7 @@
 						</div>
 					</div>
 					<div class="User__pic" :class="{'--ghost-pic' : coach.isGhost}">
-						<img v-if="! coach.isGhost" :src="coach.pic" :alt="coach.name" height="200" width="200">
+						<img v-if="! coach.isGhost" :src="coach.pic" :alt="coach.name" height="215" width="215">
 						<div v-else>
 							<span>{{ coach.firstname[0] }}</span>
 						</div>
@@ -157,7 +155,7 @@
 						</div>
 					</div>
 					<div class="User__pic">
-						<img :src="fan.pic" :alt="fan.name" height="200" width="200">
+						<img :src="fan.pic" :alt="fan.name" height="215" width="215">
 					</div>
 					<div class="User__details">
 						<div class="details-text">
@@ -353,7 +351,7 @@ export default  {
 
 .Roster__header
 	margin-bottom -10px
-	@media (max-width 767px)
+	+mobile()
 		text-align center
 
 .Roster__list
@@ -363,19 +361,27 @@ export default  {
 	display flex
 	flex-flow row wrap
 	justify-content center
+	background white
+	border-radius 4px
+	box-shadow 0 -4px 30px rc_lite_gray
 		
 .User
 	position relative
 	display flex
 	flex-flow column wrap
-	width 200px
+	width 215px
 	margin 20px 20px
-	@media (max-width 767px)
+	box-shadow 0 0px 5px rc_lite_gray
+	+mobile()
 		margin 10px 20px
 	&:hover
 		.User__icons
 			opacity 1
 			transition opacity 0.3s ease
+	:before
+	:after
+		border-radius 4px
+		
 	
 .User__accept
 .User__icons
@@ -391,7 +397,7 @@ export default  {
 	border-bottom-right-radius 4px
 	transition opacity 0.3s ease
 	opacity 0
-	@media (max-width 767px)
+	+mobile()
 		opacity 1
 	div
 		display flex
@@ -421,8 +427,8 @@ export default  {
 		
 	
 .User__pic
-	flex-basis 200px
-	height 200px
+	flex-basis 215px
+	height 215px
 	img
 		border-top-right-radius 4px
 		border-top-left-radius 4px
@@ -455,6 +461,7 @@ export default  {
 				cursor pointer
 		&:hover
 			color link_blue_hover
+			background darken(rc_lite_gray, 4%)
 			cursor pointer
 	
 	
@@ -471,12 +478,23 @@ export default  {
 	border-top 0
 	.details-text
 		font-size 18px
-		width 175px
+		display block
+		width 170px
+		padding-right 5px
+		text-overflow ellipsis
+		white-space nowrap
+		overflow hidden
+		&:hover
+			overflow visible
+			text-overflow none
+			white-space wrap
 	.details-num
 		font-size 25px
 		align-self center
 		color rc_red
 		width 25px
+		
+
 		
 .User__positions
 	font-size 14px
@@ -493,7 +511,7 @@ export default  {
 		height 40px
 	
 .Roster__coaches
-	@media (max-width 767px)
+	+mobile()
 		text-align center
 	ul
 		padding-left 0
@@ -501,7 +519,7 @@ export default  {
 		font-size 18px
 		.edit-icon
 			visibility hidden
-			@media (max-width 767px)
+			+mobile()
 				visibility visible
 			&:hover
 				cursor pointer

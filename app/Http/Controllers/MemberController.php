@@ -34,9 +34,6 @@ class MemberController extends Controller
      */
     public function __construct(TeamRepository $team, TeamMemberRepository $member)
     {
-        $this->middleware('auth');
-        $this->middleware('admin');
-
         $this->member = $member;
         $this->team = $team;
     }
@@ -101,7 +98,7 @@ class MemberController extends Controller
             'meta.email'        => 'email',
             'meta.num'          => 'regex:/^[0-9]{1,2}$/',
             'meta.positions'    => 'array|max:2',
-            'role'              => 'required|string|in:player,coach',
+            'role'              => 'required|string|in:player,coach,fan',
             'admin'             => 'required|boolean',
             'requestedToJoin'   => 'boolean',
         ];

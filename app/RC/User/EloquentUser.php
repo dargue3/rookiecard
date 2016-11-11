@@ -2,12 +2,12 @@
 namespace App\RC\User;
 
 use App;
-use Auth;
 use App\User;
 use Exception;
 use App\RC\Team\TeamRepository;
 use App\RC\Stat\StatRepository;
 use App\RC\Event\EventRepository;
+use Illuminate\Support\Facades\Auth;
 use App\RC\Team\TeamMemberRepository;
 use App\RC\NewsFeed\NewsFeedRepository;
 use App\Repositories\EloquentRepository;
@@ -44,12 +44,12 @@ class EloquentUser extends EloquentRepository implements UserRepository
 	/**
 	 * Return all of this user's data formatted for front-end consumption
 	 * 
-	 * @param  string|null $username 
+	 * @param  int $user_id 
 	 * @return array          
 	 */
-	public function data($username = null)
+	public function data($user_id)
 	{
-		$user = $username ? User::username($username) : Auth::user();
+		$user = User::find($user_id);
 
         return $this->transformer->user($user);
 	}
@@ -58,12 +58,12 @@ class EloquentUser extends EloquentRepository implements UserRepository
 	/**
 	 * Fetch all of the teams a given user is associated with 
 	 * 
-	 * @param  int|string $user
+	 * @param  int $user_id
 	 * @return array
 	 */
-    public function teams($username = null)
+    public function teams($user_id)
     {
-    	$user = $username ? User::username($username) : Auth::user();
+    	$user = User::find($user_id);
 
     	$repo = App::make(TeamMemberRepository::class);
 
@@ -118,11 +118,9 @@ class EloquentUser extends EloquentRepository implements UserRepository
      * @param  int  $team_id
      * @return boolean          
      */
-    public function isTeamAdmin($team_id, $user_id = null)
+    public function isTeamAdmin($team_id, $user_id)
     {
     	$repo = App::make(TeamMemberRepository::class);
-
-    	$user_id = $user_id ?: Auth::id();
 
         $member = $repo->teamMember($user_id, $team_id);
 

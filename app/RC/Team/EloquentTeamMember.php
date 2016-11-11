@@ -117,9 +117,9 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
             $teams[] = [
                 'team'  => $repo->findOrFail($member->team_id),
                 'roles' => [
-                    'isMember'              => $this->isMember(),
-                    'isFan'                 => $this->isFan(),
-                    'hasBeenInvited'        => $this->hasBeenInvited(),
+                    'isMember'        => $this->isMember(),
+                    'isFan'           => $this->isFan(),
+                    'hasBeenInvited'  => $this->hasBeenInvited(),
                 ],
             ];
         }

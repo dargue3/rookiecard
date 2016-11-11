@@ -76,7 +76,7 @@ class MemberControllerTest extends TestCase
     	];
     	
         $this->memberRepo->shouldReceive('teamMember')->once()->andReturn(TeamMember::first());
-    	$this->memberRepo->shouldReceive('newPlayer')->once()->with(1, $data['firstname'], $data['lastname']);
+    	$this->memberRepo->shouldReceive('newPlayer')->once()->with($this->team->id, $data['firstname'], $data['lastname']);
         $this->memberRepo->shouldReceive('invite')->once()->with($data['email']);
    		$this->memberRepo->shouldReceive('attachMetaData')->once()->with(['num' => '24', 'positions' => ['pg', '']], false);
 
@@ -85,6 +85,7 @@ class MemberControllerTest extends TestCase
     	$this->memberRepo->shouldReceive('using')->once()->andReturn($this->memberRepo);
     	$this->memberRepo->shouldReceive('isAdmin')->once()->andReturn(true);
 
+        //dd($this->call('POST', $this->url, $data));
     	$this->call('POST', $this->url, $data);
 
     	$this->assertResponseOk();

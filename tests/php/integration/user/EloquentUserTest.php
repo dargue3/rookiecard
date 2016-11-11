@@ -67,23 +67,6 @@ class EloquentUserTest extends TestCase
 
 
     /** @test */
-    public function it_returns_a_brief_overview_of_all_the_teams_the_logged_in_user_belongs_to()
-    {
-        $team1 = factory(Team::class)->create();
-        $team2 = factory(Team::class)->create();
-        factory(TeamMember::class)->create(['team_id' => $team1->id, 'user_id' => $this->user->id]);
-        factory(TeamMember::class)->create(['team_id' => $team2->id, 'user_id' => $this->user->id]);
-
-        $teams = $this->repo->teams();
-
-        $this->assertCount(2, $teams);
-        $this->assertEquals($team1->teamname, $teams[0]['teamname']);
-        $this->assertEquals($team2->teamname, $teams[1]['teamname']);
-    }
-
-
-
-    /** @test */
     public function it_returns_a_brief_overview_of_all_the_teams_a_given_user_belongs_to()
     {
         $team1 = factory(Team::class)->create();
@@ -92,32 +75,19 @@ class EloquentUserTest extends TestCase
         factory(TeamMember::class)->create(['team_id' => $team1->id, 'user_id' => $user->id]);
         factory(TeamMember::class)->create(['team_id' => $team2->id, 'user_id' => $user->id]);
 
-        $teams = $this->repo->teams($user->username);
+        $teams = $this->repo->teams($user->id);
 
         $this->assertCount(2, $teams);
         $this->assertEquals($team1->teamname, $teams[0]['teamname']);
         $this->assertEquals($team2->teamname, $teams[1]['teamname']);
     }
 
-
-    /** @test */
-    public function it_returns_an_array_of_data_about_the_logged_in_user()
-    {
-        $data = $this->repo->data();
-
-        $this->assertEquals($this->user->id, $data['id']);
-        $this->assertEquals($this->user->email, $data['email']);
-        $this->assertEquals($this->user->settings, $data['settings']);
-        $this->assertTrue($data['age'] < 100);
-    }
-
-
     /** @test */
     public function it_returns_an_array_of_data_about_a_given_user()
     {
         $user = factory(User::class)->create();
 
-        $data = $this->repo->data($user->username);
+        $data = $this->repo->data($user->id);
 
         $this->assertEquals($user->id, $data['id']);
         $this->assertFalse(isset($data['email']));

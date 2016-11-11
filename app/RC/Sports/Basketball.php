@@ -3,8 +3,6 @@ namespace App\RC\Sports;
 
 class Basketball extends Sport implements SportInterface
 {
-	use SportHelpers;
-
 	/**
 	 * The name of this sport
 	 * 

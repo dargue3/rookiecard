@@ -176,7 +176,7 @@
 .dropzone {
   min-height: 150px;
   border: 2px dashed #1179C9;
-  background: whitesmoke;
+  background: #fff;
   padding: 20px 20px; }
   .dropzone.dz-clickable {
     cursor: pointer; }
@@ -184,7 +184,7 @@
       cursor: default; }
     .dropzone.dz-clickable .dz-message, .dropzone.dz-clickable .dz-message * {
       cursor: pointer;
-      font-size: 18px; }
+      font-size: 16px; }
   .dropzone.dz-started .dz-message {
     display: none; }
   .dropzone.dz-drag-hover {
@@ -211,7 +211,7 @@
     .dropzone .dz-preview.dz-file-preview .dz-details {
       opacity: 1; }
     .dropzone .dz-preview.dz-image-preview {
-      background: whitesmoke; }
+      background: white; }
       .dropzone .dz-preview.dz-image-preview .dz-details {
         -webkit-transition: opacity 0.2s linear;
         -moz-transition: opacity 0.2s linear;
@@ -219,13 +219,14 @@
         -o-transition: opacity 0.2s linear;
         transition: opacity 0.2s linear; }
     .dropzone .dz-preview .dz-remove {
-      font-size: 14px;
+      font-size: 17px;
       text-align: center;
+      margin-top: 8px;
       display: block;
       cursor: pointer;
       border: none; }
       .dropzone .dz-preview .dz-remove:hover {
-        text-decoration: underline; }
+        color: #38a9f9; }
     .dropzone .dz-preview:hover .dz-details {
       opacity: 1; }
     .dropzone .dz-preview .dz-details {
@@ -264,10 +265,10 @@
       -ms-transform: scale(1.05, 1.05);
       -o-transform: scale(1.05, 1.05);
       transform: scale(1.05, 1.05);
-      -webkit-filter: blur(8px);
-      filter: blur(8px); }
+      -webkit-filter: blur(3px);
+      filter: blur(3px);
+      transition: all 150ms ease; }
     .dropzone .dz-preview .dz-image {
-      border-radius: 20px;
       overflow: hidden;
       width: 120px;
       height: 120px;
@@ -275,7 +276,10 @@
       display: block;
       z-index: 10; }
       .dropzone .dz-preview .dz-image img {
-        display: block; }
+        display: block; 
+        -webkit-filter: blur(0px);
+        filter: blur(0px);
+        transition: all 150ms ease; }
     .dropzone .dz-preview.dz-success .dz-success-mark {
       -webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -moz-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
@@ -302,6 +306,7 @@
       .dropzone .dz-preview .dz-success-mark svg, .dropzone .dz-preview .dz-error-mark svg {
         display: block;
         width: 54px;
+        color: black;
         height: 54px; }
     .dropzone .dz-preview.dz-processing .dz-progress {
       opacity: 1;

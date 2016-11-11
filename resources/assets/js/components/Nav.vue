@@ -67,7 +67,7 @@
 	              <li><a @click="gotoOptions('help')" class="nav-link">Help</a></li>
 	              <li><a @click="gotoOptions('feedback')" class="nav-link">Submit Feedback</a></li>
 	              <li class="divider"></li>
-	              <li><a href="/logout" class="nav-link">Log out</a></li>
+	              <li><a class="nav-link" v-touch:tap="logout()">Log out</a></li>
 	            </ul>
 	          </li>
 	        </ul>
@@ -134,7 +134,7 @@
 	              <li><a class="nav-link">Help</a></li>
 	              <li><a class="nav-link">Submit Feedback</a></li>
 	              <li class="divider"></li>
-	              <li><a href="/logout" class="nav-link">Log out</a></li>
+	              <li><a class="nav-link" v-touch:tap="logout()">Log out</a></li>
 	            </ul>
 	          </li>
 	        </ul>
@@ -242,6 +242,11 @@ export default  {
 			this.toggle = !this.toggle;
 			this.teamDropdown = false;
 			this.optionsDropdown = false;
+		},
+
+		logout()
+		{
+			window.location = '/logout';
 		},
 	}, //end methods
 };
