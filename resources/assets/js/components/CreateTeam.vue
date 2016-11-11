@@ -24,7 +24,6 @@
 						<div>
 							<span>Step 1 / 3</span>
 						</div>
-						<hr>
 					</div>	
 					<div class="CreateTeam__inputs">
 
@@ -38,7 +37,7 @@
 						<div>
 							<label>Team URL</label>
 							<input type="text" class="form-control" :class="{'form-error' : errors.teamname}"
-											maxlength="18" placeholder="whsbasketball16" required v-model="teamname">
+											maxlength="18" placeholder="whsbasketball16" required @blur="checkAvailability()" v-model="teamname">
 							<span v-show="errors.teamname" class="form-error">{{ errors.teamname }}</span>
 							<span v-else class="input-info">rookiecard.com/team/{{ teamname }}</span>	
 						</div>
@@ -122,6 +121,7 @@
 
 
 
+
 				<div v-show="page === 'stats'">
 
 					<div class="CreateTeam__header">
@@ -131,30 +131,14 @@
 						<div>
 							<span>Step 2 / 3</span>
 						</div>
-						<hr>
 					</div>	
 					<div class="CreateTeam__inputs">
 
-						<div>
-							<label>Inputted by team admin</label>
-							<select data-style="btn-select btn-lg" CreateTeam="userStats" class="selectpicker form-control show-tick"
-											 data-selected-text-format="count" multiple required 
-											 data-size="false" v-model="userSelected">
-	              <option v-for="stat in userStatsList" :value="userStatKeys[$index]" 
-	              				:disabled="stat.disabled">{{ stat.val }}</option>      
-            	</select>
-            	<p v-for="stat in userStatsList">{{ userStatsList[stat] }}</p> 
-						</div>
 
-						<div>
-							<label>Calculated by Rookiecard</label>
-							<select data-style="btn-select btn-lg" CreateTeam="rcStats" class="selectpicker form-control show-tick"
-											 data-selected-text-format="count" multiple required 
-											 data-size="false" v-model="rcSelected">
-	              <option v-for="stat in rcStatsList" :value="rcStatKeys[$index]" 
-	              				:disabled="stat.disabled">{{ stat.val }}</option>       
-            	</select>
-						</div>
+						<stat-selection :sport="sport" :user-selected.sync="userSelected"
+														:rc-selected.sync="rcSelected">
+						</stat-selection>
+
 
 					</div>
 
@@ -175,6 +159,9 @@
 
 
 
+
+
+
 				<div v-show="page === 'roster'">
 
 					<div class="CreateTeam__header">
@@ -186,7 +173,6 @@
 						<div>
 							<span>Step 3 / 3</span>
 						</div>
-						<hr>
 					</div>
 
 					<h4 class="CreateTeam__subheader">Players</h4>
@@ -320,65 +306,85 @@
 <script>
 
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
-import StatsSelection 	from '../mixins/StatsSelection.js'
+import StatSelection 	from './StatSelection.vue'
 import Validator 				from '../mixins/Validator.js'
 
 export default  {
 	
 	name: 'CreateTeam',
 
-	mixins: [StatsSelection, Validator],
+	mixins: [ Validator ],
 
 	props: [],
 
 	components:
 	{
-		'google-autocomplete' : GoogleTypeahead
+		'google-autocomplete' : GoogleTypeahead,
+		'stat-selection': StatSelection,
+	},
+
+	beforeCompile()
+	{
+		this.attachErrorChecking();
 	},
 
 	created()
 	{
 		this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
-
-		this.attachErrorChecking();
 	},
 
 	data()
 	{
 		return {
 			prefix: this.$root.prefix + '/team/create',
-			page: 'info',
-			name: '',
-			teamname: '',
+			page: 'roster',
+			name: 'test',
+			teamname: 'testteam',
 			sport: 'basketball',
 			userIsA: 'fan',
 			gender: 'male',
 			homefield: '',
-			city: '',
-			long: '',
-			lat: '',
+			city: 'blah',
+			long: 29.284902,
+			lat: -29.284902,
 			slogan: '',
 			players: [{firstname: '', lastname: '', email: ''}],
 			coaches: [{firstname: '', lastname: '', email: ''}],
 			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
 			checkingAvailability: false,
 			nameAvailable: true,
+			userSelected: [],
+			rcSelected: [],
 		}
 	}, 
 
 	methods:
 	{
 		/**
+		 * Ask the server if the teamname that was just typed is available
+		 */
+		checkAvailability()
+		{
+			if (this.errorCheck('teamname') === 0) {
+				this.$root.get(`${this.$root.prefix}/team/create/${this.teamname}`, 'CreateTeam_availability');
+			}
+		},
+
+
+		/**
 		 * Send request to server to create this team
 		 * 
 		 * @return Routes to /team/<teamname>
 		 */
-		save() {
+		save()
+		{
 
 			if (this.errorCheck() > 0) {
 				this.setPageError('Correct errors before submitting');
 				return;
 			}
+
+			this.setPageError('');
 
 			// build up object of all the team data
 			var data = {
@@ -394,13 +400,30 @@ export default  {
 				userIsA: 		this.userIsA,
 				players: 		this.players,
 				coaches: 		this.coaches,
-				numPlayers: this.numPlayers,
-				numCoaches: this.numCoaches,
 				userStats: 	this.userSelected,
 				rcStats: 		this.rcSelected,
 			}
 
+			data = this.filterSubmittedData(data);
+
 			this.$root.post(this.prefix, 'CreateTeam_submit', data);
+		},
+
+
+		/**
+		 * Before sending to server, filter out unnecessary data
+		 */
+		filterSubmittedData(data)
+		{
+			if (! this.players.length) {
+				delete data.players
+			}
+
+			if (! this.coaches.length) {
+				delete data.coaches;
+			}
+
+			return data;
 		},
 
 
@@ -421,7 +444,7 @@ export default  {
 				errors += this.errorCheck('teamname');
 				errors += this.errorCheck('city');
 			}
-			else if(this.page === 'roster') {
+			else if (this.page === 'roster') {
 				errors = this.errorCheck();
 			}
 
@@ -446,7 +469,7 @@ export default  {
 		attachErrorChecking()
 		{
 			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Numbers and letters only'];
-			this.registerErrorChecking('teamname', 'required|max:18|alpha_num', msg);
+			this.registerErrorChecking('teamname', 'required|max:18|alpha_dash', msg);
 			this.registerErrorChecking('name', 'required', 'Enter a name');
 			this.registerErrorChecking('city', 'required', 'Search for your city');
 							
@@ -457,9 +480,9 @@ export default  {
 			this.registerErrorChecking('coaches.*.firstname', 'required', 'Enter a first name');
 			this.registerErrorChecking('coaches.*.lastname', 'required', 'Enter a last name');
 
-			// will use these below the "Next >" button if error on the page
-			this.manualErrorChecking('page.info');
-			this.manualErrorChecking('page.roster');
+			this.$set('errors.page.stats', '');
+			this.$set('errors.page.info', '');
+			this.$set('errors.page.roster', '');
 		},
 
 		/**
@@ -475,8 +498,6 @@ export default  {
 	{
 		/**
 		 * Request returned with dummy data used as placeholders for ghosts
-		 *
-		 * @param {object} response
 		 */
 		CreateTeam_dummy(response)
 		{
@@ -495,67 +516,21 @@ export default  {
 			}
 			else {
 				this.nameAvailable = true;
+				this.errors.teamname = '';
 			}
-
-			this.$root.debounce(function() {
-				this.checkingAvailability = false;
-			}, 750).call(this);
 		},
 
 		/**
 		 * Request returned after creating the team
-		 *
-		 * @param {object} response 
 		 */
 		CreateTeam_submit(response)
 		{
+			this.$dispatch('App_becameAMember', response.data.team);
+
 			// use a delay because it felt TOO fast without one
 			setTimeout(function() {
 				this.$router.go('/team/' + response.data.team.teamname);
-			}.bind(this), 750);
-		},
-
-		
-		/**
-		 * Inititialze the selectpickers in the stats section
-		 */
-		initSelectPicker()
-		{
-			var userPicker = $('[CreateTeam="userStats"]');
-			var rcPicker = $('[CreateTeam="rcStats"]');
-
-			userPicker.selectpicker({});
-			rcPicker.selectpicker({});
-
-			userPicker.selectpicker('val', this.userSelected).selectpicker('refresh');
-			rcPicker.selectpicker('val', this.rcSelected).selectpicker('refresh');
-			userPicker.selectpicker('refresh');
-			rcPicker.selectpicker('refresh');
-
-			// set up listeners to tell StatsSelection mixin to update on change
-			userPicker.on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
-				this.setDependencies();
-			}.bind(this))
-
-			rcPicker.on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
-				this.setDependencies();
-			}.bind(this))
-		},
-
-		/**
-		 * The stats selected have been changed, re-render the pickers
-		 */
-		renderSelectPicker()
-		{
-			var userPicker = $('[CreateTeam="userStats"]');
-			var rcPicker = $('[CreateTeam="rcStats"]');
-
-			userPicker.selectpicker('refresh').selectpicker('val', this.userSelected).selectpicker('render');
-			rcPicker.selectpicker('refresh').selectpicker('val', this.rcSelected).selectpicker('render');
-			// userPicker.selectpicker('val', this.userSelected);
-			// rcPicker.selectpicker('val', this.rcSelected);
-			// userPicker.selectpicker('render');
-			// rcPicker.selectpicker('render');
+			}.bind(this), 50);
 		},
 	},
 
@@ -566,7 +541,7 @@ export default  {
 		 */
 		sport()
 		{
-			this.initSelections(this.sport);
+			this.$broadcast('StatSelection_init', this.sport);
 		},
 
 		/**
@@ -576,26 +551,10 @@ export default  {
 		{
 			this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
 		},
-
-		/**
-		 * If the teamname changed, ask the server if this name is in use yet
-		 */
-		teamname()
-		{
-			this.$root.debounce(function() {
-			if (! this.checkingAvailability && this.errorCheck('teamname') === 0) {
-				this.checkingAvailability = true;
-				this.$root.post(`${this.$root.prefix}/team/create/${this.teamname}`, 'CreateTeam_availability');
-			}
-		}, 750).call(this);
-		}
 	},
 
 	ready()
 	{
-		// calling StatsSelection mixin function
-		this.initSelections(this.sport);
-
 		$(function() {
 
 			$('[CreateTeam="sport"]').selectpicker({});
@@ -630,13 +589,14 @@ export default  {
 	background white
 	max-width 750px
 	div
-	hr
 		flex-basis 100%
 		
 .CreateTeam__header
 	display flex
 	flex-flow row wrap
 	margin 25px 20px 0px 25px
+	padding-bottom 20px
+	border-bottom 2px solid rc_super_lite_gray
 	h3
 		flex-basis 100%
 		margin-bottom 20px

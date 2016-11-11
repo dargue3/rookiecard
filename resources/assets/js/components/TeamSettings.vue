@@ -189,6 +189,13 @@ export default  {
 			}
 		},
 
+		'team.city' : function(newVal, oldVal)
+		{
+			if (typeof oldVal !== 'undefined') {
+				this.settingsSaved = false;
+			}
+		},
+
 		'team.pic' : function(newVal, oldVal)
 		{
 			if (typeof oldVal !== 'undefined') {
@@ -217,10 +224,13 @@ export default  {
 		},
 
 
+		/**
+		 * Ask the server if this teamname that was just typed in is taken yet
+		 */
 		checkAvailability()
 		{
 			if (this.errorCheck('team.teamname') === 0) {
-				this.$root.post(`${this.$root.prefix}/team/create/${this.team.teamname}`, 'TeamSettings_availability');
+				this.$root.get(`${this.$root.prefix}/team/create/${this.team.teamname}`, 'TeamSettings_availability');
 			}
 		},
 
@@ -230,8 +240,6 @@ export default  {
 		 */
 		dropzone()
 		{
-			
-
 			let options = {
 				paramName: 'pic',
 				url: '', // set later
@@ -248,11 +256,27 @@ export default  {
 			options.url = `${this.$parent.prefix}/pic`;
 			let pic = new Dropzone('#team-pic', options);
 
+			options.url = `${this.$parent.prefix}/backdrop`;
+			options.thumbnailWidth = 210;
+			let backdrop = new Dropzone('#team-backdrop', options);
+
+
+			// set the thumbnails to show a default image
+			this.mockThumbnails(pic, backdrop);
+
 
 			// picture uploaded successfully to the server
 			// returned with file object and response
 			pic.on('success', function(file, response) {
 				//let newPic = response.data.pic;
+				this.$root.banner('good', 'Picture uploaded')
+			}.bind(this));
+
+
+			// backdrop photo uploaded successfully to the server
+			// returned with file object and response
+			backdrop.on('success', function(file, response) {
+				//let newBackdrop = response.data.pic;
 				this.$root.banner('good', 'Picture uploaded')
 			}.bind(this));
 
@@ -264,26 +288,29 @@ export default  {
 			}.bind(this));
 
 
-
-			// setup the backdrop dropzone configs
-			options.url = `${this.$parent.prefix}/backdrop`;
-			options.thumbnailWidth = 210;
-			let backdrop = new Dropzone('#team-backdrop', options);
-
-
-			// backdrop photo uploaded successfully to the server
-			// returned with file object and response
-			backdrop.on('success', function(file, response) {
-				//let newBackdrop = response.data.pic;
-				this.$root.banner('good', 'Picture uploaded')
-			}.bind(this));
-
 			// backdrop photo reverted back to original in server
 			// returned with file object and response
 			backdrop.on('removedfile', function(file, response) {
 				this.$root.banner('good', 'Reverted to original photo')
 			}.bind(this));
 		},	
+
+
+		/**
+		 * Set the default thumbnails to their current saved photos
+		 */
+		mockThumbnails(pic, backdrop)
+		{
+			let mock = { name: 'Team Photo', size: 424214 }
+			pic.emit('addedfile', mock);
+			pic.createThumbnailFromUrl(mock, this.team.pic);
+			pic.emit('complete', mock);
+
+			let mock2 = { name: 'Backdrop Photo', size: 643244 }
+			backdrop.emit('addedfile', mock2);
+			backdrop.createThumbnailFromUrl(mock2, this.team.backdrop);
+			backdrop.emit('complete', mock2);
+		}
 	},
 
 };

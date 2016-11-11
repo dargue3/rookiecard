@@ -163,191 +163,192 @@ class Basketball extends Sport implements SportInterface
 	 */
 	public function statDetails()
 	{
-		/**
-		 * Some explanations about how this huge JSON object works
-		 * 
-		 * user: the stat keys that will be inputted by a user
-		 * 		val: human readable version of key
-		 * 
-		 * rc: the stat keys that are extrapolated by rookiecard based on user inputs
-		 * 		val: human readable version of key
-		 * 		req: an array of keys that are prerequisites for calculation of that stat
-		 *   	subtext: human readable form of requirements 
-		 *    	disabled: whether or not that stat is currently disabled/enabled in the picker
-		 * 
-		 * userSelected: a suggestion of which keys the user should input
-		 * rcSelected: a suggestion of which keys rookiecard should calculate
-		 */
-		return 
-		   '{
-		   	"user": {
-		        "pts": {
-		            "val": "Points"
-		        },
-		        "min": {
-		            "val": "Minutes Played"
-		        },
-		        "gs": {
-		            "val": "Games Started"
-		        },
-		        "fgm": {
-		            "val": "Field Goals Made"
-		        },
-		        "fga": {
-		            "val": "Field Goals Attempted"
-		        },
-		        "ftm": {
-		            "val": "Free Throws Made"
-		        },
-		        "fta": {
-		            "val": "Free Throws Attempted"
-		        },
-		        "threepm": {
-		            "val": "3 Pointers Made"
-		        },
-		        "threepa": {
-		            "val": "3 Pointers Attempted"
-		        },
-		        "ast": {
-		            "val": "Assists"
-		        },
-		        "reb": {
-		            "val": "Rebounds"
-		        },
-		        "oreb": {
-		            "val": "Offensive Rebounds"
-		        },
-		        "stl": {
-		            "val": "Steals"
-		        },
-		        "blk": {
-		            "val": "Blocks"
-		        },
-		        "to": {
-		            "val": "Turnovers"
-		        },
-		        "pf": {
-		            "val": "Personal Fouls"
-		        }
-		    },
-		    "rc": {
-		        "fg_": {
-		            "val": "Field Goal Percentage",
-		            "subtext": "Requires FGM & FGA",
-		            "req": [
-		                "fgm",
-		                "fga"
-		            ],
-		            "disabled": false
-		        },
-		        "ft_": {
-		            "val": "Free Throw Percentage",
-		            "subtext": "Requires FTM & FTA",
-		            "req": [
-		                "ftm",
-		                "fta"
-		            ],
-		            "disabled": false
-		        },
-		        "threep_": {
-		            "val": "3 Point Percentage",
-		            "subtext": "Requires 3PM & 3PA",
-		            "req": [
-		                "threepm",
-		                "threepa"
-		            ],
-		            "disabled": false
-		        },
-		        "gp": {
-		            "val": "Games Played",
-		            "subtext": "",
-		            "req": [],
-		            "disabled": false
-		        },
-		        "efg_": {
-		            "val": "Effective Field Goal Percentage",
-		            "subtext": "Requires FG% & 3P%",
-		            "req": [
-		                "fg_",
-		                "threep_"
-		            ],
-		            "disabled": false
-		        },
-		        "ts_": {
-		            "val": "True Shooting Percentage",
-		            "subtext": "Requires PTS, FG%, FT%",
-		            "req": [
-		                "pts",
-		                "fg_",
-		                "ft_"
-		            ],
-		            "disabled": false
-		        },
-		        "astto": {
-		            "val": "Assist to Turnover Ratio",
-		            "subtext": "Requires AST & TO",
-		            "req": [
-		                "ast",
-		                "to"
-		            ],
-		            "disabled": false
-		        },
-		        "eff": {
-		            "val": "Player Efficiency",
-		            "subtext": "Requires PTS, REB, AST, STL, BLK, FG%, FT%, GP",
-		            "req": [
-		                "pts",
-		                "reb",
-		                "ast",
-		                "stl",
-		                "blk",
-		                "fg_",
-		                "ft_",
-		                "gp"
-		            ],
-		            "disabled": false
-		        },
-		        "dd2": {
-		            "val": "Double Doubles",
-		            "subtext": "Requires PTS, AST, REB, BLK, STL",
-		            "req": [
-		                "pts",
-		                "ast",
-		                "reb",
-		                "blk",
-		                "stl"
-		            ],
-		            "disabled": false
-		        },
-		        "dd3": {
-		            "val": "Triple Doubles",
-		            "subtext": "Requires PTS, AST, REB, BLK, STL",
-		            "req": [
-		                "pts",
-		                "ast",
-		                "reb",
-		                "blk",
-		                "stl"
-		            ],
-		            "disabled": false
-		        }
-		    },
-		    "userSelected": [
-		        "pts",
-		        "fgm",
-		        "fga",
-		        "threepm",
-		        "threepa",
-		        "ast",
-		        "reb",
-		        "stl",
-		        "blk"
-		    ],
-		    "rcSelected": [
-		        "fg_",
-		        "threep_",
-		        "gp"
-		    ]
-		}'; // end of json string
+		return $this->statRequirements;
 	}
+
+	/**
+	 * Some explanations about how this huge JSON object works
+	 * 
+	 * user: the stat keys that will be inputted by a user
+	 * 		val: human readable version of key
+	 * 
+	 * rc: the stat keys that are extrapolated by rookiecard based on user inputs
+	 * 		val: human readable version of key
+	 * 		req: an array of keys that are prerequisites for calculation of that stat
+	 *   	subtext: human readable form of requirements 
+	 *    	disabled: whether or not that stat is currently disabled/enabled in the picker
+	 * 
+	 * userSelected: a suggestion of which keys the user should input
+	 * rcSelected: a suggestion of which keys rookiecard should calculate
+	 */
+	protected $statRequirements = '{
+	   	"user": {
+	        "pts": {
+	            "val": "Points"
+	        },
+	        "min": {
+	            "val": "Minutes Played"
+	        },
+	        "gs": {
+	            "val": "Games Started"
+	        },
+	        "fgm": {
+	            "val": "Field Goals Made"
+	        },
+	        "fga": {
+	            "val": "Field Goals Attempted"
+	        },
+	        "ftm": {
+	            "val": "Free Throws Made"
+	        },
+	        "fta": {
+	            "val": "Free Throws Attempted"
+	        },
+	        "threepm": {
+	            "val": "3 Pointers Made"
+	        },
+	        "threepa": {
+	            "val": "3 Pointers Attempted"
+	        },
+	        "ast": {
+	            "val": "Assists"
+	        },
+	        "reb": {
+	            "val": "Rebounds"
+	        },
+	        "oreb": {
+	            "val": "Offensive Rebounds"
+	        },
+	        "stl": {
+	            "val": "Steals"
+	        },
+	        "blk": {
+	            "val": "Blocks"
+	        },
+	        "to": {
+	            "val": "Turnovers"
+	        },
+	        "pf": {
+	            "val": "Personal Fouls"
+	        }
+	    },
+	    "rc": {
+	        "fg_": {
+	            "val": "Field Goal Percentage",
+	            "subtext": "Requires FGM & FGA",
+	            "req": [
+	                "fgm",
+	                "fga"
+	            ],
+	            "disabled": false
+	        },
+	        "ft_": {
+	            "val": "Free Throw Percentage",
+	            "subtext": "Requires FTM & FTA",
+	            "req": [
+	                "ftm",
+	                "fta"
+	            ],
+	            "disabled": false
+	        },
+	        "threep_": {
+	            "val": "3 Point Percentage",
+	            "subtext": "Requires 3PM & 3PA",
+	            "req": [
+	                "threepm",
+	                "threepa"
+	            ],
+	            "disabled": false
+	        },
+	        "gp": {
+	            "val": "Games Played",
+	            "subtext": "",
+	            "req": [],
+	            "disabled": false
+	        },
+	        "efg_": {
+	            "val": "Effective Field Goal Percentage",
+	            "subtext": "Requires FG% & 3P%",
+	            "req": [
+	                "fg_",
+	                "threep_"
+	            ],
+	            "disabled": false
+	        },
+	        "ts_": {
+	            "val": "True Shooting Percentage",
+	            "subtext": "Requires PTS, FG%, FT%",
+	            "req": [
+	                "pts",
+	                "fg_",
+	                "ft_"
+	            ],
+	            "disabled": false
+	        },
+	        "astto": {
+	            "val": "Assist to Turnover Ratio",
+	            "subtext": "Requires AST & TO",
+	            "req": [
+	                "ast",
+	                "to"
+	            ],
+	            "disabled": false
+	        },
+	        "eff": {
+	            "val": "Player Efficiency",
+	            "subtext": "Requires PTS, REB, AST, STL, BLK, FG%, FT%, GP",
+	            "req": [
+	                "pts",
+	                "reb",
+	                "ast",
+	                "stl",
+	                "blk",
+	                "fg_",
+	                "ft_",
+	                "gp"
+	            ],
+	            "disabled": false
+	        },
+	        "dd2": {
+	            "val": "Double Doubles",
+	            "subtext": "Requires PTS, AST, REB, BLK, STL",
+	            "req": [
+	                "pts",
+	                "ast",
+	                "reb",
+	                "blk",
+	                "stl"
+	            ],
+	            "disabled": false
+	        },
+	        "dd3": {
+	            "val": "Triple Doubles",
+	            "subtext": "Requires PTS, AST, REB, BLK, STL",
+	            "req": [
+	                "pts",
+	                "ast",
+	                "reb",
+	                "blk",
+	                "stl"
+	            ],
+	            "disabled": false
+	        }
+	    },
+	    "userSelected": [
+	        "pts",
+	        "fgm",
+	        "fga",
+	        "threepm",
+	        "threepa",
+	        "ast",
+	        "reb",
+	        "stl",
+	        "blk"
+	    ],
+	    "rcSelected": [
+	        "fg_",
+	        "threep_",
+	        "gp"
+	    ]
+	}'; // end of json string
 }

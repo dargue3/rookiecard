@@ -353,7 +353,7 @@ export default  {
 			notFound: false,
 			showStatTotals: false,
 			statSearch: '',
-			tab: 'calendar',
+			tab: 'settings',
 			statsTab: 'recent',
 			auth: {},
 			team: {

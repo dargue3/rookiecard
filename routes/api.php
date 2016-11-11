@@ -2,7 +2,7 @@
 use Illuminate\Http\Request;
 	
 Route::post('team/create', 'TeamController@create');
-Route::post('team/create/{name}', 'TeamController@checkAvailability');
+Route::get('team/create/{name}', 'TeamController@checkAvailability');
 Route::get('team/create/dummy/{gender}', 'TeamController@createDummyNames');
 Route::get('team/create/stats/{sport}', 'TeamController@getStatKeys');
 

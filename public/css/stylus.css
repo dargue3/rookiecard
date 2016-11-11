@@ -601,6 +601,9 @@ textarea {
 .btn-chevron.--left {
   left: 4px;
 }
+.btn-chevron.material-icons:hover {
+  color: inherit;
+}
 .outline.btn-success {
   background: none;
   padding: 12px 22px;

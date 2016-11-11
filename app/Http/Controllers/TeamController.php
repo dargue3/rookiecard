@@ -154,7 +154,7 @@ class TeamController extends Controller
      */
     public function getStatKeys($sport)
     {
-        return Sport::find($sport)->statDetails();
+        return ['ok' => true, 'stats' => Sport::find($sport)->statDetails()];
     }
 
 

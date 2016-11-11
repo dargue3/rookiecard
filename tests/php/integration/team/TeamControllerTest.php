@@ -116,7 +116,7 @@ class TeamControllerTest extends TestCase
     /** @test */
     public function it_has_a_method_for_checking_the_availability_of_a_teamname_during_the_team_creation_process()
     {
-    	$response = $this->call('POST', 'team/create/cats');
+    	$response = $this->call('GET', 'team/create/cats');
         $available = json_decode($response->getContent())->available;
     	$teamname = json_decode($response->getContent())->teamname;
 
@@ -125,7 +125,7 @@ class TeamControllerTest extends TestCase
         $this->assertEquals('cats', $teamname);
 
     	// try when the name is taken (we used this one in setUp() )
-    	$response = $this->call('POST', 'team/create/teamname');
+    	$response = $this->call('GET', 'team/create/teamname');
     	$available = json_decode($response->getContent())->available;
         $teamname = json_decode($response->getContent())->teamname;
 

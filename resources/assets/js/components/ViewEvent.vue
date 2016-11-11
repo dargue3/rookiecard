@@ -131,7 +131,7 @@ export default  {
 				type: 0,
 				id: 0,
 			},
-			viewing: 'showingEvent',
+			viewing: 'showingEvent', // possible: 'addingNewEvent', 'showingEvent', 'showingStats', 'editingEvent', 'editingStats'
 			eventStats: [],
 			newTitle: '',
 			score: '',
@@ -423,13 +423,15 @@ export default  {
 				return 'create'; // show url as /event/create
     	}
 
-    	if (this.eventStats.length) {
+    	if (this.canEditStats || this.canAddStats) {
+				this.viewing = 'editingStats';
+			}
+
+    	if (this.canShowStats) {
 				this.viewing = 'showingStats'
 			}
 
-			if (this.isAdmin && ! this.eventStats.length && this.eventIsAGame) {
-				this.viewing = 'editingStats';
-			}
+			// if none of these hit, this.viewing === 'showingEvent'
 
     	return this.event.id;
     },
@@ -540,6 +542,7 @@ export default  {
 	.details
 		font-size 18px
 		text-align center
+		width 100%
 		border-top 3px solid rc_super_lite_gray
 		padding-top 15px
 		&.--no-stats

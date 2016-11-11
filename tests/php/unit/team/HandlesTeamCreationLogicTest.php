@@ -4,11 +4,11 @@ use App\RC\Team\Roles\Fan;
 use App\RC\Team\Roles\Coach;
 use App\RC\Team\Roles\Player;
 use App\RC\Team\TeamRepository;
-use App\RC\Team\CreatesNewTeam;
+use App\RC\Team\HandlesTeamCreationLogic;
 use App\RC\Sports\SportInterface;
 use App\RC\Team\TeamMemberRepository;
 
-class CreatesNewTeamTest extends TestCase
+class HandlesTeamCreationLogicTest extends TestCase
 {
 	/**
 	 * The dummy request data
@@ -53,7 +53,7 @@ class CreatesNewTeamTest extends TestCase
     /** @test */
     public function the_constructor_sets_the_trivial_data_to_attributes_for_later_access()
     {
-    	$handler = new CreatesNewTeam($this->data);
+    	$handler = new HandlesTeamCreationLogic($this->data);
 
     	$this->assertEquals('Team Test', $handler->name);
     	$this->assertEquals('teamname', $handler->teamname);
@@ -71,7 +71,7 @@ class CreatesNewTeamTest extends TestCase
     /** @test */
     public function the_constructor_validates_the_stat_keys_and_saves_them_in_meta_data()
     {
-    	$handler = new CreatesNewTeam($this->data);
+    	$handler = new HandlesTeamCreationLogic($this->data);
 
     	$formattedStats = ['date', 'name', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_'];	
 
@@ -82,7 +82,7 @@ class CreatesNewTeamTest extends TestCase
     /** @test */
     public function the_constructor_converts_the_selected_sport_into_a_class()
     {
-    	$handler = new CreatesNewTeam($this->data);
+    	$handler = new HandlesTeamCreationLogic($this->data);
 
     	$this->assertTrue(is_a($handler->sport, SportInterface::class));
     }
@@ -91,17 +91,17 @@ class CreatesNewTeamTest extends TestCase
     /** @test */
     public function the_constructor_converts_the_users_role_into_a_class()
     {
-    	$handler = new CreatesNewTeam($this->data);
+    	$handler = new HandlesTeamCreationLogic($this->data);
 
     	$this->assertTrue(is_a($handler->userIsA, Fan::class));
 
     	$this->data['userIsA'] = 'player';
-    	$handler = new CreatesNewTeam($this->data);
+    	$handler = new HandlesTeamCreationLogic($this->data);
 
     	$this->assertTrue(is_a($handler->userIsA, Player::class));
 
     	$this->data['userIsA'] = 'coach';
-    	$handler = new CreatesNewTeam($this->data);
+    	$handler = new HandlesTeamCreationLogic($this->data);
 
     	$this->assertTrue(is_a($handler->userIsA, Coach::class));
     }
@@ -112,7 +112,7 @@ class CreatesNewTeamTest extends TestCase
     {
     	$repo = App::make(TeamRepository::class);
 
-    	$team = (new CreatesNewTeam($this->data))->create();
+    	$team = (new HandlesTeamCreationLogic($this->data))->create();
 
     	$this->assertCount(1, $repo->all());
     	$this->assertEquals(1, $team->id);
@@ -127,7 +127,7 @@ class CreatesNewTeamTest extends TestCase
 
     	$this->data['coaches'] = [];
     	$this->data['players'] = [];
-    	(new CreatesNewTeam($this->data))->create();
+    	(new HandlesTeamCreationLogic($this->data))->create();
     }
 
 
@@ -140,7 +140,7 @@ class CreatesNewTeamTest extends TestCase
     	$mock->shouldReceive('addTeamCreator')->once();
 
     	$this->data['coaches'] = [];
-    	(new CreatesNewTeam($this->data))->create();
+    	(new HandlesTeamCreationLogic($this->data))->create();
     }
 
 
@@ -153,6 +153,19 @@ class CreatesNewTeamTest extends TestCase
     	$mock->shouldReceive('addTeamCreator')->once();
 
     	$this->data['players'] = [];
-    	(new CreatesNewTeam($this->data))->create();
+    	(new HandlesTeamCreationLogic($this->data))->create();
+    }
+
+
+    /** @test */
+    public function if_the_players_or_coaches_array_is_not_present_in_the_request__gets_set_to_an_empty_array()
+    {
+        unset($this->data['players']);
+        unset($this->data['coaches']);
+
+        $handler = new HandlesTeamCreationLogic($this->data);
+
+        $this->assertEquals([], $handler->players);
+        $this->assertEquals([], $handler->coaches);
     }
 }

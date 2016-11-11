@@ -198,7 +198,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
      */
     public function store(array $data)
     {
-        return (new CreatesNewTeam($data))->create();
+        return (new HandlesTeamCreationLogic($data))->create();
     }
 
 

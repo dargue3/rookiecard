@@ -8,7 +8,7 @@ use App\RC\Team\Roles\Player;
 use App\RC\Team\Roles\Coach;
 use App\RC\Team\Roles\Fan;
 
-class CreatesNewTeam
+class HandlesTeamCreationLogic
 {
 	/**
 	 * An instance of a team repository
@@ -67,8 +67,8 @@ class CreatesNewTeam
         $this->gender = $data['gender'];
         $this->long = $data['long'];
         $this->lat = $data['lat'];
-        $this->players = $data['players'];
-        $this->coaches = $data['coaches'];
+        $this->players = isset($data['players']) ? $data['players'] : [];
+        $this->coaches = isset($data['coaches']) ? $data['coaches'] : [];
 
         switch($data['userIsA']) {
             case 'player':

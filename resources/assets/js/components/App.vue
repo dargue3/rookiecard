@@ -132,7 +132,26 @@ export default  {
 			this.teams = this.teams.filter(function(current) {
 				return current.teamname !== team.teamname;
 			})
-		}
+		},
+
+
+		/**
+		 * User became a fan of a given team, add them to the nav menus
+		 */
+		App_becameAMember(team)
+		{
+			var newTeam = {
+				id: team.id,
+				teamname: team.teamname,
+				name: team.name,
+				notifications: 0,
+				isMember: true,
+				isFan: false,
+				hasBeenInvited: false,
+			}
+
+			this.teams.push(newTeam);
+		},
 
 
 	},
