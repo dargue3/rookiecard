@@ -4,6 +4,5 @@ public/images/proPic_teams/
 config/database.php
 node_modules/
 vendor/
-.idea/
 ngrok
 .env
