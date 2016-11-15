@@ -34,6 +34,8 @@ class HandlesTeamCreationLogic
     public $gender;
     public $long;
     public $lat;
+    public $pic;
+    public $backdrop;
     public $players;
     public $coaches;
     public $userIsA;
@@ -46,14 +48,13 @@ class HandlesTeamCreationLogic
     public $team = null;
 
 
-
-	public function __construct(array $data)
+	public function __construct(array $data, $team_id = null)
 	{
         $this->teamRepo = App::make(TeamRepository::class);
 		$this->memberRepo = App::make(TeamMemberRepository::class);
 
         $this->name = $data['name'];
-        $this->teamname = $data['teamname'];
+        $this->teamname = $data['teamURL'];
 
         $this->sport = Sport::find($data['sport']);
 
@@ -62,11 +63,22 @@ class HandlesTeamCreationLogic
             'homefield' => $data['homefield'],
             'city'      => $data['city'],
             'slogan'    => $data['slogan'],
+            'tz'        => $data['timezone'],
         ];
 
-        $this->gender = $data['gender'];
         $this->long = $data['long'];
         $this->lat = $data['lat'];
+        $this->timezone = $data['timezone'];
+
+        if (isset($team_id)) {
+            // just updating this team's data, don't do the rest of the constructor
+            $this->team = $this->teamRepo->find($team_id);
+            $this->pic = $data['pic'];
+            $this->backdrop = $data['backdrop'];
+            return;
+        }
+
+        $this->gender = $data['gender'];
         $this->players = isset($data['players']) ? $data['players'] : [];
         $this->coaches = isset($data['coaches']) ? $data['coaches'] : [];
 
@@ -133,5 +145,26 @@ class HandlesTeamCreationLogic
         }
 
         $this->memberRepo->addTeamCreator($this->team->id, $this->userIsA);
+    }
+
+
+    /**
+     * Update the given team with the details given in the constructor
+     * 
+     * @return Team
+     */
+    public function update()
+    {
+        $this->team->name       = $this->name;
+        $this->team->teamname   = $this->teamname;
+        $this->team->lat        = $this->lat;
+        $this->team->long       = $this->long;
+        $this->team->pic        = $this->pic;
+        $this->team->backdrop   = $this->backdrop;
+        $this->team->meta       = json_encode($this->meta);
+
+        $this->team->save();
+
+        return $this->team;
     }
 }

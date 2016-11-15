@@ -6,11 +6,12 @@ use App;
 use Closure;
 use App\RC\User\UserRepository;
 
-class RedirectIfNotTeamAdmin
+class MustBeTeamAdmin
 {
-
-    //checks if user is an admin of the team page before allowing them to edit
-    //redirects user to team's page with error message if not admin
+    /**
+     * User must be an admin of the team given in the URL
+     * Returns a '403 Forbidden' if they are not an admin
+     */
     public function handle($request, Closure $next)
     {
         $user = App::make(UserRepository::class);

@@ -203,6 +203,21 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 
 
     /**
+     * Update a given team with the form data from a team's settings page
+     * 
+     * @param  array $data 
+     * @param  int $team_id 
+     * @return Team     
+     */
+    public function update(array $data, $team_id)
+    {
+        $data['sport'] = $this->sport($team_id)->name();
+        
+        return (new HandlesTeamCreationLogic($data, $team_id))->update();
+    }
+
+
+    /**
      * The logged-in user is taking some sort of action related to joining the given team
      * Simply passes off the data to a service class
      * 

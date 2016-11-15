@@ -47,6 +47,10 @@ a .material-icons:hover {
   cursor: pointer;
   color: #38a9f9;
 }
+.parallax-window {
+  min-height: 400px;
+  background: transparent;
+}
 .nav-tabs {
   margin-top: 35px;
 }
@@ -821,6 +825,10 @@ textarea {
   -webkit-justify-content: flex-end;
   -ms-flex-pack: end;
   justify-content: flex-end;
+}
+.save-button-wrapper.--with-divider {
+  border-top: 3px solid #e9e9e9;
+  padding-top: 15px;
 }
 .save-button-group {
   display: -webkit-flex;

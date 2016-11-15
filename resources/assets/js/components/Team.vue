@@ -238,7 +238,7 @@
 
 	    <!-- inside here is complex logic handling what happens when an event is clicked on from calendar or news feed -->
 			<view-event :is-admin="isAdmin" :events="events" :stats="stats" :team="team" 
-											:players="players">
+									:players="players">
 			</view-event>
 
 
@@ -246,12 +246,16 @@
 			<div class="modal" id="rosterModal" role="dialog" aria-hidden="true">
 	      <div class="modal-dialog">
 	        <div class="modal-content">
-	          <div class="modal-header">
-	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 v-show="(editUser.member_id) && !editUser.new" class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
-	            <h3 v-show="editUser.new && editUser.isPlayer" class="modal-title">Add a Player</h3>
-	            <h3 v-show="editUser.new && editUser.isCoach" class="modal-title">Add a Coach</h3>
-	          </div>
+	          <div class="modal-top">
+		        	<div class="left title">
+		        		<h3 v-show="(editUser.member_id) && !editUser.new" class="modal-title">{{ editUser.firstname + ' ' + editUser.lastname }}</h3>
+	            	<h3 v-show="editUser.new && editUser.isPlayer" class="modal-title">Add a Player</h3>
+	            	<h3 v-show="editUser.new && editUser.isCoach" class="modal-title">Add a Coach</h3>
+		        	</div>
+		          <div class="right">
+		          	<span class="close" data-dismiss="modal" aria-hidden="true">&times;</span>
+		          </div>
+		        </div>
 	          <div class="modal-body">
 	          	<div class="row">
 	            
@@ -269,10 +273,14 @@
 	    <div class="modal" id="joinTeamModal" role="dialog" aria-hidden="true">
 	      <div class="modal-dialog">
 	        <div class="modal-content">
-	          <div class="modal-header">
-	            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	            <h3 class="modal-title">Join Team?</h3>
-	          </div>
+	          <div class="modal-top">
+		        	<div class="left title">
+		        		<h3>Join Team?</h3>
+		        	</div>
+		          <div class="right">
+		          	<span class="close" data-dismiss="modal" aria-hidden="true">&times;</span>
+		          </div>
+		        </div>
 	          <div class="modal-body">
 
 	            <div class="row JoinTeam__msg">
@@ -287,6 +295,45 @@
 						    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
 						    	<a class="btn btn-delete btn-block btn-md outline" v-touch:tap="join('decline')">DECLINE</a>
 						    </div>
+							</div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+
+
+
+	    <!-- modal for cropping a photo -->
+			<div class="modal" id="cropModal" role="dialog" aria-hidden="true">
+	      <div class="modal-dialog">
+	        <div class="modal-content">
+	          <div class="modal-top">
+		        	<div class="left title">
+		        		<h3>Crop Photo</h3>
+		        	</div>
+		          <div class="right">
+		          	<span class="close" data-dismiss="modal" aria-hidden="true">&times;</span>
+		          </div>
+		        </div>
+	          <div class="modal-body">
+	          	<div class="row">
+	            	<div class="croppie-wrapper">
+	            		<div id="croppie" class="croppie"></div>
+									<div class="save-button-wrapper --center --with-divider">
+										<div class="save-button-group --two">
+		            			<div>
+		            				<a class="btn btn-primary" v-touch:tap="$broadcast('TeamSettings_cropped')">
+		            					<span v-show="! loading_save">CROP</span>
+		            					<spinner v-show="loading_save" color="white"></spinner>
+		            				</a>
+		            			</div>
+		            			<div>
+		            				<a class="btn btn-cancel" v-touch:tap="$root.hideModal('cropModal')">CANCEL</a>
+		            			</div>
+		            		</div>
+									</div>
+	            		
+	            	</div>
 							</div>
 	          </div>
 	        </div>
@@ -509,7 +556,7 @@ export default  {
 				this.requestFinished = true;
 				this.$broadcast('dataReady');
 				this.checkUrlForStateChange();
-			}.bind(this), 100);
+			}.bind(this), 125);
 		},
 
 
@@ -518,6 +565,7 @@ export default  {
 		{
 			this.requestFinished = true;
 			this.notFound = true;
+			this.checkUrlForStateChange();
 		},
 
 
@@ -527,7 +575,7 @@ export default  {
 		App_modal_minimized()
 		{
 			if (window.history.state && this.requestFinished) {
-				// there was a URL state change within this modal window
+				// there was a URL state change with whatever modal was open but now is minimized
 				// change the URL to just being '/team/teamname' again
 				this.$root.url(`/team/${this.$route.params.name}`)
 			}
@@ -556,6 +604,10 @@ export default  {
 		},
 
 
+		/**
+		 * The user has changed their membership with the team in some way
+		 * Either accepting/denying an invite, or sending/canceling request to join
+		 */
 		Team_join(response)
 		{
 			if (this.joinAction === 'request') {
@@ -584,6 +636,17 @@ export default  {
 		Team_view_event(id)
 		{
 			this.$broadcast('ViewEvent_view', id);
+		},
+
+
+		/**
+		 * The team's info and settings were updated
+		 */
+		Team_updated_team(team)
+		{
+			this.formatTeam(team);
+
+			this.$broadcast('Stats_recompile');
 		},
 
 
@@ -636,19 +699,47 @@ export default  {
 		 */
 		compile(data)
 		{
+			// get the logged-in user's details from App.vue
 			this.auth = this.$root.user;
-			this.team = data.team;
+			
+			// save the team's info and meta data
+			this.formatTeam(data.team);
 
 			// loop through all the users, create user objects
 			this.users = [];
 			this.formatUsers(data.members);
 			
+			// now that all team data is ready, set these variables
+			// components are listening, will format the data as needed
+			this.events = data.events;
+			this.stats = data.stats;
+			this.feed = data.feed;
+			this.positions = data.positions;
+		},
+
+
+		/**
+		 * Reorganize the team data from server
+		 */
+		formatTeam(team)
+		{
+			this.$set('team.name', team.name);
+			this.$set('team.teamname', team.teamname);
+			this.$set('team.pic', team.pic);
+			this.$set('team.backdrop', team.backdrop);
+			this.$set('team.season', team.season);
+			this.$set('team.creator_id', team.creator_id);
+			this.$set('team.lat', team.lat);
+			this.$set('team.long', team.long);
+			this.$set('team.sport', team.sport);
+
 			// store meta data about team
-			var meta = JSON.parse(this.team.meta);
+			let meta = JSON.parse(team.meta);
 			this.$set('team.settings.statKeys', meta.stats);
 			this.$set('team.slogan', meta.slogan);
 			this.$set('team.city', meta.city);
 			this.$set('team.homefield', meta.homefield);
+			this.$set('team.timezone', meta.tz);
 			this.$set('team.record', '0-0');
 
 			// note whether or not this user is the creator
@@ -656,19 +747,12 @@ export default  {
 				this.isCreator = true;
 				this.isAdmin = true;
 			}
-
-			// now that all team data is ready, set these variables
-			// components are listening, will format the data as needed
-			this.events = data.events;
-			this.stats = data.stats;
-			this.feed = data.feed;
-			this.positions = data.positions;
-
-			// tell App.vue to clear any notifications the logged in user may have
-			//this.$dispatch('clearNotifications', this.team.id);
 		},
 
-		// compile meta data for users and push into this.users
+
+		/**
+		 * Compile the meta data and push each user into this.users
+		 */
 		formatUsers(users)
 		{
 			if (! users) {
@@ -799,6 +883,7 @@ export default  {
 	display flex
 	flex-flow column
 	margin-bottom 35px
+	background-position center
 	background-size cover
 	background-attachment fixed
 

@@ -66,7 +66,7 @@ return [
             'driver' => 's3',
             'key'    => 'AKIAJ47KOCEXQXNWGIVA',
             'secret' => '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',
-            'region' => 'us-east',
+            'region' => 'us-east-1',
             'bucket' => 'rookiecard',
         ],
 

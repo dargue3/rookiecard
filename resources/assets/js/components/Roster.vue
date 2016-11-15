@@ -19,158 +19,151 @@
 		</div>
 
 
-		
-		<div v-show="tab === 'players'" class="Roster__list">
-			<div class="Roster__users">
-				<div v-for="player in players
-										| filterBy search in 'name'
-										| orderBy 'lastname'" class="User">
-					<div v-show="! player.hasRequestedToJoin" class="User__icons">
-						<div v-show="player.isAdmin">
-							<i class="material-icons admin-icon" data-toggle="tooltip" title="Admin">font_download</i>
-						</div>
-						<div v-show="isAdmin" v-touch:tap="edit(player)">
-							<a><i class="material-icons edit-icon" data-toggle="tooltip" title="Edit">mode_edit</i></a>
-						</div>
+		<div v-show="tab === 'players'" class="Roster__users">
+			<div v-for="player in players
+									| filterBy search in 'name'
+									| orderBy 'lastname'" class="User">
+				<div v-show="! player.hasRequestedToJoin" class="User__icons">
+					<div v-show="player.isAdmin">
+						<i class="material-icons admin-icon" data-toggle="tooltip" title="Admin">font_download</i>
 					</div>
-					<div v-show="isAdmin && player.hasRequestedToJoin" class="User__accept">
-						<div v-touch:tap="accept(player)">
-							<a><i class="material-icons accept-icon" data-toggle="tooltip" title="Add to Team">done</i></a>
-						</div>
-						<div v-touch:tap="deny(player)">
-							<a><i class="material-icons deny-icon" data-toggle="tooltip" title="Deny">close</i></a>
-						</div>
-					</div>
-					<div class="User__pic" :class="{'--ghost-pic' : player.isGhost}">
-						<img v-if="! player.isGhost" :src="player.pic" :alt="player.name" height="215" width="215">
-						<div v-else>
-							<span>{{ player.firstname[0] }}</span>
-						</div>
-					</div>
-					<div class="User__details">
-						<div class="details-text">
-								<span v-if="player.isGhost">{{ player.name }}</span>
-								<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
-							<div v-show="player.meta.positions" class="User__positions">
-								<span v-for="position in player.meta.positions">
-									{{ position | uppercase }}
-								</span>&nbsp;
-							</div>
-							<div v-show="player.hasRequestedToJoin" class="User__positions">
-								<span>Would like to join</span>
-							</div>
-						</div>
-						<div class="details-num">
-							<div>
-								<span>{{ player.meta.num }}</span>
-							</div>
-						</div>
+					<div v-show="isAdmin" v-touch:tap="edit(player)">
+						<a><i class="material-icons edit-icon" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 					</div>
 				</div>
-
-				<!-- add player placeholder -->
-				<div class="User" v-show="isAdmin && ! search">
-					<div class="User__pic --add-player" v-touch:tap="addUser('player')">
+				<div v-show="isAdmin && player.hasRequestedToJoin" class="User__accept">
+					<div v-touch:tap="accept(player)">
+						<a><i class="material-icons accept-icon" data-toggle="tooltip" title="Add to Team">done</i></a>
+					</div>
+					<div v-touch:tap="deny(player)">
+						<a><i class="material-icons deny-icon" data-toggle="tooltip" title="Deny">close</i></a>
+					</div>
+				</div>
+				<div class="User__pic" :class="{'--ghost-pic' : player.isGhost}">
+					<img v-if="! player.isGhost" :src="player.pic" :alt="player.name" height="200" width="200">
+					<div v-else>
+						<span>{{ player.firstname[0] }}</span>
+					</div>
+				</div>
+				<div class="User__details">
+					<div class="details-text">
+							<span v-if="player.isGhost">{{ player.name }}</span>
+							<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
+						<div v-show="player.meta.positions" class="User__positions">
+							<span v-for="position in player.meta.positions">
+								{{ position | uppercase }}
+							</span>&nbsp;
+						</div>
+						<div v-show="player.hasRequestedToJoin" class="User__positions">
+							<span>Would like to join</span>
+						</div>
+					</div>
+					<div class="details-num">
 						<div>
-							<i class="material-icons">add</i>
-						</div>
-					</div>
-					<div class="User__details">
-						<div class="details-text">
-							<div class="User__name">
-								<span>Add a Player</span>
-							</div>
+							<span>{{ player.meta.num }}</span>
 						</div>
 					</div>
 				</div>
-				<div v-if="! isAdmin && ! players.length">
-					<h3>No players yet...</h3>
+			</div>
+
+			<!-- add player placeholder -->
+			<div class="User" v-show="isAdmin && ! search">
+				<div class="User__pic --add-player" v-touch:tap="addUser('player')">
+					<div>
+						<i class="material-icons">add</i>
+					</div>
 				</div>
+				<div class="User__details">
+					<div class="details-text">
+						<div class="User__name">
+							<span>Add a Player</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div v-if="! isAdmin && ! players.length">
+				<h3>No players yet...</h3>
 			</div>
 		</div>
 
 
-		<div v-show="tab === 'coaches'" class="Roster__list">
-			<div class="Roster__users">
-				<div v-for="coach in coaches 
-										| filterBy search in 'name'
-										| orderBy 'lastname'" class="User">
-					<div class="User__icons">
-						<div v-show="coach.isAdmin">
-							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
-						</div>
-						<div v-show="isAdmin" v-touch:tap="edit(coach)">
-							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
-						</div>
+		<div v-show="tab === 'coaches'" class="Roster__users">
+			<div v-for="coach in coaches 
+									| filterBy search in 'name'
+									| orderBy 'lastname'" class="User">
+				<div class="User__icons">
+					<div v-show="coach.isAdmin">
+						<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 					</div>
-					<div class="User__pic" :class="{'--ghost-pic' : coach.isGhost}">
-						<img v-if="! coach.isGhost" :src="coach.pic" :alt="coach.name" height="215" width="215">
-						<div v-else>
-							<span>{{ coach.firstname[0] }}</span>
-						</div>
+					<div v-show="isAdmin" v-touch:tap="edit(coach)">
+						<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 					</div>
-					<div class="User__details">
-						<div class="details-text">
-							<div class="User__name">
-								<span v-if="coach.isGhost">{{ coach.name }}</span>
-								<a v-else v-link="{name: 'user', params: {name: coach.username}}">{{ coach.name }}</a>
-							</div>
+				</div>
+				<div class="User__pic" :class="{'--ghost-pic' : coach.isGhost}">
+					<img v-if="! coach.isGhost" :src="coach.pic" :alt="coach.name" height="200" width="200">
+					<div v-else>
+						<span>{{ coach.firstname[0] }}</span>
+					</div>
+				</div>
+				<div class="User__details">
+					<div class="details-text">
+						<div class="User__name">
+							<span v-if="coach.isGhost">{{ coach.name }}</span>
+							<a v-else v-link="{name: 'user', params: {name: coach.username}}">{{ coach.name }}</a>
 						</div>
 					</div>
 				</div>
+			</div>
 
-				<!-- add coach placeholder -->
-				<div class="User" v-show="isAdmin && ! search">
-					<div class="User__pic --add-player" v-touch:tap="addUser('coach')">
-						<div>
-							<i class="material-icons">add</i>
-						</div>
+			<!-- add coach placeholder -->
+			<div class="User" v-show="isAdmin && ! search">
+				<div class="User__pic --add-player" v-touch:tap="addUser('coach')">
+					<div>
+						<i class="material-icons">add</i>
 					</div>
-					<div class="User__details">
-						<div class="details-text">
-							<div class="User__name">
-								<span>Add a Coach</span>
-							</div>
+				</div>
+				<div class="User__details">
+					<div class="details-text">
+						<div class="User__name">
+							<span>Add a Coach</span>
 						</div>
 					</div>
 				</div>
-				<div v-if="! isAdmin && ! coaches.length">
-					<h3>No coaches yet...</h3>
-				</div>
+			</div>
+			<div v-if="! isAdmin && ! coaches.length">
+				<h3>No coaches yet...</h3>
 			</div>
 		</div>
 
 
-		<div v-show="tab === 'fans'" class="Roster__list">
-			<div class="Roster__users">
-				<div v-for="fan in fans 
-										| filterBy search in 'name'
-										| orderBy 'lastname'" class="User">
-					<div class="User__icons">
-						<div v-show="fan.isAdmin">
-							<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
-						</div>
-						<div v-show="isAdmin" v-touch:tap="edit(fan)">
-							<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
-						</div>
+		<div v-show="tab === 'fans'" class="Roster__users">
+			<div v-for="fan in fans 
+									| filterBy search in 'name'
+									| orderBy 'lastname'" class="User">
+				<div class="User__icons">
+					<div v-show="fan.isAdmin">
+						<i class="material-icons" data-toggle="tooltip" title="Admin">font_download</i>
 					</div>
-					<div class="User__pic">
-						<img :src="fan.pic" :alt="fan.name" height="215" width="215">
+					<div v-show="isAdmin" v-touch:tap="edit(fan)">
+						<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 					</div>
-					<div class="User__details">
-						<div class="details-text">
-							<div class="User__name">
-								<a v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
-							</div>
-							<div class="User__positions">
-								<span>Since {{ fan.since }}</span>
-							</div>
+				</div>
+				<div class="User__pic">
+					<img :src="fan.pic" :alt="fan.name" height="200" width="200">
+				</div>
+				<div class="User__details">
+					<div class="details-text">
+						<div class="User__name">
+							<a v-link="{name: 'user', params: {name: fan.username}}">{{ fan.name }}</a>
+						</div>
+						<div class="User__positions">
+							<span>Since {{ fan.since }}</span>
 						</div>
 					</div>
 				</div>
-				<div v-if="! fans.length">
-					<h3>No fans yet...</h3>
-				</div>
+			</div>
+			<div v-if="! fans.length">
+				<h3>No fans yet...</h3>
 			</div>
 		</div>
 
@@ -354,9 +347,6 @@ export default  {
 	+mobile()
 		text-align center
 
-.Roster__list
-	flex 1
-	
 .Roster__users
 	display flex
 	flex-flow row wrap
@@ -364,12 +354,13 @@ export default  {
 	background white
 	border-radius 4px
 	box-shadow 0 -4px 30px rc_lite_gray
+	padding 10px
 		
 .User
 	position relative
 	display flex
 	flex-flow column wrap
-	width 215px
+	width 200px
 	margin 20px 20px
 	box-shadow 0 0px 5px rc_lite_gray
 	+mobile()
@@ -427,8 +418,7 @@ export default  {
 		
 	
 .User__pic
-	flex-basis 215px
-	height 215px
+	flex-basis 200px
 	img
 		border-top-right-radius 4px
 		border-top-left-radius 4px

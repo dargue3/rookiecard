@@ -14,7 +14,7 @@ export default  {
 	
 	name: 'GoogleTypeahead',
 
-	props: ['city', 'long', 'lat', 'label', 'error'],
+	props: ['city', 'long', 'lat', 'timezone', 'label', 'error'],
 
 	data()
 	{
@@ -42,16 +42,38 @@ export default  {
 		}
 	},
 
+	events:
+	{
+		GoogleTypeahead_tz(response)
+		{
+			this.timezone = response.data.timeZoneId;
+		},
+	},
+
 	methods:
 	{
-		// format the results into the necessary items
+		/**
+		 * Parse out the latitude, longitude, and City, State format of address
+		 */
 		placeSelected(place)
 		{
 			var address = place.formatted_address.split(',');
 			this.city = address[0] + ', ' + address[1][1] + address[1][2];
-			this.lat = place.geometry.location.lat();
-			this.long = place.geometry.location.lng();
+			this.lat = Math.round(place.geometry.location.lat() * 10000) / 10000;
+			this.long = Math.round(place.geometry.location.lng() * 10000) / 10000;
 			this.selected = true;
+
+			this.fetchTimezone();
+		},
+
+
+		/**
+		 * Use newly found lat and long to fetch the timezone string
+		 */
+		fetchTimezone()
+		{
+			let url = `https://maps.googleapis.com/maps/api/timezone/json?location=${this.lat},${this.long}&key=AIzaSyB1owCjwNQ_oRU2mDULAPLDj5oEdu-xj9c&timestamp=${moment().unix()}`;
+			this.$root.get(url, 'GoogleTypeahead_tz', null, null, {headers: {}});
 		}
 	},
 
@@ -64,7 +86,7 @@ export default  {
 			var options = {
 			  types: ['(cities)'],
 			  componentRestrictions: {country: "us"}
-			 };
+			};
 			var autocomplete = new google.maps.places.Autocomplete(input, options);
 
 			// set up listener, tell this.placeSelected when there was a selection

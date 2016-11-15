@@ -63,7 +63,7 @@ class EloquentUser extends EloquentRepository implements UserRepository
 	 */
     public function teams($user_id)
     {
-    	$user = User::find($user_id);
+    	$user = User::findOrFail($user_id);
 
     	$repo = App::make(TeamMemberRepository::class);
 
@@ -121,7 +121,7 @@ class EloquentUser extends EloquentRepository implements UserRepository
     public function isTeamAdmin($team_id, $user_id)
     {
     	$repo = App::make(TeamMemberRepository::class);
-
+    	
         $member = $repo->teamMember($user_id, $team_id);
 
         if (! $member) {

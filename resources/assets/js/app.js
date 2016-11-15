@@ -13,10 +13,6 @@ SmoothScroll.polyfill();
 
 Vue.config.debug = true;
 
-// pull meta data from server out of tags in <head> of main.blade
-Vue.http.headers.common['X-CSRF-TOKEN'] = $('#_token').attr('value');
-
-
 // create any global components here
 Vue.component('spinner', {
 	template: 

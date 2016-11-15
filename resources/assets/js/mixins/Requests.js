@@ -4,13 +4,18 @@ export default
 	{
 		// send a GET request with the given parameters
 		// execute the given event string when finished
-		get(url, successEvent = null, data = [], failEvent = null)
+		get(url, successEvent = null, data = [], failEvent = null, options = {})
 		{
 			var self = this;
-			this.$http.get(url, data)
+
+			if (! options.headers) {
+				options.headers = {'X-CSRF-TOKEN' : $('#_token').attr('value')};
+			} 
+
+			this.$http.get(url, data, options)
 				.then(function(response)
 				{
-					if (! response.data.ok) {
+					if (response.data.ok === false) {
 						throw response.data.error
 					}
 
@@ -37,13 +42,18 @@ export default
 
 		// send a POST request with the given parameters
 		// execute the given event string when finished
-		post(url, successEvent = null, data = [], failEvent = null)
+		post(url, successEvent = null, data = [], failEvent = null, options = {})
 		{
 			var self = this;
-			this.$http.post(url, data)
+
+			if (! options.headers) {
+				options.headers = {'X-CSRF-TOKEN' : $('#_token').attr('value')};
+			} 
+
+			this.$http.post(url, data, options)
 				.then(function(response)
 				{
-					if (! response.data.ok) {
+					if (response.data.ok === false) {
 						throw response.data.error
 					}
 
@@ -70,13 +80,18 @@ export default
 
 		// send a PUT request with the given parameters
 		// execute the given event string when finished
-		put(url, successEvent = null, data = [], failEvent = null)
+		put(url, successEvent = null, data = [], failEvent = null, options = {})
 		{
 			var self = this;
-			this.$http.put(url, data)
+
+			if (! options.headers) {
+				options.headers = {'X-CSRF-TOKEN' : $('#_token').attr('value')};
+			} 
+
+			this.$http.put(url, data, options)
 				.then(function(response)
 				{
-					if (! response.data.ok) {
+					if (response.data.ok === false) {
 						throw response.data.error
 					}
 
@@ -103,13 +118,18 @@ export default
 
 		// send a DELETE request with the given parameters
 		// execute the given event string when finished
-		delete(url, successEvent = null, data = [], failEvent = null)
+		delete(url, successEvent = null, data = [], failEvent = null, options = {})
 		{
 			var self = this;
-			this.$http.delete(url, data)
+
+			if (! options.headers) {
+				options.headers = {'X-CSRF-TOKEN' : $('#_token').attr('value')};
+			} 
+
+			this.$http.delete(url, data, options)
 				.then(function(response)
 				{
-					if (! response.data.ok) {
+					if (response.data.ok === false) {
 						throw response.data.error
 					}
 

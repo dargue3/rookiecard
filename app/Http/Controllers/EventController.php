@@ -46,9 +46,7 @@ class EventController extends Controller
      */
     public function store(EventRequest $request, Team $team)
     {
-        $data = $request->all();
-
-        $this->event->store($data, $team->id);
+        $this->event->store($request->all(), $team->id);
 
         return ['ok' => true, 'events' => $this->event->getTeamEvents($team->id)];
     }
@@ -68,10 +66,7 @@ class EventController extends Controller
             throw new Exception("Unauthorized Request");
         }
 
-        // fetch the request data to send to the repo
-        $data = $request->all();
-
-        $this->event->update($data, $team->id, $id);
+        $this->event->update($request->all(), $team->id, $id);
 
         return ['ok' => true, 'events' => $this->event->getTeamEvents($team->id)];
     }

@@ -181,14 +181,6 @@ export default  {
 		this.initialize();
 	},
 
-	computed:
-	{
-		role()
-		{
-			return this.user.role;
-		},
-	},
-
 	watch:
 	{
 		/**
@@ -202,7 +194,7 @@ export default  {
 		},
 
 		// if role changed, set inputs to correct new states
-		role()
+		'user.role': function()
 		{
 			this.initialize();
 		},

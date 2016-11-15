@@ -19,8 +19,8 @@ Route::post('settings/auth', 'UserController@locale');
 // team admin routes
 Route::group(['middleware' => 'admin'], function() {
 
-	Route::post('team/{teamname}/pic', 'TeamController@uploadPic');
-	Route::post('team/{teamname}/backdrop', 'TeamController@uploadBackdrop');
+	Route::post('team/{teamname}/temp_pic', 'TeamController@uploadTempPic');
+	Route::post('team/{teamname}/settings', 'TeamController@update');
 
 	Route::resource('team/{teamname}/feed', 'TeamFeedController');
 

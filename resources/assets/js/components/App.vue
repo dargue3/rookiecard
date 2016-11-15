@@ -44,8 +44,8 @@ export default  {
 		'rc-nav'		: Nav,
 	},
 
-	data() {
-
+	data()
+	{
 		return {
 			prefix: '/api/v1',
 			user: {},
@@ -317,6 +317,17 @@ export default  {
 			$('.for-blurring').removeClass('modal-unblur').addClass('modal-blur');
     	$('nav.navbar').removeClass('modal-unblur').addClass('modal-blur');
     	$('#' + id).modal('show');
+		},
+
+
+		/**
+		 * Show a bootstrap modal with a given id
+		 *
+		 * @param {string} id
+		 */
+		hideModal(id)
+		{
+    	$('#' + id).modal('hide');
 		},
 
 

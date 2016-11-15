@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Image;
 use App\Team;
-use Validator;
-use Carbon\Carbon;
 use Faker\Factory;
 use App\RC\Sports\Sport;
 use App\RC\Team\JoinTeam;
 use Illuminate\Http\Request;
 use App\RC\Team\TeamRepository;
-use Illuminate\Support\Facades\Auth;
+use App\RC\Helpers\UploadsPhotos;
 use App\Http\Controllers\Controller;
 use App\RC\Team\TeamMemberRepository;
-use App\Http\Requests\NewEventRequest;
 use App\Http\Requests\CreateTeamRequest;
+use App\Http\Requests\UpdateTeamRequest;
 
 class TeamController extends Controller
 {
@@ -25,6 +22,14 @@ class TeamController extends Controller
      * @var TeamRepository
      */
     protected $team;
+
+
+    /**
+     * An instance of team member repository
+     * 
+     * @var TeamMemberRepository
+     */
+    protected $member;
 
     
     public function __construct(TeamRepository $team, TeamMemberRepository $member)
@@ -40,7 +45,7 @@ class TeamController extends Controller
      * @param  Team   $team
      * @return Illuminate\Http\Response
      */
-    public function getTeamData(Team $team, Request $request)
+    public function getTeamData(Team $team)
     {
         return ['ok' => true, 'data' => $this->team->getAllData($team->id)];
     }
@@ -59,9 +64,22 @@ class TeamController extends Controller
 
 
     /**
-     * A user is either:
-     * Accepting/declining an admin's invitation to join the team
-     * (Un)requesting to join the team
+     * Update the meta data and settings for a given team
+     * 
+     * @param  UpdateTeamRequest $request 
+     * @param  Team              $team    
+     * @return Illuminate\Http\Response 
+     */
+    public function update(UpdateTeamRequest $request, Team $team)
+    {
+        return ['ok' => true, 'team' => $this->team->update($request->all(), $team->id)];
+    }
+
+
+    /**
+     * Logged-in user is either:
+     *  - Accepting/declining an admin's invitation to join the team
+     *  - (Un)requesting to join the team
      * 
      * @param  Request $request 
      * @param  Team    $team    
@@ -131,23 +149,27 @@ class TeamController extends Controller
 
 
     /**
-     * Team is uploading a new profile picture
+     * Team is uploading a new photo
+     * Upload to temporary bucket, will move to permanent storage when they hit save
      * 
      * @param  Request $request 
      * @param  Team    $team    
      * @return Illuminate\Http\Response           
      */
-    public function uploadPic(Request $request, Team $team)
+    public function uploadTempPic(Request $request, Team $team)
     {
        $this->validate($request, ['pic' => 'required|image|mimes:jpeg,jpg,gif,png,svg|max:5120']);
 
-       $img = Image::make($request->pic)->resize(250, 250)->save($path);
+       $url = (new UploadsPhotos($request->pic))->upload('tmp');
+
+       return ['ok' => true, 'pic' => $url];
     }
+
 
 
     /** 
      * Return all stat keys associated with a given sport 
-     * Used during the team creation process
+     * Used when admin is selecting which stat keys will show on team page
      * 
      * @param  string $sport 
      * @return Illuminate\Http\Response        

@@ -26,7 +26,6 @@ export default
 					alpha_num: 	function(args) { return this.alphaNum_(args) },  // the field must be a string with only alphanumeric characters
 					alpha_dash: function(args) { return this.alphaDash_(args) },  // the field must be a string with only alphanumeric characters and dashes + underscores
 					email: 			function(args) { return this.email_(args) }, 	// the field must be a valid email
-					jersey: 		function(args) { return this.jersey_(args) }, 	// the field must be a valid jersey number
 				},
 				value: null, 			// the value of the variable in question
 				path: null, 			// the full path of the variable (e.g. user.name.firstname)
@@ -777,47 +776,6 @@ export default
 
 
 		/**
-		 * The variable must match a given regular expression
-		 */
-		regex_(expression)
-		{
-			if (typeof this.validator_.value !== 'string') {
-				// values that aren't strings shouldn't be compared to regexp
-				return false;
-			}
-
-			if (! this.validator_.value.length) {
-				// let 'required' rule take care of any empty variables
-				return true;
-			}
-
-			if (! (expression instanceof RegExp)) {
-				// the expression isn't a valid regular expression yet
-				
-				if (typeof expression === 'object') {
-					// expression is being passed inside an array of arguments
-					expression = expression[0];
-				}
-
-				if (expression[0] === '/') {
-					// if the developer added their own forward-slashes at front and end, remove
-					expression = expression.substring(1, expression.length - 1);
-				}
-
-				// create a valid regular expression out of the string with the 'global' flag
-				expression = new RegExp(expression);
-			}
-
-			if (this.validator_.value.match(expression)) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		},
-
-
-		/**
 		 * The variable must be a boolean
 		 */
 		boolean_()
@@ -854,6 +812,46 @@ export default
 
 
 		/**
+		 * The variable must match a given regular expression
+		 */
+		regex_(expression)
+		{
+			if (! this.string_()) {
+				// convert into string
+				this.validator_.value = this.validator_.value.toString();
+			}
+			else if (! this.validator_.value.length) {
+				// let 'required' rule take care of any empty variables
+				return true;
+			}
+
+			if (! (expression instanceof RegExp)) {
+				// the expression isn't a valid regular expression yet
+				
+				if (typeof expression === 'object') {
+					// expression is being passed inside an array of arguments
+					expression = expression[0];
+				}
+
+				if (expression[0] === '/') {
+					// if the developer added their own forward-slashes at front and end, remove
+					expression = expression.substring(1, expression.length - 1);
+				}
+
+				// create a valid regular expression out of the string with the 'global' flag
+				expression = new RegExp(expression);
+			}
+
+			if (this.validator_.value.match(expression)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		},
+
+
+		/**
 		 * The variable must be a valid email address
 		 */
 		email_()
@@ -882,7 +880,7 @@ export default
 
 
 		/**
-		 * The variable must be a string with only alphanumeric characters + dashes and underscores
+		 * The variable must be a string with only alphanumeric characters also including dashes and underscores
 		 */
 		alphaDash_()
 		{

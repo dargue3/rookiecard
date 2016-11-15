@@ -153,6 +153,7 @@ export default {
 		 */
 		Stats_recompile()
 		{
+			this.stats = [];
 			this.compileStats();
 		},
 

@@ -69,7 +69,7 @@
 					</div>
 					
 					<google-autocomplete v-if="enableTypeahead" :city.sync="team.city" :long.sync="team.long"
-																:lat.sync="team.lat" label="City / Town" :error="errors.city">
+																:lat.sync="team.lat" :timezone.sync="team.timezone" label="City / Town" :error="errors.city">
 					</google-autocomplete>
 				</div>
 
@@ -77,11 +77,17 @@
 					<div class="upload-pic">
 						<label>Team Photo</label>
 						<form class="dropzone --pic" id="team-pic"></form>
+						<div v-show="picUploaded" class="crop">
+							<a v-touch:tap="cropping('pic')">Crop</a>
+						</div>
 					</div>
 
 					<div class="upload-pic">
 						<label>Backdrop Photo</label>
 						<form class="dropzone --backdrop" id="team-backdrop"></form>
+						<div v-show="backdropUploaded" class="crop">
+							<a v-touch:tap="cropping('backdrop')">Crop</a>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -92,6 +98,7 @@
 </template>
 
 <script>
+
 
 import Validator from '../mixins/Validator.js'
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
@@ -117,8 +124,26 @@ export default  {
 		return {
 			tab: 'info',
 			backup: {},
-			debounce: 1500,
 			enableTypeahead: false,
+			lastCheckedName: this.$route.params.name,
+			dropzone: { 
+				pic: null,
+				backdrop: null,
+				options: {
+					paramName: 'pic',
+					url: `${this.$parent.prefix}/temp_pic`,
+					headers: { 'X-CSRF-TOKEN': $('#_token').attr('value') },
+					maxFiles: 1,
+					maxFilesize: 5,
+					acceptedFiles: 'image/jpg,image/jpeg,image/png,image/svg,image/gif',
+					addRemoveLinks: true,
+					dictDefaultMessage: 'Drag and drop or click here',
+					dictRemoveFile: '×',
+					dictCancelUpload: '',
+				},
+			},
+			croppie: { active: null, type: null },
+			crops: { pic: {}, backdrop: {}},
 		}
 	},
 
@@ -139,8 +164,292 @@ export default  {
 			if (! response.data.available && this.team.teamname !== this.backup.teamname) {
 				this.errors.team.teamname = 'Already taken'
 			}
+
+			this.lastCheckedName = response.data.teamname;
+		},
+
+
+		/**
+		 * Request back from the server after pressing 'save'
+		 */
+		TeamSettings_saved(response)
+		{
+			this.$dispatch('Team_updated_team', response.data.team);
+			this.settingsSaved = true;
+			this.$root.banner('good', 'Settings saved');
+		},
+
+
+		/**
+		 * A photo has been cropped by the user
+		 * Save the points and level of zoom for server-side cropping
+		 */
+		TeamSettings_cropped()
+		{
+			let data = this.croppie.active.croppie('get');
+
+			this.resize_dropzone(this.croppie.type,
+				data.points[0], data.points[1], data.points[2], data.points[3]
+			);
+
+			this.$set(`crops.${this.croppie.type}`, data);
+
+			this.$root.hideModal('cropModal');
 		},
 	},
+
+	computed:
+	{
+		/**
+		 * Has a new profile photo been uploaded?
+		 */
+		picUploaded()
+		{
+			if (this.team.pic && this.backup.pic) {
+				return this.team.pic !== this.backup.pic;
+			}
+			return false;
+		},
+
+		/**
+		 * Has a new backdrop photo been uploaded?
+		 */
+		backdropUploaded()
+		{
+			if (this.team.pic && this.backup.pic) {
+				return this.team.backdrop !== this.backup.backdrop;
+			}
+			return false;
+		},
+	},
+
+
+	methods:
+	{
+		/**
+		 * Save any changes to the server
+		 */
+		save()
+		{
+			if (this.checkInputs() > 0) {
+				// there are errors in the fields
+				return;
+			}
+
+			let data = {
+				name: this.team.name,
+				teamURL: this.team.teamname,
+				homefield: this.team.homefield,
+				slogan: this.team.slogan,
+				city: this.team.city,
+				lat: this.team.lat,
+				long: this.team.long,
+				timezone: this.team.timezone,
+				pic: this.team.pic,
+				backdrop: this.team.backdrop,
+				userStats: this.team.settings.statKeys,
+				rcStats: [],
+			}
+
+			let url = `${this.$parent.prefix}/settings`;
+			this.$root.post(url, 'TeamSettings_saved', data);
+		},
+
+
+		/**
+		 * Before submitting, check forms for errors and teamname for uniqueness
+		 */
+		checkInputs()
+		{
+			if (this.lastCheckedName !== this.team.teamname) {
+				this.checkAvailability();
+				return 1;
+			}
+
+			return this.errorCheck();
+		},
+
+
+		/**
+		 * Ask the server if this teamname that was just typed in is taken yet
+		 */
+		checkAvailability()
+		{
+			if (this.errorCheck('team.teamname') === 0) {
+				this.$root.get(`${this.$root.prefix}/team/create/${this.team.teamname}`, 'TeamSettings_availability');
+			}
+		},
+
+
+		/**
+		 * Setup configurations and attach Dropzone to the DOM
+		 */
+		init_dropzone_pic()
+		{
+			let options = JSON.parse(JSON.stringify(this.dropzone.options));
+
+			this.dropzone.pic = new Dropzone('#team-pic', options);
+
+			// set the thumbnails to show a default image
+			//this.mockThumbnails(pic, backdrop);
+
+			let self = this;
+
+			// photo was uploaded to temp storage on S3
+			// show modal to optionally crop photo
+			this.dropzone.pic.on('success', function(file, response) {
+				self.team.pic = response.pic;
+				self.cropping('pic');
+			});
+
+
+			// whatever photo they had uploaded was discarded
+			this.dropzone.pic.on('removedfile', function(file, response) {
+				self.crops.pic = null;
+			});
+		},	
+
+
+		/**
+		 * Setup configurations and attach Dropzone to the DOM
+		 */
+		init_dropzone_backdrop()
+		{
+			let options = JSON.parse(JSON.stringify(this.dropzone.options));
+
+			options.thumbnailWidth = 210;
+			this.dropzone.backdrop = new Dropzone('#team-backdrop', options);
+
+
+			// set the thumbnails to show a default image
+			//this.mockThumbnails(pic, backdrop);
+
+			let self = this;
+
+			// photo was uploaded to temp storage on S3
+			// show modal to optionally crop photo
+			this.dropzone.backdrop.on('success', function(file, response) {
+				self.team.backdrop = response.pic;
+				self.cropping('backdrop');
+			});
+
+
+			// whatever photo they had uploaded was discarded
+			this.dropzone.backdrop.on('removedfile', function(file, response) {
+				self.crops.backdrop = null;
+			});
+		},	
+
+
+		/**
+		 * An uploaded image has been cropped, reinitialize dropzone with the cropped image
+		 */
+		resize_dropzone(pic_type, topLeftX, topLeftY, bottomRightX, bottomRightY)
+		{
+			let self = this;
+			let srcX = topLeftX;
+			let srcY = topLeftY;
+			let srcWidth = bottomRightX - topLeftX;
+			let srcHeight = bottomRightY - topLeftY;
+			let resize = function(file) {
+        // drawImage(image, srcX, srcY, srcWidth, srcHeight, trgX, trgY, trgWidth, trgHeight) takes an image, clips it to
+        // the rectangle (srcX, srcY, srcWidth, srcHeight), scales it to dimensions (trgWidth, trgHeight), and draws it
+        // on the canvas at coordinates (trgX, trgY).
+        let info = {
+          srcX: srcX,
+          srcY: srcY,
+          srcWidth: srcWidth,
+          srcHeight: srcHeight,
+          trgX:0,
+          trgY:0,
+          trgWidth: this.options.thumbnailWidth,
+          trgHeight: parseInt(this.options.thumbnailWidth * srcHeight / srcWidth)
+        }
+        return info;
+    	};
+
+    	// add the resizing feature to dropzone options object
+    	let options = JSON.parse(JSON.stringify(this.dropzone.options));
+    	options.resize = resize;
+
+    	// disable the existing dropzone element
+    	this.dropzone[pic_type].removeAllFiles(true);
+    	this.dropzone[pic_type].options.resize = resize;
+    	this.dropzone[pic_type].options.maxFiles = 0;
+
+    	// load a new dropzone thumbnail with crops by mocking an upload
+    	let mock = { name: '', size: 424214, accepted: true, kind: 'image' }
+    	let pic = this.$get(`team.${pic_type}`);
+    	this.dropzone[pic_type].emit('addedfile', mock);
+			this.dropzone[pic_type].createThumbnailFromUrl(mock, pic, null, 'anonymous');
+			this.dropzone[pic_type].emit('complete', mock);
+			this.dropzone[pic_type].files.push(mock);
+		},
+
+
+		init_croppie(pic_type)
+		{
+			this.croppie.type = pic_type;
+			let cropper;
+			let options = {}
+
+			// destroy current croppie element if already initialized
+			if (this.croppie.active) {
+				this.croppie.active.croppie('destroy');
+				this.croppie.active = null;
+			}
+
+			if (pic_type === 'pic') {
+				options.url = this.team.pic;
+				options.viewport = { width: 200, height: 200, type: 'circle'};
+				cropper = $('#croppie').croppie(options);
+			}
+
+			if (pic_type === 'backdrop') {
+				options.url = this.team.backdrop;
+				options.viewport = { width: 400, height: 150, type: 'square'};
+				cropper = $('#croppie').croppie(options);
+			}
+
+			let previousCrops = this.$get(`crops.${pic_type}`);
+			if (previousCrops) {
+				cropper.croppie('bind', {
+					url: this.$get(`team.${pic_type}`),
+					points: previousCrops.points
+				});		
+			}
+
+			this.croppie.active = cropper;
+		},
+
+
+		/**
+		 * Set the default thumbnails to their current saved photos
+		 */
+		mockThumbnails(pic, backdrop)
+		{
+			let mock = { name: 'Team Photo', size: 424214 }
+			pic.emit('addedfile', mock);
+			pic.createThumbnailFromUrl(mock, this.team.pic);
+			pic.emit('complete', mock);
+
+			let mock2 = { name: 'Backdrop Photo', size: 643244 }
+			backdrop.emit('addedfile', mock2);
+			backdrop.createThumbnailFromUrl(mock2, this.team.backdrop);
+			backdrop.emit('complete', mock2);
+		},
+
+
+		/**
+		 * User wants to crop their picture before saving
+		 */
+		cropping(pic_type)
+		{
+			this.init_croppie(pic_type);
+			this.$root.showModal('cropModal');
+		},
+	},
+
 
 	watch:
 	{
@@ -150,9 +459,8 @@ export default  {
 		team()
 		{
 			this.$set('backup', JSON.parse(JSON.stringify(this.team)));
-
-			this.dropzone();
-
+			this.init_dropzone_pic();
+			this.init_dropzone_backdrop();
 			this.enableTypeahead = true;
 		},
 
@@ -209,108 +517,6 @@ export default  {
 				this.settingsSaved = false;
 			}
 		},
-	},
-
-	methods:
-	{
-		/**
-		 * Save any changes to the server
-		 */
-		save()
-		{
-			this.settingsSaved = true;
-
-			this.$root.banner('good', 'Settings saved');
-		},
-
-
-		/**
-		 * Ask the server if this teamname that was just typed in is taken yet
-		 */
-		checkAvailability()
-		{
-			if (this.errorCheck('team.teamname') === 0) {
-				this.$root.get(`${this.$root.prefix}/team/create/${this.team.teamname}`, 'TeamSettings_availability');
-			}
-		},
-
-
-		/**
-		 * Setup configurations and attach Dropzone to the DOM
-		 */
-		dropzone()
-		{
-			let options = {
-				paramName: 'pic',
-				url: '', // set later
-				headers: {'X-CSRF-TOKEN': this.$http.headers.common['X-CSRF-TOKEN'] },
-				maxFiles: 1,
-				maxFilesize: 5,
-				acceptedFiles: 'image/jpg,image/jpeg,image/png,image/svg,image/gif',
-				addRemoveLinks: true,
-				dictDefaultMessage: 'Drag and drop or click here',
-				dictRemoveFile: '×',
-				dictCancelUpload: '',
-			};
-
-			options.url = `${this.$parent.prefix}/pic`;
-			let pic = new Dropzone('#team-pic', options);
-
-			options.url = `${this.$parent.prefix}/backdrop`;
-			options.thumbnailWidth = 210;
-			let backdrop = new Dropzone('#team-backdrop', options);
-
-
-			// set the thumbnails to show a default image
-			this.mockThumbnails(pic, backdrop);
-
-
-			// picture uploaded successfully to the server
-			// returned with file object and response
-			pic.on('success', function(file, response) {
-				//let newPic = response.data.pic;
-				this.$root.banner('good', 'Picture uploaded')
-			}.bind(this));
-
-
-			// backdrop photo uploaded successfully to the server
-			// returned with file object and response
-			backdrop.on('success', function(file, response) {
-				//let newBackdrop = response.data.pic;
-				this.$root.banner('good', 'Picture uploaded')
-			}.bind(this));
-
-
-			// picture reverted back to original in server
-			// returned with file object and response
-			pic.on('removedfile', function(file, response) {
-				this.$root.banner('good', 'Reverted to original photo')
-			}.bind(this));
-
-
-			// backdrop photo reverted back to original in server
-			// returned with file object and response
-			backdrop.on('removedfile', function(file, response) {
-				this.$root.banner('good', 'Reverted to original photo')
-			}.bind(this));
-		},	
-
-
-		/**
-		 * Set the default thumbnails to their current saved photos
-		 */
-		mockThumbnails(pic, backdrop)
-		{
-			let mock = { name: 'Team Photo', size: 424214 }
-			pic.emit('addedfile', mock);
-			pic.createThumbnailFromUrl(mock, this.team.pic);
-			pic.emit('complete', mock);
-
-			let mock2 = { name: 'Backdrop Photo', size: 643244 }
-			backdrop.emit('addedfile', mock2);
-			backdrop.createThumbnailFromUrl(mock2, this.team.backdrop);
-			backdrop.emit('complete', mock2);
-		}
 	},
 
 };
@@ -423,6 +629,8 @@ export default  {
 			&:last-child
 				margin-top 10px
 				margin-left 0px
+		.crop
+			margin-top 5px
 		.dropzone
 			height 200px
 			display flex
@@ -453,7 +661,7 @@ export default  {
 				.dz-remove
 					display inherit
 					position absolute
-					bottom -49px
+					top -53px
 					left 52px
 			&.--backdrop
 				width 333px
@@ -464,7 +672,25 @@ export default  {
 						width 210px
 					.dz-remove
 						left 98px
-						bottom -49px
+						top -53px
+						
+.croppie
+	width 100%
+	height 250px
+	margin-top 15px
+	margin-bottom 35px
+	.cr-slider-wrap
+		margin 20px auto
+		.cr-slider
+			background rc_med_gray
+	
+.croppie-wrapper
+	padding 10px
+	.save-button-wrapper
+		margin-top 10px
+	
+	
+
 			
 					
 	

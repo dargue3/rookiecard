@@ -1,12 +1,13 @@
 <?php
 
+use App\Team;
 use App\RC\Team\Roles\Fan;
 use App\RC\Team\Roles\Coach;
 use App\RC\Team\Roles\Player;
 use App\RC\Team\TeamRepository;
-use App\RC\Team\HandlesTeamCreationLogic;
 use App\RC\Sports\SportInterface;
 use App\RC\Team\TeamMemberRepository;
+use App\RC\Team\HandlesTeamCreationLogic;
 
 class HandlesTeamCreationLogicTest extends TestCase
 {
@@ -28,14 +29,15 @@ class HandlesTeamCreationLogicTest extends TestCase
 
 		$this->data = [
 			'name'			=> 'Team Test',
-			'teamname'		=> 'teamname',
+			'teamURL'		=> 'teamname',
 			'gender'		=> 'male',
 			'sport'			=> 'basketball',
 			'slogan'		=> 'Here goes nothin!',
 			'homefield'		=> 'My backyard',
 			'city'			=> 'Providence, RI',
 			'lat'			=> 69.24828429,
-			'long'			=> -72.4824724,
+            'long'          => -72.4824724,
+			'timezone'	    => 'America/New_York',
 			'userIsA'		=> 'fan',
 			'userStats'		=> ['pts', 'fgm', 'fga'],
 			'rcStats'		=> ['fg_'],
@@ -61,8 +63,9 @@ class HandlesTeamCreationLogicTest extends TestCase
     	$this->assertEquals('Here goes nothin!', $handler->meta['slogan']);
     	$this->assertEquals('My backyard', $handler->meta['homefield']);
     	$this->assertEquals('Providence, RI', $handler->meta['city']);
-    	$this->assertEquals(69.24828429, $handler->lat);
-    	$this->assertEquals(-72.4824724, $handler->long);
+    	$this->assertEquals('America/New_York', $handler->meta['timezone']);
+        $this->assertEquals(69.24828429, $handler->lat);
+        $this->assertEquals(-72.4824724, $handler->long);
     	$this->assertEquals(['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'], $handler->players[0]);
     	$this->assertEquals(['firstname' => 'Tester', 'lastname' => 'McTestFace', 'email' => ''], $handler->players[1]);
     	$this->assertEquals(['firstname' => 'Coach', 'lastname' => 'Test', 'email' => 'coach@rookiecard.com'], $handler->coaches[0]);
@@ -167,5 +170,34 @@ class HandlesTeamCreationLogicTest extends TestCase
 
         $this->assertEquals([], $handler->players);
         $this->assertEquals([], $handler->coaches);
+    }
+
+
+    /** @test */
+    public function it_updates_a_team_with_the_given_data()
+    {
+        $team = factory(Team::class)->create();
+
+        $this->assertFalse($team->name === 'Team Test');
+        $this->assertFalse($team->teamname === 'teamname');
+
+        // Amazon S3 storage URLs for their photos are included when updating a team
+        $this->data['pic'] = 'https://s3.amazon.com/pic';
+        $this->data['backdrop'] = 'https://s3.amazon.com/backdrop';
+
+        $team = (new HandlesTeamCreationLogic($this->data, $team->id))->update();
+
+        $this->assertEquals('Team Test', $team->name);
+        $this->assertEquals('teamname', $team->teamname);
+        $this->assertEquals(69.24828429, $team->lat);
+        $this->assertEquals(-72.4824724, $team->long);
+        $this->assertEquals('https://s3.amazon.com/pic', $team->pic);
+        $this->assertEquals('https://s3.amazon.com/backdrop', $team->backdrop);
+
+        $meta = json_decode($team->meta);
+        $this->assertEquals('Here goes nothin!', $meta->slogan);
+        $this->assertEquals('My backyard', $meta->homefield);
+        $this->assertEquals('Providence, RI', $meta->city);
+        $this->assertEquals('America/New_York', $meta->timezone);
     }
 }

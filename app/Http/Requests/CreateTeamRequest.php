@@ -27,6 +27,7 @@ class CreateTeamRequest extends Request
             'city'                  => 'required|max:100',
             'lat'                   => 'required|numeric',
             'long'                  => 'required|numeric',
+            'timezone'              => 'required|timezone',
             'userIsA'               => 'required|in:player,coach,fan',
             'players'               => 'array',
             'coaches'               => 'array',
