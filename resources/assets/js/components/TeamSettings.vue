@@ -95,19 +95,34 @@
 
 			<div v-show="tab === 'stats'" class="settings-container">
 
+				<stats v-if="showStatTable" type="playerSeason" :stat-keys="newStatKeys" :sport="team.sport"
+								:raw-stats="stats" :players="player" :centered="false" :disable-sorting="true">
+
+								<div class="outcome">
+									<span class="away loss --no-border">Demo</span>
+								</div>
+
+    		</stats>
+
 				<stat-selection v-if="team.sport" :sport="team.sport" :user-selected.sync="userSelected" :sample-stats.sync="stats"
 												:rc-selected.sync="rcSelected" :existing="team.settings.statKeys">
 				</stat-selection>
 
-				<stats v-if="showStatTable" type="playerSeason" :stat-keys="newStatKeys" :sport="team.sport"
-								:raw-stats="stats" :players="player" :centered="false">
+			</div>
 
-								<div class="outcome">
-									<span class="away loss">Demo Table</span>
-								</div>
-								
-    		</stats>
 
+			<div v-show="tab === 'privacy'" class="settings-container">
+					
+			</div>
+
+
+			<div v-show="tab === 'notifications'" class="settings-container">
+					
+			</div>
+
+
+			<div v-show="tab === 'danger-zone'" class="settings-container">
+					
 			</div>
 			
 
@@ -702,6 +717,10 @@ export default  {
 	.stat-selector
 		&:last-child
 			margin-left 10px
+	.stat-selector-wrapper
+		margin-top 25px
+	.stats-overflow
+		margin-top 0
 		
 		
 		
@@ -785,6 +804,7 @@ export default  {
 	padding 10px
 	.save-button-wrapper
 		margin-top 10px
+	
 	
 	
 

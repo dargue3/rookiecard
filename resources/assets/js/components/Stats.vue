@@ -11,7 +11,7 @@
 		</div>
 		<div class="stats-container" :class="! centered ? '--left' : '--center'">
 			<div class="table-responsive" :class="randomKey">	
-				<slot class="test-case"></slot>
+				<slot></slot>
 				<table v-if="stats.length" class="table table-striped stats-table">
 					<thead>
 			    	<tr>
@@ -19,7 +19,7 @@
 			      			:class="resolveKeyClasses(key)" v-touch:tap="sortBy(key)"
 			      				data-toggle="tooltip" :title="resolveTooltip(key)">
 			      		{{ resolveKeyName(key) }}
-			      		<span class="caret" :class="resolveCaretClass(key)"></span>	      	
+			      		<span v-if="! disableSorting" class="caret" :class="resolveCaretClass(key)"></span>	      	
 			      	</th>
 			    	</tr>
 			  	</thead>
@@ -79,7 +79,7 @@ export default {
 	mixins: [ StatHelpers, StatsScrollSpy ],
 
 	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'teamRecord', 'search', 'centered',
-					'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel', 'hideScroll'],
+					'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel', 'hideScroll', 'disableSorting'],
 
 	components:
 	{
@@ -287,8 +287,11 @@ export default {
 		resolveKeyClasses(key)
 		{
 			var classes = [];
-			if (this.sortKey === key) {
+			if (this.sortKey === key  && ! this.disableSorting) {
 				classes.push('col-sort');
+			}
+			else if (this.disableSorting) {
+				classes.push('no-sort')
 			}
 
 			this.keyClassLookup[key].call(this).forEach(function(className) {
@@ -338,11 +341,13 @@ export default {
 		 */
 		sortBy(key)
 		{
-			if (key === this.sortKey) {
-				this.sortOrders[key]  = this.sortOrders[key] * -1;
-			}
-			else {
-				this.sortKey = key;
+			if (! this.disableSorting) {
+				if (key === this.sortKey) {
+					this.sortOrders[key]  = this.sortOrders[key] * -1;
+				}
+				else {
+					this.sortKey = key;
+				}
 			}
 		},
 
@@ -410,6 +415,10 @@ table
 		&.col-sort
 			background-color rc_red
 			border-bottom 2px solid #CACACA
+		&.no-sort
+			background-color rc_blue
+			&:hover
+				cursor default
 
 
 .table-striped

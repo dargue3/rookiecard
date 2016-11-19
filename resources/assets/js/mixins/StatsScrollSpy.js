@@ -5,7 +5,6 @@ export default {
 	data() {
 		return {
 			overflowed: {},
-			threshold: { first: 0, last: 0 },
 		}
 	},
 

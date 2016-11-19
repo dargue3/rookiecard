@@ -1,5 +1,5 @@
 <template>
-<div class="stat-selection-wrapper">
+<div class="stat-selector-wrapper">
 
 	<div class="stat-selector">
 		<label>Scorekeeper will input</label>
@@ -262,7 +262,7 @@ export default {
 <style lang="stylus">
 @import '/resources/assets/stylus/variables.styl'
 
-.stat-selection-wrapper
+.stat-selector-wrapper
 	display flex
 	flex-flow row nowrap
 	+mobile()

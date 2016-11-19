@@ -149,7 +149,7 @@
 							</div>
 
 
-							<div v-show="statsTab === 'season'">
+							<div v-show="statsTab === 'season'" class="stats-with-filters">
 
 								<div class="stat-filters">
 									<div v-show="stats.length" class="TabButton --just-two --small">
@@ -1038,6 +1038,10 @@ export default  {
 			&:hover
 				cursor default
 				color black
+				
+.stats-with-filters
+	.stats-overflow
+		margin-top 0
 					
 				
 

@@ -573,6 +573,8 @@ export default  {
 	.separator
 		font-size 40px
 		color rc_lite_gray
+	.--no-border
+		border 0
 	
 .modal
 	.stats-wrapper
