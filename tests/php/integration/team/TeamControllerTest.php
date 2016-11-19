@@ -140,7 +140,7 @@ class TeamControllerTest extends TestCase
     {
         $data = [
             'name'          => 'Team Test',
-            'teamname'      => 'testname',
+            'teamURL'       => 'testname',
             'gender'        => 'male',
             'sport'         => 'basketball',
             'slogan'        => 'Here goes nothin!',
@@ -148,6 +148,7 @@ class TeamControllerTest extends TestCase
             'city'          => 'Providence, RI',
             'lat'           => 69.24828429,
             'long'          => -72.4824724,
+            'timezone'      => 'America/New_York',
             'userIsA'       => 'fan',
             'userStats'     => ['pts', 'fgm', 'fga'],
             'rcStats'       => ['fg_'],

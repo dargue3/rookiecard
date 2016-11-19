@@ -4,46 +4,58 @@ export default {
 
 	data() {
 		return {
-			overflowed: {
-				
-			},
+			overflowed: {},
+			threshold: { first: 0, last: 0 },
 		}
 	},
 
 	methods: {
 
-		// checks to see if that element is visible on screen or not
-		isHidden(element) {
-	    element = element[0];
-	    var rect = element.getBoundingClientRect();
-	    return !(
-	        rect.top >= 0 &&
-	        rect.left >= 0 &&
-	        rect.bottom <= ($(window).innerHeight() || $(window).height()) &&
-	        rect.right <= ($(window).innerWidth() || $(window).width()) 
-	    );
+		/**
+		 * Checks to see if the first column of stats is overflowed and hidden
+		 */
+		isFirstCellHidden(element, container)
+		{
+    	let rect = element[0].getBoundingClientRect();
+    	let threshold = container[0].getBoundingClientRect().left
+    	//console.log(`left: ${rect.right}`);
+    	//console.log(`threshold: ${threshold - rect.width}`);
+
+    	return rect.right <= threshold;
 		},
 
 
+		/**
+		 * Checks to see if the last column of stats is overflowed and hidden
+		 */
+		isLastCellHidden(element, container)
+		{
+			let rect = element[0].getBoundingClientRect();
+			let threshold = container[0].getBoundingClientRect().left + container[0].getBoundingClientRect().width;
+    	//console.log(`left: ${rect.left}`)
+    	//console.log(`threshold: ${threshold}`)
+    	return rect.left >= threshold;
+    },
+
+
 		// set up listeners to constantly check visibility on scroll
-		attachScrollListener(element, overflowIndex) {
+		attachScrollListener(element) {
 			setTimeout(function() {
 				var firstElement = $(element +  ' th:first-child');
 				var lastElement = $(element +  ' th:last-child');
-				var parent = $(element);
+				var container = $(element);
 
-				this.$set('overflowed.' + overflowIndex, {first: false, last: false});
+				this.overflowed = {first: false, last: false};
 
-				this.overflowed[overflowIndex].last = this.isHidden(lastElement);
+				this.overflowed.last = this.isLastCellHidden(lastElement, container);
 
 				var self = this;
 				// listen for scroll, update the flag if now in view
-				parent.on('scroll', function() {
-					self.overflowed[overflowIndex].first = self.isHidden(firstElement);
-					self.overflowed[overflowIndex].last = self.isHidden(lastElement);
+				container.on('scroll', function() {
+					self.overflowed.first = self.isFirstCellHidden(firstElement, container);
+					self.overflowed.last = self.isLastCellHidden(lastElement, container);
 				});
 			}.bind(this), 50)
-
 		}
 	},
 

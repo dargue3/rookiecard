@@ -4,11 +4,10 @@
 
   	<div class="Calendar">
       <div class="Calendar__header">
-
         <div class="month-nav">
-          <a chevron="prev" @click="chevron('prev')"><i class="material-icons chevron">chevron_left</i></a>
+          <a chevron="prev" v-touch:tap="chevron('prev')"><i class="material-icons chevron">chevron_left</i></a>
           <h3 class="Calendar__nav"></h3>
-          <a chevron="next" @click="chevron('next')"><i class="material-icons chevron">chevron_right</i></a>
+          <a chevron="next" v-touch:tap="chevron('next')"><i class="material-icons chevron">chevron_right</i></a>
         </div>
         
         <div v-show="isAdmin" class="add-event">
@@ -17,7 +16,9 @@
             <span>Add an Event</span>
           </a>
         </div>
-    
+      </div>
+      <div v-if="differentTimezone" class="Calendar__timezone">
+        <span>This team is in a different timezone than you. Dates have been adjusted to your timezone.</span>
       </div>
       <div class="Calendar__container">
           <div class="calendar"></div>
@@ -37,7 +38,7 @@ export default
 {
 	name: 'Calendar',
 
-	props: ['isAdmin', 'events'],
+	props: ['isAdmin', 'events', 'timezone'],
 
 	data() {
 
@@ -67,17 +68,21 @@ export default
     events()
     {
       this.compile();
-    }
+    },
+  },
+
+  computed:
+  {
+    differentTimezone()
+    {
+      return this.timezone !== jstz.determine().name();
+    },
   },
 
   ready()
   {
     var self = this;
     $(function() {
-
-      // attach the calendar when the DOM is ready
-      
-
       // hide tooltips if on mobile (they are annoying and counterintuitive)
       // give time for DOM to settle before checking
       setTimeout(function() {
@@ -85,7 +90,6 @@ export default
           $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
         }
       }, 1000);
-
     })
   },
 
@@ -215,7 +219,7 @@ export default
   display flex
   flex-flow row wrap
   flex-basis 775px
-  padding-bottom 3em
+  padding 0 15px 3em 15px
 
 .Calendar__header
   flex-basis 100%
@@ -235,7 +239,6 @@ export default
     display flex
     align-items center
     justify-content flex-end
-    padding-right 15px
     font-size 16px
     flex 1
     +mobile()
@@ -246,13 +249,26 @@ export default
   margin-top 11px
   width 190px
   text-align center     
+  
+.Calendar__timezone
+  display flex
+  flex-flow row
+  justify-content center
+  align-items center
+  text-align center
+  margin-top 15px
+  border-radius 5px
+  width 100%
+  height 50px
+  background rc_alert_info
+  color darken(rc_alert_info, 75%)
+  font-weight bold
 
 .Calendar__container
   flex-basis 100%
   margin-top 45px
   max-width 775px
   background whitesmoke
-  padding 0px 15px
   +mobile()
     margin-top 30px
   .calendar

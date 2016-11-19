@@ -5,6 +5,7 @@ use App\RC\Team\Roles\Fan;
 use App\RC\Team\Roles\Coach;
 use App\RC\Team\Roles\Player;
 use App\RC\Team\TeamRepository;
+use App\RC\Helpers\UploadsPhotos;
 use App\RC\Sports\SportInterface;
 use App\RC\Team\TeamMemberRepository;
 use App\RC\Team\HandlesTeamCreationLogic;
@@ -63,7 +64,7 @@ class HandlesTeamCreationLogicTest extends TestCase
     	$this->assertEquals('Here goes nothin!', $handler->meta['slogan']);
     	$this->assertEquals('My backyard', $handler->meta['homefield']);
     	$this->assertEquals('Providence, RI', $handler->meta['city']);
-    	$this->assertEquals('America/New_York', $handler->meta['timezone']);
+    	$this->assertEquals('America/New_York', $handler->meta['tz']);
         $this->assertEquals(69.24828429, $handler->lat);
         $this->assertEquals(-72.4824724, $handler->long);
     	$this->assertEquals(['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'], $handler->players[0]);
@@ -181,23 +182,34 @@ class HandlesTeamCreationLogicTest extends TestCase
         $this->assertFalse($team->name === 'Team Test');
         $this->assertFalse($team->teamname === 'teamname');
 
-        // Amazon S3 storage URLs for their photos are included when updating a team
-        $this->data['pic'] = 'https://s3.amazon.com/pic';
-        $this->data['backdrop'] = 'https://s3.amazon.com/backdrop';
-
         $team = (new HandlesTeamCreationLogic($this->data, $team->id))->update();
 
         $this->assertEquals('Team Test', $team->name);
         $this->assertEquals('teamname', $team->teamname);
         $this->assertEquals(69.24828429, $team->lat);
         $this->assertEquals(-72.4824724, $team->long);
-        $this->assertEquals('https://s3.amazon.com/pic', $team->pic);
-        $this->assertEquals('https://s3.amazon.com/backdrop', $team->backdrop);
 
         $meta = json_decode($team->meta);
         $this->assertEquals('Here goes nothin!', $meta->slogan);
         $this->assertEquals('My backyard', $meta->homefield);
         $this->assertEquals('Providence, RI', $meta->city);
-        $this->assertEquals('America/New_York', $meta->timezone);
+        $this->assertEquals('America/New_York', $meta->tz);
+    }
+
+
+    /** @test */
+    public function if_present_in_request__prepares_new_images_and_saves_to_s3__deletes_originals()
+    {
+        $team = factory(Team::class)->create();
+
+        $this->data['pic'] = ['url' => '/storage/tmp/test.jpeg', 'crops' => [0, 0, 300, 150]];
+        $this->data['backdrop'] = ['url' => '/storage/tmp/test.jpeg', 'crops' => [0, 0, 300, 150]];
+
+        $this->mock(UploadsPhotos::class);
+        
+        // uploader loads image, deletes image stored at existing team->pic url, crops new picture, stores it in s3
+        $this->mock->shouldReceive('loadImage->deleteOriginal->crop->moveFromLocalToS3')->twice()->andReturn('blah');
+
+        $team = (new HandlesTeamCreationLogic($this->data, $team->id))->update();
     }
 }

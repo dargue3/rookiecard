@@ -1,8 +1,16 @@
 
 <template>
 	<div class="stats-with-slot-container">
-		<div class="stats-container">
-			<div class="table-responsive">
+		<div v-if="overflowed" class="stats-overflow">
+			<span class="--left" v-show="overflowed.first">
+				<i class="material-icons">chevron_left</i>SCROLL
+			</span>
+			<span class="--right" v-show="overflowed.last">
+				SCROLL<i class="material-icons">chevron_right</i>
+			</span>
+		</div>
+		<div class="stats-container" :class="! centered ? '--left' : '--center'">
+			<div class="table-responsive" :class="randomKey">	
 				<slot class="test-case"></slot>
 				<table v-if="stats.length" class="table table-striped stats-table">
 					<thead>
@@ -59,6 +67,7 @@
 
 // helpers
 import StatHelpers from '../mixins/StatHelpers.js'
+import StatsScrollSpy from '../mixins/StatsScrollSpy.js'
 
 // sports
 import Basketball from './stats/Basketball.vue'
@@ -67,10 +76,10 @@ export default {
 	
 	name: 'Stats',
 
-	mixins: [ StatHelpers ],
+	mixins: [ StatHelpers, StatsScrollSpy ],
 
-	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'teamRecord', 'search', 
-					'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel'],
+	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'teamRecord', 'search', 'centered',
+					'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel', 'hideScroll'],
 
 	components:
 	{
@@ -80,6 +89,7 @@ export default {
 
 	data()
 	{
+
 		return {
 			keyNames: {},
 			valLookup: {},
@@ -92,6 +102,7 @@ export default {
 			currPage: this.paginate,
 			filteredRawStats: [],
 			sortOrders: {},
+			randomKey: Math.random().toString(36).substring(7),
 		}
 	},
 
@@ -153,7 +164,7 @@ export default {
 		 */
 		Stats_recompile()
 		{
-			this.stats = [];
+			this.$set('stats', []);
 			this.compileStats();
 		},
 
@@ -171,7 +182,10 @@ export default {
 
 			setTimeout(function() {
 				this.attachTooltips();
+				this.attachScrollSpy();
 			}.bind(this), 250);
+
+			this.$dispatch('StatsParent_compiled');
 		}
 	},
 
@@ -344,6 +358,17 @@ export default {
 			});
 		},
 
+
+		/**
+		 * Attach the scroll listeners that tell the user when stats are hidden off-screen
+		 * Uses this.randomKey to assign a unique class so that other stat tables don't interfere
+		 */
+		attachScrollSpy()
+		{
+			if (! this.hideScroll) {
+				this.attachScrollListener(`.table-responsive.${this.randomKey}`);
+			}
+		},
 	},
 
 };
@@ -362,7 +387,10 @@ export default {
 
 .stats-container
 	display flex
-	justify-content center
+	&.--center
+		justify-content center
+	&.--left
+		align-items flex-start
 		
 .table-responsive
 	align-self center
@@ -421,6 +449,30 @@ td.stat-entries
 	tr
 		user-select none
 		
+
+.stats-overflow
+	margin-top 1em
+	margin-bottom 0.5em
+	min-height 20px	
+	span
+		position relative
+		color rc_lite_gray
+		&.--right
+			padding-right 1.5em
+			float right
+			.material-icons
+				top -6px
+				right -9px
+		&.--left
+			float left
+			padding-left 1.5em
+			.material-icons
+				top -6px
+				left -9px
+		.material-icons
+			position absolute
+			font-size 30px	
+
 
 			
 .stat-entries.win

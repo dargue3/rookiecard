@@ -160,9 +160,7 @@ class TeamController extends Controller
     {
        $this->validate($request, ['pic' => 'required|image|mimes:jpeg,jpg,gif,png,svg|max:5120']);
 
-       $url = (new UploadsPhotos($request->pic))->upload('tmp');
-
-       return ['ok' => true, 'pic' => $url];
+       return ['ok' => true, 'pic' => (new UploadsPhotos($request->pic))->uploadToLocal()];
     }
 
 

@@ -45,7 +45,7 @@
 			<!-- input new stats here -->
 			<h3>Box Score</h3>
 			<form v-if="ready" @submit.prevent>
-				<div class="table-responsive stats-container">
+				<div class="table-responsive stats-container --left">
 					<table class="table stats-table">
 						<thead>
 				    	<tr>

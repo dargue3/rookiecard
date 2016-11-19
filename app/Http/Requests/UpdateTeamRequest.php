@@ -41,8 +41,12 @@ class UpdateTeamRequest extends FormRequest
             'lat'       => 'required|numeric',
             'long'      => 'required|numeric',
             'timezone'  => 'required|timezone',
-            'pic'       => 'required',
-            'backdrop'  => 'required',
+            'pic.url'           => 'regex:/\/storage\/.+/',
+            'backdrop.url'      => 'regex:/\/storage\/.+/',
+            'pic.crops'         => 'array|size:4',
+            'backdrop.crops'    => 'array|size:4',
+            'backdrop.crops.*'  => 'numeric',
+            'pic.crops.*'       => 'numeric',
         ];
     }
 }

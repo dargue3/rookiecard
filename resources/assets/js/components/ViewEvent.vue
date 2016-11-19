@@ -36,7 +36,7 @@
 						<template v-if="viewing === 'showingStats'">
 
 							<stats v-if="eventStats.length" type="playerTeamSeason" :stat-keys="team.settings.statKeys" :event="true"
-		        					:sport="team.sport" :raw-stats="eventStats" :players="players" table-bottom-label="TEAM">
+		        					:sport="team.sport" :raw-stats="eventStats" :players="players" table-bottom-label="TEAM" :centered="true">
 											
 											<!-- this is inserted above the stat table -->
 		        					<div class="outcome">

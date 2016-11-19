@@ -1,6 +1,8 @@
 <?php
 namespace App\RC\Sports;
 
+use App\Stat;
+
 class Basketball extends Sport implements SportInterface
 {
 	/**
@@ -163,7 +165,10 @@ class Basketball extends Sport implements SportInterface
 	 */
 	public function statDetails()
 	{
-		return $this->statRequirements;
+		// generate some random stats first, don't persist in memory
+		$stats = factory(Stat::class, 'basketball')->make(['owner_id' => 0, 'member_id' => 0]);
+
+		return ['info' => $this->statRequirements, 'order' => $this->statKeys, 'sample' => $stats];
 	}
 
 	/**
@@ -321,7 +326,7 @@ class Basketball extends Sport implements SportInterface
 	            ],
 	            "disabled": false
 	        },
-	        "dd3": {
+	        "td3": {
 	            "val": "Triple Doubles",
 	            "subtext": "Requires PTS, AST, REB, BLK, STL",
 	            "req": [

@@ -30,9 +30,10 @@ export default {
 
 	'name': 'StatSelection',
 
-	'props': ['sport', 'fetchStats', 'userSelected', 'rcSelected'],
+	'props': ['sport', 'userSelected', 'rcSelected', 'existing', 'sampleStats'],
 
-	data() {
+	data()
+	{
 		return {
 			// optional stats inputted by user
 			userStatsList: {},
@@ -43,10 +44,11 @@ export default {
 			// array of the keys of the objects
 			userStatKeys: [],
 			rcStatKeys: [],
+			keysInOrder: [],
 		}
 	},
 
-	created()
+	ready()
 	{
 		this.init(this.sport);
 	},
@@ -59,6 +61,7 @@ export default {
 		},
 	},
 
+
 	methods:
 	{
 		/**
@@ -66,7 +69,7 @@ export default {
 		 */
 		init(sport)
 		{
-			var url =  this.$parent.prefix + '/stats/' + sport;
+			var url =  this.$root.prefix + '/team/create/stats/' + sport;
 			this.$root.get(url, 'StatSelection_get');
 		},
 
@@ -117,6 +120,58 @@ export default {
 			}.bind(this), 50)
 			
 		},
+
+
+		/**
+		 * If updating a team's stat keys, seed selected arrays with existing data
+		 */
+		initializeIfAnyExistingKeys()
+		{
+			// are there any existing keys?
+			if (this.existing !== null) {
+				this.userSelected = [];
+				this.rcSelected = [];
+				// loop through each of the possible keys (in correct order from server)
+				for (var key in this.keysInOrder) {
+					key = this.keysInOrder[key];
+					// is key being used by team?
+					if (this.existing.indexOf(key) !== -1) {
+						// is key a user-inputted key?
+						if (this.userStatKeys.indexOf(key) !== -1) {
+							this.userSelected.push(key);
+						}
+						// is key a rc-calculated key?
+						else if (this.rcStatKeys.indexOf(key) !== -1) {
+							this.rcSelected.push(key);
+						}
+					}
+				}
+			}
+		},
+
+		/**
+		 * Given what has been selected, compile the team's stat keys into the correct order
+		 */
+		compiledKeys()
+		{
+			// always start with name and gp for each sport
+			let keys = ['name'];
+
+			for (var key in this.keysInOrder) {
+				key = this.keysInOrder[key];
+
+				if (keys.indexOf(key) !== -1) continue; // already in the array
+				
+				if (this.userSelected.indexOf(key) !== -1) {
+					keys.push(key);
+				}
+				else if (this.rcSelected.indexOf(key) !== -1) {
+					keys.push(key);
+				}
+			}
+
+			this.$dispatch('TeamSettings_keys_set', keys);
+		},
 	},
 
 	events:
@@ -135,14 +190,21 @@ export default {
 		 */
 		StatSelection_get(response)
 		{
-			let data = JSON.parse(response.data.stats);
+			let data = JSON.parse(response.data.stats.info);
 
 			this.userStatsList = data.user;
 			this.rcStatsList = data.rc;
 			this.userSelected = data.userSelected;
 			this.rcSelected = data.rcSelected;
 			this.userStatKeys = Object.keys(data.user);
-			this.rcStatKeys = Object.keys(data.rc)
+			this.rcStatKeys = Object.keys(data.rc);
+			this.keysInOrder = response.data.stats.order;
+
+			// save some sample stats in case showing a sample table
+			this.sampleStats = response.data.stats.sample;
+			this.sampleStats.abbrName = 'Ghost';
+			this.sampleStats = [this.sampleStats];
+
 
 			// initialize the selectpickers once the dependencies have loaded fully
 			setTimeout(() => {
@@ -159,6 +221,8 @@ export default {
 		{
 			var userPicker = $('[StatSelection="userStats"]');
 			var rcPicker = $('[StatSelection="rcStats"]');
+
+			this.initializeIfAnyExistingKeys();
 
 			userPicker.selectpicker().selectpicker('val', this.userSelected).selectpicker('refresh');
 			rcPicker.selectpicker().selectpicker('val', this.rcSelected).selectpicker('refresh');
@@ -187,6 +251,8 @@ export default {
 
 			userPicker.selectpicker('val', this.userSelected).selectpicker('refresh');
 			rcPicker.selectpicker('val', this.rcSelected).selectpicker('refresh');
+
+			this.compiledKeys();
 		},
 	}
 }
@@ -205,6 +271,17 @@ export default {
 		flex 1
 		+mobile()
 			flex-basis 100%
+			
+	.dropdown-menu
+		&.open
+			margin 0px
+			.btn-group
+				margin-left 0px	
+			.text-muted
+				color rc_blue
+		.disabled
+			a
+				color rc_lite_gray
 
 
 </style>

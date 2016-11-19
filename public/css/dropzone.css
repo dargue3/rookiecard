@@ -259,15 +259,6 @@
         background-color: rgba(255, 255, 255, 0.4);
         padding: 0 0.4em;
         border-radius: 3px; }
-    .dropzone .dz-preview:hover .dz-image img {
-      -webkit-transform: scale(1.05, 1.05);
-      -moz-transform: scale(1.05, 1.05);
-      -ms-transform: scale(1.05, 1.05);
-      -o-transform: scale(1.05, 1.05);
-      transform: scale(1.05, 1.05);
-      -webkit-filter: blur(3px);
-      filter: blur(3px);
-      transition: all 150ms ease; }
     .dropzone .dz-preview .dz-image {
       overflow: hidden;
       width: 120px;
@@ -276,10 +267,7 @@
       display: block;
       z-index: 10; }
       .dropzone .dz-preview .dz-image img {
-        display: block; 
-        -webkit-filter: blur(0px);
-        filter: blur(0px);
-        transition: all 150ms ease; }
+        display: block; }
     .dropzone .dz-preview.dz-success .dz-success-mark {
       -webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -moz-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);

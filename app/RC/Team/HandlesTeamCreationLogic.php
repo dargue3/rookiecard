@@ -7,6 +7,7 @@ use App\RC\Sports\Sport;
 use App\RC\Team\Roles\Player;
 use App\RC\Team\Roles\Coach;
 use App\RC\Team\Roles\Fan;
+use App\RC\Helpers\UploadsPhotos;
 
 class HandlesTeamCreationLogic
 {
@@ -52,6 +53,7 @@ class HandlesTeamCreationLogic
 	{
         $this->teamRepo = App::make(TeamRepository::class);
 		$this->memberRepo = App::make(TeamMemberRepository::class);
+        $this->photoUploader = App::make(UploadsPhotos::class);
 
         $this->name = $data['name'];
         $this->teamname = $data['teamURL'];
@@ -73,8 +75,12 @@ class HandlesTeamCreationLogic
         if (isset($team_id)) {
             // just updating this team's data, don't do the rest of the constructor
             $this->team = $this->teamRepo->find($team_id);
-            $this->pic = $data['pic'];
-            $this->backdrop = $data['backdrop'];
+            if (isset($data['pic'])) {
+                $this->pic = $data['pic'];
+            }
+            if (isset($data['backdrop'])) {
+                $this->backdrop = $data['backdrop'];
+            }
             return;
         }
 
@@ -159,12 +165,36 @@ class HandlesTeamCreationLogic
         $this->team->teamname   = $this->teamname;
         $this->team->lat        = $this->lat;
         $this->team->long       = $this->long;
-        $this->team->pic        = $this->pic;
-        $this->team->backdrop   = $this->backdrop;
         $this->team->meta       = json_encode($this->meta);
+
+        $this->updatePhotos();
 
         $this->team->save();
 
         return $this->team;
+    }
+
+
+    /**
+     * Crop photos and save them to permanent storage in S3
+     * If uploading a new image, deletes the one stored in the data
+     * 
+     * @return void
+     */
+    protected function updatePhotos()
+    {
+        if (isset($this->pic)) {
+            $this->team->pic = $this->photoUploader->loadImage($this->pic['url'])
+                                                   ->deleteOriginal($this->team->pic)
+                                                   ->crop($this->pic['crops'])
+                                                   ->moveFromLocalToS3('team_profile');
+        }
+
+        if (isset($this->backdrop)) {
+            $this->team->backdrop = $this->photoUploader->loadImage($this->backdrop['url'])
+                                                        ->deleteOriginal($this->team->backdrop)
+                                                        ->crop($this->backdrop['crops'])
+                                                        ->moveFromLocalToS3('team_backdrop');
+        }
     }
 }

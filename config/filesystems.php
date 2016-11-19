@@ -45,7 +45,7 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root'   => storage_path('app'),
+            'root'   => storage_path('app/public'),
         ],
 
         'ftp' => [
@@ -63,11 +63,12 @@ return [
         ],
 
         's3' => [
-            'driver' => 's3',
-            'key'    => 'AKIAJ47KOCEXQXNWGIVA',
-            'secret' => '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',
-            'region' => 'us-east-1',
-            'bucket' => 'rookiecard',
+            'driver'    => 's3',
+            'key'       => 'AKIAJ47KOCEXQXNWGIVA',
+            'secret'    => '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',
+            'region'    => 'us-east-1',
+            'bucket'    => 'rookiecard',
+            'folders'   => ['team_profile', 'team_backdrop'],
         ],
 
         'rackspace' => [

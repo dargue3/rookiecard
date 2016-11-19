@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use App\RC\Sports\Sport;
 use App\RC\User\UserRepository;
+use App\RC\Helpers\UploadsPhotos;
 
 $factory->define(App\User::class, function ($faker) {
     $repo = App::make(UserRepository::class);
@@ -39,8 +40,8 @@ $factory->define(App\Team::class, function ($faker) {
         'meta'              => json_encode(['test' => 123]),
         'long'              => -70.8389219,
         'lat'               => 42.9375932,
-        'pic'               => 'path\to\pic',
-        'backdrop'          => 'path\to\pic',
+        'pic'               => 'https://s3.amazonaws.com/rookiecard/team_profile/jfljoiwr89242jivu0924.png',
+        'backdrop'          => 'https://s3.amazonaws.com/rookiecard/team_profile/jfljoiwr89242jivu0924.jpeg',
     ];
 });
 
@@ -120,17 +121,15 @@ $factory->define(App\Notification::class, function ($faker) {
 });
 
 
-$factory->define(App\Stat::class, function ($faker) {
+$factory->defineAs(App\Stat::class, 'basketball', function ($faker) {
 
-    $sport = $faker->randomElement(['basketball']);
-
-    $stats = Sport::find($sport)->generate();
+    $stats = Sport::find('basketball')->generate();
 
     return [
         'owner_id'      => rand(1, 100),
         'member_id'     => rand(1, 100),
         'team_id'       => rand(1, 100),
-        'sport'         => $sport,
+        'sport'         => 'basketball',
         'season'        => 1,
         'stats'         => json_encode($stats),
         'meta'          => json_encode(['opp' => 'Test', 'oppScore' => rand(57, 93)]),

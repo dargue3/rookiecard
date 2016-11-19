@@ -119,7 +119,7 @@
 			      <div class="col-xs-12 Team__calendar"
 			      			v-show="tab === 'calendar'">
 
-		        	<calendar :is-admin="isAdmin" :events="events"></calendar>
+		        	<calendar :is-admin="isAdmin" :events="events" :timezone="team.timezone"></calendar>
 
 			      </div>
 			    </div>
@@ -383,13 +383,14 @@ export default  {
 
 	route:
 	{
+		// since each team page is so unique, it's not worth trying to reuse the components
 		canReuse: false,
 	},
 
 	data()
 	{
-		var prefix = this.$parent.prefix + '/team/';
-		var teamname = this.$route.params.name;
+		let prefix = this.$parent.prefix + '/team/';
+		let teamname = this.$route.params.name;
 
 		// set new title
 		document.title = teamname;
@@ -883,7 +884,6 @@ export default  {
 	display flex
 	flex-flow column
 	margin-bottom 35px
-	background-position center
 	background-size cover
 	background-attachment fixed
 

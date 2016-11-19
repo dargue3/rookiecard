@@ -31,7 +31,7 @@
 				</ul>
 			</div>
 			
-			<div class="settings-container">
+			<div v-show="tab === 'info'" class="settings-container">
 				<div class="form-group">
 					<div>
 						<label>Team Name</label>
@@ -91,6 +91,24 @@
 					</div>
 				</div>
 			</div>
+
+
+			<div v-show="tab === 'stats'" class="settings-container">
+
+				<stat-selection v-if="team.sport" :sport="team.sport" :user-selected.sync="userSelected" :sample-stats.sync="stats"
+												:rc-selected.sync="rcSelected" :existing="team.settings.statKeys">
+				</stat-selection>
+
+				<stats v-if="showStatTable" type="playerSeason" :stat-keys="newStatKeys" :sport="team.sport"
+								:raw-stats="stats" :players="player" :centered="false">
+
+								<div class="outcome">
+									<span class="away loss">Demo Table</span>
+								</div>
+								
+    		</stats>
+
+			</div>
 			
 
 		</div>
@@ -102,6 +120,8 @@
 
 import Validator from '../mixins/Validator.js'
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
+import StatSelection 	from './StatSelection.vue'
+import Stats 	from './Stats.vue'
 import { mixin as VueFocus } from 'vue-focus'
 
 export default  {
@@ -115,6 +135,8 @@ export default  {
 	components:
 	{
 		'google-autocomplete' : GoogleTypeahead,
+		'stat-selection': StatSelection,
+		'stats': Stats,
 	},
 
 	data()
@@ -122,10 +144,18 @@ export default  {
 		Dropzone.autoDiscover = false;
 
 		return {
-			tab: 'info',
+			tab: 'stats',
 			backup: {},
 			enableTypeahead: false,
+			loading_save: false,
 			lastCheckedName: this.$route.params.name,
+			photoURLs: { pic: null, backdrop: null },
+			rcSelected: [],
+			userSelected: [],
+			newStatKeys: [],
+			showStatTable: false,
+			stats: [],
+			player: [{'abbrName': 'Ghost', 'member_id': 0, 'user_id': 0}],
 			dropzone: { 
 				pic: null,
 				backdrop: null,
@@ -143,7 +173,7 @@ export default  {
 				},
 			},
 			croppie: { active: null, type: null },
-			crops: { pic: {}, backdrop: {}},
+			crops: { pic: { valid: false }, backdrop: { valid: false }},
 		}
 	},
 
@@ -176,7 +206,19 @@ export default  {
 		{
 			this.$dispatch('Team_updated_team', response.data.team);
 			this.settingsSaved = true;
+			this.loading_save = false;
 			this.$root.banner('good', 'Settings saved');
+		},
+
+
+		/**
+		 * The keys being calculated in StatSelection are finished
+		 */
+		TeamSettings_keys_set(keys)
+		{
+			this.newStatKeys = keys;
+			this.showStatTable = true;
+			this.$broadcast('Stats_recompile');
 		},
 
 
@@ -188,11 +230,16 @@ export default  {
 		{
 			let data = this.croppie.active.croppie('get');
 
+			// console.log(`topLeftX: ${data.points[0]}`);
+			// console.log(`topLeftY: ${data.points[1]}`);
+			// console.log(`bottomRightX: ${data.points[2]}`);
+			// console.log(`bottomRightY: ${data.points[3]}`);
+
 			this.resize_dropzone(this.croppie.type,
 				data.points[0], data.points[1], data.points[2], data.points[3]
 			);
 
-			this.$set(`crops.${this.croppie.type}`, data);
+			this.crops[this.croppie.type].data = data;
 
 			this.$root.hideModal('cropModal');
 		},
@@ -205,10 +252,7 @@ export default  {
 		 */
 		picUploaded()
 		{
-			if (this.team.pic && this.backup.pic) {
-				return this.team.pic !== this.backup.pic;
-			}
-			return false;
+			return this.photoURLs.pic !== null;
 		},
 
 		/**
@@ -216,10 +260,7 @@ export default  {
 		 */
 		backdropUploaded()
 		{
-			if (this.team.pic && this.backup.pic) {
-				return this.team.backdrop !== this.backup.backdrop;
-			}
-			return false;
+			return this.photoURLs.backdrop !== null;
 		},
 	},
 
@@ -236,6 +277,8 @@ export default  {
 				return;
 			}
 
+			let { pic, backdrop } = this.formatPhotoData();
+
 			let data = {
 				name: this.team.name,
 				teamURL: this.team.teamname,
@@ -245,11 +288,13 @@ export default  {
 				lat: this.team.lat,
 				long: this.team.long,
 				timezone: this.team.timezone,
-				pic: this.team.pic,
-				backdrop: this.team.backdrop,
+				pic: pic,
+				backdrop: backdrop,
 				userStats: this.team.settings.statKeys,
 				rcStats: [],
 			}
+
+			this.loading_save = true;
 
 			let url = `${this.$parent.prefix}/settings`;
 			this.$root.post(url, 'TeamSettings_saved', data);
@@ -267,6 +312,24 @@ export default  {
 			}
 
 			return this.errorCheck();
+		},
+
+
+		/**
+		 * Parse through the uploaded/cropped photo data and decide what to send server
+		 */
+		formatPhotoData()
+		{
+			let pic = undefined;
+			let backdrop = undefined;
+			if (this.dropzone.pic.files.length && this.crops.pic.valid) {
+				pic = { crops: this.crops.pic.data.points, url: this.photoURLs.pic };
+			}
+			if (this.dropzone.backdrop.files.length && this.crops.backdrop.valid) {
+				backdrop = { crops: this.crops.backdrop.data.points, url: this.photoURLs.backdrop };
+			}
+
+			return { pic, backdrop };
 		},
 
 
@@ -290,24 +353,25 @@ export default  {
 
 			this.dropzone.pic = new Dropzone('#team-pic', options);
 
-			// set the thumbnails to show a default image
-			//this.mockThumbnails(pic, backdrop);
-
 			let self = this;
 
 			// photo was uploaded to temp storage on S3
 			// show modal to optionally crop photo
 			this.dropzone.pic.on('success', function(file, response) {
-				self.team.pic = response.pic;
+				self.settingsSaved = false;
+				self.photoURLs.pic = response.pic;
 				self.cropping('pic');
 			});
 
-
-			// whatever photo they had uploaded was discarded
+			// whatever changes they were making to their photo is erased
 			this.dropzone.pic.on('removedfile', function(file, response) {
-				self.crops.pic = null;
+				this.options.resize = self.originalResize();
+				self.photoURLs.pic = null;
+				this.options.maxFiles = 1;
+				self.crops.pic.valid = false;
+				this.enable();
 			});
-		},	
+		},
 
 
 		/**
@@ -320,29 +384,30 @@ export default  {
 			options.thumbnailWidth = 210;
 			this.dropzone.backdrop = new Dropzone('#team-backdrop', options);
 
-
-			// set the thumbnails to show a default image
-			//this.mockThumbnails(pic, backdrop);
-
 			let self = this;
 
 			// photo was uploaded to temp storage on S3
 			// show modal to optionally crop photo
 			this.dropzone.backdrop.on('success', function(file, response) {
-				self.team.backdrop = response.pic;
+				self.settingsSaved = false;
+				self.photoURLs.backdrop = response.pic;
 				self.cropping('backdrop');
 			});
 
-
 			// whatever photo they had uploaded was discarded
 			this.dropzone.backdrop.on('removedfile', function(file, response) {
-				self.crops.backdrop = null;
+				this.options.resize = self.originalResize();
+				self.photoURLs.backdrop = null;
+				this.options.maxFiles = 1;
+				self.crops.backdrop.valid = false;
+				this.enable();
 			});
 		},	
 
 
 		/**
-		 * An uploaded image has been cropped, reinitialize dropzone with the cropped image
+		 * An uploaded image has been cropped
+		 * Reinitialize Dropzone with the cropped image according to the given vertices
 		 */
 		resize_dropzone(pic_type, topLeftX, topLeftY, bottomRightX, bottomRightY)
 		{
@@ -355,7 +420,7 @@ export default  {
         // drawImage(image, srcX, srcY, srcWidth, srcHeight, trgX, trgY, trgWidth, trgHeight) takes an image, clips it to
         // the rectangle (srcX, srcY, srcWidth, srcHeight), scales it to dimensions (trgWidth, trgHeight), and draws it
         // on the canvas at coordinates (trgX, trgY).
-        let info = {
+        return {
           srcX: srcX,
           srcY: srcY,
           srcWidth: srcWidth,
@@ -363,12 +428,12 @@ export default  {
           trgX:0,
           trgY:0,
           trgWidth: this.options.thumbnailWidth,
-          trgHeight: parseInt(this.options.thumbnailWidth * srcHeight / srcWidth)
+          trgHeight: this.options.thumbnailHeight
         }
-        return info;
     	};
 
     	// add the resizing feature to dropzone options object
+    	let url = JSON.parse(JSON.stringify(this.photoURLs[pic_type]));
     	let options = JSON.parse(JSON.stringify(this.dropzone.options));
     	options.resize = resize;
 
@@ -378,12 +443,14 @@ export default  {
     	this.dropzone[pic_type].options.maxFiles = 0;
 
     	// load a new dropzone thumbnail with crops by mocking an upload
-    	let mock = { name: '', size: 424214, accepted: true, kind: 'image' }
-    	let pic = this.$get(`team.${pic_type}`);
+    	let mock = { name: '', size: 424214, mock: true }
     	this.dropzone[pic_type].emit('addedfile', mock);
-			this.dropzone[pic_type].createThumbnailFromUrl(mock, pic, null, 'anonymous');
+			this.dropzone[pic_type].createThumbnailFromUrl(mock, url);
 			this.dropzone[pic_type].emit('complete', mock);
 			this.dropzone[pic_type].files.push(mock);
+			this.dropzone[pic_type].disable();
+			this.photoURLs[pic_type] = url;
+			this.crops[pic_type].valid = true;
 		},
 
 
@@ -400,43 +467,26 @@ export default  {
 			}
 
 			if (pic_type === 'pic') {
-				options.url = this.team.pic;
-				options.viewport = { width: 200, height: 200, type: 'circle'};
+				options.url = this.photoURLs.pic;
+				options.viewport = { width: 200, height: 200, type: 'circle' };
 				cropper = $('#croppie').croppie(options);
 			}
 
 			if (pic_type === 'backdrop') {
-				options.url = this.team.backdrop;
-				options.viewport = { width: 400, height: 150, type: 'square'};
+				options.url = this.photoURLs.backdrop;
+				options.viewport = { width: 400, height: 150, type: 'square' };
 				cropper = $('#croppie').croppie(options);
 			}
 
-			let previousCrops = this.$get(`crops.${pic_type}`);
-			if (previousCrops) {
+			let previousCrops = this.crops[pic_type].data
+			if (previousCrops && this.crops[pic_type].valid) {
 				cropper.croppie('bind', {
-					url: this.$get(`team.${pic_type}`),
+					url: this.photoURLs[pic_type],
 					points: previousCrops.points
 				});		
 			}
 
 			this.croppie.active = cropper;
-		},
-
-
-		/**
-		 * Set the default thumbnails to their current saved photos
-		 */
-		mockThumbnails(pic, backdrop)
-		{
-			let mock = { name: 'Team Photo', size: 424214 }
-			pic.emit('addedfile', mock);
-			pic.createThumbnailFromUrl(mock, this.team.pic);
-			pic.emit('complete', mock);
-
-			let mock2 = { name: 'Backdrop Photo', size: 643244 }
-			backdrop.emit('addedfile', mock2);
-			backdrop.createThumbnailFromUrl(mock2, this.team.backdrop);
-			backdrop.emit('complete', mock2);
 		},
 
 
@@ -447,6 +497,47 @@ export default  {
 		{
 			this.init_croppie(pic_type);
 			this.$root.showModal('cropModal');
+		},
+
+
+		originalResize()
+		{
+			return function(file) {
+				var info, srcRatio, trgRatio;
+        info = {
+          srcX: 0,
+          srcY: 0,
+          srcWidth: file.width,
+          srcHeight: file.height
+        };
+        srcRatio = file.width / file.height;
+        info.optWidth = this.options.thumbnailWidth;
+        info.optHeight = this.options.thumbnailHeight;
+        if ((info.optWidth == null) && (info.optHeight == null)) {
+          info.optWidth = info.srcWidth;
+          info.optHeight = info.srcHeight;
+        } else if (info.optWidth == null) {
+          info.optWidth = srcRatio * info.optHeight;
+        } else if (info.optHeight == null) {
+          info.optHeight = (1 / srcRatio) * info.optWidth;
+        }
+        trgRatio = info.optWidth / info.optHeight;
+        if (file.height < info.optHeight || file.width < info.optWidth) {
+          info.trgHeight = info.srcHeight;
+          info.trgWidth = info.srcWidth;
+        } else {
+          if (srcRatio > trgRatio) {
+            info.srcHeight = file.height;
+            info.srcWidth = info.srcHeight * trgRatio;
+          } else {
+            info.srcWidth = file.width;
+            info.srcHeight = info.srcWidth / trgRatio;
+          }
+        }
+        info.srcX = (file.width - info.srcWidth) / 2;
+        info.srcY = (file.height - info.srcHeight) / 2;
+        return info;
+			}
 		},
 	},
 
@@ -557,7 +648,7 @@ export default  {
 			margin 0
 		
 .settings-nav
-	flex 1
+	width 185px
 	font-size 20px
 	color link_blue
 	ul
@@ -597,7 +688,7 @@ export default  {
 .settings-container
 	display flex
 	flex-flow row wrap
-	flex 3
+	width 590px
 	background white
 	padding 1.5em
 	.form-group
@@ -608,6 +699,10 @@ export default  {
 			flex 1
 			&:not(:first-child)
 				margin-left 10px
+	.stat-selector
+		&:last-child
+			margin-left 10px
+		
 		
 		
 .photos
@@ -650,6 +745,8 @@ export default  {
 				color rc_red
 				font-size 40px
 				position absolute
+			.dz-details
+				display none
 			&.success
 				border 2px dashed rc_bright_green
 				transition border .3s
@@ -678,9 +775,9 @@ export default  {
 	width 100%
 	height 250px
 	margin-top 15px
-	margin-bottom 35px
+	margin-bottom 45px
 	.cr-slider-wrap
-		margin 20px auto
+		margin 23px auto
 		.cr-slider
 			background rc_med_gray
 	

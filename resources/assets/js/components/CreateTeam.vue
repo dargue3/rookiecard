@@ -641,18 +641,6 @@ export default  {
 		flex-basis 25%
 	div.--email
 		flex-basis 50%	
-	div.dropdown-menu
-		&.open
-			margin 0px
-			.bs-actionsbox
-				margin 5px 0px
-			.btn-group
-				margin-left 0px	
-			.text-muted
-				color rc_blue
-		.disabled
-			a
-				color rc_lite_gray
 
 			
 .CreateTeam__buttons

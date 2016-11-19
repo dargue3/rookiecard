@@ -19,7 +19,7 @@ class CreateTeamRequest extends Request
     {
         return [
             'name'                  => 'required|max:50',
-            'teamname'              => 'required|unique:rc_teams|alpha_dash|max:18|not_in:create',
+            'teamURL'               => 'required|unique:rc_teams|alpha_dash|max:18|not_in:create',
             'gender'                => 'required|in:male,female,coed',
             'sport'                 => 'required|in:basketball',
             'slogan'                => 'max:50',
