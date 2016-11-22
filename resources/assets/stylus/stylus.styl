@@ -36,10 +36,20 @@ p
 	cursor default
 	
 .bootstrap-switch
+	border-color rc_lite_gray
+	&.bootstrap-switch-focused
+		border-color rc_lite_gray
+		outline 0
+		box-shadow none
 	span.bootstrap-switch-handle-on.bootstrap-switch-primary
 		background link_blue
+		padding 6px 5px
+		font-size 13px
 	span.bootstrap-switch-handle-off.bootstrap-switch-default
-		background rc_background	
+		background rc_background
+		padding 6px 5px
+		font-size 13px
+	
 		
 .switch-container
 	margin-bottom 25px
@@ -67,12 +77,6 @@ a
 		text-decoration none
 		cursor pointer
 		color link_blue_hover
-		
-
-.parallax-window
-	min-height 400px
-	background transparent
-
 	
 
 .nav-tabs
@@ -758,6 +762,7 @@ input[type="text"]:focus,
 	border-color rc_lite_gray
 	outline 0
 	box-shadow inset 0 1px 1px rc_lite_gray, 0 0 8px rc_lite_gray
+	
 
 
 

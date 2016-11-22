@@ -87,7 +87,7 @@ export default
 
 		/**
 		 * Only use the stat keys appropriate
-		 * Depends on the type of stat table and the sport
+		 * Depends on the type of stat table (and the sport of course)
 		 */
 		pickKeys()
 		{

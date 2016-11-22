@@ -141,7 +141,7 @@
 			      	
 							<div v-show="statsTab === 'recent'">
 								<stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
-													:raw-stats="stats" :players="players" :paginate="10" :team-record.sync="team.record">
+													:raw-stats="stats" :players="players" :paginate="10" :team-record.sync="team.record" :centered="true">
 		        		</stats>
 		        		<div v-else class="text-center">
 									<h4>No stats yet&hellip;</h4>
@@ -190,10 +190,10 @@
 			    </div>
 
 
-			     <div class="row">
+			     <div v-if="requestFinished" class="row">
 			      <div v-show="tab === 'settings'"class="col-xs-12">
 		        	
-		        	<settings :team="team" :is-admin="isAdmin" :settings-saved.sync="settingsSaved"
+		        	<settings :team.sync="team" :is-admin="isAdmin" :saved.sync="settingsSaved"
 		        						:focused.sync="focused"></settings>
 
 			      </div>
@@ -368,7 +368,7 @@ export default  {
 	
 	name: 'Team',
 
-	props: [],
+	props: ['someprop'],
 
 	components:
 	{
@@ -736,12 +736,19 @@ export default  {
 
 			// store meta data about team
 			let meta = JSON.parse(team.meta);
-			this.$set('team.settings.statKeys', meta.stats);
 			this.$set('team.slogan', meta.slogan);
 			this.$set('team.city', meta.city);
 			this.$set('team.homefield', meta.homefield);
 			this.$set('team.timezone', meta.tz);
 			this.$set('team.record', '0-0');
+
+			// store settings
+			this.$set('team.settings.statKeys', meta.settings.statKeys);
+			this.$set('team.settings.onlyMembersCanViewLocation', meta.settings.onlyMembersCanViewLocation);
+			this.$set('team.settings.onlyMembersCanViewRoster', meta.settings.onlyMembersCanViewRoster);
+			this.$set('team.settings.onlyMembersCanViewEvents', meta.settings.onlyMembersCanViewEvents);
+			this.$set('team.settings.membersAreInviteOnly', meta.settings.membersAreInviteOnly);
+			this.$set('team.settings.fansAreInviteOnly', meta.settings.fansAreInviteOnly);
 
 			// note whether or not this user is the creator
 			if (this.team.creator_id === this.auth.id) {

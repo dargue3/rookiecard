@@ -219,6 +219,42 @@
         info.srcY = (file.height - info.srcHeight) / 2;
         return info;
       },
+      resize_backup: function(file) {
+        var info, srcRatio, trgRatio;
+        info = {
+          srcX: 0,
+          srcY: 0,
+          srcWidth: file.width,
+          srcHeight: file.height
+        };
+        srcRatio = file.width / file.height;
+        info.optWidth = this.options.thumbnailWidth;
+        info.optHeight = this.options.thumbnailHeight;
+        if ((info.optWidth == null) && (info.optHeight == null)) {
+          info.optWidth = info.srcWidth;
+          info.optHeight = info.srcHeight;
+        } else if (info.optWidth == null) {
+          info.optWidth = srcRatio * info.optHeight;
+        } else if (info.optHeight == null) {
+          info.optHeight = (1 / srcRatio) * info.optWidth;
+        }
+        trgRatio = info.optWidth / info.optHeight;
+        if (file.height < info.optHeight || file.width < info.optWidth) {
+          info.trgHeight = info.srcHeight;
+          info.trgWidth = info.srcWidth;
+        } else {
+          if (srcRatio > trgRatio) {
+            info.srcHeight = file.height;
+            info.srcWidth = info.srcHeight * trgRatio;
+          } else {
+            info.srcWidth = file.width;
+            info.srcHeight = info.srcWidth / trgRatio;
+          }
+        }
+        info.srcX = (file.width - info.srcWidth) / 2;
+        info.srcY = (file.height - info.srcHeight) / 2;
+        return info;
+      },
 
       /*
       Those functions register themselves to the events on init and handle all
@@ -1108,7 +1144,12 @@
           var canvas, ctx, resizeInfo, thumbnail, _ref, _ref1, _ref2, _ref3;
           file.width = img.width;
           file.height = img.height;
-          resizeInfo = _this.options.resize.call(_this, file);
+          if (_this.options.resize === null) {
+            resizeInfo = _this.options.resize_backup.call(_this, file);
+          }
+          else {
+            resizeInfo = _this.options.resize.call(_this, file);
+          }
           if (resizeInfo.trgWidth == null) {
             resizeInfo.trgWidth = resizeInfo.optWidth;
           }

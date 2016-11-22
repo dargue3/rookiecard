@@ -3,21 +3,30 @@
 	<div>
 
 		<div class="Settings__header">
+		
+			<div class="left">
+				<div class="save">
+					<a v-if="! saved" class="btn btn-primary" :class="{ 'click-me' : ! saved }" v-touch:tap="save()">
+	    			<span v-show="! loading_save">SAVE</span>
+	    			<spinner v-show="loading_save" color="white"></spinner>
+	    		</a>
+	    		<a v-else class="btn btn-cancel">SAVED</a>
+				</div>
 
-			<div class="save">
-				<a v-if="! settingsSaved" class="btn btn-primary" :class="{ 'click-me' : ! settingsSaved }" v-touch:tap="save()">
-    			<span v-show="! loading_save">SAVE</span>
-    			<spinner v-show="loading_save" color="white"></spinner>
-    		</a>
-    		<a v-else class="btn btn-cancel">SAVED</a>
+				<div class="header">
+					<h2>Settings</h2>
+				</div>
 			</div>
-
-			<div class="header">
-				<h2>Settings</h2>
+				
+			<div v-show="! saved" class="right">
+				<div class="discard">
+					<span v-touch:tap="cancel()">Discard Changes</span>
+				</div>
 			</div>
-
+			
 		</div>
 
+		
 
 		<div class="Settings">
 
@@ -27,11 +36,14 @@
 					<li :class="{ '--active' : tab === 'stats' }" v-touch:tap="tab = 'stats'">Stats</li>
 					<li :class="{ '--active' : tab === 'privacy' }" v-touch:tap="tab = 'privacy'">Privacy</li>
 					<li :class="{ '--active' : tab === 'notifications' }" v-touch:tap="tab = 'notifications'">Notifications</li>
-					<li class="danger-zone" :class="{ '--active' : tab === 'danger zone' }" v-touch:tap="tab = 'danger zone'">Danger Zone</li>
+					<li class="danger-zone" :class="{ '--active' : tab === 'danger-zone' }" v-touch:tap="tab = 'danger-zone'">Danger Zone</li>
 				</ul>
 			</div>
 			
-			<div v-show="tab === 'info'" class="settings-container">
+
+
+			<!-- INFO -->
+			<div v-show="tab === 'info'" class="settings-wrapper">
 				<div class="form-group">
 					<div>
 						<label>Team Name</label>
@@ -93,7 +105,11 @@
 			</div>
 
 
-			<div v-show="tab === 'stats'" class="settings-container">
+
+
+
+			<!-- STATS -->
+			<div v-show="tab === 'stats'" class="settings-wrapper">
 
 				<stats v-if="showStatTable" type="playerSeason" :stat-keys="newStatKeys" :sport="team.sport"
 								:raw-stats="stats" :players="player" :centered="false" :disable-sorting="true">
@@ -111,17 +127,67 @@
 			</div>
 
 
-			<div v-show="tab === 'privacy'" class="settings-container">
+
+
+
+
+			<!-- PRIVACY -->
+			<div v-show="tab === 'privacy'" class="settings-wrapper">
+				<div class="settings-container">
+
+					<div class="settings-entry">
+						<span class="description">Who can view the team's location?</span>
+						<div class="switch">
+							<input type="checkbox" bootstrap-switch="TeamSettings-location" >
+						</div>
+					</div>
+
+					<div class="settings-entry">
+						<span class="description">Who can view the roster?</span>
+						<div class="switch">
+							<input type="checkbox" bootstrap-switch="TeamSettings-roster">
+						</div>
+					</div>
+
+					<div class="settings-entry">
+						<span class="description">Who can view team events?</span>
+						<div class="switch">
+							<input type="checkbox" bootstrap-switch="TeamSettings-events">
+						</div>
+					</div>
+
+					<div class="settings-entry">
+						<span class="description">How can people join?</span>
+						<div class="switch">
+							<input type="checkbox" bootstrap-switch="TeamSettings-join">
+						</div>
+					</div>
+
+					<div class="settings-entry">
+						<span class="description">How can people become a fan?</span>
+						<div class="switch">
+							<input type="checkbox" bootstrap-switch="TeamSettings-fan">
+						</div>
+					</div>
+
+
+				</div>
+			</div>
+
+
+
+
+			<!-- NOTIFICATIONS -->
+			<div v-show="tab === 'notifications'" class="settings-wrapper">
 					
 			</div>
 
 
-			<div v-show="tab === 'notifications'" class="settings-container">
-					
-			</div>
 
 
-			<div v-show="tab === 'danger-zone'" class="settings-container">
+
+			<!-- DANGER-ZONE -->
+			<div v-show="tab === 'danger-zone'" class="settings-wrapper">
 					
 			</div>
 			
@@ -143,7 +209,7 @@ export default  {
 	
 	name: 'TeamSettings',
 
-	props: ['team', 'settingsSaved', 'focused'],
+	props: ['team', 'saved', 'focused'],
 
 	mixins: [ Validator, VueFocus ],
 
@@ -159,7 +225,7 @@ export default  {
 		Dropzone.autoDiscover = false;
 
 		return {
-			tab: 'stats',
+			tab: 'privacy',
 			backup: {},
 			enableTypeahead: false,
 			loading_save: false,
@@ -220,7 +286,7 @@ export default  {
 		TeamSettings_saved(response)
 		{
 			this.$dispatch('Team_updated_team', response.data.team);
-			this.settingsSaved = true;
+			this.saved = true;
 			this.loading_save = false;
 			this.$root.banner('good', 'Settings saved');
 		},
@@ -331,6 +397,15 @@ export default  {
 
 
 		/**
+		 * Discard all the changes they made
+		 */
+		cancel()
+		{
+			this.saved = true;
+		},
+
+
+		/**
 		 * Parse through the uploaded/cropped photo data and decide what to send server
 		 */
 		formatPhotoData()
@@ -373,14 +448,14 @@ export default  {
 			// photo was uploaded to temp storage on S3
 			// show modal to optionally crop photo
 			this.dropzone.pic.on('success', function(file, response) {
-				self.settingsSaved = false;
+				self.saved = false;
 				self.photoURLs.pic = response.pic;
 				self.cropping('pic');
 			});
 
 			// whatever changes they were making to their photo is erased
 			this.dropzone.pic.on('removedfile', function(file, response) {
-				this.options.resize = self.originalResize();
+				this.options.resize = null;
 				self.photoURLs.pic = null;
 				this.options.maxFiles = 1;
 				self.crops.pic.valid = false;
@@ -404,14 +479,14 @@ export default  {
 			// photo was uploaded to temp storage on S3
 			// show modal to optionally crop photo
 			this.dropzone.backdrop.on('success', function(file, response) {
-				self.settingsSaved = false;
+				self.saved = false;
 				self.photoURLs.backdrop = response.pic;
 				self.cropping('backdrop');
 			});
 
 			// whatever photo they had uploaded was discarded
 			this.dropzone.backdrop.on('removedfile', function(file, response) {
-				this.options.resize = self.originalResize();
+				this.options.resize = null;
 				self.photoURLs.backdrop = null;
 				this.options.maxFiles = 1;
 				self.crops.backdrop.valid = false;
@@ -448,7 +523,6 @@ export default  {
     	};
 
     	// add the resizing feature to dropzone options object
-    	let url = JSON.parse(JSON.stringify(this.photoURLs[pic_type]));
     	let options = JSON.parse(JSON.stringify(this.dropzone.options));
     	options.resize = resize;
 
@@ -458,6 +532,7 @@ export default  {
     	this.dropzone[pic_type].options.maxFiles = 0;
 
     	// load a new dropzone thumbnail with crops by mocking an upload
+    	let url = JSON.parse(JSON.stringify(this.photoURLs[pic_type]));
     	let mock = { name: '', size: 424214, mock: true }
     	this.dropzone[pic_type].emit('addedfile', mock);
 			this.dropzone[pic_type].createThumbnailFromUrl(mock, url);
@@ -515,43 +590,62 @@ export default  {
 		},
 
 
-		originalResize()
+		/**
+		 * Initialize the bootstrap switches on the page to their saved settings
+		 */
+		init_switches()
 		{
-			return function(file) {
-				var info, srcRatio, trgRatio;
-        info = {
-          srcX: 0,
-          srcY: 0,
-          srcWidth: file.width,
-          srcHeight: file.height
-        };
-        srcRatio = file.width / file.height;
-        info.optWidth = this.options.thumbnailWidth;
-        info.optHeight = this.options.thumbnailHeight;
-        if ((info.optWidth == null) && (info.optHeight == null)) {
-          info.optWidth = info.srcWidth;
-          info.optHeight = info.srcHeight;
-        } else if (info.optWidth == null) {
-          info.optWidth = srcRatio * info.optHeight;
-        } else if (info.optHeight == null) {
-          info.optHeight = (1 / srcRatio) * info.optWidth;
-        }
-        trgRatio = info.optWidth / info.optHeight;
-        if (file.height < info.optHeight || file.width < info.optWidth) {
-          info.trgHeight = info.srcHeight;
-          info.trgWidth = info.srcWidth;
-        } else {
-          if (srcRatio > trgRatio) {
-            info.srcHeight = file.height;
-            info.srcWidth = info.srcHeight * trgRatio;
-          } else {
-            info.srcWidth = file.width;
-            info.srcHeight = info.srcWidth / trgRatio;
-          }
-        }
-        info.srcX = (file.width - info.srcWidth) / 2;
-        info.srcY = (file.height - info.srcHeight) / 2;
-        return info;
+			let self = this;
+			let options = {
+				state: false,
+				onText: 'YES',
+				offText: 'NO',
+				handleWidth: '115px',
+				onSwitchChange: function(e, state) {
+					self.switchChanged(this.getAttribute('bootstrap-switch'), state);
+				},
+			};
+
+			options.state = this.team.settings.onlyMembersCanViewLocation;
+			options.onText = 'MEMBERS & FANS';
+			options.offText = 'ANYONE';
+		  $('input[bootstrap-switch="TeamSettings-location"]').bootstrapSwitch(options);
+
+		  options.state = this.team.settings.onlyMembersCanViewRoster;
+		  options.onText = 'MEMBERS & FANS';
+		  options.offText = 'ANYONE';
+		  $('input[bootstrap-switch="TeamSettings-roster"]').bootstrapSwitch(options);
+
+		  options.state = this.team.settings.onlyMembersCanViewEvents;
+		  options.onText = 'MEMBERS & FANS';
+		  options.offText = 'ANYONE';
+		  $('input[bootstrap-switch="TeamSettings-events"]').bootstrapSwitch(options);
+
+		  options.state = this.team.settings.membersAreInviteOnly;
+		  options.onText = 'INVITE ONLY';
+		  options.offText = 'ASK OR INVITE';
+		  $('input[bootstrap-switch="TeamSettings-join"]').bootstrapSwitch(options);
+
+		  options.state = this.team.settings.fansAreInviteOnly;
+		  options.onText = 'INVITE ONLY';
+		  options.offText = "JUST CLICK ‘FAN’";
+		  $('input[bootstrap-switch="TeamSettings-fan"]').bootstrapSwitch(options);
+		},
+
+		/**
+		 * One of the bootstrap switches were changed
+		 * Attribute is taken from the html element, where it says bootstrap-switch="TeamSettings-***"
+		 */
+		switchChanged(attribute, state)
+		{
+			this.saved = false;
+
+			if (attribute.includes('location')) {
+				this.team.settings.showLocation = state;
+			}
+
+			if (attribute.includes('roster')) {
+				this.team.settings.showRoster = state;
 			}
 		},
 	},
@@ -560,71 +654,24 @@ export default  {
 	watch:
 	{
 		/**
-		 * Make non-reactive backup of the original team data
+		 * Watch all of the keys in the team object for changes
+		 * Once this.saved is falsey, the save button will be enabled
 		 */
-		team()
-		{
-			this.$set('backup', JSON.parse(JSON.stringify(this.team)));
-			this.init_dropzone_pic();
-			this.init_dropzone_backdrop();
-			this.enableTypeahead = true;
-		},
-
-
-		/**
-		 * Watch all of the following parameters for changes
-		 * Mark 'saved' as false until otherwise noted
-		 */
-		'team.name' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
-
-		'team.teamname' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
-
-		'team.homefield' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
-
-		'team.slogan' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
-
-		'team.city' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
-
-		'team.pic' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
-
-		'team.backdrop' : function(newVal, oldVal)
-		{
-			if (typeof oldVal !== 'undefined') {
-				this.settingsSaved = false;
-			}
-		},
+		'team' : { handler : function() { this.saved = false }, deep: true },
 	},
 
+
+	ready()
+	{
+		// create backup of original
+	  this.$set('backup', JSON.parse(JSON.stringify(this.team))); 
+
+	  // initialize plugins now that DOM is ready
+		this.init_dropzone_pic();
+		this.init_dropzone_backdrop();
+		this.init_switches();
+		this.enableTypeahead = true;
+	},
 };
 
 </script>
@@ -645,22 +692,37 @@ export default  {
 	flex-flow row nowrap
 	margin 0 auto
 	margin-bottom 10px
-	align-items center
+	justify-content space-between
 	max-width 775px
-	.save
-		width 183px
-		.btn
-			margin 0
-			width 100%
-			&.btn-cancel:hover
-				background rc_med_gray
-				cursor default
-	.header
-		margin-left 21px
+	.left
 		display flex
+		flex-flow row nowrap
 		align-items center
-		h2
-			margin 0
+		.save
+			width 183px
+			.btn
+				margin 0
+				width 100%
+				&.btn-cancel:hover
+					background rc_med_gray
+					cursor default
+		.header
+			margin-left 21px
+			display flex
+			align-items center
+			h2
+				margin 0
+	.right
+		display flex
+		flex-flow row nowrap
+		align-items flex-end
+		.discard
+			color rc_med_gray
+			font-size 15px
+			float right
+			&:hover
+				color rc_dark_gray
+				cursor pointer
 		
 .settings-nav
 	width 185px
@@ -677,11 +739,11 @@ export default  {
 			transition border-left 150ms ease
 			&.--active
 				background white
-				font-weight bold
+				color black
 				&:hover
 					cursor default
 					border-left 2px solid rc_super_lite_gray
-					color link_blue
+					color black
 			&.danger-zone
 				color rc_red
 				transition all 150ms ease
@@ -690,17 +752,16 @@ export default  {
 					color rc_red_hover
 					border-left 4px solid rgba(201, 0, 25, 0.4)
 					transition all 150ms ease
-					&.--active
-						border-left 2px solid rgba(201, 0, 25, 0.1)
-						color rc_red
+				&.--active
+					border-left 2px solid rc_super_lite_gray
+					color black
 			&:hover
 				cursor pointer
 				border-left 4px solid rc_lite_gray
 				transition all 150ms ease
 				color link_blue_hover
-				
-				
-.settings-container
+
+.settings-wrapper
 	display flex
 	flex-flow row wrap
 	width 590px
@@ -799,11 +860,41 @@ export default  {
 		margin 23px auto
 		.cr-slider
 			background rc_med_gray
-	
+
 .croppie-wrapper
 	padding 10px
 	.save-button-wrapper
 		margin-top 10px
+
+
+.settings-container
+	display flex
+	flex-flow row wrap
+	align-content flex-start
+	width 100%
+	.settings-entry
+		display flex
+		flex-flow row nowrap
+		justify-content space-between
+		align-items center
+		width 100%
+		border-bottom 1px solid rc_super_lite_gray
+		padding 17px 0
+		max-height 65px
+		+the-first-one()
+			margin-top 0
+			padding-top 0
+		+the-last-one()
+			border-bottom 0
+			padding-bottom 0
+		.switch
+			display flex
+			flex-flow row nowrap
+			align-items center
+			justify-content flex-end
+		.description
+			font-size 17px
+			
 	
 	
 	

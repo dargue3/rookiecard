@@ -239,6 +239,9 @@ export default {
 		 */
 		resolveKeyName(key)
 		{
+			if (typeof this.valClassLookup[key] !== 'function') {
+				return null;
+			}
 			return this.keyNames[key].call(this, key);
 		},
 
@@ -251,6 +254,9 @@ export default {
 		 */
 		resolveStatValue(key, stats)
 		{
+			if (typeof this.valClassLookup[key] !== 'function') {
+				return this.lastCheck(null);
+			}
 			return this.lastCheck(this.valLookup[key].call(this, stats[key], stats, key));
 		},
 
@@ -264,6 +270,9 @@ export default {
 		 */
 		resolveStatSum(key, stats)
 		{
+			if (typeof this.valClassLookup[key] !== 'function') {
+				return this.lastCheck(null);
+			}
 			return this.lastCheck(this.sumLookup[key]);
 		},
 
@@ -275,6 +284,9 @@ export default {
 		 */
 		resolveTooltip(key)
 		{
+			if (typeof this.valClassLookup[key] !== 'function') {
+				return ''
+			}
 			return this.tooltips[key].call(this)
 		},
 
@@ -286,6 +298,10 @@ export default {
 		 */
 		resolveKeyClasses(key)
 		{
+			if (typeof this.valClassLookup[key] !== 'function') {
+				return [];
+			}
+
 			var classes = [];
 			if (this.sortKey === key  && ! this.disableSorting) {
 				classes.push('col-sort');
@@ -309,6 +325,10 @@ export default {
 		 */
 		resolveValClasses(key, val)
 		{
+			if (typeof this.valClassLookup[key] !== 'function') {
+				return [];
+			}
+			
 			var classes = [];
 			this.valClassLookup[key].call(this, val[key]).forEach(function(className) {
 				classes.push(className);
