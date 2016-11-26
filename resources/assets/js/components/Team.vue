@@ -362,13 +362,13 @@ import ViewEvent 	from './ViewEvent.vue';
 import Roster 		from './Roster.vue';
 import NewsFeed 	from './NewsFeed.vue';
 import EditUser 	from './EditUser.vue';
-import Settings 	from './TeamSettings.vue';
+import Settings 	from './TeamSettings/TeamSettings.vue';
 
 export default  {
 	
 	name: 'Team',
 
-	props: ['someprop'],
+	props: [],
 
 	components:
 	{

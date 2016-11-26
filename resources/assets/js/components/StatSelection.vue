@@ -154,7 +154,7 @@ export default {
 		 */
 		compiledKeys()
 		{
-			// always start with name and gp for each sport
+			// always start with name for each sport
 			let keys = ['name'];
 
 			for (var key in this.keysInOrder) {
@@ -226,7 +226,6 @@ export default {
 
 			userPicker.selectpicker().selectpicker('val', this.userSelected).selectpicker('refresh');
 			rcPicker.selectpicker().selectpicker('val', this.rcSelected).selectpicker('refresh');
-
 
 			// set up listeners to refresh the stat key dependencies when the user changed their selection
 			userPicker.on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
