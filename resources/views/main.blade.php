@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="/bower_components/bootstrap-calendar/css/calendar.css">
     <link rel="stylesheet" href="/css/animate.css-master/animate.css"></link>
     <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
-    <link rel="stylesheet" href="/css/stylus.css">
+    <link rel="stylesheet" href="/css/rc_styles.css">
     <link rel="stylesheet" href="/css/variables.css">
     
     

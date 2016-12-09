@@ -1,6 +1,7 @@
 <?php
 
 use App\Team;
+use App\RC\Sports\Sport;
 use App\RC\Team\Roles\Fan;
 use App\RC\Team\Roles\Coach;
 use App\RC\Team\Roles\Player;
@@ -40,8 +41,6 @@ class HandlesTeamCreationLogicTest extends TestCase
             'long'          => -72.4824724,
 			'timezone'	    => 'America/New_York',
 			'userIsA'		=> 'fan',
-			'userStats'		=> ['pts', 'fgm', 'fga'],
-			'rcStats'		=> ['fg_'],
 			'players'		=> [
 				['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'],
 				['firstname' => 'Tester', 'lastname' => 'McTestFace', 'email' => ''],
@@ -70,16 +69,6 @@ class HandlesTeamCreationLogicTest extends TestCase
     	$this->assertEquals(['firstname' => 'Testy', 'lastname' => 'McGee', 'email' => 'player@rookiecard.com'], $handler->players[0]);
     	$this->assertEquals(['firstname' => 'Tester', 'lastname' => 'McTestFace', 'email' => ''], $handler->players[1]);
     	$this->assertEquals(['firstname' => 'Coach', 'lastname' => 'Test', 'email' => 'coach@rookiecard.com'], $handler->coaches[0]);
-    }
-
-    /** @test */
-    public function the_constructor_validates_the_stat_keys_and_saves_them_in_meta_data()
-    {
-    	$handler = new HandlesTeamCreationLogic($this->data);
-
-    	$formattedStats = ['date', 'name', 'win', 'opp', 'pts', 'fgm', 'fga', 'fg_'];	
-
-    	$this->assertEquals($formattedStats, $handler->meta['stats']);
     }
 
 
@@ -175,10 +164,55 @@ class HandlesTeamCreationLogicTest extends TestCase
 
 
     /** @test */
-    public function it_updates_a_team_with_the_given_data()
+    public function it_saves_default_profile_and_backdrop_photos_depending_on_the_teams_sport()
+    {
+        $team = (new HandlesTeamCreationLogic($this->data))->create();
+        $sport = Sport::find($team->sport);
+
+        $this->assertEquals($sport->backdropPath(), $team->backdrop);
+        $this->assertEquals($sport->profilePicPath(), $team->pic);
+    }
+
+
+    /** @test */
+    public function it_saves_default_stat_keys_when_creating_a_team()
+    {
+        $team = (new HandlesTeamCreationLogic($this->data))->create();
+
+        $meta = json_decode($team->meta);
+
+        $this->assertEquals('array', gettype($meta->settings->statKeys));
+        $this->assertTrue(count($meta->settings->statKeys) > 0);
+        $this->assertEquals('string', gettype($meta->settings->statKeys[0]));
+    }
+
+
+    /** @test */
+    public function it_saves_default_settings_for_privacy_and_notifications()
+    {
+        $team = (new HandlesTeamCreationLogic($this->data))->create();
+
+        $meta = json_decode($team->meta);
+
+        $this->assertTrue(isset($meta->settings->onlyMembersCanViewLocation));
+        $this->assertTrue(isset($meta->settings->onlyMembersCanViewRoster));
+        $this->assertTrue(isset($meta->settings->onlyMembersCanViewEvents));
+        $this->assertTrue(isset($meta->settings->membersAreInviteOnly));
+        $this->assertTrue(isset($meta->settings->fansRequireAcceptance));
+        $this->assertTrue(isset($meta->settings->notifyOnNewEvent));
+        $this->assertTrue(isset($meta->settings->notifyOnEditedEvent));
+        $this->assertTrue(isset($meta->settings->notifyOnDeletedEvent));
+        $this->assertTrue(isset($meta->settings->notifyOnNewStats));
+        $this->assertTrue(isset($meta->settings->notifyOnNewMember));
+    }
+
+
+    /** @test */
+    public function it_updates_a_teams_basic_info_to_the_given_request_data()
     {
         $team = factory(Team::class)->create();
 
+        // proof that the names don't start equal to what they're being updated to
         $this->assertFalse($team->name === 'Team Test');
         $this->assertFalse($team->teamname === 'teamname');
 
@@ -212,4 +246,48 @@ class HandlesTeamCreationLogicTest extends TestCase
 
         $team = (new HandlesTeamCreationLogic($this->data, $team->id))->update();
     }
+
+
+    /** @test */
+    public function it_changes_the_stat_keys_in_the_settings_to_match_the_inputted_keys()
+    {
+        $newKeys = ['pts', 'fgm', 'fga', 'fg_'];
+        $this->data['statKeys'] = $newKeys;
+        $team = factory(Team::class)->create();
+        $alwaysShown = Sport::find($team->sport)->alwaysShown();
+        $keysThatShouldBePresent = array_merge($newKeys, $alwaysShown);
+
+        $team = (new HandlesTeamCreationLogic($this->data, $team->id))->update();
+
+        $meta = json_decode($team->meta);
+
+        $this->assertEquals(count($meta->settings->statKeys), count($keysThatShouldBePresent));
+        foreach ($keysThatShouldBePresent as $key) {
+            $this->assertTrue(in_array($key, $meta->settings->statKeys));
+        }
+    }
+
+
+    /** @test */
+    public function it_changes_team_settings_to_match_the_given_data()
+    {
+        $team = factory(Team::class)->create();
+
+        $this->data['onlyMembersCanViewLocation'] = true;
+        $this->data['membersAreInviteOnly'] = true;
+        $this->data['notifyOnEditedEvent'] = false;
+
+        $team = (new HandlesTeamCreationLogic($this->data, $team->id))->update();
+
+        $meta = json_decode($team->meta);
+
+        $this->assertTrue($meta->settings->onlyMembersCanViewLocation);
+        $this->assertTrue($meta->settings->membersAreInviteOnly);
+        $this->assertFalse($meta->settings->notifyOnEditedEvent);
+    }
+
+
+
+
+
 }

@@ -14,7 +14,7 @@
 				<input type="text" class="form-control" :class="{'form-error' : errors.team.teamname}"
 								maxlength="18" placeholder="whsbasketball16" required @blur="checkAvailability()" v-model="team.teamname">
 				<span v-show="errors.team.teamname" class="form-error">{{ errors.team.teamname }}</span>
-				<span v-else class="input-info">rookiecard.com/team/{{ team.teamname }}</span>	
+				<span v-else class="input-info">rookiecard.io/team/{{ team.teamname }}</span>	
 			</div>
 		</div>
 
@@ -22,7 +22,7 @@
 			<div>
 				<label>Slogan</label>
 				<span v-if="team.slogan" class="remaining"><strong>{{ team.slogan.length }}</strong> / 50</span>
-				<input type="text" class="form-control" required maxlength="50"
+				<input type="text" class="form-control" required maxlength="50" placeholder="Home of the Wildcats"
 							 v-focus="focused.slogan" @focus="focused.slogan = true" @blur="focused.slogan = false" 
 							v-model="team.slogan">
 			</div>
@@ -41,7 +41,7 @@
 			</google-autocomplete>
 		</div>
 
-		<div class="photos">
+		<div class="photos with-separator">
 			<div class="upload-pic">
 				<label>Team Photo</label>
 				<form class="dropzone --pic" id="team-pic"></form>
@@ -69,9 +69,9 @@ import { mixin as VueFocus } from 'vue-focus'
 
 export default  {
 	
-	name: 'Info',
+	name: 'InfoTab',
 
-	props: ['focused', 'team', 'backup'],
+	props: ['focused', 'team', 'backup', 'errorChecker', 'pic', 'backdrop'],
 
 	mixins: [ Validator, VueFocus ],
 
@@ -86,6 +86,7 @@ export default  {
 
 		return {
 			lastCheckedName: this.$route.params.name,
+			checkingForErrors: false,
 			photoURLs: { pic: null, backdrop: null, previous: { pic: null, backdrop: null } },
 			dropzone: { 
 				pic: null,
@@ -104,7 +105,7 @@ export default  {
 				},
 			},
 			croppie: { active: null, type: null },
-			crops: { pic: { valid: false }, backdrop: { valid: false }},
+			crops: { pic: { valid: false, data: [] }, backdrop: { valid: false, data: [] }},
 		}
 	},
 
@@ -140,10 +141,15 @@ export default  {
 		 */
 		TeamSettings_availability(response)
 		{
+			this.lastCheckedName = response.data.teamname;
+
 			if (! response.data.available && this.team.teamname !== this.backup.teamname) {
 				this.errors.team.teamname = 'Already taken'
 			}
-			this.lastCheckedName = response.data.teamname;
+			else if (this.checkingForErrors) {
+				// if this check was a part of an overall error check, continue it
+				this.$emit('TeamSettings_checkErrors');
+			}
 		},
 
 
@@ -154,13 +160,34 @@ export default  {
 		TeamSettings_cropped()
 		{
 			let data = this.croppie.active.croppie('get');
+			this.crops[this.croppie.type].data = data;
 
 			this.resize_dropzone(this.croppie.type,
 				data.points[0], data.points[1], data.points[2], data.points[3]
 			);
 
-			this.crops[this.croppie.type].data = data;
 			this.$root.hideModal('cropModal');
+		},
+
+		/**
+		 * Signal from TeamSettings to check all the inputs for errors
+		 */
+		TeamSettings_checkErrors()
+		{
+			this.checkingForErrors = true;
+			this.errorChecker.call(this, this.checkInputs());
+		},
+
+
+		/**
+		 * The settings have been saved, reset variables to defaults
+		 */
+		TeamSettings_saved()
+		{
+			this.dropzone.pic.destroy();
+			this.dropzone.backdrop.destroy();
+			this.init_dropzone_pic();
+			this.init_dropzone_backdrop();
 		},
 	},
 
@@ -176,7 +203,14 @@ export default  {
 				return 1;
 			}
 
-			return this.errorCheck();
+			this.checkingForErrors = false;
+			let errors = this.errorCheck();
+
+			if (errors > 0) {
+				return errors;
+			}
+
+			return errors;
 		},
 
 		/**
@@ -184,16 +218,16 @@ export default  {
 		 */
 		formatPhotoData()
 		{
-			let pic = undefined;
-			let backdrop = undefined;
+			// set initially to undefined (gets ignored in a POST request)
+			this.team.tempPic = undefined;
+			this.team.tempBackdrop = undefined;
+
 			if (this.dropzone.pic.files.length && this.crops.pic.valid) {
-				pic = { crops: this.crops.pic.data.points, url: this.photoURLs.pic };
+				this.team.tempPic = { crops: this.crops.pic.data.points, url: this.photoURLs.pic };
 			}
 			if (this.dropzone.backdrop.files.length && this.crops.backdrop.valid) {
-				backdrop = { crops: this.crops.backdrop.data.points, url: this.photoURLs.backdrop };
+				this.team.tempBackdrop = { crops: this.crops.backdrop.data.points, url: this.photoURLs.backdrop };
 			}
-
-			return { pic, backdrop };
 		},
 
 
@@ -222,9 +256,10 @@ export default  {
 			// photo was uploaded to temp storage on S3
 			// show modal to optionally crop photo
 			this.dropzone.pic.on('success', function(file, response) {
-				self.saved = false;
+				self.crops.pic.valid = false;
 				self.photoURLs.pic = response.pic;
 				self.photoURLs.previous.pic = response.pic;
+				self.formatPhotoData();
 				self.cropping('pic');
 			});
 
@@ -235,6 +270,7 @@ export default  {
 				this.options.resize = null;
 				this.options.maxFiles = 1;
 				this.enable();
+				self.formatPhotoData();
 			});
 		},
 
@@ -246,7 +282,7 @@ export default  {
 		{
 			let options = JSON.parse(JSON.stringify(this.dropzone.options));
 
-			options.thumbnailWidth = 210;
+			options.thumbnailWidth = 320;
 			this.dropzone.backdrop = new Dropzone('#team-backdrop', options);
 
 			let self = this;
@@ -254,9 +290,10 @@ export default  {
 			// photo was uploaded to temp storage on S3
 			// show modal to optionally crop photo
 			this.dropzone.backdrop.on('success', function(file, response) {
-				self.saved = false;
+				self.crops.backdrop.valid = false;
 				self.photoURLs.backdrop = response.pic;
 				self.photoURLs.previous.backdrop = response.pic;
+				self.formatPhotoData();
 				self.cropping('backdrop');
 			});
 
@@ -267,6 +304,7 @@ export default  {
 				this.options.resize = null;
 				this.options.maxFiles = 1;
 				this.enable();
+				self.formatPhotoData();
 			});
 		},	
 
@@ -317,6 +355,7 @@ export default  {
 			this.dropzone[pic_type].disable();
 			this.photoURLs[pic_type] = url;
 			this.crops[pic_type].valid = true;
+			this.formatPhotoData();
 		},
 
 
@@ -344,7 +383,7 @@ export default  {
 				cropper = $('#croppie').croppie(options);
 			}
 
-			let previousCrops = this.crops[pic_type].data
+			let previousCrops = JSON.parse(JSON.stringify(this.crops[pic_type].data));
 			if (previousCrops && this.crops[pic_type].valid) {
 				cropper.croppie('bind', {
 					url: this.photoURLs[pic_type],
@@ -365,7 +404,7 @@ export default  {
 			this.$root.showModal('cropModal');
 		},
 		
-	}, //end methods
+	},
 	
 	ready()
 	{
@@ -383,12 +422,9 @@ export default  {
 
 		
 .photos
-	flex-basis 100%
 	display flex
 	flex-flow row nowrap
-	border-top 2px solid rc_super_lite_gray
-	margin 25px 0
-	padding 40px 0 0 0
+	flex-basis 100%
 	+mobile()
 		flex-flow row wrap
 	.upload-pic
@@ -447,6 +483,8 @@ export default  {
 					.dz-remove
 						left 98px
 						top -53px
+					.dz-error-message
+						left 35px
 						
 .croppie
 	width 100%

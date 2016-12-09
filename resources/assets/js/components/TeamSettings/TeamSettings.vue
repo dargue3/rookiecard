@@ -6,6 +6,7 @@
 		
 			<div class="left">
 				<div class="save">
+					<span v-show="correct_errors" class="form-error">Correct errors first</span>
 					<a v-if="! saved" class="btn btn-primary" :class="{ 'click-me' : ! saved }" v-touch:tap="save()">
 	    			<span v-show="! loading_save">SAVE</span>
 	    			<spinner v-show="loading_save" color="white"></spinner>
@@ -36,24 +37,25 @@
 					<li :class="{ '--active' : tab === 'stats' }" v-touch:tap="tab = 'stats'">Stats</li>
 					<li :class="{ '--active' : tab === 'privacy' }" v-touch:tap="tab = 'privacy'">Privacy</li>
 					<li :class="{ '--active' : tab === 'notifications' }" v-touch:tap="tab = 'notifications'">Notifications</li>
-					<li class="danger-zone" :class="{ '--active' : tab === 'danger-zone' }" v-touch:tap="tab = 'danger-zone'">Danger Zone</li>
+					<li :class="{ '--active' : tab === 'danger-zone' }" v-touch:tap="tab = 'danger-zone'" class="danger-zone">Danger Zone</li>
 				</ul>
 			</div>
 			
 
-			<info-tab v-show="tab === 'info'" :focused="focused" :team.sync="team" :backup="backup"></info-tab>
+			<info-tab v-show="tab === 'info'" :focused="focused" :team.sync="team" :backup="backup"
+								:pic.sync="pic" :backdrop.sync="backdrop" :error-checker="errorChecker"></info-tab>
 
 
-			<stats-tab v-show="tab === 'stats'" :team.sync="team"></stats-tab>
+			<stats-tab v-show="tab === 'stats'" :team.sync="team" :new-stat-keys.sync="statKeys"></stats-tab>
 
 
 			<privacy-tab v-show="tab === 'privacy'" :team.sync="team"></privacy-tab>
 
 
-			<div v-show="tab === 'notifications'" class="settings-wrapper"></div>
+			<notification-tab v-show="tab === 'notifications'" :team.sync="team"></notification-tab>
 
 
-			<div v-show="tab === 'danger-zone'" class="settings-wrapper"></div>
+			<danger-zone-tab v-show="tab === 'danger-zone'"></danger-zone-tab>
 			
 
 		</div>
@@ -65,6 +67,8 @@
 import InfoTab from './InfoTab.vue'
 import StatsTab from './StatsTab.vue'
 import PrivacyTab from './PrivacyTab.vue'
+import NotificationTab from './NotificationTab.vue'
+import DangerZoneTab from './DangerZoneTab.vue'
 
 export default  {
 	
@@ -77,6 +81,8 @@ export default  {
 		StatsTab,
 		InfoTab,
 		PrivacyTab,
+		NotificationTab,
+		DangerZoneTab,
 	},
 
 	data()
@@ -85,21 +91,26 @@ export default  {
 			prefix: this.$parent.prefix,
 			tab: 'info',
 			backup: {},
+			errorChecker: function(errors) { this.errorsFromInfoTab(errors); }.bind(this),
+			pic: undefined,
+			backdrop: undefined,
+			statKeys: undefined,
 			loading_save: false,
+			correct_errors: false,
 		}
 	},
 
 	events:
 	{
 		/**
-		 * Request back from the server after pressing 'save'
+		 * Request back from the server after saving
 		 */
 		TeamSettings_saved(response)
 		{
 			this.$dispatch('Team_updated_team', response.data.team);
-			this.saved = true;
-			this.loading_save = false;
+			this.$broadcast('TeamSettings_saved');
 			this.$root.banner('good', 'Settings saved');
+			setTimeout(() => { this.saved = true; this.loading_save = false; }, 150);
 		},
 	},
 
@@ -108,14 +119,14 @@ export default  {
 		/**
 		 * Save any changes to the server
 		 */
-		save()
+		save(errorChecked = false)
 		{
-			if (this.checkInputs() > 0) {
-				// there are errors in the fields
+			if (! errorChecked) {
+				// send event asking InfoTab to error check
+				// it will respond by calling this.errorsFromInfoTab()
+				this.$broadcast('TeamSettings_checkErrors');
 				return;
 			}
-
-			let { pic, backdrop } = this.formatPhotoData();
 
 			let data = {
 				name: this.team.name,
@@ -126,16 +137,23 @@ export default  {
 				lat: this.team.lat,
 				long: this.team.long,
 				timezone: this.team.timezone,
-				pic: pic,
-				backdrop: backdrop,
-				userStats: this.team.settings.statKeys,
-				rcStats: [],
+				pic: this.team.tempPic,
+				backdrop: this.team.tempBackdrop,
+				statKeys: this.statKeys,
+				onlyMembersCanViewLocation: this.team.settings.onlyMembersCanViewLocation,
+				onlyMembersCanViewRoster: this.team.settings.onlyMembersCanViewRoster,
+				onlyMembersCanViewEvents: this.team.settings.onlyMembersCanViewEvents,
+				membersAreInviteOnly: this.team.settings.membersAreInviteOnly,
+				fansRequireAcceptance: this.team.settings.fansRequireAcceptance,
+				notifyOnNewEvent: this.team.settings.notifyOnNewEvent,
+				notifyOnEditedEvent: this.team.settings.notifyOnEditedEvent,
+				notifyOnDeletedEvent: this.team.settings.notifyOnDeletedEvent,
+				notifyOnNewStats: this.team.settings.notifyOnNewStats,
+				notifyOnNewMember: this.team.settings.notifyOnNewMember,
 			}
 
 			this.loading_save = true;
-
-			let url = `${this.$parent.prefix}/settings`;
-			this.$root.post(url, 'TeamSettings_saved', data);
+			this.$root.post(`${this.$parent.prefix}/settings`, 'TeamSettings_saved', data);
 		},
 
 
@@ -145,6 +163,21 @@ export default  {
 		cancel()
 		{
 			this.saved = true;
+		},
+
+
+		/**
+		 * The number of errors being reported from InfoTab
+		 */
+		errorsFromInfoTab(errors)
+		{
+			if (errors > 0) {
+				this.correct_errors = true;
+			}
+			else {
+				this.correct_errors = false;
+				this.save(true);
+			}
 		},
 	},
 
@@ -156,6 +189,13 @@ export default  {
 		 * Once this.saved is falsey, the save button will be enabled
 		 */
 		'team' : { handler : function() { this.saved = false }, deep: true },
+
+		statKeys(newVal, oldVal)
+		{
+			if (typeof oldVal !== 'undefined') {
+				this.saved = false;
+			}
+		},
 	},
 
 
@@ -169,7 +209,6 @@ export default  {
 </script>
 
 <style lang="stylus">
-	
 @import '/resources/assets/stylus/variables.styl'
 
 .Settings
@@ -183,6 +222,7 @@ export default  {
 	display flex
 	flex-flow row nowrap
 	margin 0 auto
+	margin-top 25px
 	margin-bottom 10px
 	justify-content space-between
 	max-width 775px
@@ -196,7 +236,7 @@ export default  {
 				margin 0
 				width 100%
 				&.btn-cancel:hover
-					background rc_bright_green
+					background rc_med_gray
 					cursor default
 		.header
 			margin-left 21px
@@ -204,6 +244,8 @@ export default  {
 			align-items center
 			h2
 				margin 0
+		.form-error
+			font-size 16px
 	.right
 		display flex
 		flex-flow row nowrap
@@ -259,6 +301,7 @@ export default  {
 	width 590px
 	background white
 	padding 1.5em
+	border-radius 3px
 	.form-group
 		flex-basis 100%
 		display flex
@@ -267,6 +310,34 @@ export default  {
 			flex 1
 			&:not(:first-child)
 				margin-left 10px
+				
+.settings-container
+	display flex
+	flex-flow row wrap
+	align-content flex-start
+	width 100%
+	.settings-entry
+		display flex
+		flex-flow row nowrap
+		justify-content space-between
+		align-items center
+		width 100%
+		border-bottom 1px solid rc_super_lite_gray
+		padding 17px 0
+		max-height 65px
+		+the-first-one()
+			margin-top 0
+			padding-top 0
+		+the-last-one()
+			border-bottom 0
+			padding-bottom 0
+		.switch
+			display flex
+			flex-flow row nowrap
+			align-items center
+			justify-content flex-end
+		.description
+			font-size 17px
 			
 	
 	

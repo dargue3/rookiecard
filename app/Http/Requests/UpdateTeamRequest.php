@@ -41,12 +41,23 @@ class UpdateTeamRequest extends FormRequest
             'lat'       => 'required|numeric',
             'long'      => 'required|numeric',
             'timezone'  => 'required|timezone',
+            'statKeys'  => 'required|array',
             'pic.url'           => 'regex:/\/storage\/.+/',
             'backdrop.url'      => 'regex:/\/storage\/.+/',
             'pic.crops'         => 'array|size:4',
             'backdrop.crops'    => 'array|size:4',
             'backdrop.crops.*'  => 'numeric',
             'pic.crops.*'       => 'numeric',
+            'onlyMembersCanViewLocation'    => 'required|boolean',
+            'onlyMembersCanViewRoster'      => 'required|boolean',
+            'onlyMembersCanViewEvents'      => 'required|boolean',
+            'membersAreInviteOnly'          => 'required|boolean',
+            'fansRequireAcceptance'         => 'required|boolean',
+            'notifyOnNewEvent'              => 'required|boolean',
+            'notifyOnEditedEvent'           => 'required|boolean',
+            'notifyOnDeletedEvent'          => 'required|boolean',
+            'notifyOnNewStats'              => 'required|boolean',
+            'notifyOnNewMember'             => 'required|boolean',
         ];
     }
 }

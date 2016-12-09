@@ -24,6 +24,16 @@ class Basketball extends Sport implements SportInterface
 
 
     /**
+     * Keys that are assigned to a team by default
+     * 
+     * @var array
+     */
+    protected $defaultKeys = ['date', 'name', 'win', 'opp', 'gp', 'pts', 'fgm', 'fga', 'fg_', 'threepm', 'threepa', 'threep_',
+    		'ast', 'reb', 'stl', 'blk'];
+
+
+
+    /**
      * Keys that will be used to generate random stats
      * 
      * @var array
@@ -55,6 +65,16 @@ class Basketball extends Sport implements SportInterface
      * @var array
      */
     protected $positions = ['pg', 'sg', 'sf', 'pf', 'c'];
+
+
+
+    /**
+     * The paths to the default images used on teams
+     * 
+     * @var string
+     */
+    protected $defaultBackdropPath = '/images/basketball_backdrop.jpeg';
+    protected $defaultProfilePicPath = '/images/basketball_profile.jpeg';
 
 
 

@@ -19,7 +19,7 @@ class CreateTeamRequest extends Request
     {
         return [
             'name'                  => 'required|max:50',
-            'teamURL'               => 'required|unique:rc_teams|alpha_dash|max:18|not_in:create',
+            'teamURL'               => 'required|unique:rc_teams,teamname|alpha_dash|max:18|not_in:create',
             'gender'                => 'required|in:male,female,coed',
             'sport'                 => 'required|in:basketball',
             'slogan'                => 'max:50',
@@ -37,8 +37,6 @@ class CreateTeamRequest extends Request
             'coaches.*.firstname'   => 'required_with:coaches|max:50',
             'coaches.*.lastname'    => 'required_with:coaches|max:50',
             'coaches.*.email'       => 'email',
-            'userStats'             => 'array',
-            'rcStats'               => 'array',
         ];
     }
 }

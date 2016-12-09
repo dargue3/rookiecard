@@ -17,7 +17,7 @@
           </a>
         </div>
       </div>
-      <div v-if="differentTimezone" class="Calendar__timezone">
+      <div v-if="differentTimezone" class="Calendar__timezone blue-container">
         <span>This team is in a different timezone than you. Dates have been adjusted to your timezone.</span>
       </div>
       <div class="Calendar__container">
@@ -31,8 +31,6 @@
 </template>
 
 <script>
-var animateEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
-var rubberBand = 'animated rubberBand';
 
 export default 
 {
@@ -184,9 +182,12 @@ export default
 
     // animate click and switch month
     chevron(direction) {
+      let animateEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
+      let rubberBand = 'animated rubberBand';
+
       this.calendar.navigate(direction);
 
-      var chevron = $('[chevron="' + direction + '"]')
+      let chevron = $('[chevron="' + direction + '"]')
 
       // animate chevron
       chevron.addClass(rubberBand).one(animateEnd, function(){
@@ -257,11 +258,8 @@ export default
   align-items center
   text-align center
   margin-top 15px
-  border-radius 5px
   width 100%
   height 50px
-  background rc_alert_info
-  color darken(rc_alert_info, 75%)
   font-weight bold
 
 .Calendar__container

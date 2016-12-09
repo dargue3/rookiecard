@@ -320,15 +320,12 @@
 	            	<div class="croppie-wrapper">
 	            		<div id="croppie" class="croppie"></div>
 									<div class="save-button-wrapper --center --with-divider">
-										<div class="save-button-group --two">
+										<div class="save-button-group --one">
 		            			<div>
 		            				<a class="btn btn-primary" v-touch:tap="$broadcast('TeamSettings_cropped')">
 		            					<span v-show="! loading_save">CROP</span>
 		            					<spinner v-show="loading_save" color="white"></spinner>
 		            				</a>
-		            			</div>
-		            			<div>
-		            				<a class="btn btn-cancel" v-touch:tap="$root.hideModal('cropModal')">CANCEL</a>
 		            			</div>
 		            		</div>
 									</div>
@@ -407,6 +404,8 @@ export default  {
 			team: {
 				meta: {},
 				settings: {},
+				tempPic: undefined,
+				tempBackdrop: undefined,
 			},
 			isAdmin: false,
 			isFan: false,
@@ -748,7 +747,13 @@ export default  {
 			this.$set('team.settings.onlyMembersCanViewRoster', meta.settings.onlyMembersCanViewRoster);
 			this.$set('team.settings.onlyMembersCanViewEvents', meta.settings.onlyMembersCanViewEvents);
 			this.$set('team.settings.membersAreInviteOnly', meta.settings.membersAreInviteOnly);
-			this.$set('team.settings.fansAreInviteOnly', meta.settings.fansAreInviteOnly);
+			this.$set('team.settings.fansRequireAcceptance', meta.settings.fansRequireAcceptance);
+
+			this.$set('team.settings.notifyOnNewEvent', meta.settings.notifyOnNewEvent);
+			this.$set('team.settings.notifyOnEditedEvent', meta.settings.notifyOnEditedEvent);
+			this.$set('team.settings.notifyOnDeletedEvent', meta.settings.notifyOnDeletedEvent);
+			this.$set('team.settings.notifyOnNewStats', meta.settings.notifyOnNewStats);
+			this.$set('team.settings.notifyOnNewMember', meta.settings.notifyOnNewMember);
 
 			// note whether or not this user is the creator
 			if (this.team.creator_id === this.auth.id) {

@@ -25,7 +25,7 @@
 				<!-- notes to user -->
 				<div class="stat-notes">
 					<div class="blue-container">
-						<span><strong>Tips:</strong></span>
+						<span class="title">Tips:</span>
 						<ul>
 							<li>
 								Any fields left empty are treated as zeros.
@@ -655,20 +655,14 @@ export default  {
 		text-align center
 		order 2
 	.blue-container
-		background-color lighten(rc_blue, 75%)
-		padding 15px
-		display inline-block
 		ul
 			list-style none
 			padding-left 0
 			margin 20px 0 0 0
 			li
 				margin-bottom 10px
-			li:last-child
-				margin-bottom 0
-				
-		span
-			color black
+				+the-last-one()
+					margin-bottom 0
 	
 	
 .edit-button.--stats

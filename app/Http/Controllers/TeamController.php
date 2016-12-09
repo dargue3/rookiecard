@@ -178,6 +178,19 @@ class TeamController extends Controller
     }
 
 
+    /**
+     * Admin has chosen to delete this team and everything it owns
+     * 
+     * @param  Team   $team 
+     * @return Illuminate\Http\Response 
+     */
+    public function deleteTeam(Team $team)
+    {
+        // do the delete stuff
+        
+        return ['ok' => true];
+    }
+
 
 
 

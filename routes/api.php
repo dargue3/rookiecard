@@ -7,6 +7,7 @@ Route::get('team/create/dummy/{gender}', 'TeamController@createDummyNames');
 Route::get('team/create/stats/{sport}', 'TeamController@getStatKeys');
 
 Route::get('team/{teamname}', 'TeamController@getTeamData');
+Route::delete('team/{teamname}', 'TeamController@deleteTeam');
 Route::post('team/{teamname}/join', 'TeamController@joinTeam');
 
 Route::post('team/{teamname}/fan', 'TeamController@toggleFan');

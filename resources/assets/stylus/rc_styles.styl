@@ -43,11 +43,9 @@ p
 		box-shadow none
 	span.bootstrap-switch-handle-on.bootstrap-switch-primary
 		background link_blue
-		padding 6px 5px
 		font-size 13px
 	span.bootstrap-switch-handle-off.bootstrap-switch-default
 		background rc_background
-		padding 6px 5px
 		font-size 13px
 	
 		
@@ -199,6 +197,8 @@ span.input-info
 	div
 		background rc_blue
 		padding 4px 18px
+		display flex
+		align-items center
 		&:hover
 			cursor pointer
 		&.active
@@ -451,7 +451,11 @@ textarea
 	box-sizing border-box
 	min-height 31px
 	resize none	
-		
+
+.with-separator
+	border-top 2px solid rc_super_lite_gray
+	margin 25px 0
+	padding 40px 0 0 0
 
 .btn
 	padding 14px 24px
@@ -460,6 +464,10 @@ textarea
 	font-size 15px
 	margin-top 8px
 	margin-left 15px
+	display flex
+	flex-flow row nowrap
+	justify-content center
+	align-items center
 	&.btn-first
 		margin-left 0
 	&:hover, &:active, &:active:focus, &:focus
@@ -674,6 +682,17 @@ textarea
 		width 150px
 	
 
+.blue-container
+	padding 15px
+	border-radius 5px
+	background rc_alert_info
+	color darken(rc_alert_info, 60%)
+	display inline-block
+	.title
+		font-weight bold
+		margin-bottom 10px
+		font-size 16px
+		color darken(rc_alert_info, 60%)
 
 
 
@@ -1005,53 +1024,6 @@ input[type="text"]:focus,
 .gray-out-leave	
 	color rc_lite_gray
 
-
-
-//for spinning the search icon
-.rotated-right
-	transform rotate(90deg)
-
-.glyphicon.right-spinner
-	animation glyphicon-spin-r 0.075s linear
-
-@keyframes glyphicon-spin-r
-	0%
-  	transform rotate(0deg)
-  100%
-		transform rotate(90deg)
-
-.glyphicon.left-spinner
-	animation glyphicon-spin-l 0.075s linear
-
-@keyframes glyphicon-spin-l
-	0%
-  	transform rotate(90deg)
-  100%
-		transform rotate(0deg)
-
-
-.upside-down
-	transform rotate(180deg)
-
-.caret.right-spinner
-	animation caret-spin-r 0.15s  linear
-
-@keyframes caret-spin-r
-	0%
-		transform rotate(0deg)
-	100%
-		transform rotate(180deg)
-
-.caret.left-spinner
-	animation: caret-spin-l .15s  linear
-
-@keyframes caret-spin-l
-	0%
-		transform rotate(180deg)
-	100%
-		transform rotate(0deg)		
-		
-		
 	
 .loading-spinner
 	width 75px
@@ -1126,4 +1098,3 @@ input[type="text"]:focus,
 		background rc_bright_green
 	100%
 		background lighten(rc_bright_green_hover, 10%)
-		

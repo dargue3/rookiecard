@@ -428,8 +428,9 @@ table
 		border 1px solid #CACACA
 		color white
 		text-align center
-		font-weight 300
+		font-weight normal
 		white-space nowrap
+		padding 5px 8px !important
 		&:hover
 			cursor pointer
 		&.col-sort
@@ -439,6 +440,8 @@ table
 			background-color rc_blue
 			&:hover
 				cursor default
+		&:not(.no-sort)
+			padding-right 12px !important
 
 
 .table-striped
@@ -468,15 +471,46 @@ td.stat-entries
 	font-family 'Monda', sans-serif
 	text-align center
 	width auto
-	.caret
-		margin 0 0 3px 0
-		transition all .2s
-		&.asc
-			transform rotate(180deg)
-		&.desc
-			transform rotate(0deg)
 	tr
 		user-select none
+	.stat-columns
+		.caret
+			margin 0 0 3px 0
+			position relative
+			border none
+			padding-bottom 4px
+			&:before
+				content ''
+				position absolute
+				top 0
+				left 0
+				border-left 4px solid transparent
+				border-right 4px solid transparent
+			&.desc:before
+				border-top 4px solid white
+				border-bottom 0
+			&.asc:before
+				border-top 0
+				border-bottom 4px solid white
+				
+			&:after
+				content ''
+				position absolute
+				left 2px
+				border-left 2px solid transparent
+				border-right 2px solid transparent
+			&.desc:after
+				top 0
+				border-bottom none
+				border-top 2px solid rc_blue
+				^[1].col-sort .caret.desc:after  // if col-sort on this column, use red background
+					border-top 2px solid rc_red
+			&.asc:after
+				top 2px
+				border-top none
+				border-bottom 2px solid rc_blue
+				^[1].col-sort .caret.asc:after  // if col-sort on this column, use red background
+					border-bottom 2px solid rc_red
 		
 
 .stats-overflow

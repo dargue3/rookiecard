@@ -21,9 +21,6 @@
 					<div class="CreateTeam__header">
 						<h3>Team Info</h3>
 						<p>First tell us some basic info about your team</p>
-						<div>
-							<span>Step 1 / 3</span>
-						</div>
 					</div>	
 					<div class="CreateTeam__inputs">
 
@@ -39,7 +36,7 @@
 							<input type="text" class="form-control" :class="{'form-error' : errors.teamname}"
 											maxlength="18" placeholder="whsbasketball16" required @blur="checkAvailability()" v-model="teamname">
 							<span v-show="errors.teamname" class="form-error">{{ errors.teamname }}</span>
-							<span v-else class="input-info">rookiecard.com/team/{{ teamname }}</span>	
+							<span v-else class="input-info">rookiecard.io/team/{{ teamname }}</span>	
 						</div>
 
 					</div>
@@ -59,7 +56,7 @@
 						</div>
 
 						<div>
-							<label>I am a...</label>
+							<label>I am a&hellip;</label>
 							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
 											required v-model="userIsA">
 								<option value="player">Player</option>
@@ -89,7 +86,7 @@
 						</div>
 
 
-						<google-autocomplete :city.sync="city" :long.sync="long"
+						<google-autocomplete :city.sync="city" :long.sync="long" :timezone.sync="timezone"
 																	:lat.sync="lat" label="City / Town" :error="errors.city">
 						</google-autocomplete>
 
@@ -117,62 +114,16 @@
 					</div>	
 
 				</div> <!-- end of team info -->
-				
-
-
-
-
-				<div v-show="page === 'stats'">
-
-					<div class="CreateTeam__header">
-						<h3>Stats</h3>
-						<p>Choose the stats you want to track for your team and players</p>
-						<p>These can be changed at any time</p>
-						<div>
-							<span>Step 2 / 3</span>
-						</div>
-					</div>	
-					<div class="CreateTeam__inputs">
-
-
-						<stat-selection :sport="sport" :user-selected.sync="userSelected"
-														:rc-selected.sync="rcSelected">
-						</stat-selection>
-
-
-					</div>
-
-					<div class="CreateTeam__buttons">
-						<div>
-							<a class="btn btn-cancel --chevron --sm --left" @click="page = 'info'">
-								<i class="material-icons btn-chevron --left">chevron_left</i>BACK
-							</a>	
-						</div>
-						<div>
-							<a class="btn btn-primary --chevron --sm --right" @click="changePage">NEXT
-								<i class="material-icons btn-chevron --right">chevron_right</i>
-							</a>	
-							<span class="form-error">{{ errors.page.stats }}</span>
-						</div>
-					</div>		
-				</div> <!-- end of stats  -->
-
-
-
-
 
 
 				<div v-show="page === 'roster'">
 
-					<div class="CreateTeam__header">
+					<div class="CreateTeam__header roster-notes">
 						<h3>Roster</h3>
 						<p>Enter info about the players and coaches that are on this team.</p>
-						<p>Your team will be populated with "ghost" users.</p>
+						<p>Your team will be populated with "ghost" users for the time being.</p>
 						<p>If you'd like to invite someone to join, add their email.</p>
 						<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>
-						<div>
-							<span>Step 3 / 3</span>
-						</div>
 					</div>
 
 					<h4 class="CreateTeam__subheader">Players</h4>
@@ -279,7 +230,7 @@
 
 					<div class="CreateTeam__buttons">
 						<div>
-							<a class="btn btn-cancel --chevron --sm --left" @click="page = 'stats'">BACK
+							<a class="btn btn-cancel --chevron --sm --left" @click="page = 'info'">BACK
 								<i class="material-icons btn-chevron --left">chevron_left</i>
 							</a>	
 						</div>
@@ -288,7 +239,15 @@
 							<span class="form-error">{{ errors.page.roster }}</span>
 						</div>
 					</div>		
-				</div> <!-- end of stats  -->
+
+					<div class="notes">
+						<div class="blue-container">
+							<p class="title">What about privacy?</p>
+							<p class="text">Privacy, notifications, and more can be edited in the settings tab later!</p>
+						</div>
+					</div>
+					
+				</div> <!-- end of roster  -->
 				
 			</div>
 			
@@ -306,7 +265,6 @@
 <script>
 
 import GoogleTypeahead 	from './GoogleTypeahead.vue'
-import StatSelection 	from './StatSelection.vue'
 import Validator 				from '../mixins/Validator.js'
 
 export default  {
@@ -320,7 +278,6 @@ export default  {
 	components:
 	{
 		'google-autocomplete' : GoogleTypeahead,
-		'stat-selection': StatSelection,
 	},
 
 	beforeCompile()
@@ -347,14 +304,13 @@ export default  {
 			city: '',
 			long: '',
 			lat: '',
+			timezone: '',
 			slogan: '',
 			players: [{firstname: '', lastname: '', email: ''}],
 			coaches: [{firstname: '', lastname: '', email: ''}],
 			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
 			checkingAvailability: false,
 			nameAvailable: true,
-			userSelected: [],
-			rcSelected: [],
 		}
 	}, 
 
@@ -378,7 +334,6 @@ export default  {
 		 */
 		save()
 		{
-
 			if (this.errorCheck() > 0) {
 				this.setPageError('Correct errors before submitting');
 				return;
@@ -389,19 +344,18 @@ export default  {
 			// build up object of all the team data
 			var data = {
 				name: 			this.name,
-				teamname: 	this.teamname,
+				teamURL: 		this.teamname,
 				slogan: 		this.slogan,
 				gender: 		this.gender,
 				homefield: 	this.homefield,
 				city: 			this.city,
 				long: 			this.long,
 				lat: 				this.lat,
+				timezone: 	this.timezone,
 				sport: 			this.sport,
 				userIsA: 		this.userIsA,
 				players: 		this.players,
 				coaches: 		this.coaches,
-				userStats: 	this.userSelected,
-				rcStats: 		this.rcSelected,
 			}
 
 			data = this.filterSubmittedData(data);
@@ -452,9 +406,6 @@ export default  {
 				this.setPageError('');
 
 				if (this.page === 'info') {
-					this.page = 'stats';
-				}
-				else if (this.page === 'stats') {
 					this.page = 'roster';
 				}
 			}
@@ -480,7 +431,6 @@ export default  {
 			this.registerErrorChecking('coaches.*.firstname', 'required', 'Enter a first name');
 			this.registerErrorChecking('coaches.*.lastname', 'required', 'Enter a last name');
 
-			this.$set('errors.page.stats', '');
 			this.$set('errors.page.info', '');
 			this.$set('errors.page.roster', '');
 		},
@@ -536,14 +486,6 @@ export default  {
 
 	watch:
 	{
-		/**
-		 * If the sport changed, change the stats in the pickers as well
-		 */
-		sport()
-		{
-			this.$broadcast('StatSelection_init', this.sport);
-		},
-
 		/**
 		 * If the team's gender has changed, update the dummy names to be accurate
 		 */
@@ -665,7 +607,15 @@ export default  {
 		
 .CreateTeam__separator
 	margin-right 20px
-	margin-left 20px		
+	margin-left 20px	
+	
+.roster-notes
+	p
+		margin 4px 0px
+		+the-first-one()
+			margin-top 0
+		+the-last-one()
+			margin-bottom 0
 	
 .add-user
 	.glyphicon:hover
@@ -679,6 +629,15 @@ export default  {
 	margin 25px	
 	text-align center
 	font-size 20px
+	
+.notes
+	display flex
+	flex-flow row nowrap
+	justify-content center
+	align-items center
+	margin-top 30px
+	.blue-container
+		text-align center
 	
 
 </style>

@@ -60,17 +60,17 @@ class HandlesTeamCreationLogic
 
         $this->sport = Sport::find($data['sport']);
 
+        $this->long = $data['long'];
+        $this->lat = $data['lat'];
+        $this->timezone = $data['timezone'];
         $this->meta = [
-            'stats'     => $this->sport->sortKeys(array_merge($data['userStats'], $data['rcStats'])),
             'homefield' => $data['homefield'],
             'city'      => $data['city'],
             'slogan'    => $data['slogan'],
             'tz'        => $data['timezone'],
         ];
 
-        $this->long = $data['long'];
-        $this->lat = $data['lat'];
-        $this->timezone = $data['timezone'];
+        $this->attachSettings($data);
 
         if (isset($team_id)) {
             // just updating this team's data, don't do the rest of the constructor
@@ -122,8 +122,8 @@ class HandlesTeamCreationLogic
             'long'          => $this->long,
             'lat'           => $this->lat,
             'meta'          => json_encode($this->meta),
-            'pic'           => '/images/proPic_default.jpeg',
-            'backdrop'      => '/images/proPic_default.jpeg',
+            'pic'           => $this->sport->profilePicPath(),
+            'backdrop'      => $this->sport->backdropPath(),
             'creator_id'    => Auth::id(),
         ]);
 
@@ -197,4 +197,36 @@ class HandlesTeamCreationLogic
                                                         ->moveFromLocalToS3('team_backdrop');
         }
     }
+
+
+    /**
+     * Attach settings to the team's meta data
+     * 
+     * @param  array $data  The data from the request
+     * @return void
+     */
+    public function attachSettings($data)
+    {
+        if (! isset($data['statKeys'])) {
+            $data['statKeys'] = [];
+        }
+
+        $this->meta['settings'] = [
+            'onlyMembersCanViewLocation'    => isset($data['onlyMembersCanViewLocation']) ? $data['onlyMembersCanViewLocation'] : false,
+            'onlyMembersCanViewRoster'      => isset($data['onlyMembersCanViewRoster']) ? $data['onlyMembersCanViewRoster'] : false,
+            'onlyMembersCanViewEvents'      => isset($data['onlyMembersCanViewEvents']) ? $data['onlyMembersCanViewEvents'] : false,
+            'membersAreInviteOnly'          => isset($data['membersAreInviteOnly']) ? $data['membersAreInviteOnly'] : false,
+            'fansRequireAcceptance'         => isset($data['fansRequireAcceptance']) ? $data['fansRequireAcceptance'] : false,
+            'notifyOnNewEvent'              => isset($data['notifyOnNewEvent']) ? $data['notifyOnNewEvent'] : true,
+            'notifyOnEditedEvent'           => isset($data['notifyOnEditedEvent']) ? $data['notifyOnEditedEvent'] : true,
+            'notifyOnDeletedEvent'          => isset($data['notifyOnDeletedEvent']) ? $data['notifyOnDeletedEvent'] : true,
+            'notifyOnNewStats'              => isset($data['notifyOnNewStats']) ? $data['notifyOnNewStats'] : true,
+            'notifyOnNewMember'             => isset($data['notifyOnNewMember']) ? $data['notifyOnNewMember'] : false,
+            'statKeys'                      => $this->sport->validateKeys($data['statKeys']),
+        ];
+    }
 }
+
+
+
+

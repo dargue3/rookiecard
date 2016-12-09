@@ -81,6 +81,17 @@ class Sport
     }
 
 
+	/**
+     * Return the default stat keys for this sport
+     * 
+     * @return array
+     */
+    public function defaultStatKeys()
+    {
+    	return $this->defaultKeys;
+    }
+
+
     /**
      * Return the keys that are always shown in the stat table
      * 
@@ -114,14 +125,40 @@ class Sport
     }
 
 
+    /**
+     * Return the default backdrop photo for this sport
+     * 
+     * @return string 
+     */
+    public function backdropPath()
+    {
+    	return $this->defaultBackdropPath;
+    }
+
+
+    /**
+     * Return the default profile photo for this sport
+     * 
+     * @return string 
+     */
+    public function profilePicPath()
+    {
+    	return $this->defaultProfilePicPath;
+    }
+
+
 	/**
 	 * Sort the keys that the user wants to see on their page into team and player keys
 	 * 
 	 * @param  array  $keys The stat keys that the user wants on their page
 	 * @return array  		Formatted array for team meta data
 	 */
-	public function sortKeys(array $keys)
+	public function validateKeys(array $keys)
 	{
+		if (! $keys) {
+			return $this->defaultStatKeys();
+		}
+
 		$reordered = [];
 		$this->validate($keys);
 

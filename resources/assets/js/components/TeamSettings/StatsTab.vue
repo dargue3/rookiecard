@@ -26,7 +26,7 @@ export default  {
 	
 	name: 'StatsTab',
 
-	props: ['team'],
+	props: ['team', 'newStatKeys'],
 
 	components: { StatSelection, Stats },
 
@@ -35,7 +35,6 @@ export default  {
 		return {
 			rcSelected: [],
 			userSelected: [],
-			newStatKeys: [],
 			showStatTable: false,
 			stats: [],
 			player: [{ 'abbrName': 'Ghost', 'member_id': 0, 'user_id': 0 }],
