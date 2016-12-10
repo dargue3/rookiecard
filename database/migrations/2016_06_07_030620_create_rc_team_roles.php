@@ -18,6 +18,19 @@ class CreateRcTeamRoles extends Migration
             $table->string('name');
         });
 
+        // insert the default roles
+        DB::table('rc_team_roles')->insert([
+            ['name' => 'admin'],
+            ['name' => 'player'],
+            ['name' => 'ghost_player'],
+            ['name' => 'coach'],
+            ['name' => 'ghost_coach'],
+            ['name' => 'fan'],
+            ['name' => 'invited_player'],
+            ['name' => 'invited_coach'],
+            ['name' => 'requested_to_join'],
+        ]);
+
         Schema::create('rc_member_role', function(Blueprint $table)
         {
             $table->integer('member_id')->unsigned()->index();
@@ -35,7 +48,7 @@ class CreateRcTeamRoles extends Migration
      */
     public function down()
     {
-        Schema::drop('rc_team_roles');
         Schema::drop('rc_member_role');
+        Schema::drop('rc_team_roles');
     }
 }
