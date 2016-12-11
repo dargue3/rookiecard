@@ -142,7 +142,7 @@ span.input-info
 		border-radius 50%
 		&:hover
 			cursor pointer
-		&:hover.--ghost
+		&:hover.-ghost
 			cursor default	
 		
 	+has(text)
@@ -194,6 +194,7 @@ span.input-info
 	color white
 	margin-bottom 45px
 	margin-top 25px
+	height 100%
 	div
 		background rc_blue
 		padding 4px 18px
@@ -219,11 +220,11 @@ span.input-info
 		border-left 1px solid darken(rc_blue, 20%)
 		^[0] .second.active + .third // when second is active, don't show left border on third
 			border-left 1px solid rc_blue
-	&.--just-two
+	&.-just-two
 		.second
 			border-top-right-radius 3px				
 			border-bottom-right-radius 3px
-	&.--black-gray
+	&.-black-gray
 		div
 			background rc_lite_gray
 			&.active
@@ -236,7 +237,7 @@ span.input-info
 			border-left 1px solid darken(rc_lite_gray, 20%)
 			^[1] .second.active + .third // when second is active, don't show left border on third
 				border-left 1px solid rc_lite_gray
-	&.--small
+	&.-small
 		font-size 17px
 		div
 			padding 2px 12px
@@ -343,7 +344,7 @@ span.input-info
 	opacity 1
 	+mobile()
 		font-size 19px
-	&.--not-showing
+	&.-not-showing
 		max-height 0
 		padding 0
 		opacity 0
@@ -421,7 +422,7 @@ div.modal
 			color rc_med_gray
 			background rc_background
 			padding 0px 3em 
-		span.--twotone
+		span.-twotone
 			background rc_two_tone	
 			
 .Footer
@@ -431,7 +432,7 @@ div.modal
 	align-items center
 	padding-top 4em
 	background rc_two_tone
-	&.--light
+	&.-light
 		background rc_background
 	p
 		flex 1
@@ -472,24 +473,24 @@ textarea
 		margin-left 0
 	&:hover, &:active, &:active:focus, &:focus
 		background-image none
-	&.--chevron
+	&.-chevron
 		position relative
-		&.--sm.--right
+		&.-sm.-right
 			min-width 100px
 			padding-left 6px			
-		&.--med.--right
+		&.-med.-right
 			min-width 125px
 			padding-left 10px
-		&.--lg.--right
+		&.-lg.-right
 			min-width 175px
 			padding-left 10px
-		&.--sm.--left
+		&.-sm.-left
 			min-width 100px
 			padding-right 6px			
-		&.--med.--left
+		&.-med.-left
 			min-width 125px
 			padding-right 10px
-		&.--lg.--left
+		&.-lg.-left
 			min-width 175px
 			padding-right 10px	
 
@@ -497,9 +498,9 @@ textarea
 	position absolute
 	top 6px
 	font-size 30px	
-	&.--right	
+	&.-right	
 		right 0px
-	&.--left
+	&.-left
 		left 4px
 	&.material-icons:hover
 		color inherit		
@@ -603,7 +604,6 @@ textarea
 	margin-top 0px
 	border-radius 4px
 	.btn-text
-		border 1px solid #dcdcdc
 		position relative
 		background-color #dcdcdc
 		color black
@@ -614,26 +614,23 @@ textarea
 		padding 5px 10px
 		&:hover
 			cursor pointer
-		&.--not-a-button:hover
+		&.-not-a-button:hover
 			cursor default
-		&.--icon
+		&.-icon
 			.material-icons
 				font-size 15px
 				position absolute
 				top 7px
 			span
 				padding-left 20px
-		&.--green
+		&.-green
 			color white
-			border-color rc_bright_green
 			background-color rc_bright_green
-		&.--blue
+		&.-blue
 			color white
-			border-color link_blue
 			background-color link_blue
-		&.--red
+		&.-red
 			color white
-			border-color rc_red
 			background-color rc_red
 	.btn-count
 		flex 1
@@ -641,19 +638,18 @@ textarea
 		font-size 16px
 		background-color white
 		align-self flex-end
-		border 1px solid white
 		border-top-right-radius 3px
 		border-bottom-right-radius 3px
 		
 .save-button-wrapper
 	display flex
-	&.--center
+	&.-center
 		justify-content center
-	&.--left
+	&.-left
 		justify-content flex-start
-	&.--right
+	&.-right
 		justify-content flex-end
-	&.--with-divider
+	&.-with-divider
 		border-top 3px solid rc_super_lite_gray
 		padding-top 15px
 		
@@ -669,13 +665,13 @@ textarea
 		div
 			margin-top 10px
 	// how many buttons? effects the width
-	&.--one 
+	&.-one 
 		width 160px
-	&.--two 
+	&.-two 
 		width 340px
-	&.--three
+	&.-three
 		width 500px
-	&.--four
+	&.-four
 		width 660px
 	a.btn
 		margin 0
@@ -709,7 +705,7 @@ textarea
 		border 1px solid red
 	&.form-correct
 		border 1px solid rc_bright_green
-	&.--white
+	&.-white
 		background white
 	
 span.form-error
@@ -799,7 +795,7 @@ input[type="text"]:focus,
 	border-bottom 10px solid transparent		
 	border-top 10px solid transparent
 	border-left 10px solid whitesmoke
-	&.--white
+	&.-white
 		border-left 10px solid white
 
 
@@ -1052,11 +1048,11 @@ input[type="text"]:focus,
 
 
 .text-typing
-	&.--white
+	&.-white
 		animation text-typing-white 400ms ease 0s infinite alternate
-	&.--black
+	&.-black
 		animation text-typing-black 400ms ease 0s infinite alternate
-	&.--gray
+	&.-gray
 		animation text-typing-gray 400ms ease 0s infinite alternate
 		
 @keyframes text-typing-white

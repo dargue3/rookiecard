@@ -46,7 +46,7 @@
 
 
 	    <div v-if="user.isPlayer" class="row EditUser__data">
-        <div class="col-xs-6 col-xs-offset-3 col-sm-4 col-sm-offset-0">
+        <div class="col-xs-6 col-sm-4 col-sm-offset-0">
           <label for="number">Jersey Number</label>
           <input type="text" class="form-control" :class="{'form-error' : errors.user.meta.num}"
           				v-model="user.meta.num" autocomplete="false" maxlength="2">
@@ -97,7 +97,7 @@
   			</div>
 			</div>
 	    <div v-if="! user.isGhost" class="row">
-        <div class="col-xs-6">
+        <div class="col-xs-12 col-sm-6">
           <div class="switch-container">
 						<input type="checkbox" bootstrap-switch="EditUser">
 						<span class="switch-label">Team Admin</span>
@@ -106,8 +106,8 @@
 	    </div>
 
     	<hr>
-			<div class="save-button-wrapper --center">
-	    	<div class="save-button-group --three">
+			<div class="save-button-wrapper -center">
+	    	<div class="save-button-group -three">
 	    		<div>
 	    			<a class="btn btn-primary" v-touch:tap="save()">
 	    				<span v-show="! loading_save">SAVE</span>

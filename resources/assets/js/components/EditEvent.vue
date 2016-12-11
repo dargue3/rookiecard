@@ -112,7 +112,7 @@
 	    </div>
     	<hr>
 	    <div class="EditEvent__buttons">
-	      <div class="save-button-group" :class="savedEvent ? '--three' : '--two'">
+	      <div class="save-button-group" :class="savedEvent ? '-three' : '-two'">
 	      	<div>
 	      		<a class="btn btn-primary" v-touch:tap="save()">
 	      			<span v-show="! loading_save">SAVE</span>
@@ -245,7 +245,7 @@ export default  {
 			let momentTo = moment(this.toDate + ' ' + this.toTime, 'MMM D, YYYY h:mm a');
 			let momentFrom = moment(this.fromDate + ' ' + this.fromTime, 'MMM D, YYYY h:mm a');
 			if (! this.savedEvent) {
-				let momentUntil = moment(this.until, 'MMM D, YYYY');
+				var momentUntil = moment(this.until, 'MMM D, YYYY');
 			}
 
 			let data = {
@@ -629,7 +629,7 @@ export default  {
 
 @import '/resources/assets/stylus/variables.styl'
 
-.edit-button.--edit-event
+.edit-button
 	display flex
 	justify-content flex-end
 

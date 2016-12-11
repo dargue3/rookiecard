@@ -5,7 +5,7 @@
 						:raw-stats="stats" :players="player" :centered="false" :disable-sorting="true">
 
 						<div class="outcome">
-							<span class="away loss --no-border">Demo</span>
+							<span class="away loss -no-border">Demo</span>
 						</div>
 
 		</stats>

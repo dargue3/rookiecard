@@ -44,7 +44,7 @@
 		<div class="photos with-separator">
 			<div class="upload-pic">
 				<label>Team Photo</label>
-				<form class="dropzone --pic" id="team-pic"></form>
+				<form class="dropzone -pic" id="team-pic"></form>
 				<div v-show="picUploaded" class="crop">
 					<a v-touch:tap="cropping('pic')">Crop</a>
 				</div>
@@ -52,7 +52,7 @@
 
 			<div class="upload-pic">
 				<label>Backdrop Photo</label>
-				<form class="dropzone --backdrop" id="team-backdrop"></form>
+				<form class="dropzone -backdrop" id="team-backdrop"></form>
 				<div v-show="backdropUploaded" class="crop">
 					<a v-touch:tap="cropping('backdrop')">Crop</a>
 				</div>
@@ -463,7 +463,7 @@ export default  {
 			&.success
 				border 2px dashed rc_bright_green
 				transition border .3s
-			&.--pic
+			&.-pic
 				width 200px
 				border-radius 50%
 				.dz-image
@@ -473,7 +473,7 @@ export default  {
 					position absolute
 					top -53px
 					left 52px
-			&.--backdrop
+			&.-backdrop
 				width 333px
 				.dz-preview
 					width 210px

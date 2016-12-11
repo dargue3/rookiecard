@@ -45,7 +45,7 @@
 			<!-- input new stats here -->
 			<h3>Box Score</h3>
 			<form v-if="ready" @submit.prevent>
-				<div class="table-responsive stats-container --left">
+				<div class="table-responsive stats-container -left">
 					<table class="table stats-table">
 						<thead>
 				    	<tr>
@@ -112,7 +112,7 @@
 					<div v-if="correctErrors" class="errors">
 						<span>Correct errors highlighted in red before saving</span>
 					</div>
-					<div class="save-button-group"  :class="someSavedStats ? '--three' : '--two'">
+					<div class="save-button-group"  :class="someSavedStats ? '-three' : '-two'">
 						<div>
 							<a class="btn btn-primary" v-touch:tap="save()">
 								<span v-show="! loading_save">SAVE</span>
@@ -665,7 +665,7 @@ export default  {
 					margin-bottom 0
 	
 	
-.edit-button.--stats
+.edit-button
 	flex 1
 	align-self flex-start
 	position relative

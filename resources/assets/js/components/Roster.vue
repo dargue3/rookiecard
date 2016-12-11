@@ -15,7 +15,7 @@
 		</div>
 
 		<div class="Roster__search">
-			<input type="text" class="form-control --white" placeholder="Search by name..." v-model="search">
+			<input type="text" class="form-control -white" placeholder="Search by name..." v-model="search">
 		</div>
 
 
@@ -39,7 +39,7 @@
 						<a><i class="material-icons deny-icon" data-toggle="tooltip" title="Deny">close</i></a>
 					</div>
 				</div>
-				<div class="User__pic" :class="{'--ghost-pic' : player.isGhost}">
+				<div class="User__pic" :class="{'-ghost-pic' : player.isGhost}">
 					<img v-if="! player.isGhost" :src="player.pic" :alt="player.name" height="200" width="200">
 					<div v-else>
 						<span>{{ player.firstname[0] }}</span>
@@ -68,7 +68,7 @@
 
 			<!-- add player placeholder -->
 			<div class="User" v-show="isAdmin && ! search">
-				<div class="User__pic --add-player" v-touch:tap="addUser('player')">
+				<div class="User__pic -add-player" v-touch:tap="addUser('player')">
 					<div>
 						<i class="material-icons">add</i>
 					</div>
@@ -99,7 +99,7 @@
 						<a><i class="material-icons" data-toggle="tooltip" title="Edit">mode_edit</i></a>
 					</div>
 				</div>
-				<div class="User__pic" :class="{'--ghost-pic' : coach.isGhost}">
+				<div class="User__pic" :class="{'-ghost-pic' : coach.isGhost}">
 					<img v-if="! coach.isGhost" :src="coach.pic" :alt="coach.name" height="200" width="200">
 					<div v-else>
 						<span>{{ coach.firstname[0] }}</span>
@@ -117,7 +117,7 @@
 
 			<!-- add coach placeholder -->
 			<div class="User" v-show="isAdmin && ! search">
-				<div class="User__pic --add-player" v-touch:tap="addUser('coach')">
+				<div class="User__pic -add-player" v-touch:tap="addUser('coach')">
 					<div>
 						<i class="material-icons">add</i>
 					</div>
@@ -315,7 +315,7 @@ export default  {
 
 		$(function() {
 			//attach tooltips
-			$('[data-toggle="tooltip"').tooltip({
+			$('[data-toggle="tooltip"]').tooltip({
 				container: 'body',
 				delay: {show: 400, hide: 0},
 			});
@@ -337,10 +337,21 @@ export default  {
 	max-width 775px
 	display flex
 	flex-flow column
-	@media (max-width 775px)
+	+mobile()
 		padding 0px 15px
 	.TabButton
+		height 35px
+		margin-bottom 25px
 		justify-content center
+		
+.Roster__search
+	display flex
+	flex-flow row nowrap
+	justify-content center
+	margin-bottom 25px
+	input
+		width 175px
+		height 35px
 
 .Roster__header
 	margin-bottom -10px
@@ -424,7 +435,7 @@ export default  {
 		border-top-left-radius 4px
 		border 1px solid darken(rc_super_lite_gray, 5%)
 		border-bottom 0
-	&.--ghost-pic
+	&.-ghost-pic
 		display flex
 		justify-content center
 		align-items center
@@ -435,7 +446,7 @@ export default  {
 		color rc_med_gray
 		border 1px solid darken(rc_super_lite_gray, 5%)
 		border-bottom 0
-	&.--add-player
+	&.-add-player
 		display flex
 		justify-content center
 		align-items center
@@ -466,6 +477,7 @@ export default  {
 	border-bottom-left-radius 4px
 	border 1px solid darken(rc_super_lite_gray, 5%)
 	border-top 0
+	width 200px
 	.details-text
 		font-size 18px
 		display block
@@ -490,15 +502,7 @@ export default  {
 	font-size 14px
 	margin-top 5px
 	color rc_dark_gray
-	
-.Roster__search
-	display flex
-	flex-flow row nowrap
-	justify-content center
-	margin-bottom 20px
-	input
-		width 175px
-		height 40px
+
 	
 .Roster__coaches
 	+mobile()

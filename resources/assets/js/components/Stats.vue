@@ -2,14 +2,14 @@
 <template>
 	<div class="stats-with-slot-container">
 		<div v-if="overflowed" class="stats-overflow">
-			<span class="--left" v-show="overflowed.first">
+			<span class="-left" v-show="overflowed.first">
 				<i class="material-icons">chevron_left</i>SCROLL
 			</span>
-			<span class="--right" v-show="overflowed.last">
+			<span class="-right" v-show="overflowed.last">
 				SCROLL<i class="material-icons">chevron_right</i>
 			</span>
 		</div>
-		<div class="stats-container" :class="! centered ? '--left' : '--center'">
+		<div class="stats-container" :class="! centered ? '-left' : '-center'">
 			<div class="table-responsive" :class="randomKey">	
 				<slot></slot>
 				<table v-if="stats.length" class="table table-striped stats-table">
@@ -42,9 +42,9 @@
 				</table>
 				<div v-show="showPagination" class="show-more" v-touch:tap="showMore()">
 					<span>
-						<i class="material-icons --left">keyboard_arrow_down</i>
+						<i class="material-icons -left">keyboard_arrow_down</i>
 						Show More
-						<i class="material-icons --right">keyboard_arrow_down</i>
+						<i class="material-icons -right">keyboard_arrow_down</i>
 					</span>
 				</div>
 			</div>
@@ -412,9 +412,9 @@ export default {
 
 .stats-container
 	display flex
-	&.--center
+	&.-center
 		justify-content center
-	&.--left
+	&.-left
 		align-items flex-start
 		
 .table-responsive
@@ -520,13 +520,13 @@ td.stat-entries
 	span
 		position relative
 		color rc_lite_gray
-		&.--right
+		&.-right
 			padding-right 1.5em
 			float right
 			.material-icons
 				top -6px
 				right -9px
-		&.--left
+		&.-left
 			float left
 			padding-left 1.5em
 			.material-icons
@@ -563,10 +563,10 @@ td.stat-entries
 	.material-icons
 		position absolute
 		font-size 19px
-		&.--left
+		&.-left
 			top 10px
 			left 74px
-		&.--right
+		&.-right
 			top 10px
 			right 77px			
 

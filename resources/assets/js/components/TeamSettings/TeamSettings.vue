@@ -33,11 +33,11 @@
 
 			<div class="settings-nav">
 				<ul>
-					<li :class="{ '--active' : tab === 'info' }" v-touch:tap="tab = 'info'">Info</li>
-					<li :class="{ '--active' : tab === 'stats' }" v-touch:tap="tab = 'stats'">Stats</li>
-					<li :class="{ '--active' : tab === 'privacy' }" v-touch:tap="tab = 'privacy'">Privacy</li>
-					<li :class="{ '--active' : tab === 'notifications' }" v-touch:tap="tab = 'notifications'">Notifications</li>
-					<li :class="{ '--active' : tab === 'danger-zone' }" v-touch:tap="tab = 'danger-zone'" class="danger-zone">Danger Zone</li>
+					<li :class="{ '-active' : tab === 'info' }" v-touch:tap="tab = 'info'">Info</li>
+					<li :class="{ '-active' : tab === 'stats' }" v-touch:tap="tab = 'stats'">Stats</li>
+					<li :class="{ '-active' : tab === 'privacy' }" v-touch:tap="tab = 'privacy'">Privacy</li>
+					<li :class="{ '-active' : tab === 'notifications' }" v-touch:tap="tab = 'notifications'">Notifications</li>
+					<li :class="{ '-active' : tab === 'danger-zone' }" v-touch:tap="tab = 'danger-zone'" class="danger-zone">Danger Zone</li>
 				</ul>
 			</div>
 			
@@ -271,7 +271,7 @@ export default  {
 			background whitesmoke
 			border-left 2px solid rc_super_lite_gray
 			transition border-left 150ms ease
-			&.--active
+			&.-active
 				background white
 				color black
 				&:hover
@@ -286,7 +286,7 @@ export default  {
 					color rc_red_hover
 					border-left 4px solid rgba(201, 0, 25, 0.4)
 					transition all 150ms ease
-				&.--active
+				&.-active
 					border-left 2px solid rc_super_lite_gray
 					color black
 			&:hover

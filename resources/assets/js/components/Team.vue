@@ -31,36 +31,38 @@
 							<div class="Team__info">
 								<div class="Team__text">
 									<h1 class="Team__name">
-										<span :class="{'text-typing --white' : focused.name }">{{ team.name }}</span>
+										<span :class="{'text-typing -white' : focused.name }">{{ team.name }}</span>
 									</h1>
 									<span class="team-record">{{ team.sport | capitalize }}, {{ team.record }}</span>
 									<div class="Team__slogan">
-										<span :class="{'text-typing --white' : focused.slogan }">{{ team.slogan }}</span>
+										<span :class="{'text-typing -white' : focused.slogan }">{{ team.slogan }}</span>
 									</div>
-									<div v-show="team.city || team.homefield" class="Team__location">
+									<div v-show="showLocation" class="Team__location">
 										<span>
 											<i class="material-icons no-highlight">place</i>
-											<span v-if="team.homefield" :class="{'text-typing --white' : focused.homefield }">{{ team.homefield }}</span>,
-											<span :class="{'text-typing --white' : focused.city }">{{ team.city }}</span>
+											<span v-if="team.homefield">
+												<span :class="{'text-typing -white' : focused.homefield }">{{ team.homefield }}</span><span v-show="team.homefield">,</span>
+											</span>
+											<span :class="{'text-typing -white' : focused.city }">{{ team.city }}</span>
 										</span>
 									</div>	
 								</div>
 
 								<div class="Team__right_half">
 									<div class="Team__buttons">
-										<div class="btn-counter --members">
+										<div class="btn-counter -members">
 											<template v-if="! isMember">
-												<span v-show="hasBeenInvited" class="btn-text --icon --green" v-touch:tap="respondingToInvitation()">
+												<span v-show="hasBeenInvited" class="btn-text -icon -green" v-touch:tap="respondingToInvitation()">
 													<i class="material-icons">drafts</i><span>RESPOND TO INVITE</span>
 												</span>
-												<span v-show="hasRequestedToJoin" class="btn-text --icon --red" v-touch:tap="join('cancel')">
+												<span v-show="hasRequestedToJoin" class="btn-text -icon -red" v-touch:tap="join('cancel')">
 													<i class="material-icons">clear</i><span>CANCEL</span>
 												</span>
-												<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text --icon --blue" v-touch:tap="join('request')">
+												<span v-show="! hasBeenInvited && ! hasRequestedToJoin" class="btn-text -icon -blue" v-touch:tap="join('request')">
 													<i class="material-icons">person_add</i><span>ASK TO JOIN</span>
 												</span>
 											</template>
-											<span v-else class="btn-text --icon --not-a-button">
+											<span v-else class="btn-text -icon -not-a-button">
 												<i class="material-icons">grade</i><span>MEMBERS</span>
 											</span>
 											<span class="btn-count">
@@ -68,16 +70,16 @@
 											</span>
 										</div>
 
-										<div class="btn-counter --fans">
+										<div class="btn-counter -fans">
 											<template v-if="! isMember">
-												<span v-show="! isFan" class="btn-text --icon --blue" @click="toggleFan">
+												<span v-show="! isFan" class="btn-text -icon -blue" @click="toggleFan">
 													<i class="material-icons">favorite</i><span>FAN</span>
 												</span>
-												<span v-show="isFan" class="btn-text --icon --blue" @click="toggleFan">
+												<span v-show="isFan" class="btn-text -icon -blue" @click="toggleFan">
 													<i class="material-icons">favorite_border</i><span>UNFAN</span>
 												</span>
 											</template>
-											<span v-else class="btn-text --icon --not-a-button">
+											<span v-else class="btn-text -icon -not-a-button">
 												<i class="material-icons">favorite</i><span>FANS</span>
 											</span>
 											<span class="btn-count">
@@ -90,19 +92,19 @@
 							</div> <!-- end Team__info -->
 
 							<div class="Team__tabs">
-								<div class="tab" :class="{'--active' : tab === 'calendar'}" v-touch:tap="tab = 'calendar'">
+								<div class="tab" :class="{'-active' : tab === 'calendar'}" v-touch:tap="tab = 'calendar'">
 									<a>CALENDAR</a>			
 								</div>
-								<div class="tab" :class="{'--active' : tab === 'stats'}" v-touch:tap="tab = 'stats'">
+								<div class="tab" :class="{'-active' : tab === 'stats'}" v-touch:tap="tab = 'stats'">
 									<a>STATS</a>	
 								</div>
-								<div class="tab" :class="{'--active' : tab === 'roster'}" v-touch:tap="tab = 'roster'">
+								<div class="tab" :class="{'-active' : tab === 'roster'}" v-touch:tap="tab = 'roster'">
 									<a>ROSTER</a>
 									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">usersThatWantToJoin.length</span>
 								</div>
-								<div v-show="isAdmin" class="tab" :class="{'--active' : tab === 'settings'}" v-touch:tap="tab = 'settings'">
+								<div v-show="isAdmin" class="tab" :class="{'-active' : tab === 'settings'}" v-touch:tap="tab = 'settings'">
 									<a>SETTINGS</a>
-									<span v-show="! settingsSaved && isAdmin" transition="fade-slow" class="notifications">&#33;</span>
+									<span v-show="! settingsSaved && isAdmin" class="notifications">&#33;</span>
 								</div>
 							</div>	
 						</div>
@@ -129,7 +131,7 @@
 			    <div class="row">
 			      <div class="col-xs-12 text-center Team__stats" v-show="tab === 'stats'">
 
-							<div class="TabButton --just-two stat-nav">
+							<div class="TabButton -just-two stats-nav">
 								<div class="first" :class="{'active' : statsTab === 'recent'}" v-touch:tap="statsTab = 'recent'">
 									<span>Recent</span>
 								</div>
@@ -152,15 +154,15 @@
 							<div v-show="statsTab === 'season'" class="stats-with-filters">
 
 								<div class="stat-filters">
-									<div v-show="stats.length" class="TabButton --just-two --small">
+									<div v-show="stats.length" class="TabButton -just-two -small">
 										<div class="first" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
 											<span>Averages</span>
 										</div>
 										<div class="second" :class="{'active' : showStatTotals === true}" v-touch:tap="showStatTotals = true">
 											<span>Totals</span>
 										</div>
-										<input type="text" class="form-control --white" placeholder="Search by name..." v-model="statSearch">
 									</div>
+									<input type="text" class="form-control -white" placeholder="Search by name..." v-model="statSearch">
 								</div>
 								
 								
@@ -208,7 +210,7 @@
 							<div class="col-xs-12 Team__feed_divider">
 								<div class="divider">
 									<div class="divider-text">
-										<span class="--twotone">NEWS FEED</span>
+										<span class="-twotone">NEWS FEED</span>
 									</div>
 								</div>
 							</div>
@@ -319,8 +321,8 @@
 	          	<div class="row">
 	            	<div class="croppie-wrapper">
 	            		<div id="croppie" class="croppie"></div>
-									<div class="save-button-wrapper --center --with-divider">
-										<div class="save-button-group --one">
+									<div class="save-button-wrapper -center -with-divider">
+										<div class="save-button-group -one">
 		            			<div>
 		            				<a class="btn btn-primary" v-touch:tap="$broadcast('TeamSettings_cropped')">
 		            					<span v-show="! loading_save">CROP</span>
@@ -465,6 +467,15 @@ export default  {
 
 
 		/**
+		 * Is the logged-in user not affiliated with this team at all?
+		 */
+		isUnaffiliated()
+		{
+			return ! this.isMember && ! this.isFan
+		},
+
+
+		/**
 		 * The following three properties pick which of the fan icons to display
 		 */
 		showRemoveFan()
@@ -502,14 +513,31 @@ export default  {
 			return this.hasBeenInvited;
 		},
 
+
+		/**
+		 * Whether or not to show the team's location
+		 */
+		showLocation()
+		{
+			if (! this.team.homefield && ! this.team.city) {
+				return false;
+			}
+
+			if (this.isUnaffiliated && this.team.settings.onlyMembersCanViewLocation) {
+				return false;
+			}
+			
+			return true;
+		},
+
+
+
 		/**
 		 * Create list of players
 		 */
 		players()
 		{
-			return this.users.filter(function(user) {
-				return user.isPlayer;
-			})
+			return this.users.filter(user => user.isPlayer);
 		},
 
 		/**
@@ -517,9 +545,7 @@ export default  {
 		 */
 		coaches()
 		{
-			return this.users.filter(function(user) {
-				return user.isCoach;
-			})
+			return this.users.filter(user => user.isCoach);
 		},
 
 		/**
@@ -527,9 +553,7 @@ export default  {
 		 */
 		fans()
 		{
-			return this.users.filter(function(user) {
-				return user.isFan;
-			})
+			return this.users.filter(user => user.isFan);
 		},
 
 		/**
@@ -537,9 +561,7 @@ export default  {
 		 */
 		usersThatWantToJoin()
 		{
-			return this.users.filter(function(user) {
-				return user.hasRequestedToJoin;
-			})
+			return this.users.filter(user => user.hasRequestedToJoin);
 		},
 
 	},
@@ -952,12 +974,14 @@ export default  {
 	+tablet()
 		justify-content center
 		text-align center
+		margin-top 15px
 	
 .Team__name		
 	flex-basis 1
 	font-size 42px
 	+tablet()
 		font-size 35px
+		margin-top 0
 .team-record
 	font-size 25px
 	+tablet()
@@ -965,7 +989,7 @@ export default  {
 	
 .Team__location
 	padding-left 22px
-	margin-top 9px
+	margin-top 12px
 	font-size 16px
 	span
 		position relative
@@ -987,9 +1011,9 @@ export default  {
 	flex-flow column
 	justify-content flex-end
 	margin-top 35px
-	.--members
+	.-members
 		margin-right 5px
-	.--fans
+	.-fans
 		margin-left 5px
 	+tablet()
 		justify-content center
@@ -1015,6 +1039,9 @@ export default  {
 	font-size 17px
 	+tablet()
 		justify-content center
+		margin-top 30px
+	+mobile()
+		font-size 14px
 	.tab
 		flex-basis 110px
 		display flex
@@ -1025,6 +1052,11 @@ export default  {
 		margin-right 5px
 		border-top-left-radius 3px
 		border-top-right-radius 3px
+		+the-last-one()
+			margin-right 5px
+		+tablet()
+			+the-first-one()
+				margin-left 5px
 		a
 			color link_blue
 			padding 7px 8px
@@ -1044,7 +1076,7 @@ export default  {
 				
 		&:hover
 			cursor pointer
-		&.--active
+		&.-active
 			background-color whitesmoke
 			a
 			&:hover
@@ -1065,22 +1097,32 @@ export default  {
 		
 .Team__stats
 	padding 0 2em
-	.TabButton
+	.stats-nav
 		justify-content center
 		margin-bottom 60px
-	.TabButton.--just-two
-		justify-content center
-		margin-bottom 20px
-		input
-			width 175px
-			margin-left 30px
-			height 30px
+		+mobile()
+			margin-bottom 30px
 	.stat-filters
 		display flex
+		flex-flow row nowrap
 		justify-content flex-start
+		align-items center
 		margin-top 0
+		margin-bottom 10px
+		+mobile()
+			flex-flow column nowrap
+			align-items center
+			margin-bottom 20px
 		.TabButton
-			margin-bottom 15px
+			margin 0
+			height 30px
+		input
+			width 167px
+			margin-left 30px
+			height 30px
+			+mobile()
+				margin-top 15px
+				margin-left 0
 	
 			
 .JoinTeam__msg

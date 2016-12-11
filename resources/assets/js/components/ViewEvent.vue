@@ -8,13 +8,13 @@
         		<h3>{{ modalTitle }}</h3>
         	</div>
           <div class="right">
-          	<template v-if="! addingNewEvent"> 
+          	<template v-if="viewing !== 'addingNewEvent'"> 
           		<!-- series of links to change state of ViewEvent -->
-	          	<div class="navbar-toggle" :class="showDropdown ? '--showing' : '--not-showing'" v-touch:tap="showDropdown = ! showDropdown">
+	          	<div class="navbar-toggle" :class="showDropdown ? '-showing' : '-not-showing'" v-touch:tap="showDropdown = ! showDropdown">
 			          <span class="icon-bar"></span>
 			          <span class="icon-bar"></span>
 			        </div>
-			        <div class="modal-dropdown" :class="showDropdown ? '--showing' : '--not-showing'">
+			        <div class="modal-dropdown" :class="showDropdown ? '-showing' : '-not-showing'">
 			        	<span v-show="canShowEventDetails && ! showingEvent" class="dropdown-link" v-touch:tap="viewing = 'showingEvent'">View Event</span>
 	          		<span v-show="canEditEvent" class="dropdown-link" v-touch:tap="viewing = 'editingEvent'">Edit Event</span>
 		          	<span v-show="canShowStats && ! showingStats" class="dropdown-link" v-touch:tap="viewing = 'showingStats'">View Stats</span>
@@ -51,10 +51,10 @@
 
 							<!-- show 'no stats yet' if there are none saved -->
 	        		<div v-else class="ViewEvent">
-								<div v-if="! isAdmin" class="details --no-stats">
+								<div v-if="! isAdmin" class="details -no-stats">
 									<span>No stats posted yet... bug an admin to post them!</span>
 								</div>
-								<div v-else class="details --no-stats">
+								<div v-else class="details -no-stats">
 									<span>Click 'Add Stats' to report this event's stats</span>
 								</div>
 							</div>		
@@ -65,7 +65,7 @@
 						<template v-if="viewing === 'showingEvent'">
 								
 										<div class="ViewEvent">
-											<div class="type --{{ event.type }}">
+											<div class="type -{{ event.type }}">
 												<span>{{ type }}</span>
 											</div>
 											<div class="time">
@@ -514,7 +514,7 @@ export default  {
 	border-bottom 3px solid rc_super_lite_gray
 	margin-bottom 20px
 	padding-bottom 5px
-	&.--center
+	&.-center
 		justify-content center
 	a
 		margin-left 25px
@@ -531,13 +531,13 @@ export default  {
 		font-size 30px
 		margin-bottom 30px
 		text-align center
-		&.--practice
+		&.-practice
 			color rc_blue
-		&.--home_game
+		&.-home_game
 			color rc_red
-		&.--away_game
+		&.-away_game
 			color rc_yellow
-		&.--other
+		&.-other
 			color rc_green					
 	.details
 		font-size 18px
@@ -545,7 +545,7 @@ export default  {
 		width 100%
 		border-top 3px solid rc_super_lite_gray
 		padding-top 15px
-		&.--no-stats
+		&.-no-stats
 			margin 25px 0
 			padding-top 0
 			width 100%
@@ -573,20 +573,20 @@ export default  {
 	.separator
 		font-size 40px
 		color rc_lite_gray
-	.--no-border
+	.-no-border
 		border 0
 	
 .modal
 	.stats-wrapper
 		padding 15px
 		
-.type.--practice
+.type.-practice
 	color rc_blue
-.type.--home_game
+.type.-home_game
 	color rc_red
-.type.--away_game
+.type.-away_game
 	color rc_yellow
-.type.--other
+.type.-other
 	color rc_green					
 
 .modal

@@ -142,7 +142,7 @@ span.input-info {
 .Media__thumbnail:hover {
   cursor: pointer;
 }
-.Media__thumbnail:hover.--ghost {
+.Media__thumbnail:hover.-ghost {
   cursor: default;
 }
 .Media__text {
@@ -221,6 +221,7 @@ span.input-info {
   color: #fff;
   margin-bottom: 45px;
   margin-top: 25px;
+  height: 100%;
 }
 .TabButton div {
   background: #329acf;
@@ -260,32 +261,32 @@ span.input-info {
 .TabButton .second.active + .third {
   border-left: 1px solid #329acf;
 }
-.TabButton.--just-two .second {
+.TabButton.-just-two .second {
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
 }
-.TabButton.--black-gray div {
+.TabButton.-black-gray div {
   background: #d0d0d0;
 }
-.TabButton.--black-gray div.active {
+.TabButton.-black-gray div.active {
   background: #000;
 }
-.TabButton.--black-gray .second {
+.TabButton.-black-gray .second {
   border-left: 1px solid #a6a6a6;
 }
-.TabButton.--black-gray .first.active + .second {
+.TabButton.-black-gray .first.active + .second {
   border-left: 1px solid #d0d0d0;
 }
-.TabButton.--black-gray .third {
+.TabButton.-black-gray .third {
   border-left: 1px solid #a6a6a6;
 }
-.TabButton.--black-gray .second.active + .third {
+.TabButton.-black-gray .second.active + .third {
   border-left: 1px solid #d0d0d0;
 }
-.TabButton.--small {
+.TabButton.-small {
   font-size: 17px;
 }
-.TabButton.--small div {
+.TabButton.-small div {
   padding: 2px 12px;
 }
 .for-blurring {
@@ -440,7 +441,7 @@ span.input-info {
     font-size: 19px;
   }
 }
-.modal-dropdown.--not-showing {
+.modal-dropdown.-not-showing {
   max-height: 0;
   padding: 0;
   opacity: 0;
@@ -520,7 +521,7 @@ div.modal {
   background: #f5f5f5;
   padding: 0px 3em;
 }
-.divider .divider-text span.--twotone {
+.divider .divider-text span.-twotone {
   background: #f5f5f5;
 }
 .Footer {
@@ -539,7 +540,7 @@ div.modal {
   padding-top: 4em;
   background: #f5f5f5;
 }
-.Footer.--light {
+.Footer.-light {
   background: #f5f5f5;
 }
 .Footer p {
@@ -596,30 +597,30 @@ textarea {
 .btn:focus {
   background-image: none;
 }
-.btn.--chevron {
+.btn.-chevron {
   position: relative;
 }
-.btn.--chevron.--sm.--right {
+.btn.-chevron.-sm.-right {
   min-width: 100px;
   padding-left: 6px;
 }
-.btn.--chevron.--med.--right {
+.btn.-chevron.-med.-right {
   min-width: 125px;
   padding-left: 10px;
 }
-.btn.--chevron.--lg.--right {
+.btn.-chevron.-lg.-right {
   min-width: 175px;
   padding-left: 10px;
 }
-.btn.--chevron.--sm.--left {
+.btn.-chevron.-sm.-left {
   min-width: 100px;
   padding-right: 6px;
 }
-.btn.--chevron.--med.--left {
+.btn.-chevron.-med.-left {
   min-width: 125px;
   padding-right: 10px;
 }
-.btn.--chevron.--lg.--left {
+.btn.-chevron.-lg.-left {
   min-width: 175px;
   padding-right: 10px;
 }
@@ -628,10 +629,10 @@ textarea {
   top: 6px;
   font-size: 30px;
 }
-.btn-chevron.--right {
+.btn-chevron.-right {
   right: 0px;
 }
-.btn-chevron.--left {
+.btn-chevron.-left {
   left: 4px;
 }
 .btn-chevron.material-icons:hover {
@@ -777,7 +778,6 @@ textarea {
   border-radius: 4px;
 }
 .btn-counter .btn-text {
-  border: 1px solid #dcdcdc;
   position: relative;
   background-color: #dcdcdc;
   color: #000;
@@ -795,30 +795,27 @@ textarea {
 .btn-counter .btn-text:hover {
   cursor: pointer;
 }
-.btn-counter .btn-text.--not-a-button:hover {
+.btn-counter .btn-text.-not-a-button:hover {
   cursor: default;
 }
-.btn-counter .btn-text.--icon .material-icons {
+.btn-counter .btn-text.-icon .material-icons {
   font-size: 15px;
   position: absolute;
   top: 7px;
 }
-.btn-counter .btn-text.--icon span {
+.btn-counter .btn-text.-icon span {
   padding-left: 20px;
 }
-.btn-counter .btn-text.--green {
+.btn-counter .btn-text.-green {
   color: #fff;
-  border-color: #21c230;
   background-color: #21c230;
 }
-.btn-counter .btn-text.--blue {
+.btn-counter .btn-text.-blue {
   color: #fff;
-  border-color: #1179c9;
   background-color: #1179c9;
 }
-.btn-counter .btn-text.--red {
+.btn-counter .btn-text.-red {
   color: #fff;
-  border-color: #c90018;
   background-color: #c90018;
 }
 .btn-counter .btn-count {
@@ -831,7 +828,6 @@ textarea {
   -webkit-align-self: flex-end;
   -ms-flex-item-align: end;
   align-self: flex-end;
-  border: 1px solid #fff;
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
 }
@@ -840,22 +836,22 @@ textarea {
   display: -ms-flexbox;
   display: flex;
 }
-.save-button-wrapper.--center {
+.save-button-wrapper.-center {
   -webkit-justify-content: center;
   -ms-flex-pack: center;
   justify-content: center;
 }
-.save-button-wrapper.--left {
+.save-button-wrapper.-left {
   -webkit-justify-content: flex-start;
   -ms-flex-pack: start;
   justify-content: flex-start;
 }
-.save-button-wrapper.--right {
+.save-button-wrapper.-right {
   -webkit-justify-content: flex-end;
   -ms-flex-pack: end;
   justify-content: flex-end;
 }
-.save-button-wrapper.--with-divider {
+.save-button-wrapper.-with-divider {
   border-top: 3px solid #e9e9e9;
   padding-top: 15px;
 }
@@ -885,16 +881,16 @@ textarea {
     margin-top: 10px;
   }
 }
-.save-button-group.--one {
+.save-button-group.-one {
   width: 160px;
 }
-.save-button-group.--two {
+.save-button-group.-two {
   width: 340px;
 }
-.save-button-group.--three {
+.save-button-group.-three {
   width: 500px;
 }
-.save-button-group.--four {
+.save-button-group.-four {
   width: 660px;
 }
 .save-button-group a.btn {
@@ -929,7 +925,7 @@ textarea {
 .form-control.form-correct {
   border: 1px solid #21c230;
 }
-.form-control.--white {
+.form-control.-white {
   background: #fff;
 }
 span.form-error {
@@ -1015,7 +1011,7 @@ border-color rc_lite_gray {
   border-top: 10px solid transparent;
   border-left: 10px solid #f5f5f5;
 }
-.arrow-right.--white {
+.arrow-right.-white {
   border-left: 10px solid #fff;
 }
 .modal-blur {
@@ -1155,15 +1151,15 @@ border-color rc_lite_gray {
   -webkit-animation-delay: 350ms;
   animation-delay: 350ms;
 }
-.text-typing.--white {
+.text-typing.-white {
   -webkit-animation: text-typing-white 400ms ease 0s infinite alternate;
   animation: text-typing-white 400ms ease 0s infinite alternate;
 }
-.text-typing.--black {
+.text-typing.-black {
   -webkit-animation: text-typing-black 400ms ease 0s infinite alternate;
   animation: text-typing-black 400ms ease 0s infinite alternate;
 }
-.text-typing.--gray {
+.text-typing.-gray {
   -webkit-animation: text-typing-gray 400ms ease 0s infinite alternate;
   animation: text-typing-gray 400ms ease 0s infinite alternate;
 }
