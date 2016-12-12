@@ -6,6 +6,10 @@ public/js/app.js
 public/js/app.js.map
 public/js/routes.js
 public/js/routes.js.map
+public/css/rc_styles.css
+public/css/rc_styles.css.map
+public/css/variables.css
+public/css/variables.css.map
 node_modules/
 vendor/
 ngrok
