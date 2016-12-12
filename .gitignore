@@ -2,6 +2,10 @@ public/.htaccess
 config/database.php
 public/images/proPic_users/
 public/images/proPic_teams/
+public/js/app.js
+public/js/app.js.map
+public/js/routes.js
+public/js/routes.js.map
 node_modules/
 vendor/
 ngrok

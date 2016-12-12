@@ -158,7 +158,9 @@ export default  {
 
 	computed:
 	{
-		// which teams they are a member of
+		/**
+		 * Which teams logged in user is a member of
+		 */
 		memberOf()
 		{
 			return this.teams.filter(function(team) {
@@ -166,7 +168,9 @@ export default  {
 			});
 		},
 
-		// which teams they are a fan of
+		/**
+		 * Which teams logged in user is a fan of
+		 */
 		fanOf()
 		{
 			return this.teams.filter(function(team) {
@@ -174,13 +178,15 @@ export default  {
 			});
 		},
 
-		// which teams an admin has invited them to join
+		/**
+		 * Which teams logged in user has been invited to join
+		 */
 		invitedTo()
 		{
 			return this.teams.filter(function(team) {
 				return team.hasBeenInvited;
 			});
-		}
+		},
 	},
 
 	methods:
@@ -348,9 +354,16 @@ export default  {
 			    $('nav.navbar').addClass('modal-unblur').removeClass('modal-blur');
 			    self.$broadcast('App_modal_minimized');
 				});
-		
-		});
-		}
+			});
+		},
+
+		/**
+		 * Whether or not the user is viewing on mobile sized screen
+		 */
+		onMobile()
+		{
+			return $(window).width() <= 767;
+		},
 
 	}, // end methods
 

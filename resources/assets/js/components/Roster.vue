@@ -433,7 +433,6 @@ export default  {
 	img
 		border-top-right-radius 4px
 		border-top-left-radius 4px
-		border 1px solid darken(rc_super_lite_gray, 5%)
 		border-bottom 0
 	&.-ghost-pic
 		display flex

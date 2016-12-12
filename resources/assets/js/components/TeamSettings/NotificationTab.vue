@@ -53,8 +53,22 @@ export default  {
 	data()
 	{
 		return {
-
+			switches: {
+				newEvent: undefined,
+				editedEvent: undefined,
+				deletedEvent: undefined,
+				stats: undefined,
+				newMember: undefined,
+			}
 		}
+	},
+
+	events:
+	{
+		TeamSettings_discard_changes(team)
+		{
+			this.resetValues(team.settings);
+		},
 	},
 
 	methods:
@@ -75,19 +89,19 @@ export default  {
 			};
 
 			options.state = this.team.settings.notifyOnNewEvent;
-		  $('input[bootstrap-switch="NotifTab-newEvent"]').bootstrapSwitch(options);
+		  this.switches.newEvent = $('input[bootstrap-switch="NotifTab-newEvent"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.notifyOnEditedEvent;
-		  $('input[bootstrap-switch="NotifTab-editedEvent"]').bootstrapSwitch(options);
+		  this.switches.editedEvent = $('input[bootstrap-switch="NotifTab-editedEvent"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.notifyOnDeletedEvent;
-		  $('input[bootstrap-switch="NotifTab-deletedEvent"]').bootstrapSwitch(options);
+		  this.switches.deletedEvent = $('input[bootstrap-switch="NotifTab-deletedEvent"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.notifyOnNewStats;
-		  $('input[bootstrap-switch="NotifTab-stats"]').bootstrapSwitch(options);
+		  this.switches.stats = $('input[bootstrap-switch="NotifTab-stats"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.notifyOnNewMember;
-		  $('input[bootstrap-switch="NotifTab-newMember"]').bootstrapSwitch(options);
+		  this.switches.newMember = $('input[bootstrap-switch="NotifTab-newMember"]').bootstrapSwitch(options);
 		},
 
 		/**
@@ -112,6 +126,15 @@ export default  {
 				this.team.settings.notifyOnNewMember = state;
 			}
 		},
+
+		resetValues(settings)
+		{
+			$(this.switches.newEvent.selector).bootstrapSwitch('state', settings.notifyOnNewEvent);
+			$(this.switches.editedEvent.selector).bootstrapSwitch('state', settings.notifyOnEditedEvent);
+			$(this.switches.deletedEvent.selector).bootstrapSwitch('state', settings.notifyOnDeletedEvent);
+			$(this.switches.stats.selector).bootstrapSwitch('state', settings.notifyOnNewStats);
+			$(this.switches.newMember.selector).bootstrapSwitch('state', settings.notifyOnNewMember);
+		}
 	},
 	
 	ready()

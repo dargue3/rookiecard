@@ -53,8 +53,22 @@ export default  {
 	data()
 	{
 		return {
-
+			switches: {
+				location: undefined,
+				roster: undefined,
+				events: undefined,
+				join: undefined,
+				fan: undefined,
+			}
 		}
+	},
+
+	events:
+	{
+		TeamSettings_discard_changes(team)
+		{
+			this.resetValues(team.settings);
+		},
 	},
 
 	methods:
@@ -78,27 +92,27 @@ export default  {
 			options.state = this.team.settings.onlyMembersCanViewLocation;
 			options.onText = 'MEMBERS & FANS';
 			options.offText = 'ANYONE';
-		  $('input[bootstrap-switch="PrivacyTab-location"]').bootstrapSwitch(options);
+		  this.switches.location = $('input[bootstrap-switch="PrivacyTab-location"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.onlyMembersCanViewRoster;
 		  options.onText = 'MEMBERS & FANS';
 		  options.offText = 'ANYONE';
-		  $('input[bootstrap-switch="PrivacyTab-roster"]').bootstrapSwitch(options);
+		  this.switches.roster = $('input[bootstrap-switch="PrivacyTab-roster"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.onlyMembersCanViewEvents;
 		  options.onText = 'MEMBERS & FANS';
 		  options.offText = 'ANYONE';
-		  $('input[bootstrap-switch="PrivacyTab-events"]').bootstrapSwitch(options);
+		  this.switches.events = $('input[bootstrap-switch="PrivacyTab-events"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.membersAreInviteOnly;
 		  options.onText = 'INVITE ONLY';
 		  options.offText = 'ASK OR INVITE';
-		  $('input[bootstrap-switch="PrivacyTab-join"]').bootstrapSwitch(options);
+		  this.switches.join = $('input[bootstrap-switch="PrivacyTab-join"]').bootstrapSwitch(options);
 
 		  options.state = this.team.settings.fansRequireAcceptance;
 		  options.onText = 'ASK OR INVITE';
 		  options.offText = "JUST CLICK ‘FAN’";
-		  $('input[bootstrap-switch="PrivacyTab-fan"]').bootstrapSwitch(options);
+		  this.switches.fan = $('input[bootstrap-switch="PrivacyTab-fan"]').bootstrapSwitch(options);
 		},
 
 		/**
@@ -127,6 +141,15 @@ export default  {
 				this.team.settings.fansRequireAcceptance = state;
 			}
 		},
+
+		resetValues(settings)
+		{
+			$(this.switches.location.selector).bootstrapSwitch('state', settings.onlyMembersCanViewLocation);
+			$(this.switches.roster.selector).bootstrapSwitch('state', settings.onlyMembersCanViewRoster);
+			$(this.switches.events.selector).bootstrapSwitch('state', settings.onlyMembersCanViewEvents);
+			$(this.switches.join.selector).bootstrapSwitch('state', settings.membersAreInviteOnly);
+			$(this.switches.fan.selector).bootstrapSwitch('state', settings.fansRequireAcceptance);
+		}
 	},
 	
 	ready()

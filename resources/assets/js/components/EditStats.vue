@@ -31,10 +31,12 @@
 								Any fields left empty are treated as zeros.
 							</li>
 							<li v-show="usesMinutes">
-								If MIN is zero, that player&#8217;s stats are treated as a DNP (did not play) and don&#8217;t count as zeros.
+							<p>If MIN is zero, that player&#8217;s stats are treated as a DNP (did not play)</p>
+							<p>and don&#8217;t count as zeros.</p>
 							</li>
 							<li v-show="! usesMinutes">
-								If DNP (did not play) is checked, that player&#8217;s stats are ignored and don&#8217;t count as zeros.
+								<p>If DNP (did not play) is checked, that player&#8217;s stats are ignored</p>
+								<p>and don&#8217;t count as zeros.</p>
 							</li>
 						</ul>
 					</div>

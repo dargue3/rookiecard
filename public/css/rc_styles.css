@@ -728,6 +728,11 @@ textarea {
   -webkit-animation: click-me-delete 600ms linear 0s infinite alternate;
   animation: click-me-delete 600ms linear 0s infinite alternate;
 }
+.btn-delete.click-me:hover {
+  -webkit-animation: none;
+  animation: none;
+  background: #fc001e;
+}
 .btn-primary {
   background: #1179c9;
   padding: 12px 22px;
@@ -745,6 +750,11 @@ textarea {
   -webkit-animation: click-me-primary 600ms linear 0s infinite alternate;
   animation: click-me-primary 600ms linear 0s infinite alternate;
 }
+.btn-primary.click-me:hover {
+  -webkit-animation: none;
+  animation: none;
+  background: #38a9f9;
+}
 .btn-success {
   background: #21c230;
   text-shadow: none;
@@ -761,6 +771,11 @@ textarea {
 .btn-success.click-me {
   -webkit-animation: click-me-success 600ms linear 0s infinite alternate;
   animation: click-me-success 600ms linear 0s infinite alternate;
+}
+.btn-success.click-me:hover {
+  -webkit-animation: none;
+  animation: none;
+  background: #1dda17;
 }
 .btn-default {
   background-image: none;

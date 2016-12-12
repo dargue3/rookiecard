@@ -162,7 +162,7 @@
 											<span>Totals</span>
 										</div>
 									</div>
-									<input type="text" class="form-control -white" placeholder="Search by name..." v-model="statSearch">
+									<input type="text" class="form-control -white" placeholder="Search by name&hellip;" v-model="statSearch">
 								</div>
 								
 								
@@ -754,9 +754,11 @@ export default  {
 			this.$set('team.lat', team.lat);
 			this.$set('team.long', team.long);
 			this.$set('team.sport', team.sport);
+			this.$set('team.meta', team.meta);
 
 			// store meta data about team
 			let meta = JSON.parse(team.meta);
+			
 			this.$set('team.slogan', meta.slogan);
 			this.$set('team.city', meta.city);
 			this.$set('team.homefield', meta.homefield);
@@ -973,15 +975,16 @@ export default  {
 	color white
 	+tablet()
 		justify-content center
+		align-items center
 		text-align center
-		margin-top 15px
+		margin-top 40px
 	
 .Team__name		
 	flex-basis 1
 	font-size 42px
 	+tablet()
 		font-size 35px
-		margin-top 0
+		margin-top -15px
 .team-record
 	font-size 25px
 	+tablet()
@@ -1117,7 +1120,7 @@ export default  {
 			margin 0
 			height 30px
 		input
-			width 167px
+			width 173px
 			margin-left 30px
 			height 30px
 			+mobile()

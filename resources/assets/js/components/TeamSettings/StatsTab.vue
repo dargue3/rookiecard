@@ -53,6 +53,14 @@ export default  {
 			this.showStatTable = true;
 			this.$broadcast('Stats_recompile');
 		},
+
+		/**
+		 * Set all the settings back to original
+		 */
+		TeamSettings_discard_changes(team)
+		{
+			this.$broadcast('StatSelection_initPickers');
+		},
 	},
 };
 
@@ -66,6 +74,9 @@ export default  {
 	.stat-selector
 		+the-last-one()
 			margin-left 10px
+			+mobile()
+				margin-left 0
+				margin-top 15px
 	.stat-selector-wrapper
 		margin-top 25px
 	.stats-overflow

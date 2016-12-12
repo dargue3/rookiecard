@@ -182,12 +182,14 @@ export default  {
 		/**
 		 * The settings have been saved, reset variables to defaults
 		 */
-		TeamSettings_saved()
+		InfoTab_saved()
 		{
-			this.dropzone.pic.destroy();
-			this.dropzone.backdrop.destroy();
-			this.init_dropzone_pic();
-			this.init_dropzone_backdrop();
+			this.resetDropzone();
+		},
+
+		TeamSettings_discard_changes(team)
+		{
+			this.resetDropzone();
 		},
 	},
 
@@ -282,7 +284,12 @@ export default  {
 		{
 			let options = JSON.parse(JSON.stringify(this.dropzone.options));
 
-			options.thumbnailWidth = 320;
+			if (! this.$root.onMobile()) {
+				options.thumbnailWidth = 320;
+			}
+			else {
+				options.thumbnailWidth = 160
+			}
 			this.dropzone.backdrop = new Dropzone('#team-backdrop', options);
 
 			let self = this;
@@ -359,6 +366,21 @@ export default  {
 		},
 
 
+		/**
+		 * Replace the Dropzone elements with fresh ones
+		 */
+		resetDropzone()
+		{
+			this.dropzone.pic.destroy();
+			this.dropzone.backdrop.destroy();
+			this.init_dropzone_pic();
+			this.init_dropzone_backdrop();
+		},
+
+
+		/**
+		 * Init the Croppie element with the correct options
+		 */
 		init_croppie(pic_type)
 		{
 			this.croppie.type = pic_type;
@@ -430,11 +452,11 @@ export default  {
 	.upload-pic
 		flex 1
 		text-align center
-		&:last-child
+		+the-last-one()
 				margin-left 10px
 		+mobile()
 			flex-basis 100%
-			&:last-child
+			+the-last-one()
 				margin-top 10px
 				margin-left 0px
 		.crop
@@ -466,6 +488,8 @@ export default  {
 			&.-pic
 				width 200px
 				border-radius 50%
+				+mobile()
+					margin 0 auto
 				.dz-image
 					border-radius 50%
 				.dz-remove
@@ -475,14 +499,22 @@ export default  {
 					left 52px
 			&.-backdrop
 				width 333px
+				+mobile()
+					width auto
 				.dz-preview
 					width 210px
+					+mobile()
+						width auto
 					.dz-image
 						border-radius 15px
 						width 210px
+						+mobile()
+							width auto
 					.dz-remove
 						left 98px
 						top -53px
+						+mobile()
+							left 72px
 					.dz-error-message
 						left 35px
 						

@@ -1,6 +1,6 @@
 
 <template>
-	<div>
+	<div class="Settings__container">
 
 		<div class="Settings__header">
 		
@@ -23,11 +23,11 @@
 				<div class="discard">
 					<span v-touch:tap="cancel()">Discard Changes</span>
 				</div>
+				<div class="discard-mobile">
+					<a class="btn btn-cancel" v-touch:tap="cancel()">DISCARD</a>
+				</div>
 			</div>
-			
 		</div>
-
-		
 
 		<div class="Settings">
 
@@ -108,7 +108,7 @@ export default  {
 		TeamSettings_saved(response)
 		{
 			this.$dispatch('Team_updated_team', response.data.team);
-			this.$broadcast('TeamSettings_saved');
+			this.$broadcast('InfoTab_saved');
 			this.$root.banner('good', 'Settings saved');
 			setTimeout(() => { this.saved = true; this.loading_save = false; }, 150);
 		},
@@ -162,7 +162,11 @@ export default  {
 		 */
 		cancel()
 		{
-			this.saved = true;
+			let oldTeam = JSON.parse(JSON.stringify(this.backup));
+			this.$dispatch('Team_updated_team', oldTeam);
+			this.$broadcast('TeamSettings_discard_changes', oldTeam);
+
+			setTimeout(() => { this.saved = true }, 100);
 		},
 
 
@@ -211,12 +215,17 @@ export default  {
 <style lang="stylus">
 @import '/resources/assets/stylus/variables.styl'
 
+.Settings__container
+	padding 0 15px
+	max-width 775px
+	margin 0 auto
+	
 .Settings
 	display flex
 	flex-flow row
 	justify-content center
-	max-width 775px
-	margin 0 auto
+	+mobile()
+		flex-flow column
 	
 .Settings__header
 	display flex
@@ -226,22 +235,32 @@ export default  {
 	margin-bottom 10px
 	justify-content space-between
 	max-width 775px
+	+mobile()
+		margin-bottom 25px
 	.left
 		display flex
 		flex-flow row nowrap
 		align-items center
+		+mobile()
+			flex 1
+			justify-content center
+			margin-right 10px
 		.save
-			width 183px
+			width 162px
 			.btn
 				margin 0
 				width 100%
 				&.btn-cancel:hover
 					background rc_med_gray
 					cursor default
+			+mobile()
+				width 100%
 		.header
 			margin-left 21px
 			display flex
 			align-items center
+			+mobile()
+				display none
 			h2
 				margin 0
 		.form-error
@@ -250,27 +269,52 @@ export default  {
 		display flex
 		flex-flow row nowrap
 		align-items flex-end
+		+mobile()
+			flex 1
+			justify-content center
 		.discard
 			color rc_med_gray
 			font-size 15px
 			float right
+			+mobile()
+				display none
 			&:hover
 				color rc_dark_gray
 				cursor pointer
+		.discard-mobile
+			display none
+			width 100%
+			.btn
+				margin 0
+				width 100%
+			+mobile()
+				display block
 		
 .settings-nav
-	width 185px
 	font-size 20px
 	color link_blue
+	+mobile()
+		font-size 16px
 	ul
+		display flex
+		flex-flow column
 		list-style none
 		padding 0
 		margin 0
+		width 165px
+		+mobile()
+			width auto
+			flex-flow row wrap
 		li
 			padding 1em
 			background whitesmoke
 			border-left 2px solid rc_super_lite_gray
 			transition border-left 150ms ease
+			+mobile()
+				display flex
+				flex 1
+				justify-content center
+				white-space nowrap
 			&.-active
 				background white
 				color black
@@ -282,10 +326,14 @@ export default  {
 				color rc_red
 				transition all 150ms ease
 				border-left-color rgba(201, 0, 25, 0.1)
+				+mobile()
+					border-left-color rc_super_lite_gray
 				&:hover
 					color rc_red_hover
 					border-left 4px solid rgba(201, 0, 25, 0.4)
 					transition all 150ms ease
+					+mobile()
+						border-left 2px solid rc_super_lite_gray
 				&.-active
 					border-left 2px solid rc_super_lite_gray
 					color black
@@ -294,22 +342,30 @@ export default  {
 				border-left 4px solid rc_lite_gray
 				transition all 150ms ease
 				color link_blue_hover
+				+mobile()
+					border-left 2px solid rc_super_lite_gray
 
 .settings-wrapper
 	display flex
 	flex-flow row wrap
-	width 590px
 	background white
 	padding 1.5em
 	border-radius 3px
+	width 582px
 	.form-group
-		flex-basis 100%
 		display flex
+		flex-flow row
+		width 100%
 		margin-bottom 20px
+		+mobile()
+			flex-flow column
 		div
 			flex 1
 			&:not(:first-child)
 				margin-left 10px
+				+mobile()
+					margin-left 0
+					margin-top 15px
 				
 .settings-container
 	display flex
@@ -338,6 +394,8 @@ export default  {
 			justify-content flex-end
 		.description
 			font-size 17px
+			+mobile()
+				padding-right 5px
 			
 	
 	

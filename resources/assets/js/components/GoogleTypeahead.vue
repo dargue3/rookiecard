@@ -28,9 +28,7 @@ export default  {
 	{
 		city()
 		{
-			if (! this.selected) {
-				this.location = this.city + ', United States'
-			}
+			this.location = this.city + ', United States'
 		}
 	},
 
@@ -47,6 +45,11 @@ export default  {
 		GoogleTypeahead_tz(response)
 		{
 			this.timezone = response.data.timeZoneId;
+		},
+
+		TeamSettings_discard_changes(team)
+		{
+			this.location = team.city + ', United States';
 		},
 	},
 

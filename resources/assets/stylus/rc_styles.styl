@@ -61,8 +61,6 @@ hr
 
 body
 	background rc_background
-		
-
 
 
 a	
@@ -569,6 +567,9 @@ textarea
 		background rc_red_hover
 	&.click-me
 		animation click-me-delete 600ms linear 0s infinite alternate
+		&:hover
+			animation none
+			background rc_red_hover
 
 .btn-primary
 	background link_blue
@@ -580,6 +581,9 @@ textarea
 		background link_blue_hover
 	&.click-me
 		animation click-me-primary 600ms linear 0s infinite alternate
+		&:hover
+			animation none
+			background link_blue_hover
 
 .btn-success
 	background rc_bright_green
@@ -591,6 +595,9 @@ textarea
 		background rc_bright_green_hover
 	&.click-me
 		animation click-me-success 600ms linear 0s infinite alternate
+		&:hover
+			animation none
+			background rc_bright_green_hover
 					
 
 .btn-default //for selectpickers
