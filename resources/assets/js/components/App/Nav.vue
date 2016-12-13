@@ -15,11 +15,11 @@
 	        <ul class="sidebar-nav">
 	        	<li>
 	        		<form @submit.prevent="gotoSearch()">
-	        			<input id="searchBar" type="text" class="form-control" placeholder="Search..." v-model="query">
+	        			<input id="searchBar" type="text" class="form-control" placeholder="Search&hellip;" v-model="query">
 	        		</form>
 	        	</li>
 	          <li>
-	          	<a @click="gotoProfile()">Profile</a>
+	          	<a v-touch:tap="gotoProfile()">Profile</a>
 	          </li>
 	          <li class="dropdown teams-dropdown open">
 	            <a class="dropdown-toggle" v-touch:tap="teamDropdown = !teamDropdown" :class="{'toggled' : teamDropdown}">
@@ -29,7 +29,7 @@
 	            <ul v-show="teamDropdown" class="dropdown-menu dropdown-menu-left">
 	          		<li v-if="memberOf.length" class="dropdown-header"><small>MEMBER OF</small></li>
 	              <li v-for="team in memberOf">
-	              	<a @click="gotoTeam(team.teamname)" class="nav-link">
+	              	<a v-touch:tap="gotoTeam(team.teamname)" class="nav-link">
 	              		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
 	              		{{ team.name }}
 	              	</a>
@@ -38,7 +38,7 @@
 
 	              <li v-if="fanOf.length" class="dropdown-header"><small>FAN OF</small></li>
 	              <li v-for="team in fanOf">
-	              	<a @click="gotoTeam(team.teamname)" class="nav-link">
+	              	<a v-touch:tap="gotoTeam(team.teamname)" class="nav-link">
 	              		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
 	              		{{ team.name }}
 	              	</a>
@@ -47,14 +47,14 @@
 
 	              <li v-if="invitedTo.length" class="dropdown-header"><small>INVITED TO</small></li>
 	              <li v-for="team in invitedTo">
-	              	<a @click="gotoTeam(team.teamname)" class="nav-link">
+	              	<a v-touch:tap="gotoTeam(team.teamname)" class="nav-link">
 	              		<span v-show="team.notifications" class="badge badge-danger">{{ team.notifications }}</span>
 	              		{{ team.name }}
 	              	</a>
 	              </li>
 	              <li v-if="invitedTo.length" class="divider"></li>
 
-	              <li><a @click="gotoTeam('create')" class="nav-link">Create a Team</a></li>
+	              <li><a v-touch:tap="gotoTeam('create')" class="nav-link">Create a Team</a></li>
 
 	            </ul>
 	          </li>
@@ -63,9 +63,9 @@
 	            	Options <span class="caret"></span>
 	            </a>
 	            <ul v-show="optionsDropdown" class="dropdown-menu" role="menu">
-	              <li><a @click="gotoOptions('settings')" class="nav-link">Settings</a></li>
-	              <li><a @click="gotoOptions('help')" class="nav-link">Help</a></li>
-	              <li><a @click="gotoOptions('feedback')" class="nav-link">Submit Feedback</a></li>
+	              <li><a v-touch:tap="gotoOptions('settings')" class="nav-link">Settings</a></li>
+	              <li><a v-touch:tap="gotoOptions('help')" class="nav-link">Help</a></li>
+	              <li><a v-touch:tap="gotoOptions('feedback')" class="nav-link">Submit Feedback</a></li>
 	              <li class="divider"></li>
 	              <li><a class="nav-link" v-touch:tap="logout()">Log out</a></li>
 	            </ul>
@@ -83,7 +83,7 @@
 
 	            <form @submit.prevent="gotoSearch()">
 	        			<input id="searchBar" class="form-control navbar-form search-form search-bar" 
-	        						placeholder="Search players and teams..." v-model="query">
+	        						placeholder="Search players and teams&hellip;" v-model="query">
 	        		</form>
 	          </div>
 	        </ul>
@@ -132,7 +132,7 @@
 	            <ul class="dropdown-menu" role="menu">
 	              <li><a class="nav-link">Settings</a></li>
 	              <li><a class="nav-link">Help</a></li>
-	              <li><a class="nav-link">Submit Feedback</a></li>
+	              <li><a v-touch:tap="gotoOptions('feedback')" class="nav-link">Submit Feedback</a></li>
 	              <li class="divider"></li>
 	              <li><a class="nav-link" v-touch:tap="logout()">Log out</a></li>
 	            </ul>

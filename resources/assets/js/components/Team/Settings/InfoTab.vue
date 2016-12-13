@@ -63,8 +63,8 @@
 
 <script>
 
-import Validator from '../../mixins/Validator.js'
-import GoogleTypeahead 	from '../GoogleTypeahead.vue'
+import Validator from '../../../mixins/Validator.js'
+import GoogleTypeahead 	from '../../Helpers/GoogleTypeahead.vue'
 import { mixin as VueFocus } from 'vue-focus'
 
 export default  {

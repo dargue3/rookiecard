@@ -150,9 +150,8 @@
 
 <script>
 
-import StatHelpers from '../mixins/StatHelpers.js'
-import Basketball from './stats/EditBasketball.vue'
-//import { PulseLoader } from 'vue-spinner/dist/vue-spinner.min';
+import StatHelpers from '../../mixins/StatHelpers.js'
+import Basketball from './Basketball/EditBasketball.vue'
 
 export default  {
 	

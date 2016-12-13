@@ -66,11 +66,11 @@
 <script>
 
 // helpers
-import StatHelpers from '../mixins/StatHelpers.js'
-import StatsScrollSpy from '../mixins/StatsScrollSpy.js'
+import StatHelpers from '../../mixins/StatHelpers.js'
+import StatsScrollSpy from '../../mixins/StatsScrollSpy.js'
 
 // sports
-import Basketball from './stats/Basketball.vue'
+import Basketball from './Basketball/Basketball.vue'
 
 export default {
 	

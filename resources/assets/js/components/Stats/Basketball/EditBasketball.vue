@@ -4,7 +4,7 @@
 
 <script>
 
-import AbstractEditStat from './AbstractEditStat.js'
+import AbstractEditStat from '../../../mixins/AbstractEditStat.js'
 
 export default {
 

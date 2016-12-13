@@ -345,12 +345,12 @@
 <script>
 
 import Calendar 	from './Calendar.vue';
-import Stats 			from './Stats.vue';
-import ViewEvent 	from './ViewEvent.vue';
 import Roster 		from './Roster.vue';
-import NewsFeed 	from './NewsFeed.vue';
 import EditUser 	from './EditUser.vue';
-import Settings 	from './TeamSettings/TeamSettings.vue';
+import Stats 			from '../Stats/Stats.vue';
+import NewsFeed 	from '../App/NewsFeed.vue';
+import ViewEvent 	from '../App/ViewEvent.vue';
+import Settings 	from './Settings/TeamSettings.vue';
 
 export default  {
 	

@@ -264,8 +264,8 @@
 
 <script>
 
-import GoogleTypeahead 	from './GoogleTypeahead.vue'
-import Validator 				from '../mixins/Validator.js'
+import GoogleTypeahead 	from '../Helpers/GoogleTypeahead.vue'
+import Validator 				from '../../mixins/Validator.js'
 
 export default  {
 	

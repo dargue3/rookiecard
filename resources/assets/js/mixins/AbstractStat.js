@@ -1,4 +1,4 @@
-import StatHelpers from '../../mixins/StatHelpers.js'
+import StatHelpers from './StatHelpers.js'
 
 export default
 {

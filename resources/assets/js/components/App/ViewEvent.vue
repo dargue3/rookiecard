@@ -102,9 +102,9 @@
 
 <script>
 
-import EditEvent from './EditEvent.vue'
-import EditStats from './EditStats.vue'
-import Stats from './Stats.vue'
+import Stats from '../Stats/Stats.vue'
+import EditEvent from '../Team/EditEvent.vue'
+import EditStats from '../Stats/EditStats.vue'
 
 export default  {
 	

@@ -19,8 +19,8 @@
 
 <script>
 
-import StatSelection 	from '../StatSelection.vue'
-import Stats 	from '../Stats.vue'
+import StatSelection 	from '../../Stats/StatSelection.vue'
+import Stats 	from '../../Stats/Stats.vue'
 
 export default  {
 	

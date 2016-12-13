@@ -35,5 +35,5 @@ Vue.component('spinner', {
 	}
 })
 
-import App from './components/App.vue';
+import App from './components/App/App.vue';
 Router.start(App, '#app');

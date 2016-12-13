@@ -21,9 +21,10 @@ Router.beforeEach(function(transition) {
 
 
 // components used during these routes 
-import Team from './components/Team.vue';
-import User from './components/User.vue';
-import CreateTeam from './components/CreateTeam.vue';
+import Team from './components/Team/Team.vue';
+import User from './components/User/User.vue';
+import CreateTeam from './components/Team/CreateTeam.vue';
+import Feedback from './components/Options/Feedback.vue';
 
 
 // define the routes 
@@ -34,8 +35,13 @@ Router.map({
 		name: 'home',
 		component:
 		{
-			template: "<h1 style='margin-top: 80px'>This is the homepage</h1>"
+			template: "<h1 style='margin-top: 80px; margin-left: 80px;'>This is the homepage</h1>"
 		}
+	},
+
+	'/options/feedback':
+	{
+		component:  Feedback,
 	},
 
 

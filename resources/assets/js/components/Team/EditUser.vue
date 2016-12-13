@@ -138,7 +138,7 @@
 
 <script>
 
-import Validator from './../mixins/Validator.js';
+import Validator from './../../mixins/Validator.js';
 
 export default  {
 	

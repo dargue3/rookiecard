@@ -26,7 +26,7 @@
 <script>
 
 import Alert from './Alert.vue'
-import Requests from '../mixins/Requests.js'
+import Requests from '../../mixins/Requests.js'
 import Nav from './Nav.vue'
 import SmoothScroll from 'smoothscroll-polyfill';
 
