@@ -110,7 +110,7 @@
 					</table>
 				</div>
 
-				<div class="EditStats__footer">
+				<div class="EditStats__footer with-separator">
 					<div v-if="correctErrors" class="errors">
 						<span>Correct errors highlighted in red before saving</span>
 					</div>
@@ -708,6 +708,6 @@ input.stats-input
 .EditStats__footer
 	display flex
 	justify-content center
-		
+	margin-bottom 0
 
 </style>

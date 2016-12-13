@@ -382,14 +382,6 @@ export default  {
 		 */
 		viewEvent(id)
 		{
-			if (this.event.id === id && id !== 0) {
-				// don't do anything if this is the same event that was clicked previously
-      	this.$root.showModal('viewEventModal')
-      	// set the url to /event/${event_id}
-      	this.$root.url(`/team/${this.team.teamname}/event/${id}`, {event: this.event.id});
-      	return
-			}
-
 			this.viewing = 'showingEvent';
 
 			// find the event data and stats for clicked event
@@ -531,6 +523,8 @@ export default  {
 		font-size 30px
 		margin-bottom 30px
 		text-align center
+		+mobile()
+			font-size 24px
 		&.-practice
 			color rc_blue
 		&.-home_game
