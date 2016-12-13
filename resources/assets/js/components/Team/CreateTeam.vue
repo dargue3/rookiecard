@@ -106,8 +106,8 @@
 					<div class="CreateTeam__buttons">
 						<div><!-- empty as placeholder for non-existent back button --></div>
 						<div>
-							<a class="btn btn-primary --chevron --sm --right" @click="changePage">NEXT
-								<i class="material-icons btn-chevron --right">chevron_right</i>
+							<a class="btn btn-primary -chevron -sm -right" v-touch:tap="changePage">NEXT
+								<i class="material-icons btn-chevron -right">chevron_right</i>
 							</a>	
 							<span class="form-error">{{ errors.page.info }}</span>
 						</div>
@@ -167,10 +167,10 @@
 						</div>	
 					</div>
 					<div class="add-user">
-            <i @click="players.push({firstname: '', lastname: '', email: ''})"
+            <i v-touch:tap="players.push({firstname: '', lastname: '', email: ''})"
             		class="glyphicon glyphicon-plus">
             </i>
-            <i @click="players.pop()"
+            <i v-touch:tap="players.pop()"
               	class="glyphicon glyphicon-minus">
             </i>
 					</div>
@@ -218,10 +218,10 @@
 						</div>	
 					</div>
 					<div class="add-user">
-            <i @click="coaches.push({firstname: '', lastname: '', email: ''})"
+            <i v-touch:tap="coaches.push({firstname: '', lastname: '', email: ''})"
             		class="glyphicon glyphicon-plus">
             </i>
-            <i @click="coaches.pop()"
+            <i v-touch:tap="coaches.pop()"
               	class="glyphicon glyphicon-minus">
             </i>
 					</div>
@@ -230,12 +230,12 @@
 
 					<div class="CreateTeam__buttons">
 						<div>
-							<a class="btn btn-cancel --chevron --sm --left" @click="page = 'info'">BACK
+							<a class="btn btn-cancel -chevron -sm --left" v-touch:tap="page = 'info'">BACK
 								<i class="material-icons btn-chevron --left">chevron_left</i>
 							</a>	
 						</div>
 						<div>
-							<a class="btn btn-primary save" @click="save">CREATE TEAM</a>
+							<a class="btn btn-primary save" v-touch:tap="save">CREATE TEAM</a>
 							<span class="form-error">{{ errors.page.roster }}</span>
 						</div>
 					</div>		
@@ -576,7 +576,7 @@ export default  {
 		margin 5px 20px
 		@media screen and (max-width 767px)
 			flex-basis 100%
-	div.--smallSelect
+	div.-smallSelect
 		flex none
 		flex-basis 75px
 	div.--name
@@ -591,7 +591,7 @@ export default  {
 	margin-top 50px
 	div
 		flex 1
-	a.--right
+	a.-right
 		float right
 		margin-right 20px
 	a.--left

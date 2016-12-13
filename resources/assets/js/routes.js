@@ -41,7 +41,8 @@ Router.map({
 
 	'/options/feedback':
 	{
-		component:  Feedback,
+		name: 'feedback',
+		component: Feedback
 	},
 
 

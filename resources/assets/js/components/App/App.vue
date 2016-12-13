@@ -154,6 +154,17 @@ export default  {
 		},
 
 
+		/**
+		 * Team was deleted, remove from nav menus
+		 */
+		App_team_deleted(team)
+		{
+			this.teams = this.teams.filter(function(current) {
+				return current.teamname !== team.teamname;
+			})
+		},
+
+
 	},
 
 	computed:

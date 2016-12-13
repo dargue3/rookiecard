@@ -132,7 +132,7 @@
 	            <ul class="dropdown-menu" role="menu">
 	              <li><a class="nav-link">Settings</a></li>
 	              <li><a class="nav-link">Help</a></li>
-	              <li><a v-touch:tap="gotoOptions('feedback')" class="nav-link">Submit Feedback</a></li>
+	              <li><a v-link="{ name: 'feedback' }" class="nav-link">Submit Feedback</a></li>
 	              <li class="divider"></li>
 	              <li><a class="nav-link" v-touch:tap="logout()">Log out</a></li>
 	            </ul>
@@ -230,7 +230,7 @@ export default  {
 		gotoOptions(option)
 		{
 			this.resetNav();
-			this.$router.go({name: 'settings', params: {name: option}});
+			this.$router.go({name: 'feedback'});
 		},
 
 

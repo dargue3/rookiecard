@@ -155,6 +155,19 @@ class EloquentTeamMember extends EloquentRepository implements TeamMemberReposit
     }
 
 
+
+    /**
+     * Delete all the members on a given team
+     * 
+     * @param  int $team_id 
+     * @return void
+     */
+    public function deleteByTeam($team_id)
+    {
+        TeamMember::where('team_id', $team_id)->delete();
+    }
+
+
     /**
      * Add logged-in user to a given team
      * Used when a team is being created

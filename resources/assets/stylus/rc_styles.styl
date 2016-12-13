@@ -131,6 +131,10 @@ span.input-info
 	margin-top 50px
 	margin-bottom 2px
 		
+.-container
+	background white
+	padding 1.5em
+	border-radius 4px
 
 .Media
 	display flex
@@ -443,6 +447,10 @@ textarea
 		margin-left 0
 	&:hover, &:active, &:active:focus, &:focus
 		background-image none
+	&.-no-margin
+		margin 0
+	&.-input-height
+		height 52px
 	&.-chevron
 		position relative
 		&.-sm.-right
@@ -711,6 +719,9 @@ div.bootstrap-select.form-control
 			a:focus
 				background-color white
 				background-image none
+			a:hover
+				background-image none
+				background-color rgba(56, 169, 249, 0.19)
 
 div.form-error
 	.bootstrap-select		
@@ -751,6 +762,7 @@ button.btn.btn-select
 input[type='checkbox']:focus
 	outline 0	
 
+.form-control:focus
 textarea:focus,
 input[type="text"]:focus,
 	border-color rc_lite_gray

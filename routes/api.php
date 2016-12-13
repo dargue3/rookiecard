@@ -15,6 +15,7 @@ Route::post('team/{teamname}/fan', 'TeamController@toggleFan');
 Route::get('user/{id}', 'UserController@auth');
 
 Route::post('settings/auth', 'UserController@locale');
+Route::post('options/feedback', 'SiteController@feedback');
 
 
 // team admin routes
@@ -22,6 +23,7 @@ Route::group(['middleware' => 'admin'], function() {
 
 	Route::post('team/{teamname}/temp_pic', 'TeamController@uploadTempPic');
 	Route::post('team/{teamname}/settings', 'TeamController@update');
+	Route::delete('team/{teamname}/delete', 'TeamController@delete');
 
 	Route::resource('team/{teamname}/feed', 'TeamFeedController');
 
@@ -29,6 +31,7 @@ Route::group(['middleware' => 'admin'], function() {
 
 	Route::get('team/{teamname}/member/randomize', 'MemberController@randomize');
 	Route::resource('team/{teamname}/member', 'MemberController');
+
 
 	Route::resource('team/{teamname}/event', 'EventController');
 

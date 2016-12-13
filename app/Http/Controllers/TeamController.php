@@ -184,11 +184,11 @@ class TeamController extends Controller
      * @param  Team   $team 
      * @return Illuminate\Http\Response 
      */
-    public function deleteTeam(Team $team)
+    public function delete(Team $team)
     {
-        // do the delete stuff
+        $this->team->delete($team->id);
         
-        return ['ok' => true];
+        return ['ok' => true, 'team' => $team];
     }
 
 

@@ -168,4 +168,19 @@ class EloquentEvent extends EloquentRepository implements EventRepository
 		event(new TeamDeletedAnEvent($team_id, $event));
 	}
 
+
+	/**
+	 * Delete all the events that belong to a given team
+	 * 
+	 * @param  int $team_id 
+	 * @return void
+	 */
+	public function deleteByTeam($team_id)
+	{
+		$events = Event::where('owner_id', $team_id)->get();
+
+		foreach($events as $event) {
+			$this->delete($team_id, $event->id);
+		}
+	}
 }

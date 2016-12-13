@@ -202,6 +202,25 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
     }
 
 
+
+    /**
+     * Delete a given team and all of their stats/events/members/etc
+     * 
+     * @param  int $team_id
+     * @return void 
+     */
+    public function delete($team_id)
+    {
+        $events = App::make(EventRepository::class);
+        $members = App::make(TeamMemberRepository::class);
+
+        $events->deleteByTeam($team_id);
+        $members->deleteByTeam($team_id);
+
+        Team::find($team_id)->delete();
+    }
+
+
     /**
      * Update a given team with the form data from a team's settings page
      * 

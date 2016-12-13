@@ -18,6 +18,9 @@
 					<a class="btn btn-cancel" v-touch:tap="confirming_delete = false">CANCEL</a>
 				</div>
 			</div>
+
+			<span class="input-info">Any of the team's stats (including those on player's profiles) will be deleted as well!</span>
+
 		</div>
 
 	</div>
@@ -44,6 +47,8 @@ export default  {
 		DangerZoneTab_deleted(response)
 		{
 			this.$root.banner('good', 'Team deleted');
+
+			this.$dispatch('App_team_deleted', response.data.team);
 
 			this.$router.go('/');
 		},
@@ -87,6 +92,8 @@ export default  {
 	h3
 		margin-top 0px
 		margin-bottom 15px
-	
+	.input-info
+		margin-top 20px
+		text-align center
 
 </style>
