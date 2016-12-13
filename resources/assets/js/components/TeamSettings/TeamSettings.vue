@@ -352,6 +352,8 @@ export default  {
 	padding 1.5em
 	border-radius 3px
 	width 582px
+	+mobile()
+		width auto
 	.form-group
 		display flex
 		flex-flow row

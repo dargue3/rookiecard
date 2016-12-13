@@ -218,7 +218,7 @@ span.input-info
 		border-left 1px solid darken(rc_blue, 20%)
 		^[0] .second.active + .third // when second is active, don't show left border on third
 			border-left 1px solid rc_blue
-	&.-just-two
+	&.-two
 		.second
 			border-top-right-radius 3px				
 			border-bottom-right-radius 3px
@@ -394,34 +394,6 @@ div.modal
 	100%
 		height 0px
 		box-shadow none
-
-//for getting a separator like
-//   ------   NEWS FEED   --------
-.divider
-	.divider-text
-		text-align center
-		position absolute
-		top 50%
-		left 50%
-		width 100%
-		max-width 775px
-		transform translate(-50%, -50%)
-		&:before
-			content ""
-			position absolute
-			width 100%
-			height 1px
-			top 50%
-			left 0
-			z-index -1
-			background rc_lite_gray
-		span
-			font-size 17px
-			color rc_med_gray
-			background rc_background
-			padding 0px 3em 
-		span.-twotone
-			background rc_two_tone	
 			
 .Footer
 	display flex

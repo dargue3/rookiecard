@@ -411,15 +411,12 @@ export default  {
 		 * Calculates a player's efficiency
 		 * 
 		 * @param {object} stats
-		 * @param {boolean} multiplier  May need to multiply by number of players for team totals
 		 */
-		eff(stats, multiplier = 1)
+		eff(stats)
 		{
-			var missedFG = stats.fga - stats.fgm
-			var missedFT = stats.fta - stats.ftm
-			var eff = (stats.pts + stats.reb + stats.ast + stats.stl + stats.blk - missedFG - missedFT - stats.to) / stats.gp;
-
-			eff = eff * multiplier;
+			let missedFG = stats.fga - stats.fgm
+			let missedFT = stats.fta - stats.ftm
+			let eff = (stats.pts + stats.reb + stats.ast + stats.stl + stats.blk - missedFG - missedFT - stats.to) / stats.gp;
 
 			return this.round(eff, 2)
 		},
@@ -561,12 +558,6 @@ export default  {
 			}
 			if (key === 'name') {
 				return function() { return ['name'] }
-			}
-			if (key === 'ast' || key === 'to') {
-				return function() { return ['req-for-astto'] }
-			}
-			if (key === 'astto') {
-				return function() { return ['req-for-astto', 'astto'] }
 			}
 
 			else {

@@ -131,7 +131,7 @@
 			    <div class="row">
 			      <div class="col-xs-12 text-center Team__stats" v-show="tab === 'stats'">
 
-							<div class="TabButton -just-two stats-nav">
+							<div class="TabButton -two stats-nav">
 								<div class="first" :class="{'active' : statsTab === 'recent'}" v-touch:tap="statsTab = 'recent'">
 									<span>Recent</span>
 								</div>
@@ -142,19 +142,22 @@
 							</div>
 			      	
 							<div v-show="statsTab === 'recent'">
+
 								<stats v-if="stats.length" type="teamRecent" :stat-keys="team.settings.statKeys" :sport="team.sport"
 													:raw-stats="stats" :players="players" :paginate="10" :team-record.sync="team.record" :centered="true">
 		        		</stats>
+
 		        		<div v-else class="text-center">
 									<h4>No stats yet&hellip;</h4>
 								</div>
+
 							</div>
 
 
 							<div v-show="statsTab === 'season'" class="stats-with-filters">
 
 								<div class="stat-filters">
-									<div v-show="stats.length" class="TabButton -just-two -small">
+									<div v-show="stats.length" class="TabButton -two -small">
 										<div class="first" :class="{'active' : showStatTotals === false}" v-touch:tap="showStatTotals = false">
 											<span>Averages</span>
 										</div>
@@ -165,13 +168,10 @@
 									<input type="text" class="form-control -white" placeholder="Search by name&hellip;" v-model="statSearch">
 								</div>
 								
-								
-								<template v-if="stats.length">
-									<stats type="playerTeamSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
-				        						:sport="team.sport" :raw-stats="stats" :players="players" :search="statSearch"
-				        						table-bottom-label="TEAM">
-			        		</stats>
-								</template>
+								<stats v-if="stats.length" type="playerTeamSeason" :stat-keys="team.settings.statKeys" :total.sync="showStatTotals" 
+			        						:sport="team.sport" :raw-stats="stats" :players="players" :search="statSearch" :centered="true"
+			        						table-bottom-label="TEAM">
+		        		</stats>
 			        	
 		        		<div v-else class="text-center">
 									<h4>No stats yet&hellip;</h4>
@@ -205,17 +205,6 @@
 				
 				<div class="row">
 					<div class="col-xs-12 Team__feed">
-						<div class="row">
-
-							<div class="col-xs-12 Team__feed_divider">
-								<div class="divider">
-									<div class="divider-text">
-										<span class="-twotone">NEWS FEED</span>
-									</div>
-								</div>
-							</div>
-
-						</div>
 
 						<div class="row">
 							<div class="col-xs-12">
@@ -400,7 +389,7 @@ export default  {
 			notFound: false,
 			showStatTotals: false,
 			statSearch: '',
-			tab: 'settings',
+			tab: 'stats',
 			statsTab: 'recent',
 			auth: {},
 			team: {
@@ -667,6 +656,8 @@ export default  {
 		Team_updated_team(team)
 		{
 			this.formatTeam(team);
+
+			this.prefix = `${this.$parent.prefix}/team/${team.teamname}`;
 
 			this.$broadcast('Stats_recompile');
 		},
@@ -1095,8 +1086,6 @@ export default  {
 .Team__feed
 	background rc_two_tone
 	margin-top 4em
-	&_divider
-		margin 65px 0px 105px 0px		
 		
 .Team__stats
 	padding 0 2em
@@ -1108,7 +1097,7 @@ export default  {
 	.stat-filters
 		display flex
 		flex-flow row nowrap
-		justify-content flex-start
+		justify-content center
 		align-items center
 		margin-top 0
 		margin-bottom 10px
