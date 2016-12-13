@@ -118,8 +118,7 @@
 
 
 				  <div class="row">
-			      <div class="col-xs-12 Team__calendar"
-			      			v-show="tab === 'calendar'">
+			      <div v-show="tab === 'calendar'" class="col-xs-12 Team__calendar">
 
 		        	<calendar :is-admin="isAdmin" :events="events" :timezone="team.timezone"></calendar>
 
@@ -389,9 +388,9 @@ export default  {
 			notFound: false,
 			showStatTotals: false,
 			statSearch: '',
-			tab: 'stats',
+			tab: 'calendar',
 			statsTab: 'recent',
-			auth: {},
+			user: {},
 			team: {
 				meta: {},
 				settings: {},
@@ -713,7 +712,7 @@ export default  {
 		compile(data)
 		{
 			// get the logged-in user's details from App.vue
-			this.auth = this.$root.user;
+			this.user = this.$root.user;
 			
 			// save the team's info and meta data
 			this.formatTeam(data.team);
@@ -724,10 +723,10 @@ export default  {
 			
 			// now that all team data is ready, set these variables
 			// components are listening, will format the data as needed
-			this.events = data.events;
-			this.stats = data.stats;
-			this.feed = data.feed;
-			this.positions = data.positions;
+			this.$set('events', data.events);
+			this.$set('stats', data.stats);
+			this.$set('feed', data.feed);
+			this.$set('positions', data.positions);
 		},
 
 
@@ -771,7 +770,7 @@ export default  {
 			this.$set('team.settings.notifyOnNewMember', meta.settings.notifyOnNewMember);
 
 			// note whether or not this user is the creator
-			if (this.team.creator_id === this.auth.id) {
+			if (this.team.creator_id === this.user.id) {
 				this.isCreator = true;
 				this.isAdmin = true;
 			}
@@ -802,7 +801,7 @@ export default  {
 					user.meta = {};
 				}
 
-				if (this.auth.id === user.id) {
+				if (this.user.id === user.id) {
 					// save the logged-in users's data separately too
 					this.isAdmin = user.isAdmin;
 					this.isFan = user.isFan;

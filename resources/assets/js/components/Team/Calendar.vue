@@ -40,7 +40,7 @@ export default
 
 	data() {
 
-    var firstDayOfYear = moment().dayOfYear(1).hour(0).minute(0).unix() * 1000;
+    let firstDayOfYear = moment().dayOfYear(1).hour(0).minute(0).unix() * 1000;
 
     return {
       calendar: '',
@@ -69,6 +69,17 @@ export default
     },
   },
 
+  events:
+  {
+    /**
+     * Data has been fetched from the server
+     */
+    dataReady()
+    {
+      this.compile();
+    },
+  },
+
   computed:
   {
     differentTimezone()
@@ -77,29 +88,17 @@ export default
     },
   },
 
-  ready()
-  {
-    var self = this;
-    $(function() {
-      // hide tooltips if on mobile (they are annoying and counterintuitive)
-      // give time for DOM to settle before checking
-      setTimeout(function() {
-        if (window.innerWidth < 767) {
-          $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
-        }
-      }, 1000);
-    })
-  },
-
 	methods:
   {
-    // events array changed, reload the calendar data
+    /**
+     * Reload the calendar's data
+     */
     compile()
     {
       this.calendar = $('.calendar').calendar(this.options);
 
       // attach a new events array
-      var events = this.formatEvents();
+      let events = this.formatEvents();
       if (events.length) {
         var firstEvent = events[0].start;
       }
@@ -115,7 +114,11 @@ export default
       this.calendar.view();
     },
 
-    // format events for calendar
+    /**
+     * Format the event data for bootstrap calendar.js consumption
+     * 
+     * @return {array}
+     */
     formatEvents() {
 
       var formattedEvents = [];
@@ -154,7 +157,14 @@ export default
       return formattedEvents;
     },
 
-    // formats the title with an appropriate date string
+    /**
+     * Create a human readable format to use in the tooltips
+     * 
+     * @param  {string} title 
+     * @param  {int} start 
+     * @param  {int} end   
+     * @return {string}       
+     */
     formatEventTitle(title, start, end) {
 
       var startTime, endTime;    
@@ -180,7 +190,13 @@ export default
       }
     },
 
-    // animate click and switch month
+
+    /**
+     * Animate the chevron and move the calendar view
+     * 
+     * @param  {string} direction 
+     * @return {void}           
+     */
     chevron(direction) {
       let animateEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
       let rubberBand = 'animated rubberBand';
@@ -196,6 +212,20 @@ export default
     },
 		
 	},
+
+  ready()
+  {
+    let self = this;
+    $(function() {
+      // hide tooltips if on mobile (they are annoying and counterintuitive)
+      // give time for DOM to settle before checking
+      setTimeout(function() {
+        if (window.innerWidth < 767) {
+          $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
+        }
+      }, 1000);
+    })
+  },
 
 
 };
