@@ -43,8 +43,6 @@ class EloquentTeamMemberTest extends TestCase
         $this->signIn();
 
         $this->repo = new EloquentTeamMember;
-
-        $this->seedRolesTable();
     }
 
 
@@ -409,7 +407,7 @@ class EloquentTeamMemberTest extends TestCase
         $team = factory(Team::class)->create();
         $member = factory(TeamMember::class)->create(['team_id' => $team->id]);
         $ghost = factory(TeamMember::class)->create(['team_id' => $team->id, 'user_id' => 0]);
-        factory(Stat::class, 5)->create([
+        factory(Stat::class, 'basketball', 5)->create([
             'member_id' => $ghost->id,
             'owner_id' => $ghost->user_id,
             'team_id' => $ghost->team_id,

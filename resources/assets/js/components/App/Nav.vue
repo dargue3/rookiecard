@@ -371,15 +371,11 @@ ul.nav.navbar-nav.navbar-right
 		a
 			color white
 			font-size 15px
-			&:hover
-				text-shadow: 0 0 4px #FFF;	
 		background rc_red
 	.dropdown
 		&.open
 			background rc_dark_red
 			box-shadow none
-			a:hover
-				text-shadow none
 			a
 				background rc_dark_red
 				padding-bottom 18px

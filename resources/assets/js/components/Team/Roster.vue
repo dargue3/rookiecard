@@ -47,8 +47,8 @@
 				</div>
 				<div class="User__details">
 					<div class="details-text">
-							<span v-if="player.isGhost">{{ player.name }}</span>
-							<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
+						<span v-if="player.isGhost">{{ player.name }}</span>
+						<a v-else v-link="{name: 'user', params: {name: player.username}}">{{ player.name }}</a>
 						<div v-show="player.meta.positions" class="User__positions">
 							<span v-for="position in player.meta.positions">
 								{{ position | uppercase }}

@@ -19,6 +19,7 @@ class CreateRcTeams extends Migration
             $table->integer('season');
             $table->tinyInteger('sport');
             $table->tinyInteger('gender');
+            $table->tinyInteger('age');
             $table->text('meta');
             $table->float('long');
             $table->float('lat');

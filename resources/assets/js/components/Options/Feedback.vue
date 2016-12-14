@@ -14,6 +14,7 @@
 									:class="{'form-error' : errors.details}" v-model="type">
 						<option value="bug">Bug Report</option>
 						<option value="suggestion">Suggestion</option>
+						<option value="question">Question</option>
 						<option value="compliment">Compliment •ᴗ•</option>
 					</select>
 					<span v-show="errors.type" class="form-error">{{ errors.type }}</span>
@@ -65,7 +66,10 @@ export default  {
 				return 'When I was... I expected... instead this happened...';
 			}
 			if (this.type === 'suggestion') {
-				return "I'd really like to see...";
+				return "I'd really love it if...";
+			}
+			if (this.type === 'question') {
+				return "Home come you... ? We'll get back to you via email";
 			}
 			if (this.type === 'compliment') {
 				return 'I love how...';

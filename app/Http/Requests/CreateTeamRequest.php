@@ -17,10 +17,14 @@ class CreateTeamRequest extends Request
     //define the rules applied to the inputs 
     public function rules()
     {
+        // reserved route keywords
+        $reserved = implode(',', config('rookiecard.reserved.teamnames'));
+
         return [
             'name'                  => 'required|max:50',
-            'teamURL'               => 'required|unique:rc_teams,teamname|alpha_dash|max:18|not_in:create',
+            'teamURL'               => 'required|unique:rc_teams,teamname|alpha_dash|max:18|not_in:' . $reserved,
             'gender'                => 'required|in:male,female,coed',
+            'age'                   => 'required|in:12-and-under,13-18,college,adult',
             'sport'                 => 'required|in:basketball',
             'slogan'                => 'max:50',
             'homefield'             => 'max:50',

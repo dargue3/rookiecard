@@ -19,8 +19,6 @@ class JointTeamTest extends TestCase
 		$this->team = factory(Team::class)->create();
 
 		$this->signIn();
-
-		$this->seedRolesTable();
 	}
 
 

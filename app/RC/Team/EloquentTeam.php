@@ -46,11 +46,16 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
      * Find a team by a given teamname
      * 
      * @param  string $teamname 
+     * @param  boolean $withTrashed Whether or not to search deleted fields as well
      * @return Team        
      */
-    public function name($teamname)
+    public function name($teamname, $withTrashed = false)
     {
-       return Team::name($teamname)->first(); 
+        if ($withTrashed) {
+            return Team::withTrashed()->where('teamname', $teamname)->first();
+        }
+
+        return Team::name($teamname)->first(); 
     }
 
 
@@ -276,7 +281,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
             $event = factory(Event::class)->create(['owner_id' => $team_id, 'type' => $types[array_rand($types, 1)]]);
 
             foreach ($members as $member) {
-                factory(Stat::class)->create([
+                factory(Stat::class, $sport->name())->create([
                     'sport'     => $sport->name(),
                     'owner_id'  => $member['id'],
                     'member_id' => $member['member_id'], 

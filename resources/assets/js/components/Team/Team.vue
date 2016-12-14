@@ -100,7 +100,7 @@
 								</div>
 								<div class="tab" :class="{'-active' : tab === 'roster'}" v-touch:tap="tab = 'roster'">
 									<a>ROSTER</a>
-									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">usersThatWantToJoin.length</span>
+									<span v-show="usersThatWantToJoin.length && isAdmin" class="notifications">{{ usersThatWantToJoin.length }}</span>
 								</div>
 								<div v-show="isAdmin" class="tab" :class="{'-active' : tab === 'settings'}" v-touch:tap="tab = 'settings'">
 									<a>SETTINGS</a>
@@ -657,6 +657,8 @@ export default  {
 			this.formatTeam(team);
 
 			this.prefix = `${this.$parent.prefix}/team/${team.teamname}`;
+
+			this.$root.url(`/team/${team.teamname}`);
 
 			this.$broadcast('Stats_recompile');
 		},

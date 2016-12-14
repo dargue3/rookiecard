@@ -55,7 +55,7 @@ class EloquentStatTest extends TestCase
     /** @test */
     public function it_fetches_all_the_stats_associated_with_a_given_team()
     {
-    	factory(Stat::class, 5)->create(['team_id' => $this->team->id]);
+    	factory(Stat::class, 'basketball', 5)->create(['team_id' => $this->team->id]);
 
     	$stats = $this->repo->findByTeam($this->team->id);
 
@@ -66,8 +66,8 @@ class EloquentStatTest extends TestCase
     /** @test */
     public function it_fetches_all_the_stats_associated_with_a_given_team_and_event()
     {
-    	factory(Stat::class, 5)->create(['team_id' => $this->team->id, 'event_id' => $this->event->id]);
-    	factory(Stat::class, 3)->create(['team_id' => $this->team->id, 'event_id' => 242]);
+    	factory(Stat::class, 'basketball', 5)->create(['team_id' => $this->team->id, 'event_id' => $this->event->id]);
+    	factory(Stat::class, 'basketball', 3)->create(['team_id' => $this->team->id, 'event_id' => 242]);
 
     	$stats = $this->repo->findByEvent($this->team->id, $this->event->id);
 
@@ -78,8 +78,8 @@ class EloquentStatTest extends TestCase
     /** @test */
     public function it_deletes_all_stats_associated_with_a_given_team_and_event()
     {
-    	factory(Stat::class, 5)->create(['team_id' => $this->team->id, 'event_id' => $this->event->id]);
-    	factory(Stat::class, 3)->create(['team_id' => $this->team->id, 'event_id' => 242]);
+    	factory(Stat::class, 'basketball', 5)->create(['team_id' => $this->team->id, 'event_id' => $this->event->id]);
+    	factory(Stat::class, 'basketball', 3)->create(['team_id' => $this->team->id, 'event_id' => 242]);
 
     	$this->repo->deleteByEvent($this->team->id, $this->event->id);
 
@@ -91,8 +91,8 @@ class EloquentStatTest extends TestCase
     public function it_deletes_all_stats_associated_with_a_given_team_member()
     {
     	$member = factory(TeamMember::class)->create(['team_id' => $this->team->id]);
-    	factory(Stat::class, 5)->create(['team_id' => $this->team->id, 'member_id' => $member->id]);
-    	factory(Stat::class, 3)->create(['team_id' => $this->team->id, 'member_id' => 242]);
+    	factory(Stat::class, 'basketball', 5)->create(['team_id' => $this->team->id, 'member_id' => $member->id]);
+    	factory(Stat::class, 'basketball', 3)->create(['team_id' => $this->team->id, 'member_id' => 242]);
 
     	$this->repo->deleteByMember($this->team->id, $member->id);
 
@@ -106,7 +106,7 @@ class EloquentStatTest extends TestCase
     	$old = factory(TeamMember::class)->create(['team_id' => $this->team->id]);
     	$new = factory(TeamMember::class)->create(['team_id' => $this->team->id]);
 
-    	factory(Stat::class)->create([
+    	factory(Stat::class, 'basketball')->create([
     		'team_id' 	=> $this->team->id,
     		'member_id' => $old->id,
     		'owner_id'	=> $old->user_id,

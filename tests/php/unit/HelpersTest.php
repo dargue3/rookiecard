@@ -39,13 +39,4 @@ class HelpersTest extends TestCase
 
         $this->assertTrue($repo->isTeamAdmin($this->user->id, $team->id));
     }
-
-
-    /** @test */
-    public function the_team_roles_table_gets_seeded_with_roles()
-    {
-        $this->seedRolesTable();
-
-        $this->assertCount(count($this->roles), TeamRole::all());
-    }
 }

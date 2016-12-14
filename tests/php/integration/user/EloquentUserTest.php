@@ -58,15 +58,6 @@ class EloquentUserTest extends TestCase
 
 
     /** @test */
-    public function it_fetches_all_notifications_for_a_given_user()
-    {
-        factory(Notification::class, 5)->create(['user_id' => $this->user->id]);
-
-        $this->assertCount(5, $this->repo->notifications($this->user->id));
-    }
-
-
-    /** @test */
     public function it_returns_a_brief_overview_of_all_the_teams_a_given_user_belongs_to()
     {
         $team1 = factory(Team::class)->create();

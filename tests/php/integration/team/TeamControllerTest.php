@@ -36,8 +36,6 @@ class TeamControllerTest extends TestCase
 		$this->memberRepo = App::make(TeamMemberRepository::class);
 
     	$this->signIn();
-
-    	$this->seedRolesTable();
 	}
 
 
@@ -142,6 +140,7 @@ class TeamControllerTest extends TestCase
             'name'          => 'Team Test',
             'teamURL'       => 'testname',
             'gender'        => 'male',
+            'age'           => '12-and-under',
             'sport'         => 'basketball',
             'slogan'        => 'Here goes nothin!',
             'homefield'     => 'My backyard',

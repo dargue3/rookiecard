@@ -27,12 +27,11 @@ class HandlesTeamCreationLogicTest extends TestCase
 
 		$this->signIn();
 
-		$this->seedRolesTable();
-
 		$this->data = [
 			'name'			=> 'Team Test',
 			'teamURL'		=> 'teamname',
 			'gender'		=> 'male',
+            'age'           => '12-and-under',
 			'sport'			=> 'basketball',
 			'slogan'		=> 'Here goes nothin!',
 			'homefield'		=> 'My backyard',
@@ -59,7 +58,8 @@ class HandlesTeamCreationLogicTest extends TestCase
 
     	$this->assertEquals('Team Test', $handler->name);
     	$this->assertEquals('teamname', $handler->teamname);
-    	$this->assertEquals('male', $handler->gender);
+        $this->assertEquals('male', $handler->gender);
+    	$this->assertEquals('12-and-under', $handler->age);
     	$this->assertEquals('Here goes nothin!', $handler->meta['slogan']);
     	$this->assertEquals('My backyard', $handler->meta['homefield']);
     	$this->assertEquals('Providence, RI', $handler->meta['city']);

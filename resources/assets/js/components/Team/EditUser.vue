@@ -16,7 +16,7 @@
 		    	</a>
 		    </div>
 		    <div class="col-xs-6 col-xs-offset-3 col-sm-3 col-sm-offset-1">
-		    	<a class="btn btn-cancel btn-block btn-md outline" @click="confirm(false)">CANCEL</a>
+		    	<a class="btn btn-cancel btn-block btn-md" @click="confirm(false)">CANCEL</a>
 		    </div>
 		  </div>
 		</div>

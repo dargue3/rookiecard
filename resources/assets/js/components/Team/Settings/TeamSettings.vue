@@ -112,6 +112,15 @@ export default  {
 			this.$root.banner('good', 'Settings saved');
 			setTimeout(() => { this.saved = true; this.loading_save = false; }, 150);
 		},
+
+		/**
+		 * Bad request back from the server after attempting to save
+		 */
+		TeamSettings_error(response)
+		{
+			this.$root.errMsg();
+			setTimeout(() => { this.loading_save = false; }, 150);
+		},
 	},
 
 	methods:
@@ -153,7 +162,7 @@ export default  {
 			}
 
 			this.loading_save = true;
-			this.$root.post(`${this.$parent.prefix}/settings`, 'TeamSettings_saved', data);
+			this.$root.post(`${this.$parent.prefix}/settings`, 'TeamSettings_saved', data, 'TeamSettings_error');
 		},
 
 

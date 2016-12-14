@@ -3,49 +3,46 @@
 	<div>
 		<div class="page-wrapper">
 			
-			<div class="CreateTeam">
-			
+			<div class="CreateTeam -container">
 
-				<div v-show="page === 'info'" class="CreateTeam__title">
-					<h2>Manage your team on Rookiecard</h2>
+				<div v-show="page === 'info'" transition="fade-slow" class="CreateTeam__title">
+					<h1>Manage your team on Rookiecard</h1>
 					<p>Organize your calendar, stats, and roster in one place</p>
 					<p>Fully automated email notifications for new events, cancelations, and more</p>
 					<p>Fans can stay updated on team activities</p>
 				</div>
 
-
-
 				<!-- Basic info -->
-				<div v-show="page === 'info'">
+				<div v-show="page === 'info'" transition="fade-slow">
 					
-					<div class="CreateTeam__header">
-						<h3>Team Info</h3>
+					<div class="CreateTeam__header bottom-separator">
+						<h2>Team Info</h2>
 						<p>First tell us some basic info about your team</p>
 					</div>	
 					<div class="CreateTeam__inputs">
 
-						<div>
+						<div class="form-group">
 							<label>Team Name</label>
-							<input type="text" class="form-control" :class="{'form-error' : errors.name}" 
-										required maxlength="25" placeholder="WHS Varsity Basketball" v-model="name">
+							<input type="text" class="form-control has-info" :class="{'form-error' : errors.name}" 
+										required maxlength="25" placeholder="WHS Varsity" v-model="name">
 							<span class="form-error">{{ errors.name }}</span>				
 						</div>
 
-						<div>
+						<div class="form-group">
 							<label>Team URL</label>
-							<input type="text" class="form-control" :class="{'form-error' : errors.teamname}"
-											maxlength="18" placeholder="whsbasketball16" required @blur="checkAvailability()" v-model="teamname">
+							<input type="text" class="form-control has-info" :class="{'form-error' : errors.teamname}"
+											maxlength="18" placeholder="whs_basketball" required @blur="checkAvailability()" v-model="teamname">
 							<span v-show="errors.teamname" class="form-error">{{ errors.teamname }}</span>
 							<span v-else class="input-info">rookiecard.io/team/{{ teamname }}</span>	
 						</div>
 
 					</div>
 
-					<div class="CreateTeam__inputs">
+					<div class="CreateTeam__inputs one-line">
 
-						<div>
+						<div class="form-group">
 							<label>Sport</label>
-							<select data-style="btn-select btn-lg" CreateTeam="sport" class="selectpicker form-control show-tick"
+							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick has-info"
 											 required v-model="sport">
 	              <option value="basketball">Basketball</option>    
 	              <option value="baseball" disabled>Baseball</option>    
@@ -55,45 +52,70 @@
 							<span class="input-info">More coming soon!</span>
 						</div>
 
-						<div>
+						<div class="form-group">
 							<label>I am a&hellip;</label>
-							<select data-style="btn-select btn-lg" CreateTeam="userIsA" class="selectpicker form-control show-tick"
+							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick"
 											required v-model="userIsA">
 								<option value="player">Player</option>
 								<option value="coach">Coach</option>
 								<option value="fan">Fan</option>
 							</select>
 						</div>
+					</div>
 
-						<div>
-							<label>Sex</label>
+
+					<div class="CreateTeam__inputs one-line">
+						<div class="form-group">
+							<label>Age Group</label>
 							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
-											CreateTeam="gender" v-model="gender">
-								<option value="male">Men</option>
-								<option value="female">Women</option>
-								<option value="coed">Co-ed</option>
+											v-model="age">
+								<option value="12-and-under">12 and Under</option>
+								<option value="13-18">13-18 Years</option>
+								<option value="college">College</option>
+								<option value="adult">Adult</option>
 							</select>
 						</div>
-						
+
+						<div class="form-group">
+							<label>League</label>
+							<select data-style="btn-select btn-lg" class="selectpicker form-control show-tick" 
+											CreateTeam="gender" v-model="gender">
+								<template v-if="age === '12-and-under' || age === '13-18'">
+									<option value="male">Boy's</option>
+									<option value="female">Girl's</option>
+									<option value="coed">Co-ed</option>
+								</template>
+								<template v-else>
+									<option value="male">Men's</option>
+									<option value="female">Women's</option>
+									<option value="coed">Co-ed</option>
+								</template>
+							</select>
+						</div>
 					</div>
+
+						
+						
+					
 
 					<div class="CreateTeam__inputs">
 
-						<div>
+						<div class="form-group">
 							<label>Home Field</label>
 							<input type="text" class="form-control" maxlength="50" 
 											placeholder="Cowell Stadium" v-model="homefield">
 						</div>
 
-
-						<google-autocomplete :city.sync="city" :long.sync="long" :timezone.sync="timezone"
-																	:lat.sync="lat" label="City / Town" :error="errors.city">
-						</google-autocomplete>
-
+						<div class="form-group">
+							<google-autocomplete :city.sync="city" :long.sync="long" :timezone.sync="timezone"
+																		:lat.sync="lat" label="City / Town" :error="errors.city">
+							</google-autocomplete>
+						</div>
+						
 					</div>
 
 					<div class="CreateTeam__inputs">
-						<div>
+						<div class="form-group">
 							<label>Slogan</label>
 							<span class="remaining"><strong>{{ slogan.length }}</strong> / 50</span>
 							<input type="text" class="form-control" maxlength="50" 
@@ -104,8 +126,7 @@
 					
 
 					<div class="CreateTeam__buttons">
-						<div><!-- empty as placeholder for non-existent back button --></div>
-						<div>
+						<div class="right">
 							<a class="btn btn-primary -chevron -sm -right" v-touch:tap="changePage">NEXT
 								<i class="material-icons btn-chevron -right">chevron_right</i>
 							</a>	
@@ -116,56 +137,72 @@
 				</div> <!-- end of team info -->
 
 
-				<div v-show="page === 'roster'">
 
-					<div class="CreateTeam__header roster-notes">
-						<h3>Roster</h3>
+
+
+				<div v-show="page === 'roster'" transition="fade-slow">
+
+					<div class="CreateTeam__header bottom-separator roster-notes">
+						<h2>Roster</h2>
 						<p>Enter info about the players and coaches that are on this team.</p>
 						<p>Your team will be populated with "ghost" users for the time being.</p>
 						<p>If you'd like to invite someone to join, add their email.</p>
 						<p><strong>Don't worry, you can edit all of this information at any time!</strong></p>
 					</div>
 
-					<h4 class="CreateTeam__subheader">Players</h4>
+
+					<h3 class="CreateTeam__subheader">Players</h3>
+
 					<!-- disabled inputs to show logged-in user as a player -->
 					<div v-show="userIsA == 'player'" class="CreateTeam__inputs">
-						<div class="--name">
-							<label>First</label>
-							<input type="text" class="form-control" v-model="$root.user.firstname" disabled>
+						<div class="one-line">
+							<div class="name">
+								<label>First</label>
+								<input type="text" class="form-control" v-model="$root.user.firstname" disabled>
+							</div>
+							<div class="name">	
+								<label>Last</label>
+								<input type="text" class="form-control" v-model="$root.user.lastname" disabled>
+							</div>
 						</div>
-						<div class="--name">	
-							<label>Last</label>
-							<input type="text" class="form-control" v-model="$root.user.lastname" disabled>
-						</div>
-						<div class="--email">
+						
+						<div class="email">
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="$root.user.email" disabled>
 						</div>
-					</div>
+					</div> <!-- end userIsA player -->
 
+
+			
 					<div v-for="player in players" class="CreateTeam__inputs" transition="slide-sm">
-						<div class="--name">
-							<label>First Name</label>
-							<input type="text" class="form-control" v-model="player.firstname" 
-											:class="{'form-error' : errors.players[$index].firstname}" 
-											:placeholder="dummy[$index].firstname" maxlength="100">
-							<span class="form-error">{{ errors.players[$index].firstname }}</span>
+
+						<div class="one-line">
+							<div class="name">
+								<label>First Name</label>
+								<input type="text" class="form-control" v-model="player.firstname" 
+												:class="{'form-error' : errors.players[$index].firstname}" 
+												:placeholder="dummy[$index].firstname" maxlength="100">
+								<span class="form-error">{{ errors.players[$index].firstname }}</span>
+							</div>
+							<div class="name">	
+								<label>Last Name</label>
+								<input type="text" class="form-control" v-model="player.lastname"
+											:class="{'form-error' : errors.players[$index].lastname}"  
+												:placeholder="dummy[$index].lastname" maxlength="100">
+								<span class="form-error">{{ errors.players[$index].lastname }}</span>
+							</div>
 						</div>
-						<div class="--name">	
-							<label>Last Name</label>
-							<input type="text" class="form-control" v-model="player.lastname"
-										:class="{'form-error' : errors.players[$index].lastname}"  
-											:placeholder="dummy[$index].lastname" maxlength="100">
-							<span class="form-error">{{ errors.players[$index].lastname }}</span>
-						</div>
-						<div class="--email">
+
+						<div class="email">
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="player.email" 
 											:class="{'form-error' : errors.players[$index].email}" :placeholder="dummy[$index].email"
 											maxlength="100">
 							<span class="form-error">{{ errors.players[$index].email }}</span>
-						</div>	
-					</div>
+						</div>
+
+					</div> <!-- end v-for players -->
+
 					<div class="add-user">
             <i v-touch:tap="players.push({firstname: '', lastname: '', email: ''})"
             		class="glyphicon glyphicon-plus">
@@ -175,48 +212,62 @@
             </i>
 					</div>
 
-					<hr class="CreateTeam__separator">
 
-					<h4 class="CreateTeam__subheader">Coaches</h4>
+
+
+					<h3 class="CreateTeam__subheader top-separator">Coaches</h3>
+
 					<!-- disabled inputs to show logged-in user as a coach -->
 					<div v-show="userIsA == 'coach'" class="CreateTeam__inputs">
-						<div class="--name">
-							<label>First</label>
-							<input type="text" class="form-control" v-model="$root.user.firstname" disabled>
+						<div class="one-line">
+							<div class="name">
+								<label>First</label>
+								<input type="text" class="form-control" v-model="$root.user.firstname" disabled>
+							</div>
+							<div class="name">	
+								<label>Last</label>
+								<input type="text" class="form-control" v-model="$root.user.lastname" disabled>
+							</div>
 						</div>
-						<div class="--name">	
-							<label>Last</label>
-							<input type="text" class="form-control" v-model="$root.user.lastname" disabled>
-						</div>
-						<div class="--email">
+						
+						<div class="email">
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="$root.user.email" disabled>
 						</div>
-					</div>
+
+					</div> <!-- end userIsA coach -->
+
+
+
 
 					<div v-for="coach in coaches" class="CreateTeam__inputs" transition="slide-sm">
-						<div class="--name">
-							<label>First Name</label>
-							<input type="text" class="form-control" v-model="coach.firstname" 
-											:class="{'form-error' : errors.coaches[$index].firstname}" 
-											:placeholder="dummy[$index].firstname" maxlength="100">
-							<span class="form-error">{{ errors.coaches[$index].firstname }}</span>
+						<div class="one-line">
+							<div class="name">
+								<label>First Name</label>
+								<input type="text" class="form-control" v-model="coach.firstname" 
+												:class="{'form-error' : errors.coaches[$index].firstname}" 
+												:placeholder="dummy[$index].firstname" maxlength="100">
+								<span class="form-error">{{ errors.coaches[$index].firstname }}</span>
+							</div>
+							<div class="name">	
+								<label>Last Name</label>
+								<input type="text" class="form-control" v-model="coach.lastname"
+											:class="{'form-error' : errors.coaches[$index].lastname}"  
+												:placeholder="dummy[$index].lastname" maxlength="100">
+								<span class="form-error">{{ errors.coaches[$index].lastname }}</span>
+							</div>
 						</div>
-						<div class="--name">	
-							<label>Last Name</label>
-							<input type="text" class="form-control" v-model="coach.lastname"
-										:class="{'form-error' : errors.coaches[$index].lastname}"  
-											:placeholder="dummy[$index].lastname" maxlength="100">
-							<span class="form-error">{{ errors.coaches[$index].lastname }}</span>
-						</div>
-						<div class="--email">
+						
+						<div class="email">
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="coach.email" 
 											:class="{'form-error' : errors.coaches[$index].email}" :placeholder="dummy[$index].email"
 											maxlength="100">
 							<span class="form-error">{{ errors.coaches[$index].email }}</span>
 						</div>	
-					</div>
+
+					</div><!-- end v-for coaches -->
+
 					<div class="add-user">
             <i v-touch:tap="coaches.push({firstname: '', lastname: '', email: ''})"
             		class="glyphicon glyphicon-plus">
@@ -229,13 +280,17 @@
 					
 
 					<div class="CreateTeam__buttons">
-						<div>
-							<a class="btn btn-cancel -chevron -sm --left" v-touch:tap="page = 'info'">BACK
-								<i class="material-icons btn-chevron --left">chevron_left</i>
+						<div class="left">
+							<a class="btn btn-cancel -no-margin -chevron -sm -left" v-touch:tap="page = 'info'">BACK
+								<i class="material-icons btn-chevron -left">chevron_left</i>
 							</a>	
 						</div>
-						<div>
-							<a class="btn btn-primary save" v-touch:tap="save">CREATE TEAM</a>
+
+						<div class="right">
+							<a class="btn btn-primary -no-margin save" v-touch:tap="save">
+								<span v-show="! loading_save">CREATE TEAM</span>
+								<spinner v-show="loading_save" color="white"></spinner>
+							</a>
 							<span class="form-error">{{ errors.page.roster }}</span>
 						</div>
 					</div>		
@@ -255,7 +310,7 @@
 		</div>
 
 			<!-- include the footer at bottom -->
-		<div class="Footer --light">
+		<div class="Footer -light">
 	    <p>® 2017 Rookiecard LLC</p>
 		</div>
 
@@ -300,6 +355,7 @@ export default  {
 			sport: 'basketball',
 			userIsA: 'fan',
 			gender: 'male',
+			age: '13-18',
 			homefield: '',
 			city: '',
 			long: '',
@@ -311,6 +367,7 @@ export default  {
 			dummy: [{firstname: 'Ghosty', lastname: 'McGhostFace', email: 'ghost@rookiecard.com'}],
 			checkingAvailability: false,
 			nameAvailable: true,
+			loading_save: false,
 		}
 	}, 
 
@@ -347,6 +404,7 @@ export default  {
 				teamURL: 		this.teamname,
 				slogan: 		this.slogan,
 				gender: 		this.gender,
+				age: 				this.age,
 				homefield: 	this.homefield,
 				city: 			this.city,
 				long: 			this.long,
@@ -360,6 +418,7 @@ export default  {
 
 			data = this.filterSubmittedData(data);
 
+			this.loading_save = true;
 			this.$root.post(this.prefix, 'CreateTeam_submit', data);
 		},
 
@@ -389,7 +448,7 @@ export default  {
 		 */
 		changePage()
 		{
-			var errors = 0;
+			let errors = 0;
 
 			this.setPageError('Correct errors before continuing');
 
@@ -406,7 +465,8 @@ export default  {
 				this.setPageError('');
 
 				if (this.page === 'info') {
-					this.page = 'roster';
+					this.$root.scrollTo({top: 0}, true); // scroll the page to the top
+					setTimeout(() => { this.page = 'roster'; }, 550); // wait for scroll before transitioning
 				}
 			}
 		},
@@ -419,17 +479,18 @@ export default  {
 		 */
 		attachErrorChecking()
 		{
-			var msg = ['Enter a team URL', 'Use 18 characters or less', 'Numbers and letters only'];
-			this.registerErrorChecking('teamname', 'required|max:18|alpha_dash', msg);
+			let messages = ['Pick something memorable!', 'Use 18 characters or less', 'Numbers and letters only'];
+			this.registerErrorChecking('teamname', 'required|max:18|alpha_dash', messages);
 			this.registerErrorChecking('name', 'required', 'Enter a name');
 			this.registerErrorChecking('city', 'required', 'Search for your city');
 							
-			this.registerErrorChecking('players.*.email', 'email', 'Invalid email');
-			this.registerErrorChecking('players.*.firstname', 'required', 'Enter a first name');
-			this.registerErrorChecking('players.*.lastname', 'required', 'Enter a last name');
-			this.registerErrorChecking('coaches.*.email', 'email', 'Invalid email');
-			this.registerErrorChecking('coaches.*.firstname', 'required', 'Enter a first name');
-			this.registerErrorChecking('coaches.*.lastname', 'required', 'Enter a last name');
+			this.registerErrorChecking('players.*.email', 'email', 'Invalid email', false, 50);
+			this.registerErrorChecking('players.*.firstname', 'required', 'Enter a first name', false, 50);
+			this.registerErrorChecking('players.*.lastname', 'required', 'Enter a last name', false, 50);
+
+			this.registerErrorChecking('coaches.*.email', 'email', 'Invalid email', false, 50);
+			this.registerErrorChecking('coaches.*.firstname', 'required', 'Enter a first name', false, 50);
+			this.registerErrorChecking('coaches.*.lastname', 'required', 'Enter a last name', false, 50);
 
 			this.$set('errors.page.info', '');
 			this.$set('errors.page.roster', '');
@@ -478,9 +539,7 @@ export default  {
 			this.$dispatch('App_becameAMember', response.data.team);
 
 			// use a delay because it felt TOO fast without one
-			setTimeout(function() {
-				this.$router.go('/team/' + response.data.team.teamname);
-			}.bind(this), 50);
+			setTimeout(() => { this.$router.go('/team/' + response.data.team.teamname)}, 150);
 		},
 	},
 
@@ -493,19 +552,27 @@ export default  {
 		{
 			this.$root.get(this.prefix + '/dummy/' + this.gender, 'CreateTeam_dummy');
 		},
+
+		/**
+		 * Change Men's -> Boy's, Women's -> Girl's when the age group changes
+		 */
+		age()
+		{
+			setTimeout(() => {
+				$('[CreateTeam="gender"]').selectpicker('render')
+					.selectpicker('refresh')
+					.selectpicker('val', this.gender);
+				}, 50)
+		},
 	},
 
 	ready()
 	{
 		$(function() {
 
-			$('[CreateTeam="sport"]').selectpicker({});
-			$('[CreateTeam="numPlayers"]').selectpicker({});
-			$('[CreateTeam="numCoaches"]').selectpicker({});
-			$('[CreateTeam="gender"]').selectpicker({});
-			$('[CreateTeam="userIsA"]').selectpicker({});
+			$('.selectpicker').selectpicker();
 
-		}.bind(this))
+		});
 	}
 
 };
@@ -520,28 +587,44 @@ export default  {
 	display flex
 	flex-flow row
 	justify-content center
+	padding 0.5em
 
 .CreateTeam
 	flex 1
 	display flex
 	flex-flow row wrap
-	margin-top 40px
-	margin-bottom 100px
-	padding 20px
-	background white
-	max-width 750px
+	margin-top 30px
+	max-width 700px
 	div
 		flex-basis 100%
 		
+.CreateTeam__title
+	text-align center
+	margin-bottom 35px
+	h1
+		margin-bottom 20px
+		+mobile()
+			font-size 23px
+	p
+		font-size 15px
+		color rc_dark_gray
+		&:not(:first-child)
+			margin-top 10px
+		+mobile()
+			font-size 13px
+
+
 .CreateTeam__header
 	display flex
 	flex-flow row wrap
-	margin 25px 20px 0px 25px
-	padding-bottom 20px
-	border-bottom 2px solid rc_super_lite_gray
-	h3
+	margin 0 10px
+	+mobile()
+		margin 0
+	h2
 		flex-basis 100%
 		margin-bottom 20px
+		+mobile()
+			font-size 21px
 	div
 		margin-top 10px
 		flex-basis 100%
@@ -549,65 +632,73 @@ export default  {
 			color rc_dark_gray
 	p
 		font-size 15px
+		+mobile()
+			font-size 13px
 
 .CreateTeam__subheader 
-	margin-left 20px
-	&:first-child
-		margin-top 20px		
+	margin-left 10px
+	margin-top 40px
+	+mobile()
+		margin-left 0
 		
-.CreateTeam__title
-	text-align center
-	margin-bottom 10px
-	h2
-		margin-bottom 20px
-	p
-		font-size 15px
-		color rc_dark_gray	
 			
 	
 .CreateTeam__inputs
 	display flex
 	flex-flow row
 	margin-top 25px
-	@media screen and (max-width 767px)
+	+mobile()
 		margin-top 50px
-	div
+		flex-flow column
+	&.one-line
+		+mobile()
+			flex-flow row
+			.form-group:last-child
+				margin-left 10px
+	.form-group
 		flex 1
-		margin 5px 20px
-		@media screen and (max-width 767px)
+		margin 5px 10px
+		+mobile()
+			margin 5px 0
+	.one-line
+		flex-basis 50%
+		display flex
+		flex-flow row nowrap
+		margin-left 10px
+		+mobile()
+			margin-bottom 10px
 			flex-basis 100%
-	div.-smallSelect
-		flex none
-		flex-basis 75px
-	div.--name
-		flex-basis 25%
-	div.--email
-		flex-basis 50%	
+			margin-left 0
+		.name
+			flex 1
+			flex-basis 25%
+			+the-first-one()
+				margin-right 10px
+	.email
+		flex-basis 50%
+		margin-right 10px
+		margin-left 10px
+		+mobile()
+			margin 0
 
 			
 .CreateTeam__buttons
 	display flex
 	flex-flow row
+	justify-content space-between
 	margin-top 50px
-	div
-		flex 1
-	a.-right
-		float right
-		margin-right 20px
-	a.--left
-		float left	
-		margin-left 20px
-	a.save
-		float right
-		margin-right 20px	
-	span.form-error
-		float right
-		margin-right 20px
-		margin-top 10px
-		
-.CreateTeam__separator
-	margin-right 20px
-	margin-left 20px	
+	.right
+		display flex
+		flex-flow column
+		align-items flex-end
+		margin-right 10px
+		.form-error
+			margin-top 10px
+	.left
+		display flex
+		flex-flow column
+		align-items flex-start
+		margin-left 10px
 	
 .roster-notes
 	p
@@ -635,7 +726,7 @@ export default  {
 	flex-flow row nowrap
 	justify-content center
 	align-items center
-	margin-top 30px
+	margin 30px 10px 0 10px
 	.blue-container
 		text-align center
 	

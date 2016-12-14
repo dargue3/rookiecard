@@ -2,6 +2,7 @@
 namespace App;
 
 use App\Stat;
+use Exception;
 use App\Event;
 use App\NewsFeed;
 use App\TeamRole;
@@ -64,6 +65,102 @@ class Team extends Model
     }
 
 
+    /**
+     * Convert the age to a string before giving to front-end
+     * 
+     * @param  int $age 
+     * @return string       
+     */
+    public function getAgeAttribute($age)
+    {
+        switch ($age) {
+            case 0:
+                return '12-and-under';
+            case 1:
+                return '13-18';
+            case 2:
+                return 'college';
+            case 3:
+                return 'adult';
+            default:
+                throw new Exception("Invalid age integer $age");
+        }
+    }
+
+
+    /**
+     * Convert the age to an int before storing in db
+     * 
+     * @param  string $age 
+     * @return void       
+     */
+    public function setAgeAttribute($age)
+    {
+        switch ($age) {
+            case '12-and-under':
+                $this->attributes['age'] = 0;
+                break;
+            case '13-18':
+                $this->attributes['age'] = 1;
+                break;
+            case 'college':
+                $this->attributes['age'] = 2;
+                break;
+            case 'adult':
+                $this->attributes['age'] = 3;
+                break;
+            default:
+                throw new Exception("Invalid age string $age");
+                break;
+        }
+    }
+
+    /**
+     * Convert the gender to a string before giving to front-end
+     * 
+     * @param  int $gender 
+     * @return string       
+     */
+    public function getGenderAttribute($gender)
+    {
+        switch ($gender) {
+            case 0:
+                return 'male';
+            case 1:
+                return 'female';
+            case 2:
+                return 'coed';
+            default:
+                throw new Exception("Invalid gender integer $gender");
+        }
+    }
+
+
+    /**
+     * Convert the gender to an int before storing in db
+     * 
+     * @param  string $gender 
+     * @return void       
+     */
+    public function setGenderAttribute($gender)
+    {
+        switch ($gender) {
+            case 'male':
+                $this->attributes['gender'] = 0;
+                break;
+            case 'female':
+                $this->attributes['gender'] = 1;
+                break;
+            case 'coed':
+                $this->attributes['gender'] = 2;
+                break;
+            default:
+                throw new Exception("Invalid gender string $gender");
+                break;
+        }
+    }
+
+
 
     /**
      * Fetch the bare minimum data about this team
@@ -79,49 +176,5 @@ class Team extends Model
             'sport'     => $this->sport
         ];
     }
-
-
-
-    // admin wants to upload a new profile picture
-    public function uploadPic(Request $request) {
-
-        // make sure there's a picture
-        if($request->hasFile('pic')) {
-
-            $pic = $request->file('pic');
-
-            // check that it's a valid image
-            if(!$pic->isValid())
-                return ['ok' => false, 'error' => 'Invalid picture'];
-
-            // deny if over 10MB
-            if($pic->getSize() > 10485760)
-                return ['ok' => false, 'error' => 'Maximum image size is 10MB'];
-        }
-        else
-            return ['ok' => false];
-
-
-        // build up a filename such as 2842.jpeg
-        $filename = $this->id . '.' . $pic->getClientOriginalExtension();
-
-        // save images in the path specified in .env file
-        $filepath = base_path() . env('TEAM_PROFILE_PICS');
-
-        // move the file to that path, save as filename
-        $pic->move($filepath, $filename);
-
-        // save the picture's location in database
-        $this->pic = env('TEAM_PROFILE_PICS') . $filename;
-        $this->save();
-
-        return ['ok' => true];
-    }
-
-
-
-
-
-
 
 }

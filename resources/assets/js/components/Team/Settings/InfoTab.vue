@@ -3,7 +3,7 @@
 		<div class="form-group">
 			<div>
 				<label>Team Name</label>
-				<input type="text" class="form-control" :class="{'form-error' : errors.team.name}" 
+				<input type="text" class="form-control has-info" :class="{'form-error' : errors.team.name}" 
 							required maxlength="25" v-focus="focused.name" @focus="focused.name = true" @blur="focused.name = false" 
 							placeholder="WHS Varsity Basketball" v-model="team.name">
 				<span class="form-error">{{ errors.team.name }}</span>
@@ -11,7 +11,7 @@
 
 			<div>
 				<label>Team URL</label>
-				<input type="text" class="form-control" :class="{'form-error' : errors.team.teamname}"
+				<input type="text" class="form-control has-info" :class="{'form-error' : errors.team.teamname}"
 								maxlength="18" placeholder="whsbasketball16" required @blur="checkAvailability()" v-model="team.teamname">
 				<span v-show="errors.team.teamname" class="form-error">{{ errors.team.teamname }}</span>
 				<span v-else class="input-info">rookiecard.io/team/{{ team.teamname }}</span>	
@@ -87,6 +87,7 @@ export default  {
 		return {
 			lastCheckedName: this.$route.params.name,
 			checkingForErrors: false,
+			nameAvailable: true,
 			photoURLs: { pic: null, backdrop: null, previous: { pic: null, backdrop: null } },
 			dropzone: { 
 				pic: null,
@@ -142,9 +143,11 @@ export default  {
 		TeamSettings_availability(response)
 		{
 			this.lastCheckedName = response.data.teamname;
+			this.nameAvailable = true;
 
 			if (! response.data.available && this.team.teamname !== this.backup.teamname) {
 				this.errors.team.teamname = 'Already taken'
+				this.nameAvailable = false;
 			}
 			else if (this.checkingForErrors) {
 				// if this check was a part of an overall error check, continue it
@@ -205,14 +208,12 @@ export default  {
 				return 1;
 			}
 
-			this.checkingForErrors = false;
-			let errors = this.errorCheck();
-
-			if (errors > 0) {
-				return errors;
+			if (! this.nameAvailable) {
+				return 1;
 			}
 
-			return errors;
+			this.checkingForErrors = false;
+			return this.errorCheck();
 		},
 
 		/**

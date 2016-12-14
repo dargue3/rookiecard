@@ -2,7 +2,7 @@
 <template>
 	<div>
 			<label>{{ label }}</label>
-			<input id="placeSearch" type="text" class="form-control"
+			<input id="placeSearch" type="text" class="form-control has-info"
 							placeholder="Search for your city…" :class="{'form-error' : error}" v-model="location">
 			<span v-show="error" class="form-error">{{ error }}</span>
 	</div>

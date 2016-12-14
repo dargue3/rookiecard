@@ -408,6 +408,7 @@ div.modal
 	background rc_two_tone
 	&.-light
 		background rc_background
+		color rc_med_gray
 	p
 		flex 1
 		text-align center	
@@ -427,10 +428,15 @@ textarea
 	min-height 31px
 	resize none	
 
-.with-separator
+.top-separator
 	border-top 2px solid rc_super_lite_gray
-	margin 25px 0
-	padding 40px 0 0 0
+	margin-top 30px
+	padding-top 30px
+	
+.bottom-separator
+	border-bottom 2px solid rc_super_lite_gray
+	margin-bottom 30px
+	padding-bottom 30px
 
 .btn
 	padding 14px 24px
@@ -692,6 +698,8 @@ textarea
 		border 1px solid red
 	&.form-correct
 		border 1px solid rc_bright_green
+	&.has-info
+		margin-bottom 3px
 	&.-white
 		background white
 	

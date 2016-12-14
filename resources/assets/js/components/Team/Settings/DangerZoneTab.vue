@@ -19,7 +19,7 @@
 				</div>
 			</div>
 
-			<span class="input-info">Any of the team's stats (including those on player's profiles) will be deleted as well!</span>
+			<span class="input-info">Any of the team's stats (including those on players' profiles) will be deleted as well!</span>
 
 		</div>
 

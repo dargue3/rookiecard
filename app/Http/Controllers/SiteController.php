@@ -36,7 +36,7 @@ class SiteController extends Controller
     public function feedback(Request $request)
     {
         $this->validate($request, [
-            'type'      => 'required|in:bug,suggestion,compliment',
+            'type'      => 'required|in:bug,suggestion,question,compliment',
             'details'   => 'required|max:5000',
         ]);
 

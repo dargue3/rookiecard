@@ -33,6 +33,7 @@ class HandlesTeamCreationLogic
     public $sport;
     public $meta;
     public $gender;
+    public $age;
     public $long;
     public $lat;
     public $pic;
@@ -85,6 +86,7 @@ class HandlesTeamCreationLogic
         }
 
         $this->gender = $data['gender'];
+        $this->age = $data['age'];
         $this->players = isset($data['players']) ? $data['players'] : [];
         $this->coaches = isset($data['coaches']) ? $data['coaches'] : [];
 
@@ -119,6 +121,7 @@ class HandlesTeamCreationLogic
             'season'        => 1,
             'sport'         => $this->sport->name(),
             'gender'        => $this->gender,
+            'age'           => $this->age,
             'long'          => $this->long,
             'lat'           => $this->lat,
             'meta'          => json_encode($this->meta),

@@ -14,6 +14,14 @@ return [
 		'limitPerRequest' 	=> 500,
 	],
 
+	/**
+	 * Reserved route keywords, can't be used for teams or users
+	 */
+	'reserved' => [
+		'usernames' => ['team', 'secret', 'options', 'compare'],
+		'teamnames'	=> ['create'],
+	],
+
 
 
 

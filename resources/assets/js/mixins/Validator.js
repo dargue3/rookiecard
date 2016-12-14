@@ -27,16 +27,17 @@ export default
 					alpha_dash: function(args) { return this.alphaDash_(args) },  // the field must be a string with only alphanumeric characters and dashes + underscores
 					email: 			function(args) { return this.email_(args) }, 	// the field must be a valid email
 				},
-				value: null, 			// the value of the variable in question
-				path: null, 			// the full path of the variable (e.g. user.name.firstname)
-				root: null, 			// the name of the root of the variable (e.g. user)
-				key: null,				// string of keys off of the root variable that make up the full path
-				rules: null, 			// the rules applied to this variable
+				value: null, 				// the value of the variable in question
+				path: null, 				// the full path of the variable (e.g. user.name.firstname)
+				root: null, 				// the name of the root of the variable (e.g. user)
+				key: null,					// string of keys off of the root variable that make up the full path
+				rules: null, 				// the rules applied to this variable
 				messages: null, 		// the error messages to set
-				count: null,			// the index into the array counter
+				count: null,				// the index into the array counter
 				isArray: null,			// whether or not the given variable is an array
+				arraySize: null, 		// how many indices to initialize errors array with for a given variable
 				arrayIndex: null,		// which index of the given array to error check
-				temp: {}, 				// temporary useless variable to utilize $set functionality
+				temp: {}, 					// temporary useless variable to utilize $set functionality
 			}
 		}
 	},
@@ -50,9 +51,10 @@ export default
 		 * @param {string} rules    Rules that should be applied to the variable
 		 * @param {array} messages  Error messages (can be up to one-to-one with rules or less)
 		 * @param {boolean} watch  	Whether or not to run error checking when the variable changes
+		 * @param {int} arraySize   How many indices in errors.{} that should be created initially
 		 * @return {void} 
 		 */
-		registerErrorChecking(variable, rules, messages = [], watch = true)
+		registerErrorChecking(variable, rules, messages = [], watch = true, arraySize = null)
 		{
 			this.validator_.path = variable;
 			this.validator_.root = variable;
@@ -74,6 +76,7 @@ export default
 					// dealing with an array
 					this.validator_.isArray = true;
 					this.validator_.path = this.validator_.root;
+					this.validator_.arraySize = arraySize;
 					this.validator_.key = ''
 
 					if (variable.length > 2) {
@@ -150,9 +153,20 @@ export default
 			this.validator_.temp = {};
 			this.$set('validator_.temp.' + this.validator_.key, ''); // build a placeholder to insert
 
+
+			// choose the proper length to initialize errors array to 
+			if (this.validator_.arraySize) {
+				// if this argument was given during registration, use that
+				var length = this.validator_.arraySize;
+			}
+			else {
+				// otherwise go with the current length of the variable itself
+				var length = this.validator_.value.length
+			}
+
 			// create an error message for each index
 			// like: errors.players[x].name.firstname
-			for (var x = 0; x < this.validator_.value.length; x++) {
+			for (var x = 0; x < length; x++) {
 				if (typeof this.errors[this.validator_.root][x] === 'undefined') {
 					// new entry
 					this.errors[this.validator_.root].$set(x, this.validator_.temp);
@@ -567,7 +581,7 @@ export default
 		 */
 		resetErrorsArraySize_()
 		{
-			if (this.errors[this.validator_.root].length !== this.validator_.value.length) {
+			if (this.errors[this.validator_.root].length < this.validator_.value.length) {
 				var temp = [];
 				var copy = this.errors[this.validator_.root][0];
 				for (var index = 0; index < this.validator_.value.length; index++) {

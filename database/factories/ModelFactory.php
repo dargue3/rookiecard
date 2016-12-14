@@ -37,6 +37,7 @@ $factory->define(App\Team::class, function ($faker) {
         'creator_id'        => 1,
         'sport'             => 'basketball',
         'gender'            => 0,
+        'age'               => 0,
         'meta'              => json_encode(['test' => 123]),
         'long'              => -70.8389219,
         'lat'               => 42.9375932,

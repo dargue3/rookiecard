@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Artisan;
 
 class TestCase extends Illuminate\Foundation\Testing\TestCase
 {
-    use TeamRoleHelpers;
 
     /**
      * The base URL to use while testing the application.
@@ -74,8 +73,6 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
      */
     public function makeAdminOfTeam(Team $team)
     {
-        $this->seedRolesTable();
-
         $member = TeamMember::create([
             'user_id' => $this->user->id,
             'team_id' => $team->id,

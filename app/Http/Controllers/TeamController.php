@@ -115,7 +115,11 @@ class TeamController extends Controller
      */
     public function checkAvailability($teamname)
     {
-        if ($this->team->name($teamname)) {
+        if (in_array($teamname, config('rookiecard.reserved.teamnames'))) {
+            return ['ok' => true, 'available' => false, 'teamname' => $teamname];
+        }
+        
+        else if ($this->team->name($teamname, true)) {
             return ['ok' => true, 'available' => false, 'teamname' => $teamname];
         }
 

@@ -39,19 +39,7 @@ class ManagesTeamRolesTest extends TestCase
 
         // tell the repo to operate on $this->member
         $this->repo->using($this->member);
-
-        $this->seedRolesTable();
 	}
-
-
-    /** @test */
-    public function all_role_classes_have_a_name_and_an_id_attribute_and_method()
-    {
-        foreach($this->roles as $role) {
-            $this->assertClassHasAttribute('name', $role);
-            $this->assertClassHasAttribute('id', $role);
-        }
-    }
 
 
     /** @test */

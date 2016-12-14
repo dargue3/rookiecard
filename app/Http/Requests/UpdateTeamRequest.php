@@ -26,12 +26,15 @@ class UpdateTeamRequest extends FormRequest
      */
     public function rules(Request $request)
     {
+        // reserved route keywords
+        $reserved = implode(',', config('rookiecard.reserved.teamnames'));
+
         return [
             'teamURL'   => [
                 'required',
                 'max:18',
                 'alpha_dash',
-                'not_in:create',
+                'not_in:' . $reserved,
                 Rule::unique('rc_teams', 'teamname')->ignore($request->teamname->id),
             ],
             'name'      => 'required|max:50',
