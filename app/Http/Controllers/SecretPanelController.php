@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\Feedback;
 use App\AlphaTester;
 use Illuminate\Http\Request;
 
@@ -30,5 +31,41 @@ class SecretPanelController extends Controller
     	AlphaTester::create($request->all());
 
     	return ['ok' => true];
+    }
+
+
+    /**
+     * Fetch all feedback that has been submitted so far
+     * 
+     * @return Illuminate\Http\Response
+     */
+    public function feedback()
+    {
+    	return ['ok' => true, 'feedback' => Feedback::all()];
+    }
+
+
+    /**
+     * The given feedback item has been marked as 'done'
+     * 
+     * @param  int $id 
+     * @return void 
+     */
+    public function toggleFeedbackCompletion($id)
+    {
+    	Feedback::find($id)->toggle();
+    }
+
+
+    /**
+     * Delete all of the feedback entries that are marked 'done'
+     * 
+     * @return Illuminate\Http\Response
+     */
+    public function clearDone()
+    {
+    	Feedback::finished()->delete();
+
+    	return ['ok' => true, 'feedback' => Feedback::all()];
     }
 }

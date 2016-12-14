@@ -18,6 +18,7 @@ class CreateRcFeedback extends Migration
             $table->string('type');
             $table->integer('creator_id')->unsigned();
             $table->text('details');
+            $table->tinyInteger('done');
             $table->timestamps();
         });
     }

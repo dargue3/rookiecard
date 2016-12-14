@@ -37,7 +37,11 @@ Route::group(['middleware' => 'admin'], function() {
 
 });
 
+// secret panel routes
 Route::group(['middleware' => 'dev'], function() {
-	Route::post('admin/tester', 'SecretPanelController@newTester');
 	Route::get('admin/authorize', 'SecretPanelController@authorized');
+	Route::get('admin/feedback', 'SecretPanelController@feedback');
+	Route::post('admin/tester', 'SecretPanelController@newTester');
+	Route::post('admin/feedback/wipe', 'SecretPanelController@clearDone');
+	Route::post('admin/feedback/{id}', 'SecretPanelController@toggleFeedbackCompletion');
 });
