@@ -15,7 +15,7 @@ Route::get('/logout', function() {
 	return redirect('/login');
 });
 
-// setup basic auth routes suchas /login, /logout
+// setup basic auth routes such as /login, /logout
 Auth::routes();
 
 // all normal traffic gets routed to the homepage where vue-router takes over

@@ -23,7 +23,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     protected $table = 'rc_users';
     protected $dates = ['deleted_at'];
-    protected $fillable = ['*'];
+    protected $guarded = [];
     protected $hidden = ['password', 'remember_token', 'email', 'birthday', 'created_at', 'settings', 'updated_at', 'deleted_at'];
 
 

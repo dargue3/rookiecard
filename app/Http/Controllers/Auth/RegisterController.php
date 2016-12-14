@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use App\AlphaTester;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -47,13 +48,19 @@ class RegisterController extends Controller
 	 */
 	protected function validator(array $data)
 	{
+		// reserved route keywords
+		$reserved = implode(',', config('rookiecard.reserved.usernames'));
+
+		// only alpha testers allowed at this time
+		$testers = AlphaTester::testers();
+
 		return Validator::make($data, [
 			'firstname' => 'required|max:50',
 			'lastname'  => 'required|max:50',
-			'username'  => 'required|max:18|unique:rc_users|not_in:login,logout,password,register,team',
-			'email'     => 'required|email|unique:rc_users|confirmed',
+			'username'  => 'required|max:18|unique:rc_users|not_in:' . $reserved,
+			'email'     => 'required|email|unique:rc_users|in:' . $testers,
 			'password'  => 'required|min:6|confirmed',
-		]);
+		], ['email.in' => 'You are not an authorized alpha tester']);
 	}
 
 	/**

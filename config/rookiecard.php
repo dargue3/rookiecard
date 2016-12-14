@@ -18,7 +18,10 @@ return [
 	 * Reserved route keywords, can't be used for teams or users
 	 */
 	'reserved' => [
-		'usernames' => ['team', 'secret', 'options', 'compare'],
+		'usernames' => [
+			'team', 'secret_panel', 'options', 'compare',
+			'login', 'logout', 'register', 'password', 'oauth', 'api'
+		],
 		'teamnames'	=> ['create'],
 	],
 

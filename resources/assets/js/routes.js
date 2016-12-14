@@ -25,7 +25,7 @@ import Team from './components/Team/Team.vue';
 import User from './components/User/User.vue';
 import CreateTeam from './components/Team/CreateTeam.vue';
 import Feedback from './components/Options/Feedback.vue';
-
+import SecretPanel from './components/App/SecretPanel.vue';
 
 // define the routes 
 Router.map({
@@ -45,6 +45,12 @@ Router.map({
 		component: Feedback
 	},
 
+
+	'/secret_panel':
+	{
+		name: 'panel',
+		component: SecretPanel
+	},
 
 	'/team/create':
 	{

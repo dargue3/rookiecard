@@ -36,3 +36,8 @@ Route::group(['middleware' => 'admin'], function() {
 	Route::resource('team/{teamname}/event', 'EventController');
 
 });
+
+Route::group(['middleware' => 'dev'], function() {
+	Route::post('admin/tester', 'SecretPanelController@newTester');
+	Route::get('admin/authorize', 'SecretPanelController@authorized');
+});
