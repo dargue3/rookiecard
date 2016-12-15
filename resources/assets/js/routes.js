@@ -48,7 +48,7 @@ Router.map({
 
 	'/secret_panel':
 	{
-		name: 'panel',
+		name: 'secret_panel',
 		component: SecretPanel
 	},
 

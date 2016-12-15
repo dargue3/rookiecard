@@ -95,6 +95,7 @@ export default
      */
     compile()
     {
+      console.log('compiled');
       this.calendar = $('.calendar').calendar(this.options);
 
       // attach a new events array
@@ -220,7 +221,7 @@ export default
       // hide tooltips if on mobile (they are annoying and counterintuitive)
       // give time for DOM to settle before checking
       setTimeout(function() {
-        if (window.innerWidth < 767) {
+        if ($(window).width() < 767) {
           $('.calendar [data-toggle="tooltip"]').tooltip('destroy');
         }
       }, 1000);

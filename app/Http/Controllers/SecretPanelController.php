@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\User;
+use App\Team;
+use App\Event;
+use App\Stat;
 use App\Feedback;
 use App\AlphaTester;
 use Illuminate\Http\Request;
@@ -21,6 +25,26 @@ class SecretPanelController extends Controller
 
 
     /**
+     * Fetch all the fun RC statistics and stuff
+     * 
+     * @return Illuminate\Http\Response
+     */
+    public function get()
+    {
+        return [
+            'ok' => true,
+            'feedback' => Feedback::all(),
+            'counts' => [
+                'users'     => User::count(),
+                'teams'     => Team::count(),
+                'events'    => Event::count(),
+                'stats'     => Stat::count(),
+            ],
+        ];
+    }
+
+
+    /**
      * A new alpha tester is being added
      * 
      * @param  Request $request
@@ -28,20 +52,9 @@ class SecretPanelController extends Controller
      */
     public function newTester(Request $request)
     {
-    	AlphaTester::create($request->all());
+    	AlphaTester::create($request->email);
 
     	return ['ok' => true];
-    }
-
-
-    /**
-     * Fetch all feedback that has been submitted so far
-     * 
-     * @return Illuminate\Http\Response
-     */
-    public function feedback()
-    {
-    	return ['ok' => true, 'feedback' => Feedback::all()];
     }
 
 
@@ -62,7 +75,7 @@ class SecretPanelController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function clearDone()
+    public function deleteDoneFeedback()
     {
     	Feedback::finished()->delete();
 

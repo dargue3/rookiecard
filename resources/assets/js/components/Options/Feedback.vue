@@ -20,7 +20,7 @@
 					<span v-show="errors.type" class="form-error">{{ errors.type }}</span>
 				</div>
 				<div class="submit">
-					<a class="btn btn-primary -input-height -no-margin" v-touch:tap="submit()"
+					<a class="btn btn-primary -input-height margin0" v-touch:tap="submit()"
 							:class="{'click-me' : details.length}">
 						<span v-show="! loading_save">SUBMIT</span>
 						<spinner v-show="loading_save" color="white"></spinner>
@@ -107,6 +107,8 @@ export default  {
 
 	ready()
 	{
+		document.title = 'Submit Feedback'
+		
 		$(function() {
 			$('.selectpicker[Feedback]').selectpicker();
 		});

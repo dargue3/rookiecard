@@ -15,7 +15,7 @@
 	        <ul class="sidebar-nav">
 	        	<li>
 	        		<form @submit.prevent="gotoSearch()">
-	        			<input id="searchBar" type="text" class="form-control" placeholder="Search&hellip;" v-model="query">
+	        			<input id="searchBar" type="text" class="form-control" placeholder="Search&hellip;" v-model="query" disabled>
 	        		</form>
 	        	</li>
 	          <li>
@@ -83,7 +83,7 @@
 
 	            <form @submit.prevent="gotoSearch()">
 	        			<input id="searchBar" class="form-control navbar-form search-form search-bar" 
-	        						placeholder="Search players and teams&hellip;" v-model="query">
+	        						placeholder="Search players and teams&hellip;" v-model="query" disabled>
 	        		</form>
 	          </div>
 	        </ul>
@@ -133,6 +133,7 @@
 	              <li><a class="nav-link">Settings</a></li>
 	              <li><a class="nav-link">Help</a></li>
 	              <li><a v-link="{ name: 'feedback' }" class="nav-link">Submit Feedback</a></li>
+	              <li><a v-if="user.id === 1" v-link="{ name: 'secret_panel' }" class="nav-link">Secret Panel</a></li>
 	              <li class="divider"></li>
 	              <li><a class="nav-link" v-touch:tap="logout()">Log out</a></li>
 	            </ul>

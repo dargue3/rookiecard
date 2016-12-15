@@ -17,6 +17,10 @@ export default {
 		 */
 		isFirstCellHidden(element, container)
 		{
+			if (! element[0]) {
+				return false;
+			}
+			
     	let rect = element[0].getBoundingClientRect();
     	let threshold = container[0].getBoundingClientRect().left
 
@@ -29,6 +33,10 @@ export default {
 		 */
 		isLastCellHidden(element, container)
 		{
+			if (! element[0]) {
+				return false;
+			}
+
 			let rect = element[0].getBoundingClientRect();
 			let threshold = container[0].getBoundingClientRect().left + container[0].getBoundingClientRect().width;
     	

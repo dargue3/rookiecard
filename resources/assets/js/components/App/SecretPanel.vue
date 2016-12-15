@@ -1,22 +1,44 @@
 <template>
 	<div class="SecretPanel__wrapper">
-		<div v-if="authorized === true" class="SecretPanel -container">
+		<div v-if="authorized === true && dataReady" class="SecretPanel -container" transition="fade-slow">
 
-			<div class="title">
-				<h2 class="no-margin">Top Secret Control Panel</h2>
-				<div class="subtext">
+			<div class="title bottom-separator marginT10 text-center">
+				<h2 class="margin0 marginB10">Secret Control Panel</h2>
+				<div class="header-subtext">
 					<span>Home of Rookiecard's Black Ops</span>
 				</div>
 			</div>
 
-			<div class="tester top-separator">
+			<div class="stats bottom-separator">
+				<div class="entry">
+					<div class="value"><span>{{ $root.numForHumans(counts.users) }}</span></div>
+					<div class="attr"><span class="hug-bottom">USERS</span></div>
+				</div>
+
+				<div class="entry">
+					<div class="value"><span>{{ $root.numForHumans(counts.teams) }}</span></div>
+					<div class="attr"><span class="hug-bottom">TEAMS</span></div>
+				</div>
+
+				<div class="entry">
+					<div class="value"><span>{{ $root.numForHumans(counts.events) }}</span></div>
+					<div class="attr"><span class="hug-bottom">EVENTS</span></div>
+				</div>
+
+				<div class="entry">
+					<div class="value"><span>{{ $root.numForHumans(counts.stats) }}</span></div>
+					<div class="attr"><span class="hug-bottom">STATS</span></div>
+				</div>
+			</div>
+
+			<div class="tester">
 				<div class="email">
-					<label>New Alpha Tester</label>
 					<input type="text" class="form-control" v-model="newTester" placeholder="dbargue@gmail.com">
 				</div>
 				<div class="add-tester">
-					<a class="btn btn-primary -input-height -no-margin" v-touch:tap="addTester()">
-						<span v-show="! loading_save">ADD</span>
+					<a class="btn btn-primary -input-height margin0" 
+						:class="{ 'click-me' : newTester }" v-touch:tap="addTester()">
+						<span v-show="! loading_save">ADD TO ALPHA</span>
 						<spinner v-show="loading_save" color="white"></spinner>
 					</a>
 				</div>
@@ -24,8 +46,9 @@
 			
 			<div v-if="feedback.length" class="feedback top-separator">
 				<div class="top">
-					<div class="clear-done">
-						<a v-touch:tap="clearDone()">
+					<div class="attr">FEEDBACK <span class="gray-dash">— </span><span class="value">{{ feedback.length }}</span></div>
+					<div class="wipe">
+						<a v-touch:tap="wipe()">
 							<i class="material-icons">delete_sweep</i>
 						</a>
 					</div>
@@ -34,7 +57,7 @@
 				<div v-for="entry in feedback | orderBy 'done'" class="entry" transition>
 					<div class="type" :class="entry.type">{{ entry.type | capitalize }}</div>
 					<div class="details">{{ entry.details}}</div>
-					<div class="status" :class="{ 'done' : entry.done }" v-touch:tap="toggleCompletion(entry)"></div>
+					<div class="status" :class="{ 'done' : entry.done }" v-touch:tap="complete(entry)"></div>
 				</div>
 			</div>
 			<div v-else class="top-separator">
@@ -42,8 +65,8 @@
 			</div>
 
 		</div>
-		<div v-if="authorized === false" class="SecretPanel -container">
-			<div class="header">Nothing suspicious here!</div>
+		<div v-if="authorized === false" class="SecretPanel -container unauthorized">
+			<h3>Nothing suspicious here!</h3>
 		</div>
 	</div>
 </template>
@@ -61,8 +84,15 @@ export default  {
 		return {
 			newTester: '',
 			loading_save: false,
+			dataReady: false,
 			authorized: undefined,
 			feedback: [],
+			counts: {
+				users: ' ',
+				teams: ' ',
+				events: ' ',
+				stats: ' ',
+			}
 		}
 	},
 
@@ -84,8 +114,8 @@ export default  {
 		{
 			if (response.data.authorized) {
 				this.authorized = true;
-				this.fetchFeedback();
-				document.title = 'TOP SECRET';
+				this.fetch();
+				document.title = 'Secret Panel';
 			}
 			else {
 				this.authorized = false;
@@ -97,9 +127,11 @@ export default  {
 			this.authorized = false;
 		},
 
-		SecretPanel_feedback(response)
+		SecretPanel_dataReady(response)
 		{
 			this.feedback = response.data.feedback;
+			this.dataReady = true;
+			this.counts = response.data.counts;
 		},
 	},
 
@@ -123,29 +155,29 @@ export default  {
 		},
 
 		/**
-		 * Only Rookiecard devs are allowed to see this page
+		 * Fetch all of the cool data to show
 		 */
-		fetchFeedback()
+		fetch()
 		{
-			this.$root.get(`${this.$root.prefix}/admin/feedback`, 'SecretPanel_feedback');
+			this.$root.get(`${this.$root.prefix}/admin/data`, 'SecretPanel_dataReady');
 		},
 
 		/**
 		 * Mark this feedback item as being 'done'
 		 */
-		toggleCompletion(entry)
+		complete(entry)
 		{
 			entry.done = ! entry.done;
 			this.$root.post(`${this.$root.prefix}/admin/feedback/${entry.id}`);
 		},
 
-
 		/**
 		 * Delete all the completed items in the feedback list
 		 */
-		clearDone()
+		wipe()
 		{
-			this.$root.post(`${this.$root.prefix}/admin/feedback/wipe`, 'SecretPanel_feedback');
+			this.feedback = this.feedback.filter((entry) => ! entry.done);
+			this.$root.post(`${this.$root.prefix}/admin/feedback/wipe`);
 		},
 	},
 };
@@ -164,16 +196,44 @@ export default  {
 .SecretPanel
 	display flex
 	flex-flow column
-	max-width 650px
+	max-width 700px
 	margin 0 auto
-	
-.title
-	text-align center
-	.subtext
-		color rc_med_gray
-		font-size 15px
-		margin-top 15px
-
+	&.unauthorized
+		align-items center
+		justify-content center
+		height 250px
+		
+.value
+	color rc_blue 
+	font-size 27px
+	+mobile()
+		font-size 22px
+.attr
+	color rc_win
+	font-size 20px
+	+mobile()
+		font-size 16px
+		
+.stats
+	display flex
+	flex-flow row nowrap
+	justify-content center
+	align-items center
+	padding 0.75em
+	.entry
+		flex 1
+		display flex
+		flex-flow column
+		justify-content flex-end
+		align-items center
+		margin-bottom 25px
+		&:not(:first-child)
+			border-left 3px solid rc_super_lite_gray
+			+mobile()
+				border-width 2px
+		.value
+			margin-bottom 15px
+			
 .tester
 	display flex
 	flex-flow row
@@ -196,11 +256,15 @@ export default  {
 .top
 	display flex
 	flex-flow row nowrap
-	justify-content flex-end
 	align-items center
 	margin-bottom 15px
-	.clear-done i
-		font-size 30px
+	.value
+	.attr
+		font-size 23px
+	.wipe
+		margin-left auto
+		i
+			font-size 30px
 			
 .feedback
 	display flex
@@ -217,7 +281,6 @@ export default  {
 			flex-flow row
 			justify-content center
 			align-items center
-			margin-right 25px
 			width 100px
 			min-width 100px
 			height 30px
@@ -240,7 +303,7 @@ export default  {
 		.details
 			font-size 13px
 			max-width 420px
-			margin-right 15px
+			margin 0 20px
 		.status
 			margin-left auto
 			border-radius 50%

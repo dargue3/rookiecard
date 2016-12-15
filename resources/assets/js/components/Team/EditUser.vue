@@ -88,7 +88,7 @@
   			<div class="col-xs-12 col-sm-6">
   				<label>Email</label>
   				<input type="text" class="form-control" :class="{ 'form-error' : errors.user.meta.email }" maxlength="100" v-model="user.meta.email"
-  								autocomplete="false">
+  								autocomplete="false" disabled>
 					<span v-if="errors.user.meta.email" class="form-error">{{ errors.user.meta.email }}</span>
 					<template v-else>
 						<span v-show="ghostEmail" class="input-info">Changing this deletes the invitation</span>

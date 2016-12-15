@@ -3,16 +3,9 @@ namespace App\RC\Team;
 
 use App;
 use App\Team;
-use App\Stat;
-use App\Event;
-use App\NewsFeed;
-use App\TeamRole;
-use App\TeamMember;
-use App\Notification;
 use App\RC\Sports\Sport;
 use App\RC\Stat\StatRepository;
 use App\RC\Event\EventRepository;
-use Illuminate\Support\Facades\Auth;
 use App\RC\Team\TeamMemberRepository;
 use App\RC\NewsFeed\NewsFeedRepository;
 use App\Repositories\EloquentRepository;
@@ -273,15 +266,15 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
 
         if ($erase) {
             // want to start fresh
-            Event::where('owner_id', $team_id)->delete();
-            Stat::where('team_id', $team_id)->delete();
+            App\Event::where('owner_id', $team_id)->delete();
+            App\Stat::where('team_id', $team_id)->delete();
         }
 
         for ($x = 0; $x < $count; $x++) {
             $event = factory(Event::class)->create(['owner_id' => $team_id, 'type' => $types[array_rand($types, 1)]]);
 
             foreach ($members as $member) {
-                factory(Stat::class, $sport->name())->create([
+                factory(App\Stat::class, $sport->name())->create([
                     'sport'     => $sport->name(),
                     'owner_id'  => $member['id'],
                     'member_id' => $member['member_id'], 

@@ -7,7 +7,7 @@ use Closure;
 class MustBeRookiecardDev
 {
     /**
-     * Handle an incoming request.
+     * Block all requests unless made by a Rookiecard developer
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -15,7 +15,7 @@ class MustBeRookiecardDev
      */
     public function handle($request, Closure $next)
     {
-        if ($request->user()->id != 1) {
+        if (! $request->user()->isDan()) {
             abort(403, 'You are not authorized');       
         }
 

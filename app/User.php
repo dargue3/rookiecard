@@ -95,4 +95,15 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         ];
     }
 
+
+    /**
+     * Is the logged in user Dan Argue?
+     * 
+     * @return boolean
+     */
+    public function isDan()
+    {
+        return $this->id == 1;
+    }
+
 }

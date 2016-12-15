@@ -1,0 +1,129 @@
+/**
+ * A library of quick, easy to remember CSS adjustment classes
+ */
+.header-subtext {
+  color: #9f9f9f;
+  font-size: 15px;
+}
+.margin0 {
+  margin: 0;
+}
+.marginT0 {
+  margin-top: 0;
+}
+.marginR0 {
+  margin-right: 0;
+}
+.marginB0 {
+  margin-bottom: 0;
+}
+.marginL0 {
+  margin-left: 0;
+}
+.margin10 {
+  margin: 10px;
+}
+.marginT10 {
+  margin-top: 10px;
+}
+.marginR10 {
+  margin-right: 10px;
+}
+.marginB10 {
+  margin-bottom: 10px;
+}
+.marginL10 {
+  margin-left: 10px;
+}
+.margin20 {
+  margin: 20px;
+}
+.marginT20 {
+  margin-top: 20px;
+}
+.marginR20 {
+  margin-right: 20px;
+}
+.marginB20 {
+  margin-bottom: 20px;
+}
+.marginL20 {
+  margin-left: 20px;
+}
+.margin30 {
+  margin: 30px;
+}
+.marginT30 {
+  margin-top: 30px;
+}
+.marginR30 {
+  margin-right: 30px;
+}
+.marginB30 {
+  margin-bottom: 30px;
+}
+.marginL30 {
+  margin-left: 30px;
+}
+.padding0 {
+  padding: 0;
+}
+.paddingT0 {
+  padding-top: 0;
+}
+.paddingR0 {
+  padding-right: 0;
+}
+.paddingB0 {
+  padding-bottom: 0;
+}
+.paddingL0 {
+  padding-left: 0;
+}
+.padding10 {
+  padding: 10px;
+}
+.paddingT10 {
+  padding-top: 10px;
+}
+.paddingR10 {
+  padding-right: 10px;
+}
+.paddingB10 {
+  padding-bottom: 10px;
+}
+.paddingL10 {
+  padding-left: 10px;
+}
+.padding20 {
+  padding: 20px;
+}
+.paddingT20 {
+  padding-top: 20px;
+}
+.paddingR20 {
+  padding-right: 20px;
+}
+.paddingB20 {
+  padding-bottom: 20px;
+}
+.paddingL20 {
+  padding-left: 20px;
+}
+.padding30 {
+  padding: 30px;
+}
+.paddingT30 {
+  padding-top: 30px;
+}
+.paddingR30 {
+  padding-right: 30px;
+}
+.paddingB30 {
+  padding-bottom: 30px;
+}
+.paddingL30 {
+  padding-left: 30px;
+}
+
+/*# sourceMappingURL=helpers.css.map */

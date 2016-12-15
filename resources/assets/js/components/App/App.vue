@@ -325,6 +325,18 @@ export default  {
 
 
 		/**
+		 * Format a number to human readable
+		 *
+		 * @param {int} number  e.g. 1042
+		 * @return {string}			e.g. '1,042'
+		 */
+		numForHumans(number)
+		{
+			return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		},
+
+
+		/**
 		 * Show a bootstrap modal with a given id
 		 *
 		 * @param {string} id

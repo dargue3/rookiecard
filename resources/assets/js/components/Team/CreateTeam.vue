@@ -197,7 +197,7 @@
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="player.email" 
 											:class="{'form-error' : errors.players[$index].email}" :placeholder="dummy[$index].email"
-											maxlength="100">
+											maxlength="100" disabled>
 							<span class="form-error">{{ errors.players[$index].email }}</span>
 						</div>
 
@@ -262,7 +262,7 @@
 							<label>Email</label>
 							<input type="text" class="form-control" v-model="coach.email" 
 											:class="{'form-error' : errors.coaches[$index].email}" :placeholder="dummy[$index].email"
-											maxlength="100">
+											maxlength="100" disabled>
 							<span class="form-error">{{ errors.coaches[$index].email }}</span>
 						</div>	
 

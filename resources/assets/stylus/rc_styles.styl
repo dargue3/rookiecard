@@ -34,9 +34,7 @@ p
 	
 .material-icons:hover
 	cursor default
-	
-.no-margin
-	margin 0
+
 	
 .bootstrap-switch
 	border-color rc_lite_gray
@@ -394,7 +392,8 @@ div.modal
 .modal-open
 	.pace-progress
 		filter blur(3px)
-	
+
+			
 @keyframes pace
 	0%
 		height 3px
@@ -456,8 +455,6 @@ textarea
 		margin-left 0
 	&:hover, &:active, &:active:focus, &:focus
 		background-image none
-	&.-no-margin
-		margin 0
 	&.-input-height
 		height 52px
 	&.-chevron
@@ -765,9 +762,7 @@ button.btn.btn-select
 				background-color link_blue_hover	
 
 .no-highlight
-	-ms-user-select none
-	-moz-user-select none
-	-webkit-user-select none
+	user-select none
 
 
 input[type='checkbox']:focus
@@ -779,30 +774,12 @@ input[type="text"]:focus,
 	border-color rc_lite_gray
 	outline 0
 	box-shadow inset 0 1px 1px rc_lite_gray, 0 0 8px rc_lite_gray
+
+
+
 	
-
-
-
-
-.arrow-left
-	height 0
-	width 0
-	border-bottom 10px solid transparent		
-	border-top 10px solid transparent
-	border-right 10px solid whitesmoke
-	
-.arrow-right
-	height 0
-	width 0
-	border-bottom 10px solid transparent		
-	border-top 10px solid transparent
-	border-left 10px solid whitesmoke
-	&.-white
-		border-left 10px solid white
-
-
-
-
+.gray-dash
+	color rc_super_lite_gray
 
 
 

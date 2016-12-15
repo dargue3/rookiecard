@@ -33,7 +33,7 @@ Vue.component('spinner', {
 
 		this.color = `background-color: ${this.color};`
 	}
-})
+});
 
 import App from './components/App/App.vue';
 Router.start(App, '#app');

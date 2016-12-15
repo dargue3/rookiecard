@@ -16,6 +16,7 @@ elixir(function(mix) {
 
 	mix.browserify('app.js')
       .stylus('rc_styles.styl')
+      .stylus('helpers.styl')
       .stylus('variables.styl')
       .browserSync({
       	proxy: 'localhost',
