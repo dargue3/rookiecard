@@ -25,7 +25,7 @@
 			  	</thead>
 			  	<tbody>
 			    	<tr v-show="index < currPage || ! showPagination" v-for="(index, val) in stats 
-			    						| filterBy (search ?: '')
+			    						| filterBy search
 			    						| orderBy sortKey sortOrders[sortKey]">
 				      <td v-for="key in statKeys" class="stat-entries" :class="resolveValClasses(key, val)">
 				        {{ resolveStatValue(key, val) }} 
@@ -174,6 +174,7 @@ export default {
 		Stats_compiled(stats)
 		{
 			this.compile = false;
+			if (typeof this.search !== 'string') this.search = '';
 			this.stats = stats;
 
 			if (this.tableBottomLabel) {
