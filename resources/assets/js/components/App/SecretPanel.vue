@@ -3,7 +3,7 @@
 		<div v-if="authorized === true" class="SecretPanel -container">
 
 			<div class="title">
-				<h2 class="no-margin">Top Secret Panel</h2>
+				<h2 class="no-margin">Top Secret Control Panel</h2>
 				<div class="subtext">
 					<span>Home of Rookiecard's Black Ops</span>
 				</div>
@@ -25,8 +25,8 @@
 			<div v-if="feedback.length" class="feedback top-separator">
 				<div class="top">
 					<div class="clear-done">
-						<a class="btn btn-primary -no-margin" v-touch:tap="clearDone()">
-							<span>CLEAR COMPLETED</span>
+						<a v-touch:tap="clearDone()">
+							<i class="material-icons">delete_sweep</i>
 						</a>
 					</div>
 				</div>
@@ -85,6 +85,7 @@ export default  {
 			if (response.data.authorized) {
 				this.authorized = true;
 				this.fetchFeedback();
+				document.title = 'TOP SECRET';
 			}
 			else {
 				this.authorized = false;
@@ -198,11 +199,8 @@ export default  {
 	justify-content flex-end
 	align-items center
 	margin-bottom 15px
-	+mobile()
-		justify-content center
-	.clear-done
-		+mobile()
-			width 100%
+	.clear-done i
+		font-size 30px
 			
 .feedback
 	display flex
@@ -226,6 +224,11 @@ export default  {
 			border-radius 4px
 			color white
 			text-align center
+			+mobile()
+				font-size 12px
+				width 80px
+				min-width 80px
+				height 25px
 			&.bug
 				background rc_red
 			&.compliment
@@ -247,6 +250,7 @@ export default  {
 			border 1px solid rc_med_gray
 			&.done
 				background rc_yellow
+				border-color darken(rc_yellow, 10%)
 			&:hover
 				cursor pointer
 </style>
