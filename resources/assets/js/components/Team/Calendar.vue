@@ -95,7 +95,6 @@ export default
      */
     compile()
     {
-      console.log('compiled');
       this.calendar = $('.calendar').calendar(this.options);
 
       // attach a new events array

@@ -78,8 +78,9 @@ export default {
 
 	mixins: [ StatHelpers, StatsScrollSpy ],
 
-	props: ['rawStats', 'type', 'sport', 'total', 'statKeys', 'teamRecord', 'search', 'centered',
-					'sortKey', 'players', 'player', 'event', 'paginate', 'tableBottomLabel', 'hideScroll', 'disableSorting'],
+	props: { rawStats: {}, type: {}, sport: {}, total: {}, statKeys: {}, teamRecord: {}, search: {default :''}, centered: {},
+					sortKey: {}, players: {}, player: {}, event: {}, paginate: {}, tableBottomLabel: {}, hideScroll: {}, disableSorting: {}
+	},
 
 	components:
 	{
