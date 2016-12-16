@@ -52,7 +52,7 @@ class SecretPanelController extends Controller
      */
     public function newTester(Request $request)
     {
-    	AlphaTester::create($request->email);
+    	AlphaTester::create($request->all());
 
     	return ['ok' => true];
     }
