@@ -174,7 +174,7 @@ export default {
 		Stats_compiled(stats)
 		{
 			this.compile = false;
-			this.stats = stats;
+			this.$set('stats', stats);
 
 			if (this.tableBottomLabel) {
 				this.statsOnBottom.abbrName = this.tableBottomLabel;
