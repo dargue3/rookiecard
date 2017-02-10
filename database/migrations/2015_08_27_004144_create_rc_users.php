@@ -22,6 +22,7 @@ class CreateRcUsers extends Migration
             $table->string('password', 60);
             $table->integer('birthday')->unsigned();
             $table->tinyInteger('gender');
+            $table->string('pic');
             $table->text('meta')->nullable();
             $table->text('settings')->nullable();
             $table->rememberToken();

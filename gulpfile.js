@@ -15,11 +15,12 @@ if(gutils.env._.indexOf('watch') > -1) {
 elixir(function(mix) {
 
 	mix.browserify('app.js')
-      .stylus('rc_styles.styl')
-      .stylus('helpers.styl')
-      .stylus('variables.styl')
+      //.stylus('rc_styles.styl')
+      //.stylus('helpers.styl')
+      //.stylus('variables.styl')
       .browserSync({
-      	proxy: 'localhost',
+        proxy: "v1-rookiecard.dev",
+        port: 8000,
         files: [
           elixir.config.appPath + '/**/*.php',
           elixir.config.get('public.css.outputFolder') + '/**/*.css',

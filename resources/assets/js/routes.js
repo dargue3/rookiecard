@@ -26,6 +26,7 @@ import User from './components/User/User.vue';
 import CreateTeam from './components/Team/CreateTeam.vue';
 import Feedback from './components/Options/Feedback.vue';
 import SecretPanel from './components/App/SecretPanel.vue';
+import Home from './components/App/Home.vue';
 
 // define the routes 
 Router.map({
@@ -33,10 +34,7 @@ Router.map({
 	'/':
 	{
 		name: 'home',
-		component:
-		{
-			template: "<h1 style='margin-top: 80px; margin-left: 80px;'>This is the homepage</h1>"
-		}
+		component: Home
 	},
 
 	'/options/feedback':
