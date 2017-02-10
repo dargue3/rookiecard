@@ -42,7 +42,7 @@
 		</div>
 
 		<div class="photos with-separator">
-			<!-- <div class="upload-pic">
+			<div class="upload-pic">
 				<label>Team Photo</label>
 				<form class="dropzone -pic" id="team-pic"></form>
 				<div v-show="picUploaded" class="crop">
@@ -56,7 +56,7 @@
 				<div v-show="backdropUploaded" class="crop">
 					<a v-touch:tap="cropping('backdrop')">Crop</a>
 				</div>
-			</div> -->
+			</div>
 		</div>
 	</div>
 </template>
