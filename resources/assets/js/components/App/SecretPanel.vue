@@ -33,7 +33,7 @@
 
 			<div class="tester">
 				<div class="email">
-					<input type="text" class="form-control" v-model="newTester" placeholder="dbargue@gmail.com">
+					<input type="text" class="form-control" placeholder="dbargue@gmail.com" v-model="newTester">
 				</div>
 				<div class="add-tester">
 					<a class="btn btn-primary -input-height margin0" 
@@ -88,10 +88,10 @@ export default  {
 			authorized: undefined,
 			feedback: [],
 			counts: {
-				users: ' ',
-				teams: ' ',
-				events: ' ',
-				stats: ' ',
+				users: '',
+				teams: '',
+				events: '',
+				stats: '',
 			}
 		}
 	},

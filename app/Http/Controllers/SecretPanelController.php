@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
-use App\Team;
-use App\Event;
 use App\Stat;
+use App\Team;
+use App\User;
+use App\Event;
 use App\Feedback;
 use App\AlphaTester;
 use Illuminate\Http\Request;
@@ -75,7 +75,7 @@ class SecretPanelController extends Controller
      * 
      * @return Illuminate\Http\Response
      */
-    public function deleteDoneFeedback()
+    public function clearFinishedFeedback()
     {
     	Feedback::finished()->delete();
 

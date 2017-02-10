@@ -271,7 +271,7 @@ class EloquentTeam extends EloquentRepository implements TeamRepository
         }
 
         for ($x = 0; $x < $count; $x++) {
-            $event = factory(Event::class)->create(['owner_id' => $team_id, 'type' => $types[array_rand($types, 1)]]);
+            $event = factory(App\Event::class)->create(['owner_id' => $team_id, 'type' => $types[array_rand($types, 1)]]);
 
             foreach ($members as $member) {
                 factory(App\Stat::class, $sport->name())->create([
